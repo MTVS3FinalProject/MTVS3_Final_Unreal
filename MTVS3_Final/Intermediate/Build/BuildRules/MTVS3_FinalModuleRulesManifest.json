@@ -1,0 +1,8 @@
+{
+	"SourceFiles": [
+		"C:\\Projects\\Unreal\\MTVS3_Final_Unreal\\MTVS3_Final\\Source\\MTVS3_Final\\MTVS3_Final.Build.cs",
+		"C:\\Projects\\Unreal\\MTVS3_Final_Unreal\\MTVS3_Final\\Source\\MTVS3_Final.Target.cs",
+		"C:\\Projects\\Unreal\\MTVS3_Final_Unreal\\MTVS3_Final\\Source\\MTVS3_FinalEditor.Target.cs"
+	],
+	"EngineVersion": "5.4.2"
+}

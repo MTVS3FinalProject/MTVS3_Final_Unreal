@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "MTVS3_Final",
+			"Path": "..\\Source\\MTVS3_Final.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "MTVS3_FinalEditor",
+			"Path": "..\\Source\\MTVS3_FinalEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}
