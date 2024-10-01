@@ -21,6 +21,8 @@
 > 컬러 다이얼 크기 키우기
 
 ## (2/3) Commit Message Convention
+> 브랜치명: 이니셜_이름 (예: ```KHJ_Proto```)<br>
+> 작은 변경사항이라도 꼭 중간마다 커밋, 푸쉬 부탁드립니다.
 * ```Feat``` : 새로운 기능을 추가할 경우
 * ```Fix``` : 버그를 고친 경우
 * ```!HOTFIX``` : 치명적인 버그를 고친 경우
@@ -68,9 +70,9 @@
 |Font_|Font|Font_Noto_Sans|
 
 #### 3. CPP 변수명
-  * 기본적으로 파스칼 케이스 사용(예: ```Score```)
-  * 부울 변수는 ```b```로 시작(예: ```bPendingDestruction, bHasFadedIn```)
-  * 열거형은 ```E```로 시작(예: ```enum class EColorBits { ECB_Red, ECB_Green, ECB_Blue };```)
+  * 기본적으로 파스칼 케이스 사용 (예: ```Score```)
+  * 부울 변수는 ```b```로 시작 (예: ```bPendingDestruction, bHasFadedIn```)
+  * 열거형은 ```E```로 시작 (예: ```enum class EColorBits { ECB_Red, ECB_Green, ECB_Blue };```)
 
 #### 4. CPP 함수명
 * Bool을 반환하는 정보 함수는 질문을 해야 합니다.
