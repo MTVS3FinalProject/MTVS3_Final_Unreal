@@ -77,7 +77,7 @@
 #### 4. CPP 함수명
 * Bool을 반환하는 정보 함수는 질문을 해야 합니다.
   * 즉, 동사형태로 Is, Was, Can 등
-* RPC호출에는 Target이라는 접두사가 붙어야 한다.
+* RPC호출에는 Target에 대한 접두사가 붙어야 한다.
   ```
   UFUNCTION(Server, Unreliable)
   void ServerLook(FVector2D Axis);
