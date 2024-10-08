@@ -31,39 +31,58 @@ public:
 	class UStartWidget* StartUI;
 #pragma endregion*/
 
+
+	// 유저 로그인 검증을 요청하는 함수
 	void ReqPostVerifySignin(long UserId);
 
+	// 유저 로그인 검증 요청에 대한 응답 처리하는 함수
 	void OnResPostVerifySignin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
+	// 로그인 검증 결과 확인 요청을 서버에 보내는 함수
 	void ReqPostOnVerifySignin(long UserId);
 
+	// 로그인 검증 결과 요청에 대한 응답을 처리하는 함수
 	void OnResPostOnVerifySignin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
+	// 유저가 호스트인지 여부에 따라 회원가입 요청을 서버에 보내는 함수
 	void ReqPostSignin(bool bIsHost, FText Email, FText Password, FText Age, FString Gender, FText Nickname);
 
+	// 회원가입 요청에 대한 응답을 처리하는 함수
 	void OnResPostSignin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
+	// 유저 로그인 요청을 서버에 보내는 함수
 	void ReqPostLogin(FText Email, FText Password);
 
+	// 로그인 요청에 대한 응답을 처리하는 함수
 	void OnResPostLogin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
+	// TT세션 참가 요청을 서버에 보내는 함수
 	void ReqPostJoinTTSession(long UserId, int64 TTSessionId);
 
+	// TT세션 참가 요청에 대한 응답을 처리하는 함수
 	void OnResPostJoinTTSession(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
+	// 사용자가 좌석에 신청하는 요청을 서버에 보내는 함수
 	void ReqPostApplyForSeat(long UserId, int64 SeatId);
 
+	// 좌석 신청 요청에 대한 응답을 처리하는 함수
 	void OnResPostApplyForSeat(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
+	// 좌석 예약을 검증하는 요청을 서버에 보내는 함수
 	void ReqPostVerifyBooking(long UserId, int64 SeatId);
 
+	// 좌석 예약 검증 요청에 대한 응답을 처리하는 함수
 	void OnResPostVerifyBooking(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
+	// 좌석 예약 검증 결과를 확인하는 요청을 서버에 보내는 함수
 	void ReqPostOnVerifyBooking(long UserId, int64 SeatId);
 
+	// 좌석 예약 검증 확인 요청에 대한 응답을 처리하는 함수
 	void OnResPostOnVerifyBooking(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
+	// 좌석 예약 완료 요청을 서버에 보내는 함수
 	void ReqPostCompleteBooking(long UserId, int64 SeatId);
 
+	// 좌석 예약 완료 요청에 대한 응답을 처리하는 함수
 	void OnResPostCompleteBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 };
