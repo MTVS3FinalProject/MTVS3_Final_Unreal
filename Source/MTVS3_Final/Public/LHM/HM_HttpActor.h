@@ -56,10 +56,10 @@ public:
 	// 로그인 요청에 대한 응답을 처리하는 함수
 	void OnResPostLogin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	// TT세션 참가 요청을 서버에 보내는 함수
+	// TT세션 입장 요청을 서버에 보내는 함수
 	void ReqPostJoinTTSession(long UserId, int64 TTSessionId);
 
-	// TT세션 참가 요청에 대한 응답을 처리하는 함수
+	// TT세션 입장 요청에 대한 응답을 처리하는 함수
 	void OnResPostJoinTTSession(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	// 사용자가 좌석에 신청하는 요청을 서버에 보내는 함수

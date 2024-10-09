@@ -241,7 +241,6 @@ void AHM_HttpActor::OnResPostSignin(FHttpRequestPtr Request , FHttpResponsePtr R
 	}
 	else
 	{
-		// 요청 실패 또는 응답이 유효하지 않은 경우 처리
 		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
 	}
 }
@@ -349,6 +348,80 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 	{
 		UE_LOG(LogTemp , Error , TEXT("요청 실패 또는 응답이 유효하지 않음"));
 		//StartUI->OnLoginFail(2); // 네트워크 오류 처리
+	}
+}
+
+void AHM_HttpActor::ReqPostJoinTTSession(long UserId , int64 TTSessionId)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Requset = Http->CreateRequest();
+
+	// 서버 URL 설정
+	Requset->SetURL(TEXT(""));
+	Requset->SetVerb(TEXT("POST"));
+	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 요청 데이터 (JSON)
+	FString ContentString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("userID"), UserId);
+	Writer->WriteValue(TEXT("ttSessionID"), TTSessionId);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	// 요청 본문에 JSON 데이터를 설정
+	Requset->SetContentAsString(ContentString);
+
+	// 응답받을 함수를 연결
+	Requset->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostJoinTTSession);
+
+	// 요청 실행
+	Requset->ProcessRequest();
+}
+
+void AHM_HttpActor::OnResPostJoinTTSession(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 ) // 성공적인 응답 코드 200
+		{
+			// 응답 본문 처리 (필요한 정보가 있을 경우)
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// 서버 응답에서 필요한 데이터 추출
+				bool bJoinSuccess = JsonObject->GetBoolField("joinSuccess");
+				if ( bJoinSuccess )
+				{
+					UE_LOG(LogTemp , Log , TEXT("Successfully joined TT session."));
+					// TT 세션 입장 성공 처리
+				}
+				else
+				{
+					UE_LOG(LogTemp , Warning , TEXT("Failed to join TT session."));
+					// TT 세션 입장 실패 처리
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Failed to join TT session, response code: %d") , Response->GetResponseCode());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
 	}
 }
 
