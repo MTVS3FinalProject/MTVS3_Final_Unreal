@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -34,6 +35,12 @@ void ATTPlayer::BeginPlay()
 	{
 		UEnhancedInputLocalPlayerSubsystem* subSys = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(pc->GetLocalPlayer());
 		if ( subSys ) subSys->AddMappingContext(IMC_TTPlayer , 0);
+
+		FInputModeGameAndUI InputMode;
+		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+		InputMode.SetHideCursorDuringCapture(false); // 클릭 시 커서가 사라지지 않도록 설정
+		pc->SetInputMode(InputMode);
+		pc->bShowMouseCursor = true; // 마우스 커서 표시
 	}
 }
 
@@ -45,7 +52,7 @@ void ATTPlayer::Tick(float DeltaTime)
 	FTransform ttt = FTransform(GetControlRotation());
 	Direction = ttt.TransformVector(Direction);
 
-	AddMovementInput(Direction , Speed * DeltaTime);
+	AddMovementInput(Direction , 1);
 	Direction = FVector::ZeroVector;
 }
 
@@ -58,8 +65,8 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	if ( input )
 	{
 		input->BindAction(IA_Move , ETriggerEvent::Triggered , this , &ATTPlayer::OnMyActionMove);
-		input->BindAction(IA_Jump , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionEnableLookStart);
-		input->BindAction(IA_Jump , ETriggerEvent::Completed , this , &ATTPlayer::OnMyActionEnableLookComplete);
+		input->BindAction(IA_EnableLook , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionEnableLookStart);
+		input->BindAction(IA_EnableLook , ETriggerEvent::Completed , this , &ATTPlayer::OnMyActionEnableLookComplete);
 		input->BindAction(IA_Look , ETriggerEvent::Triggered , this , &ATTPlayer::OnMyActionLook);
 		input->BindAction(IA_Jump , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionJumpStart);
 		input->BindAction(IA_Jump , ETriggerEvent::Completed , this , &ATTPlayer::OnMyActionJumpComplete);
@@ -91,9 +98,9 @@ void ATTPlayer::OnMyActionEnableLookComplete(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionLook(const FInputActionValue& Value)
 {
+	FVector2D v = Value.Get<FVector2D>();
 	if ( bIsEnableLook )
 	{
-		FVector2D v = Value.Get<FVector2D>();
 		AddControllerPitchInput(-v.Y);
 		AddControllerYawInput(v.X);
 	}
@@ -111,22 +118,25 @@ void ATTPlayer::OnMyActionJumpComplete(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionDashStart(const FInputActionValue& Value)
 {
-	Speed = 1000;
+	GetCharacterMovement()->MaxWalkSpeed = 800;
 }
 
 void ATTPlayer::OnMyActionDashComplete(const FInputActionValue& Value)
 {
-	Speed = 600;
+	GetCharacterMovement()->MaxWalkSpeed = 400;
 }
 
 void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 {
+	UE_LOG(LogTemp , Warning , TEXT("Pressed E: Interact"));
 }
 
 void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 {
+	UE_LOG(LogTemp , Warning , TEXT("Pressed F: Purchase"));
 }
 
 void ATTPlayer::OnMyActionInventory(const FInputActionValue& Value)
 {
+	UE_LOG(LogTemp , Warning , TEXT("Pressed TAB: Inventory"));
 }

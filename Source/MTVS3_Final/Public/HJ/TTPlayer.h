@@ -41,7 +41,6 @@ public:
 	void OnMyActionMove(const FInputActionValue& Value);
 
 	FVector Direction;
-	float Speed = 600;
 
 	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
 	class UInputAction* IA_EnableLook;
