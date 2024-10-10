@@ -363,8 +363,12 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 				{
 					// 받아올 정보 추출
 					FString Nickname = ResponseObject->GetStringField(TEXT("nickname"));
+					int32 UserId = ResponseObject->GetIntegerField(TEXT("userId"));
+					int32 Age = ResponseObject->GetIntegerField(TEXT("age"));
 					int32 Coin = ResponseObject->GetIntegerField(TEXT("coin"));
+					//bool bIsHost = ResponseObject->GetIntegerField(TEXT("isHost"));
 					int32 RemainingTicketCount = ResponseObject->GetIntegerField(TEXT("remainingTicketCount"));
+					int32 AvatarData = ResponseObject->GetIntegerField(TEXT("avatarData"));
 
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 					if ( TTPlayer )
@@ -372,23 +376,30 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 						if ( ATTPlayerState* PS = TTPlayer->GetPlayerState<ATTPlayerState>() )
 						{
 							// 닉네임 설정 및 가져오기
-							PS->SetNickname("Nickname");
-							FString Nickname = PS->GetNickname();
+							PS->SetNickname(Nickname);
+							UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *PS->GetNickname());
 
 							// 서버에서 주는 UserId 설정 및 가져오기
 							// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
-							PS->SetUserId(12345);
-							int32 UserId = PS->GetUserId();
+							PS->SetUserId(UserId);
+							UE_LOG(LogTemp , Log , TEXT("UserId: %d") , PS->GetUserId());
+
+							// 나이 설정 및 가져오기
+							PS->SetAge(Age);
+							UE_LOG(LogTemp , Log , TEXT("Age : %d") , PS->GetAge());
 
 							// 코인 더하기 및 가져오기
-							// 더하기로 되어 있으므로 예매 시엔 음수(-) 값 입력
-							PS->AddCoin(-30);
-							int32 Coin = PS->GetCoin();
+							PS->SetCoin(Coin);
+							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , PS->GetCoin());
+
+							// 아바타 설정 및 가져오기
+							PS->SetAvatarData(AvatarData);
+							UE_LOG(LogTemp , Log , TEXT("AvatarData : %d") , PS->GetAvatarData());
 
 							// 티켓 접수 및 접수 가능 개수 가져오기
 							// UseRemainingTicket의 매개변수는 티켓 접수 개수
-							PS->UseRemainingTicket(1);
-							int32 RemainingTicketCount = PS->GetRemainingTicketCount();
+							PS->SetRemainingTicketCount(RemainingTicketCount);
+							UE_LOG(LogTemp , Log , TEXT("Remaining Tickets: %d") , PS->GetRemainingTicketCount());
 						}
 					}
 
