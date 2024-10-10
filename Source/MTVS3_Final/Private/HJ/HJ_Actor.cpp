@@ -30,14 +30,28 @@ void AHJ_Actor::Tick(float DeltaTime)
 	{
 		if ( ATTPlayerState* PS = TTPlayer->GetPlayerState<ATTPlayerState>())
 		{
+			// 관리자 여부 설정 및 가져오기
 			PS->SetbIsHost(true);
 			bool bIsHost = PS->GetbIsHost();
+
+			// 닉네임 설정 및 가져오기
 			PS->SetNickname("Nickname");
 			FString Nickname = PS->GetNickname();
+
+			// 서버에서 주는 UserId 설정 및 가져오기
+			// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
 			PS->SetUserId(12345);
 			int32 UserId = PS->GetUserId();
+
+			// 코인 더하기 및 가져오기
+			// 더하기로 되어 있으므로 예매 시엔 음수(-) 값 입력
 			PS->AddCoin(-30);
 			int32 Coin = PS->GetCoin();
+
+			// 티켓 접수 및 접수 가능 개수 가져오기
+			// UseRemainingTicket의 매개변수는 티켓 접수 개수
+			PS->UseRemainingTicket(1);
+			int32 RemainingTicketCount = PS->GetRemainingTicketCount();
 		}
 	}
 }
