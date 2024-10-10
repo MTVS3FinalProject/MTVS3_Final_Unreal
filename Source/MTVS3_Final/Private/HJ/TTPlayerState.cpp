@@ -15,7 +15,7 @@ void ATTPlayerState::SetbIsHost(const bool& _bIsHost)
 	bIsHost = _bIsHost;
 }
 
-long ATTPlayerState::GetbIsHost() const
+bool ATTPlayerState::GetbIsHost() const
 {
 	return bIsHost;
 }
