@@ -1,7 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "HJ/HJ_Actor.h"
+#include "HJ/TTPlayer.h"
+#include "HJ/TTPlayerState.h"
 
 // Sets default values
 AHJ_Actor::AHJ_Actor()
@@ -23,5 +25,20 @@ void AHJ_Actor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	if ( TTPlayer )
+	{
+		if ( ATTPlayerState* PS = TTPlayer->GetPlayerState<ATTPlayerState>())
+		{
+			PS->SetbIsHost(true);
+			bool bIsHost = PS->GetbIsHost();
+			PS->SetNickname("Nickname");
+			FString Nickname = PS->GetNickname();
+			PS->SetUserId(12345);
+			int32 UserId = PS->GetUserId();
+			PS->AddCoin(-30);
+			int32 Coin = PS->GetCoin();
+		}
+	}
 }
 
