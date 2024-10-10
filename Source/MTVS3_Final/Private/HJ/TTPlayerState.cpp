@@ -48,6 +48,16 @@ int32 ATTPlayerState::GetUserId() const
 	return UserId;
 }
 
+void ATTPlayerState::SetAge(const int32& _Age)
+{
+	Age = _Age;
+}
+
+int32 ATTPlayerState::GetAge() const
+{
+	return Age;
+}
+
 void ATTPlayerState::SetCoin(const int32& _Coin)
 {
 	Coin = _Coin;

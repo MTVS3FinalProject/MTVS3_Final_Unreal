@@ -37,6 +37,12 @@ public:
 	void SetUserId(const int32& _UserId);
 	int32 GetUserId() const;
 
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	int32 Age;
+	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	void SetAge(const int32& _Age);
+	int32 GetAge() const;
+
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
 	int32 Coin;
 	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
