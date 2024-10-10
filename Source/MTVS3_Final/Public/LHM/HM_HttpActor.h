@@ -53,7 +53,7 @@ public:
 	void OnResPostOnVerifyIdentity(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	// 회원가입 요청을 서버에 보내는 함수2
-	void ReqPostSignup2(FText Nickname, bool bIsMale, int32 Style);
+	void ReqPostSignup2(FText Nickname, int32 CharacterModel);
 
 	// 회원가입 요청에 대한 응답을 처리하는 함수2
 	void OnResPostSignup2(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
