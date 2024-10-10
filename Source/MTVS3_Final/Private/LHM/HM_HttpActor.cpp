@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
+#include <chrono>
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -38,7 +39,68 @@ void AHM_HttpActor::Tick(float DeltaTime)
 
 }
 
-void AHM_HttpActor::ReqPostVerifyIdentity(long UserId)
+void AHM_HttpActor::ReqPostSignup1(bool bIsHost , FText Email , FText Password , int32 Age /*, FString UserId*/ )
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	// 서버 URL 설정
+	Request->SetURL(TEXT(""));
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 요청 데이터 (JSON)
+	FString ContentString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("isHost"), bIsHost);
+	Writer->WriteValue(TEXT("email") , Email.ToString());
+	Writer->WriteValue(TEXT("password") , Password.ToString());
+	Writer->WriteValue(TEXT("age") , Age);
+	//Writer->WriteValue(TEXT("userId") , UserId); // UserId 전달
+	//Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	// 요청 본문에 JSON 데이터를 설정
+	Request->SetContentAsString(ContentString);
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostSignup1);
+
+	// 요청 실행
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor::OnResPostSignup1(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 201 ) // 회원가입1 성공 응답 코드 (201 Created)
+		{
+			// 성공 처리 (회원가입1 완료)
+			UE_LOG(LogTemp , Log , TEXT("Sign-up success"));
+		}
+		else
+		{
+			// 실패 처리
+			UE_LOG(LogTemp , Warning , TEXT("Sign-up failed, response code: %d") , Response->GetResponseCode());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
+	}
+}
+
+void AHM_HttpActor::ReqPostVerifyIdentity(int32 UserId)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -111,7 +173,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 	}
 }
 
-void AHM_HttpActor::ReqPostOnVerifyIdentity(long UserId)
+void AHM_HttpActor::ReqPostOnVerifyIdentity(int32 UserId)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -184,7 +246,7 @@ void AHM_HttpActor::OnResPostOnVerifyIdentity(FHttpRequestPtr Request , FHttpRes
 	}
 }
 
-void AHM_HttpActor::ReqPostSignin(bool bIsHost , FText Email , FText Password , FText Age , FString Gender , FText Nickname)
+void AHM_HttpActor::ReqPostSignup2(FText Nickname , bool bIsMale , int32 Style)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -202,12 +264,9 @@ void AHM_HttpActor::ReqPostSignin(bool bIsHost , FText Email , FText Password , 
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("isHost"), bIsHost);
-	Writer->WriteValue(TEXT("email") , Email.ToString());
-	Writer->WriteValue(TEXT("password") , Password.ToString());
-	Writer->WriteValue(TEXT("age") , Age.ToString());
-	Writer->WriteValue(TEXT("gender") , Gender);
 	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
+	Writer->WriteValue(TEXT("isMan") , bIsMale);
+	Writer->WriteValue(TEXT("style") , Style);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -215,23 +274,58 @@ void AHM_HttpActor::ReqPostSignin(bool bIsHost , FText Email , FText Password , 
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostSignin);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostSignup2);
 
 	// 요청 실행
 	Request->ProcessRequest();
 }
 
-void AHM_HttpActor::OnResPostSignin(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+void AHM_HttpActor::OnResPostSignup2(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
-		if ( Response->GetResponseCode() == 201 ) // 회원가입 성공 응답 코드 (201 Created)
+		if ( Response->GetResponseCode() == 201 ) // 회원가입2 성공 응답 코드 (201 Created)
 		{
-			// 성공 처리 (회원가입 완료)
+			// 성공 처리 (회원가입2 완료)
 			UE_LOG(LogTemp , Log , TEXT("Sign-up success"));
+
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField("response");
+
+				if ( ResponseObject.IsValid() )
+				{
+					// "accessToken"과 "nickname" 추출
+					FString AccessToken = ResponseObject->GetStringField("accessToken");
+					FString Nickname = ResponseObject->GetStringField("nickname");
+
+					//GameInstance* GI = GetWorld()->GetGameInstance<GameInstance>();
+					//if ( !GI ) return;
+					//GI->SetPlayerNickname(Nickname);
+
+					if ( !AccessToken.IsEmpty() )
+					{
+						UE_LOG(LogTemp , Log , TEXT("Received Access Token: %s") , *AccessToken);
+						UE_LOG(LogTemp , Log , TEXT("Received Nickname: %s") , *Nickname);
+
+						// 로그인 성공 시 처리
+						// GameInstance에 토큰(고유ID) 및 닉네임 저장
+						//GI = GetWorld()->GetGameInstance<GameInstance>();
+						//if ( !GI ) return;
+						//GI->SetAccessToken(AccessToken);
+						//StartUI->OnLoginSuccess();
+					}
+				}
+			}
 		}
 		else
 		{
@@ -424,4 +518,6 @@ void AHM_HttpActor::OnResPostJoinTTSession(FHttpRequestPtr Request , FHttpRespon
 		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
 	}
 }
+
+
 
