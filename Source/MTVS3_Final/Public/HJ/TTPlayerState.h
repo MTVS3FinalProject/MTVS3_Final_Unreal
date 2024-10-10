@@ -23,7 +23,7 @@ public:
 	bool bIsHost;
 	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
 	void SetbIsHost(const bool& _bIsHost);
-	long GetbIsHost() const;
+	bool GetbIsHost() const;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
 	FString Nickname;
@@ -37,11 +37,19 @@ public:
 	void SetUserId(const int32& _UserId);
 	long GetUserId() const;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Coin")
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
 	int32 Coin;
-	UPROPERTY(BlueprintReadWrite , EditDefaultsOnly , Category = "Default|Coin")
+	UPROPERTY(BlueprintReadWrite , EditDefaultsOnly , Category = "Default|Cash")
 	int32 InitialCoin = 100;
-	UFUNCTION(BlueprintCallable , Category = "Default|Coin")
+	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
 	void AddCoin(int32 _Coin);
 	int32 GetCoin();
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
+	int32 RemainingTicketCount;
+	UPROPERTY(BlueprintReadWrite , EditDefaultsOnly , Category = "Default|Cash")
+	int32 MaxRemainingTicketCount = 2;
+	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	void UseRemainingTicket(int32 UsedTicketCount);
+	int32 GetRemainingTicketCount();
 };

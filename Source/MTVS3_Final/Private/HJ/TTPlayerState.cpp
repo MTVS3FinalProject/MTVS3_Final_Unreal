@@ -8,6 +8,7 @@ void ATTPlayerState::BeginPlay()
 	Super::BeginPlay();
 
 	Coin = InitialCoin;
+	RemainingTicketCount = MaxRemainingTicketCount;
 }
 
 void ATTPlayerState::SetbIsHost(const bool& _bIsHost)
@@ -15,7 +16,7 @@ void ATTPlayerState::SetbIsHost(const bool& _bIsHost)
 	bIsHost = _bIsHost;
 }
 
-long ATTPlayerState::GetbIsHost() const
+bool ATTPlayerState::GetbIsHost() const
 {
 	return bIsHost;
 }
@@ -58,4 +59,14 @@ void ATTPlayerState::AddCoin(int32 _Coin)
 int32 ATTPlayerState::GetCoin()
 {
 	return Coin;
+}
+
+void ATTPlayerState::UseRemainingTicket(int32 UsedTicketCount)
+{
+	RemainingTicketCount -= UsedTicketCount;
+}
+
+int32 ATTPlayerState::GetRemainingTicketCount()
+{
+	return RemainingTicketCount;
 }
