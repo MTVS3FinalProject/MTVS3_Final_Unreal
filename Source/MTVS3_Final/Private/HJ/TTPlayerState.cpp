@@ -77,3 +77,13 @@ int32 ATTPlayerState::GetRemainingTicketCount()
 {
 	return RemainingTicketCount;
 }
+
+void ATTPlayerState::SetAvatarData(const int32& _AvatarData)
+{
+	AvatarData = _AvatarData;
+}
+
+int32 ATTPlayerState::GetAvatarData()
+{
+	return AvatarData;
+}

@@ -52,4 +52,10 @@ public:
 	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
 	void UseRemainingTicket(int32 UsedTicketCount);
 	int32 GetRemainingTicketCount();
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Avatar")
+	int32 AvatarData;
+	UFUNCTION(BlueprintCallable , Category = "Default|Avatar")
+	void SetAvatarData(const int32& _AvatarData);
+	int32 GetAvatarData();
 };
