@@ -23,7 +23,7 @@ public:
 	bool bIsHost;
 	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
 	void SetbIsHost(const bool& _bIsHost);
-	long GetbIsHost() const;
+	bool GetbIsHost() const;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
 	FString Nickname;
