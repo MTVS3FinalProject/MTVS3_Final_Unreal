@@ -65,39 +65,39 @@ public:
 	void OnResPostLogin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	// TT세션 입장 요청을 서버에 보내는 함수
-	void ReqPostJoinTTSession(long UserId, int64 TTSessionId);
+	void ReqPostJoinTTSession(int32 UserId, int64 TTSessionId);
 
 	// TT세션 입장 요청에 대한 응답을 처리하는 함수
 	void OnResPostJoinTTSession(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 //===========================================================================================================
 
-	// 사용자가 좌석에 신청하는 요청을 서버에 보내는 함수
-	void ReqPostApplyForSeat(long UserId, int64 SeatId);
+	// 좌석에 접수 신청하는 요청을 서버에 보내는 함수
+	void ReqPostApplyForSeat(int32 UserId, int64 SeatId);
 
-	// 좌석 신청 요청에 대한 응답을 처리하는 함수
+	// 좌석 접수 신청하는 요청에 대한 응답을 처리하는 함수
 	void OnResPostApplyForSeat(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	// 좌석 예약을 검증하는 요청을 서버에 보내는 함수
-	void ReqPostVerifyBooking(long UserId, int64 SeatId);
+	void ReqPostVerifyBooking(int32 UserId, int64 SeatId);
 
 	// 좌석 예약 검증 요청에 대한 응답을 처리하는 함수
 	void OnResPostVerifyBooking(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	// 좌석 예약 검증 결과를 확인하는 요청을 서버에 보내는 함수
-	void ReqPostOnVerifyBooking(long UserId, int64 SeatId);
+	void ReqPostOnVerifyBooking(int32 UserId, int64 SeatId);
 
-	// 좌석 예약 검증 확인 요청에 대한 응답을 처리하는 함수
+	// 좌석 예약 검증 결과를 확인하는 요청에 대한 응답을 처리하는 함수
 	void OnResPostOnVerifyBooking(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	// 좌석 예약 완료 요청을 서버에 보내는 함수
-	void ReqPostCompleteBooking(long UserId, int64 SeatId);
+	void ReqPostCompleteBooking(int32 UserId, int64 SeatId);
 
 	// 좌석 예약 완료 요청에 대한 응답을 처리하는 함수
 	void OnResPostCompleteBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 예약 취소 요청을 서버에 보내는 함수
-	void ReqPostCancleBooking(long UserId , int64 SeatId);
+	void ReqPostCancleBooking(int32 UserId , int64 SeatId);
 
 	// 좌석 예약 취소 요청에 대한 응답을 처리하는 함수
 	void OnResPostCancleBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
