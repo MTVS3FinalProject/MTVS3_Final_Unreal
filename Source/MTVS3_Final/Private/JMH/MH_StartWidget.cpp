@@ -3,3 +3,71 @@
 
 #include "JMH/MH_StartWidget.h"
 
+#include "Components/Button.h"
+
+void UMH_StartWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+
+	Btn_Back->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedBackButton);
+	Btn_Confirm->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedConfirmButton);
+	Btn_Exit->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedExitButton);
+	Btn_AddPicture->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedAddPictureButton);
+	Btn_ForgotPassword->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedForgotPasswordButton);
+	Btn_SignIn->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedSignInButton);
+	Btn_SignUp->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedSignUpButton);
+	Btn_FAN->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedFANButton);
+	Btn_MANAGER->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedMANAGERButton);
+	
+	
+}
+
+void UMH_StartWidget::OnClickedSignInButton()
+{
+	//메인맵으로 이동
+}
+
+void UMH_StartWidget::OnClickedSignUpButton()
+{
+	//회원가입 스위쳐 이동
+}
+
+void UMH_StartWidget::OnClickedExitButton()
+{
+	//게임 종료
+}
+
+void UMH_StartWidget::OnClickedForgotPasswordButton()
+{
+	//비번찾기
+}
+
+void UMH_StartWidget::OnClickedConfirmButton()
+{
+	//회원가입 완료 -> 유저정보 서버로 전달
+	//이메일, 비번 중복확인
+	//사진확인
+	//모두 입력했는지 확인
+	//캐릭터 설정으로 이동
+}
+
+void UMH_StartWidget::OnClickedBackButton()
+{
+	//Start ui로 이동
+}
+
+void UMH_StartWidget::OnClickedFANButton()
+{
+	//Fan으로 유저모드 설정
+}
+
+void UMH_StartWidget::OnClickedMANAGERButton()
+{
+	//MANAGER로 유저모드 설정
+}
+
+void UMH_StartWidget::OnClickedAddPictureButton()
+{
+	//사진 서버로 전달
+	//사진 정상적인지 확인
+}
