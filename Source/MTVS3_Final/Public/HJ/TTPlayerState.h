@@ -35,20 +35,20 @@ public:
 	int32 UserId;
 	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
 	void SetUserId(const int32& _UserId);
-	long GetUserId() const;
+	int32 GetUserId() const;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
 	int32 Coin;
-	UPROPERTY(BlueprintReadWrite , EditDefaultsOnly , Category = "Default|Cash")
-	int32 InitialCoin = 100;
+	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	void SetCoin(const int32& _Coin);
 	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
 	void AddCoin(int32 _Coin);
 	int32 GetCoin();
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
 	int32 RemainingTicketCount;
-	UPROPERTY(BlueprintReadWrite , EditDefaultsOnly , Category = "Default|Cash")
-	int32 MaxRemainingTicketCount = 2;
+	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	void SetRemainingTicketCount(const int32& _RemainingTicketCount);
 	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
 	void UseRemainingTicket(int32 UsedTicketCount);
 	int32 GetRemainingTicketCount();
