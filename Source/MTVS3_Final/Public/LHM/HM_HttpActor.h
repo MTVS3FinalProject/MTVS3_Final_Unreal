@@ -32,23 +32,31 @@ public:
 #pragma endregion*/
 
 
+//===========================================================================================================
+
+	// 회원가입 요청을 서버에 보내는 함수1
+	void ReqPostSignup1(bool bIsHost, FText Email, FText Password, int32 Age/*, FString UserId*/);
+
+	// 회원가입 요청에 대한 응답을 처리하는 함수1
+	void OnResPostSignup1(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
 	// 신원 확인을 요청하는 함수
-	void ReqPostVerifyIdentity(long UserId);
+	void ReqPostVerifyIdentity(int32 UserId);
 
 	// 신원 확인 요청에 대한 응답 처리하는 함수
 	void OnResPostVerifyIdentity(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	// 신원 확인 결과 확인 요청을 서버에 보내는 함수
-	void ReqPostOnVerifyIdentity(long UserId);
+	void ReqPostOnVerifyIdentity(int32 UserId);
 
 	// 신원 확인 결과 확인 요청에 대한 응답을 처리하는 함수
 	void OnResPostOnVerifyIdentity(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	// 회원가입 요청을 서버에 보내는 함수
-	void ReqPostSignin(bool bIsHost, FText Email, FText Password, FText Age, FString Gender, FText Nickname);
+	// 회원가입 요청을 서버에 보내는 함수2
+	void ReqPostSignup2(FText Nickname, bool bIsMale, int32 Style);
 
-	// 회원가입 요청에 대한 응답을 처리하는 함수
-	void OnResPostSignin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	// 회원가입 요청에 대한 응답을 처리하는 함수2
+	void OnResPostSignup2(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 로그인 요청을 서버에 보내는 함수
 	void ReqPostLogin(FText Email, FText Password);
@@ -61,6 +69,8 @@ public:
 
 	// TT세션 입장 요청에 대한 응답을 처리하는 함수
 	void OnResPostJoinTTSession(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+//===========================================================================================================
 
 	// 사용자가 좌석에 신청하는 요청을 서버에 보내는 함수
 	void ReqPostApplyForSeat(long UserId, int64 SeatId);
@@ -85,4 +95,10 @@ public:
 
 	// 좌석 예약 완료 요청에 대한 응답을 처리하는 함수
 	void OnResPostCompleteBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 좌석 예약 취소 요청을 서버에 보내는 함수
+	void ReqPostCancleBooking(long UserId , int64 SeatId);
+
+	// 좌석 예약 취소 요청에 대한 응답을 처리하는 함수
+	void OnResPostCancleBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 };
