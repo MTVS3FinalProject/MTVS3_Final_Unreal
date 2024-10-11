@@ -120,7 +120,7 @@ void UMH_StartWidget::OnClickedConfirm_QRUi2Button()
 {
 	//확인버튼 누르면 ->
 	//아바타 설정ui로 이동.
-	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
+	WS_StartWidgetSwitcher->SetActiveWidgetIndex(0);
 	
 }
 
