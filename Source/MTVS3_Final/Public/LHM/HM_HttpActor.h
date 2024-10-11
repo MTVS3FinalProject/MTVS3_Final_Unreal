@@ -24,12 +24,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	/*#pragma region UI
+	#pragma region UI
 	UPROPERTY(EditAnywhere, Category = "Defalut|UI")
-	TSubclassOf<class UStartWidget> StartUIFactory;
+	TSubclassOf<class UMH_StartWidget> StartUIFactory;
 	UPROPERTY()
-	class UStartWidget* StartUI;
-#pragma endregion*/
+	class UMH_StartWidget* StartUI;
+#pragma endregion
 
 
 //===========================================================================================================
