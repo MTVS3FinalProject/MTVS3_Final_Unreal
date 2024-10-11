@@ -44,7 +44,7 @@ public:
 	// 신원 인증 사진 업로드 요청에 대한 응답 처리하는 함수
 
 	// 신원 확인을 요청하는 함수
-	void ReqPostVerifyIdentity(int32 UserId);
+	void ReqPostVerifyIdentity(FText Email);
 
 	// 신원 확인 요청에 대한 응답 처리하는 함수
 	void OnResPostVerifyIdentity(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
