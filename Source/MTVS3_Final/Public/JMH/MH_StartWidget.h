@@ -23,6 +23,10 @@ public:
 	class UWidgetSwitcher* WS_StartWidgetSwitcher;
 	
 	//Login
+
+	//아이디 비번 비교없이 바로 세션 접속하도록 버튼 생성 -> 테스트모드
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_test_Login;
 	
 	UFUNCTION()
 	void GoToLobby();
@@ -31,25 +35,25 @@ public:
 	class UCanvasPanel* Can_Login;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_GoToLobby_SignIn;
+	class UButton*  Btn_GoToLobby_Login;
 
 	UFUNCTION()
 	void OnClickedSignInButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_SignUp;
+	class UButton*  Btn_SignUp_Login;
 
 	UFUNCTION()
 	void OnClickedSignUpButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Exit;
+	class UButton*  Btn_Exit_Login;
 
 	UFUNCTION()
 	void OnClickedExitButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_ForgotPassword;
+	class UButton*  Btn_ForgotPassword_Login;
 
 	UFUNCTION()
 	void OnClickedForgotPasswordButton();
@@ -59,6 +63,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_PassWord;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UEditableText* EText_PassWord2;
 
 	//SignUp
 	
@@ -69,13 +76,13 @@ public:
 	class UCanvasPanel* Can_SignUp;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Confirm;
+	class UButton*  Btn_Confirm_Signup;
 	
 	UFUNCTION()
-	void OnClickedConfirmButton();
+	void OnClickedConfirmSignupButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Back;
+	class UButton*  Btn_Back_Signup;
 	
 	UFUNCTION()
 	void OnClickedBackButton();
@@ -108,6 +115,9 @@ public:
 		
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_SignupPassWord;
+		
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UEditableText* EText_SignupPassWord2;
 
 
 	//Select Avatar

@@ -13,22 +13,25 @@
 void UMH_StartWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	Btn_Back->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
-	Btn_Confirm->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirmButton);
-	Btn_Exit->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
+//Login
+	Btn_Exit_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
 	Btn_AddPicture->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAddPictureButton);
-	Btn_ForgotPassword->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
-	Btn_GoToLobby_SignIn->OnClicked.AddDynamic(this , &UMH_StartWidget::GoToLobby);
-	Btn_SignUp->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
+	Btn_ForgotPassword_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
+	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::GoToLobby);
+	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
+//Signup
+	Btn_Back_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
+	Btn_Confirm_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirmSignupButton);
 	Btn_FAN->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedFANButton);
 	Btn_MANAGER->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedMANAGERButton);
 	Btn_SelectAvatarL->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSelectAvatarLButton);
 	Btn_SelectAvatarR->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSelectAvatarRButton);
 	Btn_GenderMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderMaleButton);
 	Btn_GenderFeMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderFeMaleButton);
+	//Avatar
 	Btn_GoToLobby_Avatar->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAvatarConfirmButton);
 
+	//나이 설정 1~100
 	if (Com_SetAge)
 	{
 		for (int32 i = 1; i <= 100; i++)
@@ -79,13 +82,20 @@ void UMH_StartWidget::OnClickedForgotPasswordButton()
 	//비번찾기
 }
 
-void UMH_StartWidget::OnClickedConfirmButton()
+void UMH_StartWidget::OnClickedConfirmSignupButton()
 {
 	//회원가입 완료 -> 유저정보 서버로 전달
-	//이메일, 비번 중복확인
-	//사진확인
+	//비번 중복확인.
+	//FText 끼리 비교? string 으로 비교?
+	FText Password1 = EText_SignupPassWord->GetText();
+	FText Password2 = EText_SignupPassWord2->GetText();
+
 	//모두 입력했는지 확인
 	//아바타 설정으로 이동
+	
+	//비밀번호 같은지 확인
+if(Password1.EqualTo(Password2))
+{
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
 	
 	if (Com_SetAge)
@@ -93,10 +103,19 @@ void UMH_StartWidget::OnClickedConfirmButton()
 		FString SelectedOption = Com_SetAge->GetSelectedOption();
 		Age_SelectedValue = FCString::Atoi(*SelectedOption); // 문자열을 int로 변환
 	}
+
+	//사진확인 QR로 이돟
 	
 		//아바타 설정으로 이동
-		WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
-		//사진은 어케 불러와
+		//WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
+		//사진은 어케 불러와->QR띄워주는 ui로 이동.->QR이미지 받아오기 -> 확인 버튼 누르면(얼굴인식 확인)->확인완료 ui로->확인버튼 누르면 ->아바타 설정ui로 이동.
+}
+else
+{
+	//에러창
+	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password Error"));
+}
+	
 
 }
 
