@@ -3,11 +3,13 @@
 
 #include "LHM/HM_HttpActor.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameFramework/PlayerController.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
 #include <chrono>
 #include "HJ/TTPlayer.h"
 #include "HJ/TTPlayerState.h"
+#include "JMH/MH_StartWidget.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -22,7 +24,7 @@ void AHM_HttpActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	/*StartUI =  CastChecked<UStartWidget>(CreateWidget(GetWorld(), StartUIFactory));
+	StartUI =  CastChecked<UMH_StartWidget>(CreateWidget(GetWorld(), StartUIFactory));
 	if ( StartUI )
 	{
 		StartUI->AddToViewport();
@@ -31,7 +33,7 @@ void AHM_HttpActor::BeginPlay()
 	auto* pc = UGameplayStatics::GetPlayerController(this, 0);
 	if( !pc ) return;
 	pc->SetShowMouseCursor(true);
-	pc->SetInputMode(FInputModeGameAndUI);*/
+	pc->SetInputMode(FInputModeUIOnly());
 }
 
 // Called every frame
