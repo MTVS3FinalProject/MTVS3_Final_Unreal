@@ -15,11 +15,11 @@ void UMH_StartWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	//Login
-	Btn_test_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::Test_CreateSesstion);//테스트 세션생성 버튼
+	Btn_test_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::Test_CreateSesstion); //테스트 세션생성 버튼
 	Btn_Exit_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
 	Btn_AddPicture->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAddPictureButton);
 	Btn_ForgotPassword_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
-//이부분 확인해보기, 로그인 함수 하나 더 만들어서 그안에서 세션 생성해야함
+	//이부분 확인해보기, 로그인 함수 하나 더 만들어서 그안에서 세션 생성해야함
 	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignInButton);
 	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
 	//Signup
@@ -33,6 +33,13 @@ void UMH_StartWidget::NativeConstruct()
 	Btn_GenderFeMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderFeMaleButton);
 	//Avatar
 	Btn_GoToLobby_Avatar->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAvatarConfirmButton);
+
+	//QR1
+	Btn_Confirm_QRUi1->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirm_QRUi1Button);
+	Btn_Back_QRUi1->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBack_QRUi1Button);
+	//QR2
+	Btn_Confirm_QRUi2->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirm_QRUi2Button);
+
 
 	//나이 설정 1~100
 	if (Com_SetAge)
@@ -90,10 +97,34 @@ void UMH_StartWidget::OnClickedForgotPasswordButton()
 	//비번찾기
 }
 
+void UMH_StartWidget::OnClickedConfirm_QRUi1Button()
+{
+	//확인 버튼 누르면(얼굴인식 확인)->
+	//확인완료 ui로->
+	WS_StartWidgetSwitcher->SetActiveWidgetIndex(4);
+}
+
+void UMH_StartWidget::OnClickedBack_QRUi1Button()
+{
+	//회원가입으로 다시 이동
+	WS_StartWidgetSwitcher->SetActiveWidgetIndex(1);
+}
+
 void UMH_StartWidget::SetQRImg(UTexture2D* newTexture)
 {
+	//QR 받아오기
 	Img_QR->SetBrushFromTexture(newTexture);
 }
+
+void UMH_StartWidget::OnClickedConfirm_QRUi2Button()
+{
+	//확인버튼 누르면 ->
+	//아바타 설정ui로 이동.
+	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
+	
+}
+
+
 
 void UMH_StartWidget::OnClickedConfirmSignupButton()
 {
@@ -103,6 +134,11 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 	FText Password1 = EText_SignupPassWord->GetText();
 	FText Password2 = EText_SignupPassWord2->GetText();
 
+	if (Com_SetAge)
+	{
+		FString SelectedOption = Com_SetAge->GetSelectedOption();
+		Age_SelectedValue = FCString::Atoi(*SelectedOption); // 문자열을 int로 변환
+	}
 	//모두 입력했는지 확인
 	//아바타 설정으로 이동
 
@@ -110,18 +146,14 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 	if (Password1.EqualTo(Password2))
 	{
 
-		if (Com_SetAge)
-		{
-			FString SelectedOption = Com_SetAge->GetSelectedOption();
-			Age_SelectedValue = FCString::Atoi(*SelectedOption); // 문자열을 int로 변환
-		}
-
 		//사진확인 QR로 이동
 		//WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
-
-		//아바타 설정으로 이동
-		//WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
-		//사진은 어케 불러와->QR띄워주는 ui로 이동.->QR이미지 받아오기 -> 확인 버튼 누르면(얼굴인식 확인)->확인완료 ui로->확인버튼 누르면 ->아바타 설정ui로 이동.
+		//
+		//사진은 어케 불러와->
+		//QR띄워주는 ui로 이동.->
+		WS_StartWidgetSwitcher->SetActiveWidgetIndex(3);
+		//QR이미지 받아오기 ->
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password!!!"));
 	}
 	else
 	{
@@ -138,16 +170,19 @@ void UMH_StartWidget::OnClickedBackButton()
 
 void UMH_StartWidget::OnClickedFANButton()
 {
-	//Fan으로 유저모드 설정
+	//Fan으로 유저모드 설정. 관리자모드 off
+	//bIsHost_Signup = false;
 }
 
 void UMH_StartWidget::OnClickedMANAGERButton()
 {
-	//MANAGER로 유저모드 설정
+	//MANAGER로 유저모드 설정. 관리자모드 on
+	//bIsHost_Signup = true;
 }
 
 void UMH_StartWidget::OnClickedAddPictureButton()
 {
+	//지워도됨?
 	//사진 서버로 전달
 	//사진 정상적인지 확인
 }
@@ -155,13 +190,28 @@ void UMH_StartWidget::OnClickedAddPictureButton()
 void UMH_StartWidget::OnClickedSelectAvatarRButton()
 {
 	// 아바타 이미지 오른쪽 이미지로
+		CharacterModelNum++;
+	if (CharacterModelNum > 4)
+	{
+		CharacterModelNum = 0;
+	}
+	//애니메이션, 사진(버튼) 클릭하면 위젯 확대
 }
 
 void UMH_StartWidget::OnClickedSelectAvatarLButton()
 {
 	//아바타 이미지 왼쪽이미지로
+	CharacterModelNum--;
+
+	if (CharacterModelNum < 0)
+	{
+		CharacterModelNum = 4;
+	}
+	//애니메이션, 사진(버튼) 클릭하면 위젯 확대
+	
 }
 
+//삭제
 void UMH_StartWidget::OnClickedGenderMaleButton()
 {
 	//Gender == Male
@@ -171,6 +221,7 @@ void UMH_StartWidget::OnClickedGenderFeMaleButton()
 {
 	//Gender == FeMale
 }
+//
 
 void UMH_StartWidget::OnClickedAvatarConfirmButton()
 {
@@ -188,10 +239,11 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 		//에러창
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Signup Error"));
 	}
-
+//회원가입 응답 성공이면 로비로 이동
 	GoToLobby();
 }
 
+//삭제
 void UMH_StartWidget::OnClickedAvatarStyleAButton()
 {
 	//여자캐릭 or 남자캐릭?
@@ -201,3 +253,4 @@ void UMH_StartWidget::OnClickedAvatarStyleBButton()
 {
 	//여자캐릭 or 남자캐릭?
 }
+//

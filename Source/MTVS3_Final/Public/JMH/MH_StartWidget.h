@@ -66,9 +66,6 @@ public:
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_PassWord;
-	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UEditableText* EText_PassWord2;
 
 	//QR
 	//서버한테 이미지 받아오는부분
@@ -78,8 +75,14 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Confirm_QRUi1;
 
+	UFUNCTION()
+	void OnClickedConfirm_QRUi1Button();
+
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Back_QRUi1;
+
+	UFUNCTION()
+	void OnClickedBack_QRUi1Button();
 	
 	UPROPERTY(VisibleAnywhere)
 	class UTexture2D* QR_Texture;
@@ -97,10 +100,10 @@ public:
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Confirm_QRUi2;
-	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Back_QRUi2;
 
+	UFUNCTION()
+	void OnClickedConfirm_QRUi2Button();
+	
 	//
 
 	
@@ -159,6 +162,9 @@ public:
 
 
 	//Select Avatar
+	//아바타 버튼을 클릭하면 확대.. 그담엔?
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_AvatarImg;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_Avatar;
