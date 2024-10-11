@@ -6,6 +6,8 @@
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
 #include <chrono>
+#include "HJ/TTPlayer.h"
+#include "HJ/TTPlayerState.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -246,7 +248,7 @@ void AHM_HttpActor::OnResPostOnVerifyIdentity(FHttpRequestPtr Request , FHttpRes
 	}
 }
 
-void AHM_HttpActor::ReqPostSignup2(FText Nickname , bool bIsMale , int32 Style)
+void AHM_HttpActor::ReqPostSignup2(FText Nickname , int32 CharacterModel)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -265,8 +267,7 @@ void AHM_HttpActor::ReqPostSignup2(FText Nickname , bool bIsMale , int32 Style)
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
 	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
-	Writer->WriteValue(TEXT("isMan") , bIsMale);
-	Writer->WriteValue(TEXT("style") , Style);
+	Writer->WriteValue(TEXT("characterModel") , CharacterModel);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -292,40 +293,6 @@ void AHM_HttpActor::OnResPostSignup2(FHttpRequestPtr Request , FHttpResponsePtr 
 			// 성공 처리 (회원가입2 완료)
 			UE_LOG(LogTemp , Log , TEXT("Sign-up success"));
 
-			// JSON 응답 파싱
-			FString ResponseBody = Response->GetContentAsString();
-			TSharedPtr<FJsonObject> JsonObject;
-			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
-
-			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
-			{
-				// "response" 객체에 접근
-				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
-
-				if ( ResponseObject.IsValid() )
-				{
-					// "accessToken"과 "nickname" 추출
-					FString AccessToken = ResponseObject->GetStringField(TEXT("accessToken"));
-					FString Nickname = ResponseObject->GetStringField(TEXT("nickname"));
-
-					//GameInstance* GI = GetWorld()->GetGameInstance<GameInstance>();
-					//if ( !GI ) return;
-					//GI->SetPlayerNickname(Nickname);
-
-					if ( !AccessToken.IsEmpty() )
-					{
-						UE_LOG(LogTemp , Log , TEXT("Received Access Token: %s") , *AccessToken);
-						UE_LOG(LogTemp , Log , TEXT("Received Nickname: %s") , *Nickname);
-
-						// 로그인 성공 시 처리
-						// GameInstance에 토큰(고유ID) 및 닉네임 저장
-						//GI = GetWorld()->GetGameInstance<GameInstance>();
-						//if ( !GI ) return;
-						//GI->SetAccessToken(AccessToken);
-						//StartUI->OnLoginSuccess();
-					}
-				}
-			}
 		}
 		else
 		{
@@ -394,31 +361,65 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 
 				if ( ResponseObject.IsValid() )
 				{
-					// "accessToken"과 "nickname" 추출
-					FString AccessToken = ResponseObject->GetStringField(TEXT("accessToken"));
+					// 받아올 정보 추출
 					FString Nickname = ResponseObject->GetStringField(TEXT("nickname"));
+					int32 UserId = ResponseObject->GetIntegerField(TEXT("userId"));
+					int32 Age = ResponseObject->GetIntegerField(TEXT("age"));
+					int32 Coin = ResponseObject->GetIntegerField(TEXT("coin"));
+					//bool bIsHost = ResponseObject->GetIntegerField(TEXT("isHost"));
+					int32 RemainingTicketCount = ResponseObject->GetIntegerField(TEXT("remainingTicketCount"));
+					int32 AvatarData = ResponseObject->GetIntegerField(TEXT("avatarData"));
 
-					//GameInstance* GI = GetWorld()->GetGameInstance<GameInstance>();
-					//if ( !GI ) return;
-					//GI->SetPlayerNickname(Nickname);
-
-					if ( !AccessToken.IsEmpty() )
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+					if ( TTPlayer )
 					{
-						UE_LOG(LogTemp , Log , TEXT("Received Access Token: %s") , *AccessToken);
-						UE_LOG(LogTemp , Log , TEXT("Received Nickname: %s") , *Nickname);
+						if ( ATTPlayerState* PS = TTPlayer->GetPlayerState<ATTPlayerState>() )
+						{
+							// 닉네임 설정 및 가져오기
+							PS->SetNickname(Nickname);
+							UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *PS->GetNickname());
 
-						// 로그인 성공 시 처리
-						// GameInstance에 토큰(고유ID) 및 닉네임 저장
-						//GI = GetWorld()->GetGameInstance<GameInstance>();
-						//if ( !GI ) return;
-						//GI->SetAccessToken(AccessToken);
-						//StartUI->OnLoginSuccess();
+							// 서버에서 주는 UserId 설정 및 가져오기
+							// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
+							PS->SetUserId(UserId);
+							UE_LOG(LogTemp , Log , TEXT("UserId: %d") , PS->GetUserId());
+
+							// 나이 설정 및 가져오기
+							PS->SetAge(Age);
+							UE_LOG(LogTemp , Log , TEXT("Age : %d") , PS->GetAge());
+
+							// 코인 더하기 및 가져오기
+							PS->SetCoin(Coin);
+							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , PS->GetCoin());
+
+							// 아바타 설정 및 가져오기
+							PS->SetAvatarData(AvatarData);
+							UE_LOG(LogTemp , Log , TEXT("AvatarData : %d") , PS->GetAvatarData());
+
+							// 티켓 접수 및 접수 가능 개수 가져오기
+							// UseRemainingTicket의 매개변수는 티켓 접수 개수
+							PS->SetRemainingTicketCount(RemainingTicketCount);
+							UE_LOG(LogTemp , Log , TEXT("Remaining Tickets: %d") , PS->GetRemainingTicketCount());
+						}
 					}
-					else
-					{
-						UE_LOG(LogTemp , Warning , TEXT("Access Token is missing in the response."));
-						//StartUI->OnLoginFail(1); // 로그인 실패 처리
-					}
+
+					//if ( !AccessToken.IsEmpty() )
+					//{
+					//	//UE_LOG(LogTemp , Log , TEXT("Received Access Token: %s") , *AccessToken);
+					//	UE_LOG(LogTemp , Log , TEXT("Received Nickname: %s") , *Nickname);
+
+					//	// 로그인 성공 시 처리
+					//	// GameInstance에 토큰(고유ID) 및 닉네임 저장
+					//	//GI = GetWorld()->GetGameInstance<GameInstance>();
+					//	//if ( !GI ) return;
+					//	//GI->SetAccessToken(AccessToken);
+					//	//StartUI->OnLoginSuccess();
+					//}
+					//else
+					//{
+					//	UE_LOG(LogTemp , Warning , TEXT("Access Token is missing in the response."));
+					//	//StartUI->OnLoginFail(1); // 로그인 실패 처리
+					//}
 				}
 				else
 				{

@@ -6,9 +6,6 @@
 void ATTPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-
-	Coin = InitialCoin;
-	RemainingTicketCount = MaxRemainingTicketCount;
 }
 
 void ATTPlayerState::SetbIsHost(const bool& _bIsHost)
@@ -41,7 +38,7 @@ void ATTPlayerState::SetUserId(const int32& _UserId)
 	UserId = _UserId;
 }
 
-long ATTPlayerState::GetUserId() const
+int32 ATTPlayerState::GetUserId() const
 {
 	if ( !UserId )
 	{
@@ -49,6 +46,21 @@ long ATTPlayerState::GetUserId() const
 		return -1;
 	}
 	return UserId;
+}
+
+void ATTPlayerState::SetAge(const int32& _Age)
+{
+	Age = _Age;
+}
+
+int32 ATTPlayerState::GetAge() const
+{
+	return Age;
+}
+
+void ATTPlayerState::SetCoin(const int32& _Coin)
+{
+	Coin = _Coin;
 }
 
 void ATTPlayerState::AddCoin(int32 _Coin)
@@ -61,6 +73,11 @@ int32 ATTPlayerState::GetCoin()
 	return Coin;
 }
 
+void ATTPlayerState::SetRemainingTicketCount(const int32& _RemainingTicketCount)
+{
+	RemainingTicketCount = _RemainingTicketCount;
+}
+
 void ATTPlayerState::UseRemainingTicket(int32 UsedTicketCount)
 {
 	RemainingTicketCount -= UsedTicketCount;
@@ -69,4 +86,14 @@ void ATTPlayerState::UseRemainingTicket(int32 UsedTicketCount)
 int32 ATTPlayerState::GetRemainingTicketCount()
 {
 	return RemainingTicketCount;
+}
+
+void ATTPlayerState::SetAvatarData(const int32& _AvatarData)
+{
+	AvatarData = _AvatarData;
+}
+
+int32 ATTPlayerState::GetAvatarData()
+{
+	return AvatarData;
 }

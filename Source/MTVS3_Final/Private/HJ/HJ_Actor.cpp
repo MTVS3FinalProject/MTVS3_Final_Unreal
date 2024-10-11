@@ -43,15 +43,25 @@ void AHJ_Actor::Tick(float DeltaTime)
 			PS->SetUserId(12345);
 			int32 UserId = PS->GetUserId();
 
-			// 코인 더하기 및 가져오기
+			// 나이 서버에서 받아오기, 나이 가져오기
+			PS->SetAge(/*나이 저장 변수*/20);
+			int32 Age = PS->GetAge();
+
+			// 코인 서버에서 받아오기, 더하기, 가져오기
 			// 더하기로 되어 있으므로 예매 시엔 음수(-) 값 입력
+			PS->SetCoin(/*코인 저장 변수*/100000);
 			PS->AddCoin(-30);
 			int32 Coin = PS->GetCoin();
 
-			// 티켓 접수 및 접수 가능 개수 가져오기
+			// 티켓 접수 가능 개수 서버에서 받아오기, 티켓 접수, 접수 가능 개수 가져오기
 			// UseRemainingTicket의 매개변수는 티켓 접수 개수
+			PS->SetRemainingTicketCount(/*티켓 접수 가능 개수 저장 변수*/2);
 			PS->UseRemainingTicket(1);
 			int32 RemainingTicketCount = PS->GetRemainingTicketCount();
+
+			// 아바타 데이터 서버에서 받아오기, 아바터 데이터 가져오기
+			PS->SetAvatarData(/*아바타 데이터 저장 변수*/1);
+			int32 AvatarData = PS->GetAvatarData();
 		}
 	}
 }
