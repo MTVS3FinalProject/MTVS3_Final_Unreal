@@ -62,6 +62,9 @@ public:
 
 	//SignUp
 	
+	//관리자 모드 off
+	bool bIsHost_Signup = false;
+	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_SignUp;
 
@@ -91,6 +94,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UComboBoxString*  Com_SetAge;
+	
+	int32 Age_SelectedValue;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_AddPicture;
@@ -170,8 +175,8 @@ public:
 	UPROPERTY()
 	int32 CharacterModelNum = 0;
 
-	//관리자 모드 off
-	bool bIsHost_Signup = false;
+
+	
 	
 	
 };

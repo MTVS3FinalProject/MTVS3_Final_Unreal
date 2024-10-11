@@ -85,27 +85,18 @@ void UMH_StartWidget::OnClickedConfirmButton()
 	//이메일, 비번 중복확인
 	//사진확인
 	//모두 입력했는지 확인
-	AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
-	if (HttpActor)
+	//아바타 설정으로 이동
+	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
+	
+	if (Com_SetAge)
 	{
-		int32 SelectedValue;
-		if (Com_SetAge)
-		{
-			FString SelectedOption = Com_SetAge->GetSelectedOption();
-			SelectedValue = FCString::Atoi(*SelectedOption); // 문자열을 int로 변환
-		}
-		HttpActor->ReqPostSignup1(bIsHost_Signup,EText_SignupEmail->GetText(),EText_SignupPassWord->GetText(),SelectedValue );
-		//if()
+		FString SelectedOption = Com_SetAge->GetSelectedOption();
+		Age_SelectedValue = FCString::Atoi(*SelectedOption); // 문자열을 int로 변환
+	}
+	
 		//아바타 설정으로 이동
 		WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
-	}
-	else
-	{
-		//에러창
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Signup1 Error"));
-	}
-	//사진은 어케 불러와
+		//사진은 어케 불러와
 
 }
 
@@ -158,12 +149,13 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
 	if (HttpActor)
 	{
-		HttpActor->ReqPostSignup2(EText_Nickname->GetText(),CharacterModelNum);
+		//관리자 여부, 이메일,비번,나이,닉네임, 캐릭터Num
+		HttpActor->ReqPostSignup(bIsHost_Signup,EText_SignupEmail->GetText(),EText_SignupPassWord->GetText(),Age_SelectedValue ,EText_Nickname->GetText(),CharacterModelNum);
 	}
 	else
 	{
 		//에러창
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Signup2 Error"));
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Signup Error"));
 	}
 	
 	GoToLobby();
