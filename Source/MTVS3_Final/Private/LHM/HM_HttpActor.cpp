@@ -364,8 +364,8 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 				if ( ResponseObject.IsValid() )
 				{
 					// 받아올 정보 추출
-					FString Nickname = ResponseObject->GetStringField(TEXT("nickname"));
-					int32 UserId = ResponseObject->GetIntegerField(TEXT("userId"));
+					FString Nickname = ResponseObject->GetStringField(TEXT("display_name"));
+					int32 UserId = ResponseObject->GetIntegerField(TEXT("user_id"));
 					int32 Age = ResponseObject->GetIntegerField(TEXT("age"));
 					int32 Coin = ResponseObject->GetIntegerField(TEXT("coin"));
 					//bool bIsHost = ResponseObject->GetIntegerField(TEXT("isHost"));
