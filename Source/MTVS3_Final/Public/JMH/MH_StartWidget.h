@@ -166,6 +166,12 @@ public:
 	
 	UFUNCTION()
 	void OnClickedAvatarStyleBButton();
+
+	UPROPERTY()
+	int32 CharacterModelNum = 0;
+
+	//관리자 모드 off
+	bool bIsHost_Signup = false;
 	
 	
 };

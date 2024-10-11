@@ -4,42 +4,61 @@
 #include "JMH/MH_StartWidget.h"
 
 #include "Components/Button.h"
+#include "Components/ComboBoxString.h"
 #include "Components/EditableText.h"
 #include "Components/WidgetSwitcher.h"
+#include "Kismet/GameplayStatics.h"
+#include "LHM/HM_HttpActor.h"
 
 void UMH_StartWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
-	Btn_Back->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedBackButton);
-	Btn_Confirm->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedConfirmButton);
-	Btn_Exit->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedExitButton);
-	Btn_AddPicture->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedAddPictureButton);
-	Btn_ForgotPassword->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedForgotPasswordButton);
-	Btn_GoToLobby_SignIn->OnClicked.AddDynamic(this,&UMH_StartWidget::GoToLobby);
-	Btn_SignUp->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedSignUpButton);
-	Btn_FAN->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedFANButton);
-	Btn_MANAGER->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedMANAGERButton);
-	Btn_SelectAvatarL->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedSelectAvatarLButton);
-	Btn_SelectAvatarR->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedSelectAvatarRButton);
-	Btn_GenderMale->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedGenderMaleButton);
-	Btn_GenderFeMale->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedGenderFeMaleButton);
-	Btn_GoToLobby_Avatar->OnClicked.AddDynamic(this,&UMH_StartWidget::OnClickedAvatarConfirmButton);
 
-	
+	Btn_Back->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
+	Btn_Confirm->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirmButton);
+	Btn_Exit->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
+	Btn_AddPicture->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAddPictureButton);
+	Btn_ForgotPassword->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
+	Btn_GoToLobby_SignIn->OnClicked.AddDynamic(this , &UMH_StartWidget::GoToLobby);
+	Btn_SignUp->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
+	Btn_FAN->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedFANButton);
+	Btn_MANAGER->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedMANAGERButton);
+	Btn_SelectAvatarL->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSelectAvatarLButton);
+	Btn_SelectAvatarR->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSelectAvatarRButton);
+	Btn_GenderMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderMaleButton);
+	Btn_GenderFeMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderFeMaleButton);
+	Btn_GoToLobby_Avatar->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAvatarConfirmButton);
+
+	if (Com_SetAge)
+	{
+		for (int32 i = 1; i <= 100; i++)
+		{
+			// 숫자를 문자열로 변환하여 ComboBoxString에 추가
+			Com_SetAge->AddOption(FString::FromInt(i));
+		}
+	}
 }
 
 void UMH_StartWidget::GoToLobby()
 {
 	//로비맵으로 이동(세션 생성,입장)
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Create Lobby Session"));
+	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Create Lobby Session"));
 }
 
 void UMH_StartWidget::OnClickedSignInButton()
 {
 	//유저정보 확인
-	//현민 함수 + (EText_Email->GetText().ToString());
-	//현민 함수 + (EText_PassWord->GetText().ToString());
+	AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
+	if (HttpActor)
+	{
+		HttpActor->ReqPostLogin(EText_Email->GetText(),EText_PassWord->GetText());
+	}
+	else
+	{
+		//에러창
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Login Error"));
+	}
 	//로비로 이동
 	GoToLobby();
 }
@@ -66,13 +85,28 @@ void UMH_StartWidget::OnClickedConfirmButton()
 	//이메일, 비번 중복확인
 	//사진확인
 	//모두 입력했는지 확인
-	
-	//현민 함수 + (EText_SignupEmail->GetText().ToString());
-	//현민 함수 + (EText_SignupPassWord->GetText().ToString());
+	AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
+	if (HttpActor)
+	{
+		int32 SelectedValue;
+		if (Com_SetAge)
+		{
+			FString SelectedOption = Com_SetAge->GetSelectedOption();
+			SelectedValue = FCString::Atoi(*SelectedOption); // 문자열을 int로 변환
+		}
+		HttpActor->ReqPostSignup1(bIsHost_Signup,EText_SignupEmail->GetText(),EText_SignupPassWord->GetText(),SelectedValue );
+		//if()
+		//아바타 설정으로 이동
+		WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
+	}
+	else
+	{
+		//에러창
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Signup1 Error"));
+	}
 	//사진은 어케 불러와
-	
-	//아바타 설정으로 이동
-	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
+
 }
 
 void UMH_StartWidget::OnClickedBackButton()
@@ -120,6 +154,17 @@ void UMH_StartWidget::OnClickedGenderFeMaleButton()
 void UMH_StartWidget::OnClickedAvatarConfirmButton()
 {
 	//회원가입 완료-> 로비맵으로 이동(세션 생성,입장) - >콘서트 선택UI로 이동
+	AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
+	if (HttpActor)
+	{
+		HttpActor->ReqPostSignup2(EText_Nickname->GetText(),CharacterModelNum);
+	}
+	else
+	{
+		//에러창
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Signup2 Error"));
+	}
 	
 	GoToLobby();
 }
