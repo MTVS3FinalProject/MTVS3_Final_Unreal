@@ -58,9 +58,9 @@ public:
 	void OnMyActionJumpComplete(const FInputActionValue& Value);
 
 	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
-	class UInputAction* IA_Dash;
-	void OnMyActionDashStart(const FInputActionValue& Value);
-	void OnMyActionDashComplete(const FInputActionValue& Value);
+	class UInputAction* IA_Run;
+	void OnMyActionRunStart(const FInputActionValue& Value);
+	void OnMyActionRunComplete(const FInputActionValue& Value);
 
 	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
 	class UInputAction* IA_Interact;
@@ -73,4 +73,10 @@ public:
 	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
 	class UInputAction* IA_Inventory;
 	void OnMyActionInventory(const FInputActionValue& Value);
+
+	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
+	class UInputAction* IA_Chat;
+	UPROPERTY(EditAnywhere , Category = "Default|Settings")
+	bool bIsChatActive;
+	void OnMyActionChat(const FInputActionValue& Value);
 };

@@ -70,11 +70,12 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		input->BindAction(IA_Look , ETriggerEvent::Triggered , this , &ATTPlayer::OnMyActionLook);
 		input->BindAction(IA_Jump , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionJumpStart);
 		input->BindAction(IA_Jump , ETriggerEvent::Completed , this , &ATTPlayer::OnMyActionJumpComplete);
-		input->BindAction(IA_Dash , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionDashStart);
-		input->BindAction(IA_Dash , ETriggerEvent::Completed , this , &ATTPlayer::OnMyActionDashComplete);
+		input->BindAction(IA_Run , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionRunStart);
+		input->BindAction(IA_Run , ETriggerEvent::Completed , this , &ATTPlayer::OnMyActionRunComplete);
 		input->BindAction(IA_Interact , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionInteract);
 		input->BindAction(IA_Purchase , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionPurchase);
 		input->BindAction(IA_Inventory , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionInventory);
+		input->BindAction(IA_Chat , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionChat);
 	}
 }
 
@@ -116,12 +117,12 @@ void ATTPlayer::OnMyActionJumpComplete(const FInputActionValue& Value)
 	StopJumping();
 }
 
-void ATTPlayer::OnMyActionDashStart(const FInputActionValue& Value)
+void ATTPlayer::OnMyActionRunStart(const FInputActionValue& Value)
 {
 	GetCharacterMovement()->MaxWalkSpeed = 800;
 }
 
-void ATTPlayer::OnMyActionDashComplete(const FInputActionValue& Value)
+void ATTPlayer::OnMyActionRunComplete(const FInputActionValue& Value)
 {
 	GetCharacterMovement()->MaxWalkSpeed = 400;
 }
@@ -139,4 +140,18 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionInventory(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed TAB: Inventory"));
+}
+
+void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
+{
+	bIsChatActive = !bIsChatActive;
+
+	if ( bIsChatActive )
+	{
+		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Enable Chat"));
+	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
+	}
 }

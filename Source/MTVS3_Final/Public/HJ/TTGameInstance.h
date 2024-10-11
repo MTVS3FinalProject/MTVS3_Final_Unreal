@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,11 +7,57 @@
 #include "TTGameInstance.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class MTVS3_FINAL_API UTTGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	bool bIsHost;
+	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	void SetbIsHost(const bool& _bIsHost);
+	bool GetbIsHost() const;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	FString Nickname;
+	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	void SetNickname(const FString& _Nickname);
+	FString GetNickname() const;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	int32 UserId;
+	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	void SetUserId(const int32& _UserId);
+	int32 GetUserId() const;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	int32 Age;
+	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	void SetAge(const int32& _Age);
+	int32 GetAge() const;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
+	int32 Coin;
+	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	void SetCoin(const int32& _Coin);
+	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	void AddCoin(int32 _Coin);
+	int32 GetCoin();
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
+	int32 RemainingTicketCount;
+	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	void SetRemainingTicketCount(const int32& _RemainingTicketCount);
+	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	void UseRemainingTicket(int32 UsedTicketCount);
+	int32 GetRemainingTicketCount();
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Avatar")
+	int32 AvatarData;
+	UFUNCTION(BlueprintCallable , Category = "Default|Avatar")
+	void SetAvatarData(const int32& _AvatarData);
+	int32 GetAvatarData();
 };
