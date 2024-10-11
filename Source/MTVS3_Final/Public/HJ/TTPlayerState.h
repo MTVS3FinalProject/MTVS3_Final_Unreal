@@ -16,7 +16,7 @@ class MTVS3_FINAL_API ATTPlayerState : public APlayerState
 
 protected:
 	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	//virtual void BeginPlay() override;
 
 public:
 

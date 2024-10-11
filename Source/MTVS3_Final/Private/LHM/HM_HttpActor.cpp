@@ -10,6 +10,7 @@
 #include <chrono>
 #include "HJ/TTPlayer.h"
 #include "HJ/TTGameInstance.h"
+#include "ImageUtils.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -61,7 +62,7 @@ void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("email") , Email);
+	Writer->WriteValue(TEXT("email") , Email.ToString());
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -84,30 +85,48 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 
 		if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
 		{
-			// 응답 처리
-			FString ResponseBody = Response->GetContentAsString();
-			TSharedPtr<FJsonObject> JsonObject;
-			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+			//// 응답 처리
+			//FString ResponseBody = Response->GetContentAsString();
+			//TSharedPtr<FJsonObject> JsonObject;
+			//TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
 
-			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			//if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			//{
+			//	// 필요한 데이터를 파싱하고 처리
+			//	bool bVerified = JsonObject->GetBoolField(TEXT("verified"));
+			//	if ( bVerified )
+			//	{
+			//		UE_LOG(LogTemp , Log , TEXT("IdentityQR Verified Successfully"));
+			//		// QR코드 이미지 요청 성공
+			//	}
+			//	else
+			//	{
+			//		UE_LOG(LogTemp , Warning , TEXT("IdentityQR Verification Failed"));
+			//		// 실패 처리
+			//	}
+			//}
+			
+			// 이미지 데이터 처리
+			// 이미지 데이터로 텍스처 생성
+			// 텍스처 생성 후 적용
+			TArray<uint8> ImageData = Response->GetContent();
+			FString imagePath = FPaths::ProjectPersistentDownloadDir();
+			FFileHelper::SaveArrayToFile(ImageData , *imagePath);
+			UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+			if ( Texture )
 			{
-				// 필요한 데이터를 파싱하고 처리
-				bool bVerified = JsonObject->GetBoolField(TEXT("verified"));
-				if ( bVerified )
-				{
-					UE_LOG(LogTemp , Log , TEXT("IdentityQR Verified Successfully"));
-					// 신원인증 완료하고 다음단계로 넘어가는 처리
-				}
-				else
-				{
-					UE_LOG(LogTemp , Warning , TEXT("IdentityQR Verification Failed"));
-					// 실패 처리
-				}
+				//StartUI->SetWebImage(realTexture);
+				UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
+			}
+			else
+			{
+				
+				UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp , Warning , TEXT("Failed to verify identity, response code: %d") , Response->GetResponseCode());
+			UE_LOG(LogTemp , Warning , TEXT("Failed to verify IdentityQR, response code: %d") , Response->GetResponseCode());
 		}
 	}
 	else
