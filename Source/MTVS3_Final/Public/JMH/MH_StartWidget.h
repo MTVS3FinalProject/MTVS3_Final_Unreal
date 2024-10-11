@@ -27,6 +27,9 @@ public:
 	//아이디 비번 비교없이 바로 세션 접속하도록 버튼 생성 -> 테스트모드
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_test_Login;
+
+	UFUNCTION()
+	void Test_CreateSesstion();
 	
 	UFUNCTION()
 	void GoToLobby();
@@ -67,6 +70,41 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_PassWord2;
 
+	//QR
+	//서버한테 이미지 받아오는부분
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_QRUi1;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Confirm_QRUi1;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Back_QRUi1;
+	
+	UPROPERTY(VisibleAnywhere)
+	class UTexture2D* QR_Texture;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_QR;
+
+	UFUNCTION()
+	void SetQRImg(class UTexture2D* newTexture);
+	
+	
+	//서버(신원인증 완료시)
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_QRUi2;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Confirm_QRUi2;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Back_QRUi2;
+
+	//
+
+	
+	
 	//SignUp
 	
 	//관리자 모드 off

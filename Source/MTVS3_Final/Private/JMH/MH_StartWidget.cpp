@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableText.h"
+#include "Components/Image.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor.h"
@@ -13,13 +14,15 @@
 void UMH_StartWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-//Login
+	//Login
+	Btn_test_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::Test_CreateSesstion);//테스트 세션생성 버튼
 	Btn_Exit_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
 	Btn_AddPicture->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAddPictureButton);
 	Btn_ForgotPassword_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
-	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::GoToLobby);
+//이부분 확인해보기, 로그인 함수 하나 더 만들어서 그안에서 세션 생성해야함
+	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignInButton);
 	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
-//Signup
+	//Signup
 	Btn_Back_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
 	Btn_Confirm_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirmSignupButton);
 	Btn_FAN->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedFANButton);
@@ -42,6 +45,11 @@ void UMH_StartWidget::NativeConstruct()
 	}
 }
 
+void UMH_StartWidget::Test_CreateSesstion()
+{
+	GoToLobby();
+}
+
 void UMH_StartWidget::GoToLobby()
 {
 	//로비맵으로 이동(세션 생성,입장)
@@ -55,14 +63,14 @@ void UMH_StartWidget::OnClickedSignInButton()
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
 	if (HttpActor)
 	{
-		HttpActor->ReqPostLogin(EText_Email->GetText(),EText_PassWord->GetText());
+		HttpActor->ReqPostLogin(EText_Email->GetText() , EText_PassWord->GetText());
 	}
 	else
 	{
 		//에러창
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Login Error"));
 	}
-	//로비로 이동
+	//만약 성공하면 로비로 이동
 	GoToLobby();
 }
 
@@ -82,6 +90,11 @@ void UMH_StartWidget::OnClickedForgotPasswordButton()
 	//비번찾기
 }
 
+void UMH_StartWidget::SetQRImg(UTexture2D* newTexture)
+{
+	Img_QR->SetBrushFromTexture(newTexture);
+}
+
 void UMH_StartWidget::OnClickedConfirmSignupButton()
 {
 	//회원가입 완료 -> 유저정보 서버로 전달
@@ -92,31 +105,29 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 
 	//모두 입력했는지 확인
 	//아바타 설정으로 이동
-	
-	//비밀번호 같은지 확인
-if(Password1.EqualTo(Password2))
-{
-	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
-	
-	if (Com_SetAge)
-	{
-		FString SelectedOption = Com_SetAge->GetSelectedOption();
-		Age_SelectedValue = FCString::Atoi(*SelectedOption); // 문자열을 int로 변환
-	}
 
-	//사진확인 QR로 이돟
-	
+	//비밀번호 같은지 확인
+	if (Password1.EqualTo(Password2))
+	{
+
+		if (Com_SetAge)
+		{
+			FString SelectedOption = Com_SetAge->GetSelectedOption();
+			Age_SelectedValue = FCString::Atoi(*SelectedOption); // 문자열을 int로 변환
+		}
+
+		//사진확인 QR로 이동
+		//WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
+
 		//아바타 설정으로 이동
 		//WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
 		//사진은 어케 불러와->QR띄워주는 ui로 이동.->QR이미지 받아오기 -> 확인 버튼 누르면(얼굴인식 확인)->확인완료 ui로->확인버튼 누르면 ->아바타 설정ui로 이동.
-}
-else
-{
-	//에러창
-	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password Error"));
-}
-	
-
+	}
+	else
+	{
+		//에러창
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password Error"));
+	}
 }
 
 void UMH_StartWidget::OnClickedBackButton()
@@ -169,14 +180,15 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 	if (HttpActor)
 	{
 		//관리자 여부, 이메일,비번,나이,닉네임, 캐릭터Num
-		HttpActor->ReqPostSignup(bIsHost_Signup,EText_SignupEmail->GetText(),EText_SignupPassWord->GetText(),Age_SelectedValue ,EText_Nickname->GetText(),CharacterModelNum);
+		HttpActor->ReqPostSignup(bIsHost_Signup , EText_SignupEmail->GetText() , EText_SignupPassWord->GetText() ,
+		                         Age_SelectedValue , EText_Nickname->GetText() , CharacterModelNum);
 	}
 	else
 	{
 		//에러창
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Signup Error"));
 	}
-	
+
 	GoToLobby();
 }
 
