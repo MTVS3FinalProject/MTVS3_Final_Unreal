@@ -2,14 +2,14 @@
 
 
 #include "LHM/HM_HttpActor.h"
+#include "JMH/MH_StartWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/PlayerController.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
 #include <chrono>
 #include "HJ/TTPlayer.h"
-#include "HJ/TTPlayerState.h"
-#include "JMH/MH_StartWidget.h"
+#include "HJ/TTGameInstance.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -43,7 +43,7 @@ void AHM_HttpActor::Tick(float DeltaTime)
 
 }
 
-void AHM_HttpActor::ReqPostSignup1(bool bIsHost , FText Email , FText Password , int32 Age /*, FString UserId*/ )
+void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -53,7 +53,7 @@ void AHM_HttpActor::ReqPostSignup1(bool bIsHost , FText Email , FText Password ,
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT(""));
+	Request->SetURL(TEXT("/api/qr/verification"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -61,12 +61,7 @@ void AHM_HttpActor::ReqPostSignup1(bool bIsHost , FText Email , FText Password ,
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("isHost"), bIsHost);
-	Writer->WriteValue(TEXT("email") , Email.ToString());
-	Writer->WriteValue(TEXT("password") , Password.ToString());
-	Writer->WriteValue(TEXT("age") , Age);
-	//Writer->WriteValue(TEXT("userId") , UserId); // UserId 전달
-	//Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
+	Writer->WriteValue(TEXT("email") , Email);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -74,28 +69,45 @@ void AHM_HttpActor::ReqPostSignup1(bool bIsHost , FText Email , FText Password ,
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostSignup1);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostGetVerifyIdentityQR);
 
 	// 요청 실행
 	Request->ProcessRequest();
 }
 
-void AHM_HttpActor::OnResPostSignup1(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
-		if ( Response->GetResponseCode() == 201 ) // 회원가입1 성공 응답 코드 (201 Created)
+		if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
 		{
-			// 성공 처리 (회원가입1 완료)
-			UE_LOG(LogTemp , Log , TEXT("Sign-up success"));
+			// 응답 처리
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// 필요한 데이터를 파싱하고 처리
+				bool bVerified = JsonObject->GetBoolField(TEXT("verified"));
+				if ( bVerified )
+				{
+					UE_LOG(LogTemp , Log , TEXT("IdentityQR Verified Successfully"));
+					// 신원인증 완료하고 다음단계로 넘어가는 처리
+				}
+				else
+				{
+					UE_LOG(LogTemp , Warning , TEXT("IdentityQR Verification Failed"));
+					// 실패 처리
+				}
+			}
 		}
 		else
 		{
-			// 실패 처리
-			UE_LOG(LogTemp , Warning , TEXT("Sign-up failed, response code: %d") , Response->GetResponseCode());
+			UE_LOG(LogTemp , Warning , TEXT("Failed to verify identity, response code: %d") , Response->GetResponseCode());
 		}
 	}
 	else
@@ -177,7 +189,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 	}
 }
 
-void AHM_HttpActor::ReqPostOnVerifyIdentity(int32 UserId)
+void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , int32 Age , FText Nickname , int32 AvataData)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -195,7 +207,12 @@ void AHM_HttpActor::ReqPostOnVerifyIdentity(int32 UserId)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("userId") , UserId); // UserId 전달
+	Writer->WriteValue(TEXT("isHost") , bIsHost);
+	Writer->WriteValue(TEXT("email") , Email.ToString());
+	Writer->WriteValue(TEXT("password") , Password.ToString());
+	Writer->WriteValue(TEXT("age") , Age);
+	Writer->WriteValue(TEXT("display_name") , Nickname.ToString());
+	Writer->WriteValue(TEXT("avatarData") , AvataData);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -203,98 +220,23 @@ void AHM_HttpActor::ReqPostOnVerifyIdentity(int32 UserId)
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostOnVerifyIdentity);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostSignup);
 
 	// 요청 실행
 	Request->ProcessRequest();
 }
 
-void AHM_HttpActor::OnResPostOnVerifyIdentity(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
-		if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
+		if ( Response->GetResponseCode() == 200 ) // 성공 응답 코드 (200)
 		{
-			// 응답 처리
-			FString ResponseBody = Response->GetContentAsString();
-			TSharedPtr<FJsonObject> JsonObject;
-			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
-
-			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
-			{
-				// 필요한 데이터를 파싱하고 처리
-				bool bVerified = JsonObject->GetBoolField(TEXT("verified"));
-				if ( bVerified )
-				{
-					UE_LOG(LogTemp , Log , TEXT("Verification success"));
-					// 성공 처리
-				}
-				else
-				{
-					UE_LOG(LogTemp , Warning , TEXT("Verification failed"));
-					// 실패 처리
-				}
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp , Warning , TEXT("Failed to get verification, response code: %d") , Response->GetResponseCode());
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
-	}
-}
-
-void AHM_HttpActor::ReqPostSignup2(FText Nickname , int32 CharacterModel)
-{
-	// HTTP 모듈 가져오기
-	FHttpModule* Http = &FHttpModule::Get();
-	if ( !Http ) return;
-
-	// HTTP 요청 생성
-	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-
-	// 서버 URL 설정
-	Request->SetURL(TEXT(""));
-	Request->SetVerb(TEXT("POST"));
-	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
-
-	// 요청 데이터 (JSON)
-	FString ContentString;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
-	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
-	Writer->WriteValue(TEXT("characterModel") , CharacterModel);
-	Writer->WriteObjectEnd();
-	Writer->Close();
-
-	// 요청 본문에 JSON 데이터를 설정
-	Request->SetContentAsString(ContentString);
-
-	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostSignup2);
-
-	// 요청 실행
-	Request->ProcessRequest();
-}
-
-void AHM_HttpActor::OnResPostSignup2(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
-{
-	if ( bWasSuccessful && Response.IsValid() )
-	{
-		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
-		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
-
-		if ( Response->GetResponseCode() == 201 ) // 회원가입2 성공 응답 코드 (201 Created)
-		{
-			// 성공 처리 (회원가입2 완료)
+			// 성공 처리 (회원가입 완료)
 			UE_LOG(LogTemp , Log , TEXT("Sign-up success"));
-
 		}
 		else
 		{
@@ -318,7 +260,7 @@ void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 	TSharedRef<IHttpRequest> Requset = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Requset->SetURL(TEXT(""));
+	Requset->SetURL(TEXT("/api/auth/login"));
 	Requset->SetVerb(TEXT("POST"));
 	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -375,33 +317,34 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 					if ( TTPlayer )
 					{
-						if ( ATTPlayerState* PS = TTPlayer->GetPlayerState<ATTPlayerState>() )
+						UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+						if ( GI )
 						{
 							// 닉네임 설정 및 가져오기
-							PS->SetNickname(Nickname);
-							UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *PS->GetNickname());
+							GI->SetNickname(Nickname);
+							UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
 
 							// 서버에서 주는 UserId 설정 및 가져오기
 							// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
-							PS->SetUserId(UserId);
-							UE_LOG(LogTemp , Log , TEXT("UserId: %d") , PS->GetUserId());
+							GI->SetUserId(UserId);
+							UE_LOG(LogTemp , Log , TEXT("UserId: %d") , GI->GetUserId());
 
 							// 나이 설정 및 가져오기
-							PS->SetAge(Age);
-							UE_LOG(LogTemp , Log , TEXT("Age : %d") , PS->GetAge());
+							GI->SetAge(Age);
+							UE_LOG(LogTemp , Log , TEXT("Age : %d") , GI->GetAge());
 
 							// 코인 더하기 및 가져오기
-							PS->SetCoin(Coin);
-							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , PS->GetCoin());
+							GI->SetCoin(Coin);
+							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetCoin());
 
 							// 아바타 설정 및 가져오기
-							PS->SetAvatarData(AvatarData);
-							UE_LOG(LogTemp , Log , TEXT("AvatarData : %d") , PS->GetAvatarData());
+							GI->SetAvatarData(AvatarData);
+							UE_LOG(LogTemp , Log , TEXT("AvatarData : %d") , GI->GetAvatarData());
 
 							// 티켓 접수 및 접수 가능 개수 가져오기
 							// UseRemainingTicket의 매개변수는 티켓 접수 개수
-							PS->SetRemainingTicketCount(RemainingTicketCount);
-							UE_LOG(LogTemp , Log , TEXT("Remaining Tickets: %d") , PS->GetRemainingTicketCount());
+							GI->SetRemainingTicketCount(RemainingTicketCount);
+							UE_LOG(LogTemp , Log , TEXT("Remaining Tickets: %d") , GI->GetRemainingTicketCount());
 						}
 					}
 

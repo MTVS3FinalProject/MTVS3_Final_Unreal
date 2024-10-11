@@ -34,11 +34,14 @@ public:
 
 //===========================================================================================================
 
-	// 회원가입 요청을 서버에 보내는 함수1
-	void ReqPostSignup1(bool bIsHost, FText Email, FText Password, int32 Age/*, FString UserId*/);
+	// QR코드 요청하는 함수
+	void ReqPostGetVerifyIdentityQR(FText Email);
 
-	// 회원가입 요청에 대한 응답을 처리하는 함수1
-	void OnResPostSignup1(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	// QR코드 요청에 대한 응답을 처리하는 함수
+	void OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 신원 인증 사진 업로드 요청하는 함수
+	// 신원 인증 사진 업로드 요청에 대한 응답 처리하는 함수
 
 	// 신원 확인을 요청하는 함수
 	void ReqPostVerifyIdentity(int32 UserId);
@@ -46,17 +49,11 @@ public:
 	// 신원 확인 요청에 대한 응답 처리하는 함수
 	void OnResPostVerifyIdentity(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
-	// 신원 확인 결과 확인 요청을 서버에 보내는 함수
-	void ReqPostOnVerifyIdentity(int32 UserId);
+	// 회원가입 요청을 서버에 보내는 함수
+	void ReqPostSignup(bool bIsHost , FText Email , FText Password , int32 Age, FText Nickname, int32 AvataData);
 
-	// 신원 확인 결과 확인 요청에 대한 응답을 처리하는 함수
-	void OnResPostOnVerifyIdentity(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-
-	// 회원가입 요청을 서버에 보내는 함수2
-	void ReqPostSignup2(FText Nickname, int32 CharacterModel);
-
-	// 회원가입 요청에 대한 응답을 처리하는 함수2
-	void OnResPostSignup2(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	// 회원가입 요청에 대한 응답을 처리하는 함수
+	void OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 로그인 요청을 서버에 보내는 함수
 	void ReqPostLogin(FText Email, FText Password);
