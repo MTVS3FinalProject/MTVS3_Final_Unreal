@@ -54,11 +54,11 @@ void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT("/api/qr/verification"));
+	Request->SetURL(TEXT("/api/qr/signup"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
-	// 요청 데이터 (JSON)
+	// 전달 데이터 (JSON)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
@@ -85,30 +85,6 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 
 		if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
 		{
-			//// 응답 처리
-			//FString ResponseBody = Response->GetContentAsString();
-			//TSharedPtr<FJsonObject> JsonObject;
-			//TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
-
-			//if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
-			//{
-			//	// 필요한 데이터를 파싱하고 처리
-			//	bool bVerified = JsonObject->GetBoolField(TEXT("verified"));
-			//	if ( bVerified )
-			//	{
-			//		UE_LOG(LogTemp , Log , TEXT("IdentityQR Verified Successfully"));
-			//		// QR코드 이미지 요청 성공
-			//	}
-			//	else
-			//	{
-			//		UE_LOG(LogTemp , Warning , TEXT("IdentityQR Verification Failed"));
-			//		// 실패 처리
-			//	}
-			//}
-			
-			// 이미지 데이터 처리
-			// 이미지 데이터로 텍스처 생성
-			// 텍스처 생성 후 적용
 			TArray<uint8> ImageData = Response->GetContent();
 			FString imagePath = FPaths::ProjectPersistentDownloadDir();
 			FFileHelper::SaveArrayToFile(ImageData , *imagePath);
@@ -120,22 +96,23 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 			}
 			else
 			{
-				
 				UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
 			}
 		}
-		else
+		else if ( Response->GetResponseCode() == 400 ) // 이메일 중복 코드
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Failed to verify IdentityQR, response code: %d") , Response->GetResponseCode());
+			//StartUI->OnLoginFail(?); // 이메일 중복. (로그인 실패 처리)
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
+		//StartUI->OnLoginFail(?); // 그 외 네트워크 연결 확인. (회원가입 실패 처리)
 	}
 }
 
-void AHM_HttpActor::ReqPostVerifyIdentity(int32 UserId)
+void AHM_HttpActor::ReqPostVerifyIdentity(FText Email)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -145,15 +122,15 @@ void AHM_HttpActor::ReqPostVerifyIdentity(int32 UserId)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT(""));
+	Request->SetURL(TEXT("/api/qr/verification"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
-	// 요청 데이터 (JSON)
+	// 전달 데이터 (JSON)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("userId") , UserId); // UserId 전달
+	Writer->WriteValue(TEXT("email") , Email.ToString());
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -218,11 +195,11 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT(""));
+	Request->SetURL(TEXT("/api/auth/signup"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
-	// 요청 데이터 (JSON)
+	// 전달 데이터 (JSON)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
@@ -257,10 +234,11 @@ void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr R
 			// 성공 처리 (회원가입 완료)
 			UE_LOG(LogTemp , Log , TEXT("Sign-up success"));
 		}
-		else
+		else if(Response->GetResponseCode() == 400) // 닉네임 중복 응답 코드 (400)
 		{
-			// 실패 처리
+			// 실패 처리 ( 닉네임 중복 )
 			UE_LOG(LogTemp , Warning , TEXT("Sign-up failed, response code: %d") , Response->GetResponseCode());
+			//StartUI->OnLoginFail(?); // 닉네임 중복. (회원가입 실패 처리)
 		}
 	}
 	else
@@ -283,7 +261,7 @@ void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 	Requset->SetVerb(TEXT("POST"));
 	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
-	// 요청 데이터 (JSON)
+	// 전달 데이터 (JSON)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
@@ -366,24 +344,6 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 							UE_LOG(LogTemp , Log , TEXT("Remaining Tickets: %d") , GI->GetRemainingTicketCount());
 						}
 					}
-
-					//if ( !AccessToken.IsEmpty() )
-					//{
-					//	//UE_LOG(LogTemp , Log , TEXT("Received Access Token: %s") , *AccessToken);
-					//	UE_LOG(LogTemp , Log , TEXT("Received Nickname: %s") , *Nickname);
-
-					//	// 로그인 성공 시 처리
-					//	// GameInstance에 토큰(고유ID) 및 닉네임 저장
-					//	//GI = GetWorld()->GetGameInstance<GameInstance>();
-					//	//if ( !GI ) return;
-					//	//GI->SetAccessToken(AccessToken);
-					//	//StartUI->OnLoginSuccess();
-					//}
-					//else
-					//{
-					//	UE_LOG(LogTemp , Warning , TEXT("Access Token is missing in the response."));
-					//	//StartUI->OnLoginFail(1); // 로그인 실패 처리
-					//}
 				}
 				else
 				{
@@ -397,7 +357,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 				//StartUI->OnLoginFail(1); // 로그인 실패 처리
 			}
 		}
-		else
+		else if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("로그인 실패, 응답 코드: %d") , Response->GetResponseCode());
 			//StartUI->OnLoginFail(1); // 로그인 실패 처리
@@ -424,7 +384,7 @@ void AHM_HttpActor::ReqPostJoinTTSession(int32 UserId , int64 TTSessionId)
 	Requset->SetVerb(TEXT("POST"));
 	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
-	// 요청 데이터 (JSON)
+	// 전달 데이터 (JSON)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
@@ -498,7 +458,7 @@ void AHM_HttpActor::ReqPostApplyForSeat(int32 UserId , int64 SeatId)
 	Requset->SetVerb(TEXT("POST"));
 	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
-	// 요청 데이터 (JSON)
+	// 전달 데이터 (JSON)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
