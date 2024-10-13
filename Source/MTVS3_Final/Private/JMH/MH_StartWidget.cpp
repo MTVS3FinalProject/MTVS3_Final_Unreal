@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "JMH/MH_StartWidget.h"
@@ -10,10 +10,12 @@
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor.h"
+#include "HJ/TTGameInstance.h"
 
 void UMH_StartWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
 	//Login
 	//이부분 확인해보기, 로그인 함수 하나 더 만들어서 그안에서 세션 생성해야함
 	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignInButton);
@@ -50,6 +52,16 @@ void UMH_StartWidget::NativeConstruct()
 			Com_SetAge->AddOption(FString::FromInt(i));
 		}
 	}
+
+	// KHJ
+	SetLoadingActive(false);
+
+	// 게임 인스턴스를 가져와서
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		gi->OnFindSignatureCompleteDelegate.AddDynamic(this, &UMH_StartWidget::SetLoadingActive);  // 세션 탐색 또는 생성
+	}
 }
 
 void UMH_StartWidget::Test_CreateSesstion()
@@ -61,6 +73,14 @@ void UMH_StartWidget::GoToLobby()
 {
 	//로비맵으로 이동(세션 생성,입장)
 	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Create Lobby Session"));
+
+	// KHJ
+	// 게임 인스턴스를 가져와서
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		gi->FindOrCreateSession();  // 세션 탐색 또는 생성
+	}
 }
 
 void UMH_StartWidget::OnClickedSignInButton()
@@ -252,5 +272,21 @@ void UMH_StartWidget::OnClickedAvatarStyleAButton()
 void UMH_StartWidget::OnClickedAvatarStyleBButton()
 {
 	//여자캐릭 or 남자캐릭?
+}
+
+void UMH_StartWidget::SetLoadingActive(bool bIsActive)
+{
+	if ( bIsActive )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Searching for sessions..."));
+		// 탐색 중: 버튼 비활성화, 텍스트 표시
+		// (예제) FindSessionsText->SetText(FText::FromString("Searching..."));
+	}
+	else
+	{
+		UE_LOG(LogTemp , Log , TEXT("Session search complete."));
+		// 탐색 종료: 버튼 활성화, 텍스트 숨기기
+		// (예제) FindSessionsText->SetText(FText::FromString(""));
+	}
 }
 //
