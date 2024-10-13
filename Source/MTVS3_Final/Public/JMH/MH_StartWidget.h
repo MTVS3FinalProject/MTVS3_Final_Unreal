@@ -209,7 +209,7 @@ public:
 	void OnClickedGenderFeMaleButton();
 			
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_GoToLobby_Avatar;
+	class UButton*  Btn_Confirm_Avatar;
 	
 	UFUNCTION()
 	void OnClickedAvatarConfirmButton();

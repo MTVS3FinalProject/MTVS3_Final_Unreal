@@ -15,16 +15,16 @@ void UMH_StartWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	//Login
+	//이부분 확인해보기, 로그인 함수 하나 더 만들어서 그안에서 세션 생성해야함
+	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignInButton);
+	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
 	Btn_test_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::Test_CreateSesstion); //테스트 세션생성 버튼
 	Btn_Exit_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
 	Btn_AddPicture->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAddPictureButton);
 	Btn_ForgotPassword_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
-	//이부분 확인해보기, 로그인 함수 하나 더 만들어서 그안에서 세션 생성해야함
-	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignInButton);
-	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
 	//Signup
-	Btn_Back_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
 	Btn_Confirm_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirmSignupButton);
+	Btn_Back_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
 	Btn_FAN->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedFANButton);
 	Btn_MANAGER->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedMANAGERButton);
 	Btn_SelectAvatarL->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSelectAvatarLButton);
@@ -32,7 +32,7 @@ void UMH_StartWidget::NativeConstruct()
 	Btn_GenderMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderMaleButton);
 	Btn_GenderFeMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderFeMaleButton);
 	//Avatar
-	Btn_GoToLobby_Avatar->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAvatarConfirmButton);
+	Btn_Confirm_Avatar->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAvatarConfirmButton);
 
 	//QR1
 	Btn_Confirm_QRUi1->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirm_QRUi1Button);
@@ -120,7 +120,7 @@ void UMH_StartWidget::OnClickedConfirm_QRUi2Button()
 {
 	//확인버튼 누르면 ->
 	//아바타 설정ui로 이동.
-	WS_StartWidgetSwitcher->SetActiveWidgetIndex(0);
+	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
 	
 }
 
