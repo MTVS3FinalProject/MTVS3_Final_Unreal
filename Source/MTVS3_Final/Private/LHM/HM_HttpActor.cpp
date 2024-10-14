@@ -340,15 +340,16 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 								GI->SetNickname(Nickname);
 								UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
 
+
 								// 서버에서 주는 UserId 설정 및 가져오기
 								// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
 								GI->SetUserId(UserId);
 								UE_LOG(LogTemp , Log , TEXT("UserId: %d") , GI->GetUserId());
 
-								// 나이 설정 및 가져오기
-								GI->SetAge(Age);
-								const char* CStr = TCHAR_TO_ANSI(*GI->GetAge());
-								UE_LOG(LogTemp , Log , TEXT("Age : %hs") , CStr);
+							// 나이 설정 및 가져오기
+							GI->SetBirth(Age);
+							const char* CStr = TCHAR_TO_ANSI(*GI->GetBirth());
+							UE_LOG(LogTemp , Log , TEXT("Age : %hs") , CStr);
 
 								// 코인 더하기 및 가져오기
 								GI->SetCoin(Coin);

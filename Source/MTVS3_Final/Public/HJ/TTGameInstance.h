@@ -59,10 +59,16 @@ public:
 	int32 GetUserId() const;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
-	FString Age;
+	FString AccessToken;
 	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
-	void SetAge(const FString& _Age);
-	FString GetAge() const;
+	void SetAccessToken(const FString& _AccessToken);
+	FString GetAccessToken() const;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	FString Birth;
+	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	void SetBirth(const FString& _Birth);
+	FString GetBirth() const;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
 	int32 Coin;

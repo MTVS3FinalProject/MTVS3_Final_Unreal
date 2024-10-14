@@ -212,14 +212,24 @@ int32 UTTGameInstance::GetUserId() const
 	return UserId;
 }
 
-void UTTGameInstance::SetAge(const FString& _Age)
+void UTTGameInstance::SetAccessToken(const FString& _AccessToken)
 {
-	Age = _Age;
+	AccessToken = _AccessToken;
 }
 
-FString UTTGameInstance::GetAge() const
+FString UTTGameInstance::GetAccessToken() const
 {
-	return Age;
+	return AccessToken;
+}
+
+void UTTGameInstance::SetBirth(const FString& _Birth)
+{
+	Birth = _Birth;
+}
+
+FString UTTGameInstance::GetBirth() const
+{
+	return Birth;
 }
 
 void UTTGameInstance::SetCoin(const int32& _Coin)

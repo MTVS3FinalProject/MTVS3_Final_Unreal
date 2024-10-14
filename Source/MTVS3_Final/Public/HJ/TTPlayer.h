@@ -72,6 +72,8 @@ public:
 	class UInputAction* IA_Interact;
 	void OnMyActionInteract(const FInputActionValue& Value);
 
+	AActor* GetOverlappingActor();
+
 	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
 	class UInputAction* IA_Purchase;
 	void OnMyActionPurchase(const FInputActionValue& Value);

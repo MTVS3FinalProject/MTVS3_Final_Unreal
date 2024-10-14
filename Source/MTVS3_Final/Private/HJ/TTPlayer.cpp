@@ -8,6 +8,7 @@
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blueprint/UserWidget.h"
+#include <JMH/MH_Chair.h>
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -17,7 +18,7 @@ ATTPlayer::ATTPlayer()
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComp->SetupAttachment(RootComponent);
-	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 70));
+	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 100));
 	SpringArmComp->TargetArmLength = 430;
 	SpringArmComp->bUsePawnControlRotation = true;
 
@@ -133,6 +134,34 @@ void ATTPlayer::OnMyActionRunComplete(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed E: Interact"));
+	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	if ( !Chair->bIsOccupied && Chair )
+	{
+		FTransform SittingTransform = Chair->GetSittingTransform();
+		SetActorTransform(SittingTransform);
+		UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
+		Chair->bIsOccupied = true;
+	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
+		Chair->bIsOccupied = false;
+	}
+}
+
+AActor* ATTPlayer::GetOverlappingActor()
+{
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors);
+
+	for ( AActor* Actor : OverlappingActors )
+	{
+		if ( Actor->IsA(AMH_Chair::StaticClass()) )
+		{
+			return Actor;  // 오버랩된 의자 반환
+		}
+	}
+	return nullptr;
 }
 
 void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
