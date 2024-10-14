@@ -212,6 +212,16 @@ int32 UTTGameInstance::GetUserId() const
 	return UserId;
 }
 
+void UTTGameInstance::SetAccessToken(const int32& _AccessToken)
+{
+	AccessToken = _AccessToken;
+}
+
+int32 UTTGameInstance::GetAccessToken() const
+{
+	return AccessToken;
+}
+
 void UTTGameInstance::SetBirth(const FString& _Birth)
 {
 	Birth = _Birth;

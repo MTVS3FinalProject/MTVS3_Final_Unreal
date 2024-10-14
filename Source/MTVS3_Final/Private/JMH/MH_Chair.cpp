@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "JMH/MH_Chair.h"
@@ -7,6 +7,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"
+#include <Net/UnrealNetwork.h>
 
 // Sets default values
 AMH_Chair::AMH_Chair()
@@ -51,6 +52,7 @@ void AMH_Chair::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent , AActor
 	ACharacter* Player = Cast<ACharacter>(OtherActor);
 	if (Player&&Player->IsLocallyControlled())
 	{
+		OverlappingPlayer = Player;  // 오버랩된 플레이어 추적
 		ShowText();
 	}
 }
@@ -61,6 +63,7 @@ void AMH_Chair::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 	ACharacter* Player = Cast<ACharacter>(OtherActor);
 	if (Player&&Player->IsLocallyControlled())
 	{
+		OverlappingPlayer = nullptr;  // 오버랩 해제 시 플레이어 초기화
 		HideText();
 	}
 }
@@ -73,4 +76,30 @@ void AMH_Chair::ShowText()
 void AMH_Chair::HideText()
 {
 	Widgetcomp->SetVisibility(false);
+}
+
+FTransform AMH_Chair::GetSittingTransform()
+{
+	// 의자 중심 위치 가져오기
+	FVector Location = Boxcomp->GetComponentLocation();
+	Location.Z = 92.012604;
+
+	// 의자 앞 방향을 기준으로 한 회전값 가져오기
+	FRotator Rotation = Boxcomp->GetComponentRotation();
+
+	// 약간의 오프셋을 추가하여 플레이어가 의자와 겹치지 않게
+	FVector ForwardOffset = Rotation.Vector() * SeatOffset;  // 의자 앞 방향으로 SeatOffset만큼 이동
+
+	// 최종 위치 계산
+	FVector FinalLocation = Location + ForwardOffset;
+
+	// FTransform 생성 및 반환
+	return FTransform(Rotation , FinalLocation);
+}
+
+void AMH_Chair::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AMH_Chair , bIsOccupied);
 }
