@@ -33,7 +33,7 @@ public:
 	void FindOrCreateSession();
 	void OnFindOrCreateSessionComplete(bool bWasSuccessful);
 	void AttemptJoinSession();
-	void CreateMySession(int32 playerCount);
+	void CreateMySession(int32 playerCount , const FString& SessionNam);
 	void OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful);
 	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
 	void OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result);
