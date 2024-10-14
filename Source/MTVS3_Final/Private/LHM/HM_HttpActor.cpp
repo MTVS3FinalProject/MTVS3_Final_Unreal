@@ -56,7 +56,7 @@ void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT("/api/qr/signup"));
+	Request->SetURL(TEXT("https://125.132.216.190:7878/api/qr/signup"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -124,7 +124,7 @@ void AHM_HttpActor::ReqPostVerifyIdentity(FText Email)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT("/api/qr/verification"));
+	Request->SetURL(TEXT("https://125.132.216.190:7878/api/qr/verification"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -163,7 +163,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 			if ( FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid() )
 			{
 				// 필요한 데이터를 파싱하고 처리
-				bool bVerified = JsonObject->GetBoolField(TEXT("verified"));
+				bool bVerified = JsonObject->GetBoolField(TEXT("success"));
 				if ( bVerified )
 				{
 					UE_LOG(LogTemp, Log, TEXT("Identity Verified Successfully"));
@@ -187,7 +187,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 	}
 }
 
-void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , int32 Age , FText Nickname , int32 AvataData)
+void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , FString Age , FText Nickname , int32 AvataData)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -197,7 +197,7 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT("/api/auth/signup"));
+	Request->SetURL(TEXT("https://125.132.216.190:7878/api/auth/signup"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -205,11 +205,11 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("isHost") , bIsHost);
+	//Writer->WriteValue(TEXT("isHost") , bIsHost);
 	Writer->WriteValue(TEXT("email") , Email.ToString());
 	Writer->WriteValue(TEXT("password") , Password.ToString());
-	Writer->WriteValue(TEXT("age") , Age);
-	Writer->WriteValue(TEXT("display_name") , Nickname.ToString());
+	Writer->WriteValue(TEXT("ageRange") , Age);
+	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
 	Writer->WriteValue(TEXT("avatarData") , AvataData);
 	Writer->WriteObjectEnd();
 	Writer->Close();
@@ -261,7 +261,7 @@ void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 	TSharedRef<IHttpRequest> Requset = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Requset->SetURL(TEXT("/api/auth/login"));
+	Requset->SetURL(TEXT("https://125.132.216.190:7878/api/auth/login"));
 	Requset->SetVerb(TEXT("POST"));
 	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -307,9 +307,9 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 				if ( ResponseObject.IsValid() )
 				{
 					// 받아올 정보 추출
-					FString Nickname = ResponseObject->GetStringField(TEXT("display_name"));
-					int32 UserId = ResponseObject->GetIntegerField(TEXT("user_id"));
-					int32 Age = ResponseObject->GetIntegerField(TEXT("age"));
+					FString Nickname = ResponseObject->GetStringField(TEXT("nickname"));
+					int32 UserId = ResponseObject->GetIntegerField(TEXT("member_id"));
+					FString Age = ResponseObject->GetStringField(TEXT("ageRange"));
 					int32 Coin = ResponseObject->GetIntegerField(TEXT("coin"));
 					//bool bIsHost = ResponseObject->GetIntegerField(TEXT("isHost"));
 					int32 RemainingTicketCount = ResponseObject->GetIntegerField(TEXT("remainingTicketCount"));
@@ -332,7 +332,8 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 
 							// 나이 설정 및 가져오기
 							GI->SetAge(Age);
-							UE_LOG(LogTemp , Log , TEXT("Age : %d") , GI->GetAge());
+							const char* CStr = TCHAR_TO_ANSI(*GI->GetAge());
+							UE_LOG(LogTemp , Log , TEXT("Age : %hs") , CStr);
 
 							// 코인 더하기 및 가져오기
 							GI->SetCoin(Coin);
