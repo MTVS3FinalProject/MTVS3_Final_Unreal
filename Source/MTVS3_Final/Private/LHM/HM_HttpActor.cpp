@@ -348,8 +348,8 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 							UE_LOG(LogTemp , Log , TEXT("UserId: %d") , GI->GetUserId());
 
 							// 나이 설정 및 가져오기
-							GI->SetAge(Age);
-							const char* CStr = TCHAR_TO_ANSI(*GI->GetAge());
+							GI->SetBirth(Age);
+							const char* CStr = TCHAR_TO_ANSI(*GI->GetBirth());
 							UE_LOG(LogTemp , Log , TEXT("Age : %hs") , CStr);
 
 							// 코인 더하기 및 가져오기
