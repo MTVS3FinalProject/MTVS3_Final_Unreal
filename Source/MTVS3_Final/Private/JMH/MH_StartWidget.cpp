@@ -162,7 +162,6 @@ void UMH_StartWidget::SetQRImg(UTexture2D* newTexture)
 void UMH_StartWidget::OnClickedConfirm_QRUi2Button()
 {
 	//확인버튼 누르면 ->
-	
 	//아바타 설정ui로 이동.
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
 	
@@ -181,7 +180,7 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 	if (Com_SetAge)
 	{
 		FString SelectedOption = Com_SetAge->GetSelectedOption();
-		Age_SelectedValue = FCString::Atoi(*SelectedOption); // 문자열을 int로 변환
+		Age_SelectedValue = SelectedOption; // 문자열을 int로 변환
 	}
 	//모두 입력했는지 확인
 	//아바타 설정으로 이동
@@ -266,4 +265,9 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 	}
 //회원가입 응답 성공이면 로비로 이동
 	GoToLobby();
+}
+
+void UMH_StartWidget::SetLoadingActive(bool bIsActive)
+{
+	
 }
