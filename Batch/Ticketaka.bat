@@ -1,0 +1,1 @@
+"C:\Program Files\Epic Games\UE_5.4\Engine\Binaries\Win64\UnrealEditor.exe" "D:\2024 Metaverse Academy\Unreal Project\MTVS3_Final_Unreal\MTVS3_Final.uproject" -game -ResX=640 -ResY=480 -WinX=200 -WinY=300 -log

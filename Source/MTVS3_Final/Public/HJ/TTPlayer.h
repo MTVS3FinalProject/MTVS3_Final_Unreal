@@ -33,6 +33,12 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UCameraComponent* CameraComp;
 
+	UPROPERTY(EditAnywhere, Category = "Default|TTSettings")
+	float WalkSpeed = 400.0f;
+	UPROPERTY(EditAnywhere, Category = "Default|TTSettings")
+	float RunSpeed = 800.0f;
+
+	#pragma region 입력
 	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
 	class UInputMappingContext* IMC_TTPlayer;
 
@@ -79,4 +85,12 @@ public:
 	UPROPERTY(EditAnywhere , Category = "Default|Settings")
 	bool bIsChatActive;
 	void OnMyActionChat(const FInputActionValue& Value);
+	#pragma endregion
+
+	UPROPERTY(EditAnywhere, Category = "Default|UI")
+	TSubclassOf<class UUserWidget> MainUIFactory;
+	UPROPERTY()
+	class UUserWidget* MainUI;
+
+	void InitMainUI();
 };

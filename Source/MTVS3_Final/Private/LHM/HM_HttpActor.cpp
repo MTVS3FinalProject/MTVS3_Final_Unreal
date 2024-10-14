@@ -91,7 +91,7 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 			UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
 			if ( Texture )
 			{
-				//StartUI->SetWebImage(realTexture);
+				StartUI->SetQRImg(Texture);
 				UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
 			}
 			else
