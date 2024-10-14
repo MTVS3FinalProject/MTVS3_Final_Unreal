@@ -8,7 +8,9 @@
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blueprint/UserWidget.h"
-#include <JMH/MH_Chair.h>
+#include "JMH/MH_Chair.h"
+#include "HJ/TTPlayerAnim.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -135,17 +137,21 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed E: Interact"));
 	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
-	if ( !Chair->bIsOccupied && Chair )
+	if ( Chair )
 	{
-		FTransform SittingTransform = Chair->GetSittingTransform();
-		SetActorTransform(SittingTransform);
-		UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
-		Chair->bIsOccupied = true;
-	}
-	else
-	{
-		UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
-		Chair->bIsOccupied = false;
+		// 의자가 비어 있을 때 상호작용하면 앉는다.
+		if ( !Chair->bIsOccupied )
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
+			ServerSetSitting(true);
+		}
+		// 의자가 비어 있지 않고 내가 앉아 있으면 일어난다.
+		else if ( Chair->bIsOccupied && bIsSitting )
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
+			ServerSetSitting(false);
+		}
+		// 의자가 비어 있지 않고 내가 앉아 있지 않으면 아무 일도 안 일어난다.
 	}
 }
 
@@ -190,9 +196,58 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 
 void ATTPlayer::InitMainUI()
 {
-	MainUI = CastChecked<UUserWidget>(CreateWidget(GetWorld(), MainUIFactory));
+	MainUI = CastChecked<UUserWidget>(CreateWidget(GetWorld() , MainUIFactory));
 	if ( MainUI )
 	{
 		MainUI->AddToViewport();
+	}
+}
+
+void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// bIsSitting을 개별 클라이언트에 복제
+	DOREPLIFETIME(ATTPlayer , bIsSitting);
+}
+
+void ATTPlayer::ServerSetSitting_Implementation(bool _bIsSitting)
+{
+	bIsSitting = _bIsSitting;  // 서버에서 상태 업데이트
+
+	// 앉기 또는 일어나기 애니메이션 재생
+	if ( bIsSitting )
+	{
+		MulticastSitDown();
+	}
+	else
+	{
+		MulticastStandUp();
+	}
+}
+
+void ATTPlayer::MulticastSitDown_Implementation()
+{
+	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if ( Chair && Anim )
+	{
+		Chair->bIsOccupied = true;
+		FTransform SittingTransform = Chair->GetSittingTransform();
+		SetActorTransform(SittingTransform);
+		GetCharacterMovement()->DisableMovement();  // 이동 비활성화
+		Anim->PlaySitDownMontage();
+	}
+}
+
+void ATTPlayer::MulticastStandUp_Implementation()
+{
+	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if ( Chair && Anim )
+	{
+		Chair->bIsOccupied = false;
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);  // 이동 모드 복원
+		Anim->PlayStandUpMontage();
 	}
 }
