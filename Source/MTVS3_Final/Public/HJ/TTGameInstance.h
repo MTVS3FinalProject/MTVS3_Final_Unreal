@@ -24,13 +24,15 @@ public:
 
 	virtual void Init() override;
 
+	FString GenerateUniqueSessionName();
+
 	// 온라인 세션 인터페이스를 기억하고 싶다.
 	IOnlineSessionPtr SessionInterface;
 	FString MySessionName = TEXT("Rokke");
 
 	void FindOrCreateSession();
 	void OnFindOrCreateSessionComplete(bool bWasSuccessful);
-	void DestroyExistingSession(const FString& SessionName);
+	void AttemptJoinSession();
 	void CreateMySession(int32 playerCount);
 	void OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful);
 	void JoinSession(const FOnlineSessionSearchResult& SessionResult);

@@ -26,73 +26,105 @@ void UTTGameInstance::Init()
 	}
 }
 
-// 유니크한 세션 이름 생성 함수 (세션 이름에 타임스탬프 추가)
-FString GenerateUniqueSessionName()
+FString UTTGameInstance::GenerateUniqueSessionName()
 {
+	// 유니크한 세션 이름 생성 (타임스탬프 + 랜덤 값 사용)
 	FDateTime Now = FDateTime::Now();
-	return FString::Printf(TEXT("Session_%d%d%d%d%d") , Now.GetHour() , Now.GetMinute() , Now.GetSecond() , Now.GetMillisecond() , FMath::Rand());
+	return FString::Printf(TEXT("Session_%d%d%d%d%d") ,
+		Now.GetHour() , Now.GetMinute() , Now.GetSecond() , Now.GetMillisecond() , FMath::Rand());
 }
 
 void UTTGameInstance::FindOrCreateSession()
 {
 	SessionSearch = MakeShareable(new FOnlineSessionSearch);
 	SessionSearch->QuerySettings.Set(SEARCH_PRESENCE , true , EOnlineComparisonOp::Equals);
-	SessionSearch->bIsLanQuery = true;
+	SessionSearch->bIsLanQuery = true; // LAN 설정 활성화 (같은 컴퓨터 테스트 시 필수)
 	SessionSearch->MaxSearchResults = 100;
 
 	SessionInterface->FindSessions(0 , SessionSearch.ToSharedRef());
 
-	// 탐색 시작 시 UI에 알림
 	if ( OnFindSignatureCompleteDelegate.IsBound() )
 	{
-		OnFindSignatureCompleteDelegate.Broadcast(true); // 탐색 중 상태 전송
+		OnFindSignatureCompleteDelegate.Broadcast(true);  // 탐색 시작 UI 업데이트
 	}
 }
 
 void UTTGameInstance::OnFindOrCreateSessionComplete(bool bWasSuccessful)
 {
-	if ( bWasSuccessful && SessionSearch->SearchResults.Num() > 0 )
+	if ( OnFindSignatureCompleteDelegate.IsBound() )
 	{
-		for ( const auto& Result : SessionSearch->SearchResults )
+		OnFindSignatureCompleteDelegate.Broadcast(false);  // UI: 검색 완료 알림
+	}
+
+	UE_LOG(LogTemp , Log , TEXT("Session search complete. Success: %s, Results: %d") ,
+		   bWasSuccessful ? TEXT("true") : TEXT("false") ,
+		   SessionSearch->SearchResults.Num());
+
+	// 세션 검색이 완료되면 참가 시도
+	AttemptJoinSession();
+
+	//if ( bWasSuccessful && SessionSearch->SearchResults.Num() > 0 )
+	//{
+	//	for ( const auto& Result : SessionSearch->SearchResults )
+	//	{
+	//		// 기존 세션이 있으면 참가
+	//		if ( Result.Session.SessionInfo->GetSessionId().ToString() == MySessionName )
+	//		{
+	//			JoinSession(Result);
+	//			return;
+	//		}
+	//	}
+	//}
+
+	//// 유효한 세션이 없으면 새로운 세션 생성
+	//CreateMySession(100);
+}
+
+void UTTGameInstance::AttemptJoinSession()
+{
+	if ( SessionSearch.IsValid() && SessionSearch->SearchResults.Num() > 0 )
+	{
+		// 첫 번째 세션에 참가 시도
+		UE_LOG(LogTemp , Log , TEXT("Attempting to join session..."));
+		JoinSession(SessionSearch->SearchResults[0]);
+	}
+	else
+	{
+		// 세션이 없으면 새로 생성
+		UE_LOG(LogTemp , Log , TEXT("No sessions found. Creating a new session..."));
+		CreateMySession(100);
+	}
+}
+
+void UTTGameInstance::JoinSession(const FOnlineSessionSearchResult& SessionResult)
+{
+	if ( SessionInterface.IsValid() )
+	{
+		bool bJoinSuccess = SessionInterface->JoinSession(0 , FName(MySessionName) , SessionResult);
+
+		if ( bJoinSuccess )
 		{
-			int32 CurrentPlayers = Result.Session.SessionSettings.NumPublicConnections -
-				Result.Session.NumOpenPublicConnections;
-
-			// 세션에 사람이 없다면 파괴하고 새로 생성
-			if ( CurrentPlayers == 0 )
-			{
-				DestroyExistingSession(Result.Session.OwningUserName);
-				CreateMySession(100);
-				return;
-			}
-
-			// 사람이 있는 세션이 있다면 해당 세션에 참가
-			if ( CurrentPlayers < 100 )
-			{
-				JoinSession(Result);
-				return;
-			}
+			UE_LOG(LogTemp , Log , TEXT("Joining session: %s") , *MySessionName);
+		}
+		else
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Failed to join session: %s") , *MySessionName);
+			CreateMySession(100);  // 실패 시 세션 생성
 		}
 	}
-
-	// 기존 세션에 참가하지 못한 경우, 새로운 세션을 유니크한 이름으로 생성
-	MySessionName = GenerateUniqueSessionName();
-	CreateMySession(100);
 }
 
-void UTTGameInstance::DestroyExistingSession(const FString& SessionName)
-{
-	if ( SessionInterface->GetNamedSession(FName(*SessionName)) )
-	{
-		SessionInterface->DestroySession(FName(*SessionName));
-	}
-}
 
 void UTTGameInstance::CreateMySession(int32 playerCount)
 {
+	if ( SessionInterface->GetNamedSession(FName(MySessionName)) )
+	{
+		SessionInterface->DestroySession(FName(MySessionName));
+	}
+
 	FOnlineSessionSettings Settings;
 	Settings.bIsDedicated = false;
-	Settings.bIsLANMatch = IOnlineSubsystem::Get()->GetSubsystemName() == "NULL";
+	Settings.bIsLANMatch = true;
 	Settings.bShouldAdvertise = true;
 	Settings.bUsesPresence = true;
 	Settings.bAllowJoinViaPresence = true;
@@ -103,31 +135,24 @@ void UTTGameInstance::CreateMySession(int32 playerCount)
 		->GetUniqueNetIdForPlatformUser()
 		.GetUniqueNetId();
 
-	// 새로운 세션 생성
 	SessionInterface->CreateSession(*NetID , FName(MySessionName) , Settings);
 }
 
 void UTTGameInstance::OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful)
 {
-	// 로딩 완료 시 UI에 알림
-	if ( OnFindSignatureCompleteDelegate.IsBound() )
-	{
-		OnFindSignatureCompleteDelegate.Broadcast(false);  // 로딩 종료
-	}
+	//// 로딩 완료 시 UI에 알림
+	//if ( OnFindSignatureCompleteDelegate.IsBound() )
+	//{
+	//	OnFindSignatureCompleteDelegate.Broadcast(false);  // 로딩 종료
+	//}
 
 	if ( bWasSuccessful )
 	{
+		// 리슨 서버로 맵 이동
 		//GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTHallMap?listen"));
 		GetWorld()->ServerTravel(TEXT("/Game/KHJ/Maps/HJProtoMap?listen"));
 	}
-}
-
-void UTTGameInstance::JoinSession(const FOnlineSessionSearchResult& SessionResult)
-{
-	if ( SessionInterface.IsValid() )
-	{
-		SessionInterface->JoinSession(0 , FName(MySessionName) , SessionResult);
-	}
+	UE_LOG(LogTemp , Warning , TEXT("Create session : % s") , *MySessionName);
 }
 
 void UTTGameInstance::OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result)
