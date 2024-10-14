@@ -143,7 +143,7 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UComboBoxString*  Com_SetAge;
 	
-	int32 Age_SelectedValue;
+	FString Age_SelectedValue;
 	
 	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	//class UButton*  Btn_AddPicture;
