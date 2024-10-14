@@ -31,6 +31,7 @@ public:
 	class UMH_StartWidget* StartUI;
 #pragma endregion
 
+	const FString _url = "http://121.165.108.133:7878/api";
 
 //===========================================================================================================
 
