@@ -44,6 +44,8 @@ void AHM_HttpActor::Tick(float DeltaTime)
 
 }
 
+//=========================================================================================================================================
+
 void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
 {
 	// HTTP 모듈 가져오기
@@ -54,7 +56,7 @@ void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT("/api/qr/signup"));
+	Request->SetURL(TEXT("https://125.132.216.190:7878/api/qr/signup"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -122,7 +124,7 @@ void AHM_HttpActor::ReqPostVerifyIdentity(FText Email)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT("/api/qr/verification"));
+	Request->SetURL(TEXT("https://125.132.216.190:7878/api/qr/verification"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -161,7 +163,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 			if ( FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid() )
 			{
 				// 필요한 데이터를 파싱하고 처리
-				bool bVerified = JsonObject->GetBoolField(TEXT("verified"));
+				bool bVerified = JsonObject->GetBoolField(TEXT("success"));
 				if ( bVerified )
 				{
 					UE_LOG(LogTemp, Log, TEXT("Identity Verified Successfully"));
@@ -185,7 +187,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 	}
 }
 
-void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , int32 Age , FText Nickname , int32 AvataData)
+void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , FString Age , FText Nickname , int32 AvataData)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -195,7 +197,7 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT("/api/auth/signup"));
+	Request->SetURL(TEXT("https://125.132.216.190:7878/api/auth/signup"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -203,11 +205,11 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("isHost") , bIsHost);
+	//Writer->WriteValue(TEXT("isHost") , bIsHost);
 	Writer->WriteValue(TEXT("email") , Email.ToString());
 	Writer->WriteValue(TEXT("password") , Password.ToString());
-	Writer->WriteValue(TEXT("age") , Age);
-	Writer->WriteValue(TEXT("display_name") , Nickname.ToString());
+	Writer->WriteValue(TEXT("ageRange") , Age);
+	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
 	Writer->WriteValue(TEXT("avatarData") , AvataData);
 	Writer->WriteObjectEnd();
 	Writer->Close();
@@ -247,6 +249,8 @@ void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr R
 	}
 }
 
+//=========================================================================================================================================
+
 void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 {
 	// HTTP 모듈 가져오기
@@ -257,7 +261,7 @@ void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 	TSharedRef<IHttpRequest> Requset = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Requset->SetURL(TEXT("/api/auth/login"));
+	Requset->SetURL(TEXT("https://125.132.216.190:7878/api/auth/login"));
 	Requset->SetVerb(TEXT("POST"));
 	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -303,9 +307,9 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 				if ( ResponseObject.IsValid() )
 				{
 					// 받아올 정보 추출
-					FString Nickname = ResponseObject->GetStringField(TEXT("display_name"));
-					int32 UserId = ResponseObject->GetIntegerField(TEXT("user_id"));
-					int32 Age = ResponseObject->GetIntegerField(TEXT("age"));
+					FString Nickname = ResponseObject->GetStringField(TEXT("nickname"));
+					int32 UserId = ResponseObject->GetIntegerField(TEXT("member_id"));
+					FString Age = ResponseObject->GetStringField(TEXT("ageRange"));
 					int32 Coin = ResponseObject->GetIntegerField(TEXT("coin"));
 					//bool bIsHost = ResponseObject->GetIntegerField(TEXT("isHost"));
 					int32 RemainingTicketCount = ResponseObject->GetIntegerField(TEXT("remainingTicketCount"));
@@ -328,7 +332,8 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 
 							// 나이 설정 및 가져오기
 							GI->SetAge(Age);
-							UE_LOG(LogTemp , Log , TEXT("Age : %d") , GI->GetAge());
+							const char* CStr = TCHAR_TO_ANSI(*GI->GetAge());
+							UE_LOG(LogTemp , Log , TEXT("Age : %hs") , CStr);
 
 							// 코인 더하기 및 가져오기
 							GI->SetCoin(Coin);
@@ -369,6 +374,8 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 		//StartUI->OnLoginFail(2); // 네트워크 오류 처리
 	}
 }
+
+//=========================================================================================================================================
 
 void AHM_HttpActor::ReqPostJoinTTSession(int32 UserId , int64 TTSessionId)
 {
@@ -444,6 +451,8 @@ void AHM_HttpActor::OnResPostJoinTTSession(FHttpRequestPtr Request , FHttpRespon
 	}
 }
 
+//=========================================================================================================================================
+
 void AHM_HttpActor::ReqPostApplyForSeat(int32 UserId , int64 SeatId)
 {
 	// HTTP 모듈 가져오기
@@ -493,12 +502,26 @@ void AHM_HttpActor::OnResPostApplyForSeat(FHttpRequestPtr Request , FHttpRespons
 
 			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
 			{
-				// 서버 응답에서 필요한 데이터 추출
-				bool bSuccess = JsonObject->GetBoolField(TEXT("success"));
-				if ( bSuccess )
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
 				{
-					UE_LOG(LogTemp , Log , TEXT("Successfully applied for seat"));
-					// 좌석 신청 요청 성공
+					// 받아올 정보 추출
+					int32 RemainingTicketCount = ResponseObject->GetIntegerField(TEXT("remainingTicketCount"));
+
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+					if ( TTPlayer )
+					{
+						UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+						if ( GI )
+						{
+							// 티켓 접수 및 접수 가능 개수 가져오기
+							// UseRemainingTicket의 매개변수는 티켓 접수 개수
+							GI->SetRemainingTicketCount(RemainingTicketCount);
+							UE_LOG(LogTemp , Log , TEXT("Remaining Tickets: %d") , GI->GetRemainingTicketCount());
+						}
+					}
 				}
 				else
 				{
@@ -514,43 +537,229 @@ void AHM_HttpActor::OnResPostApplyForSeat(FHttpRequestPtr Request , FHttpRespons
 	}
 }
 
-void AHM_HttpActor::ReqPostVerifyBooking(int32 UserId , int64 SeatId)
-{
-
-}
-
-void AHM_HttpActor::OnResPostVerifyBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
-{
-
-}
-
-void AHM_HttpActor::ReqPostOnVerifyBooking(int32 UserId , int64 SeatId)
-{
-
-}
-
-void AHM_HttpActor::OnResPostOnVerifyBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
-{
-
-}
-
-void AHM_HttpActor::ReqPostCompleteBooking(int32 UserId , int64 SeatId)
-{
-
-}
-
-void AHM_HttpActor::OnResPostCompleteBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
-{
-
-}
+//void AHM_HttpActor::ReqPostVerifyBooking(int32 UserId , int64 SeatId)
+//{
+//	// HTTP 모듈 가져오기
+//	FHttpModule* Http = &FHttpModule::Get();
+//	if ( !Http ) return;
+//
+//	// HTTP 요청 생성
+//	TSharedRef<IHttpRequest> Requset = Http->CreateRequest();
+//
+//	// 서버 URL 설정
+//	Requset->SetURL(TEXT(""));
+//	Requset->SetVerb(TEXT("POST"));
+//	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+//
+//	// 전달 데이터 (JSON)
+//	FString ContentString;
+//	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+//	Writer->WriteObjectStart();
+//	Writer->WriteValue(TEXT("userID") , UserId);
+//	Writer->WriteValue(TEXT("seatID") , SeatId);
+//	Writer->WriteObjectEnd();
+//	Writer->Close();
+//
+//	// 요청 본문에 JSON 데이터를 설정
+//	Requset->SetContentAsString(ContentString);
+//
+//	// 응답받을 함수를 연결
+//	Requset->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostApplyForSeat);
+//
+//	// 요청 실행
+//	Requset->ProcessRequest();
+//}
+//
+//void AHM_HttpActor::OnResPostVerifyBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+//{
+//	if ( bWasSuccessful && Response.IsValid() )
+//	{
+//		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+//		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+//
+//		if ( Response->GetResponseCode() == 200 ) // 성공적인 응답 코드 200
+//		{
+//			// 응답 본문 처리 (필요한 정보가 있을 경우)
+//			FString ResponseBody = Response->GetContentAsString();
+//			TSharedPtr<FJsonObject> JsonObject;
+//			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+//
+//			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+//			{
+//				// 서버 응답에서 필요한 데이터 추출
+//				bool bSuccess = JsonObject->GetBoolField(TEXT("success"));
+//				if ( bSuccess )
+//				{
+//					UE_LOG(LogTemp , Log , TEXT("Successfully verified booking"));
+//					// 좌석 예약 검증 성공
+//				}
+//				else
+//				{
+//					UE_LOG(LogTemp , Warning , TEXT("Failed to verify booking"));
+//					// 좌석 예약 검증 실패
+//				}
+//			}
+//		}
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
+//	}
+//}
+//
+//void AHM_HttpActor::ReqPostOnVerifyBooking(int32 UserId , int64 SeatId)
+//{
+//	// HTTP 모듈 가져오기
+//	FHttpModule* Http = &FHttpModule::Get();
+//	if ( !Http ) return;
+//
+//	// HTTP 요청 생성
+//	TSharedRef<IHttpRequest> Requset = Http->CreateRequest();
+//
+//	// 서버 URL 설정
+//	Requset->SetURL(TEXT(""));
+//	Requset->SetVerb(TEXT("POST"));
+//	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+//
+//	// 전달 데이터 (JSON)
+//	FString ContentString;
+//	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+//	Writer->WriteObjectStart();
+//	Writer->WriteValue(TEXT("userID") , UserId);
+//	Writer->WriteValue(TEXT("seatID") , SeatId);
+//	Writer->WriteObjectEnd();
+//	Writer->Close();
+//
+//	// 요청 본문에 JSON 데이터를 설정
+//	Requset->SetContentAsString(ContentString);
+//
+//	// 응답받을 함수를 연결
+//	Requset->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostApplyForSeat);
+//
+//	// 요청 실행
+//	Requset->ProcessRequest();
+//}
+//
+//void AHM_HttpActor::OnResPostOnVerifyBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+//{
+//	if ( bWasSuccessful && Response.IsValid() )
+//	{
+//		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+//		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+//
+//		if ( Response->GetResponseCode() == 200 ) // 성공적인 응답 코드 200
+//		{
+//			// 응답 본문 처리 (필요한 정보가 있을 경우)
+//			FString ResponseBody = Response->GetContentAsString();
+//			TSharedPtr<FJsonObject> JsonObject;
+//			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+//
+//			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+//			{
+//				// 서버 응답에서 필요한 데이터 추출
+//				bool bSuccess = JsonObject->GetBoolField(TEXT("success"));
+//				if ( bSuccess )
+//				{
+//					UE_LOG(LogTemp , Log , TEXT("Successfully on verified booking"));
+//					// 좌석 예약 검증 성공
+//				}
+//				else
+//				{
+//					UE_LOG(LogTemp , Warning , TEXT("Failed to on verify booking"));
+//					// 좌석 예약 검증 실패
+//				}
+//			}
+//		}
+//	}
+//	else
+//	{
+//		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
+//	}
+//}
 
 void AHM_HttpActor::ReqPostCancleBooking(int32 UserId , int64 SeatId)
 {
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
 
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Requset = Http->CreateRequest();
+
+	// 서버 URL 설정
+	Requset->SetURL(TEXT(""));
+	Requset->SetVerb(TEXT("POST"));
+	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 전달 데이터 (JSON)
+	FString ContentString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("userID") , UserId);
+	Writer->WriteValue(TEXT("seatID") , SeatId);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	// 요청 본문에 JSON 데이터를 설정
+	Requset->SetContentAsString(ContentString);
+
+	// 응답받을 함수를 연결
+	Requset->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostCancleBooking);
+
+	// 요청 실행
+	Requset->ProcessRequest();
 }
 
 void AHM_HttpActor::OnResPostCancleBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
+		if ( Response->GetResponseCode() == 200 ) // 성공적인 응답 코드 200
+		{
+			// 응답 본문 처리 (필요한 정보가 있을 경우)
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// 받아올 정보 추출
+					int32 RemainingTicketCount = ResponseObject->GetIntegerField(TEXT("remainingTicketCount"));
+
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+					if ( TTPlayer )
+					{
+						UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+						if ( GI )
+						{
+							// 티켓 접수 및 접수 가능 개수 가져오기
+							// UseRemainingTicket의 매개변수는 티켓 접수 개수
+							GI->SetRemainingTicketCount(RemainingTicketCount);
+							UE_LOG(LogTemp , Log , TEXT("Remaining Tickets: %d") , GI->GetRemainingTicketCount());
+						}
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp , Warning , TEXT("Failed to cancle booking"));
+					// 예약 좌석 취소 실패
+				}
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
+	}
 }
+
+//=========================================================================================================================================
 
