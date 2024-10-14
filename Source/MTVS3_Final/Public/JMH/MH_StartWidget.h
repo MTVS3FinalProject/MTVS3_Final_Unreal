@@ -145,11 +145,11 @@ public:
 	
 	int32 Age_SelectedValue;
 	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_AddPicture;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_AddPicture;
 
-	UFUNCTION()
-	void OnClickedAddPictureButton();
+	//UFUNCTION()
+	//void OnClickedAddPictureButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_SignupEmail;
@@ -170,8 +170,18 @@ public:
 	class UCanvasPanel* Can_Avatar;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UImage* Img_Avatar;
+	class UImage* Img_Avatar1;
 	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_Avatar2;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_Avatar3;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_Avatar4;
+	
+	/*
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UImage* Img_Step1;
 
@@ -179,7 +189,7 @@ public:
 	class UImage* Img_Step2;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UImage* Img_Step3;
+	class UImage* Img_Step3;*/
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_SelectAvatarR;
@@ -196,24 +206,25 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_Nickname;
 	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_GenderMale;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_GenderMale;
 		
-	UFUNCTION()
-	void OnClickedGenderMaleButton();
+	//UFUNCTION()
+	//void OnClickedGenderMaleButton();
 		
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_GenderFeMale;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_GenderFeMale;
 
-	UFUNCTION()
-	void OnClickedGenderFeMaleButton();
+	//UFUNCTION()
+	//void OnClickedGenderFeMaleButton();
 			
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Confirm_Avatar;
 	
 	UFUNCTION()
 	void OnClickedAvatarConfirmButton();
-	
+
+	/*
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_AvatarStyleA;
 	
@@ -225,7 +236,7 @@ public:
 	
 	UFUNCTION()
 	void OnClickedAvatarStyleBButton();
-
+*/
 	UPROPERTY()
 	int32 CharacterModelNum = 0;
 

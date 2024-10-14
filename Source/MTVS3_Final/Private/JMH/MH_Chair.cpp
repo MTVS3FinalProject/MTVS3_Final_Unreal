@@ -3,6 +3,7 @@
 
 #include "JMH/MH_Chair.h"
 
+#include "AssetTypeCategories.h"
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"
@@ -29,6 +30,12 @@ void AMH_Chair::BeginPlay()
 {
 	Super::BeginPlay();
 	Widgetcomp->SetVisibility(false);
+
+	APlayerController* Pc = GetWorld()->GetFirstPlayerController();
+	if(Pc)
+	{
+		Pc->SetInputMode(FInputModeUIOnly());
+	}
 }
 
 // Called every frame
