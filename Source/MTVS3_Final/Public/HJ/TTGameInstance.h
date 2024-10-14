@@ -59,10 +59,10 @@ public:
 	int32 GetUserId() const;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
-	int32 AccessToken;
+	FString AccessToken;
 	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
-	void SetAccessToken(const int32& _AccessToken);
-	int32 GetAccessToken() const;
+	void SetAccessToken(const FString& _AccessToken);
+	FString GetAccessToken() const;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
 	FString Birth;

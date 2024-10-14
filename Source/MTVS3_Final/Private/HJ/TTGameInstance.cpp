@@ -212,12 +212,12 @@ int32 UTTGameInstance::GetUserId() const
 	return UserId;
 }
 
-void UTTGameInstance::SetAccessToken(const int32& _AccessToken)
+void UTTGameInstance::SetAccessToken(const FString& _AccessToken)
 {
 	AccessToken = _AccessToken;
 }
 
-int32 UTTGameInstance::GetAccessToken() const
+FString UTTGameInstance::GetAccessToken() const
 {
 	return AccessToken;
 }
