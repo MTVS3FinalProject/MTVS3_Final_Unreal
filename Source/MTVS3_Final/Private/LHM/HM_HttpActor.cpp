@@ -191,7 +191,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 	}
 }
 
-void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , FString Age , FText Nickname , int32 AvataData)
+void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , FString Birth , FText Nickname , int32 AvataData)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -214,7 +214,7 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	//Writer->WriteValue(TEXT("isHost") , bIsHost);
 	Writer->WriteValue(TEXT("email") , Email.ToString());
 	Writer->WriteValue(TEXT("password") , Password.ToString());
-	Writer->WriteValue(TEXT("birth") , Age);
+	Writer->WriteValue(TEXT("birth") , Birth);
 	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
 	Writer->WriteValue(TEXT("avatarData") , AvataData);
 	Writer->WriteObjectEnd();
@@ -322,7 +322,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 						FString AccessToken = MemberInfo->GetStringField("accessToken");
 						FString Nickname = MemberInfo->GetStringField(TEXT("nickname"));
 						int32 UserId = MemberInfo->GetIntegerField(TEXT("member_id"));
-						FString Age = MemberInfo->GetStringField(TEXT("birth"));
+						FString Birth = MemberInfo->GetStringField(TEXT("birth"));
 						int32 Coin = MemberInfo->GetIntegerField(TEXT("coin"));
 						FString AvatarData = MemberInfo->GetStringField(TEXT("avatarData"));
 
@@ -333,23 +333,22 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 							if ( GI )
 							{
 								// 토큰 설정 및 가져오기
-								//GI->SetAccessToken(AccessToken);
-								//UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *GI->AccessToken());
+								GI->SetAccessToken(AccessToken);
+								UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *GI->GetAccessToken());
 
 								// 닉네임 설정 및 가져오기
 								GI->SetNickname(Nickname);
 								UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
-
 
 								// 서버에서 주는 UserId 설정 및 가져오기
 								// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
 								GI->SetUserId(UserId);
 								UE_LOG(LogTemp , Log , TEXT("UserId: %d") , GI->GetUserId());
 
-							// 나이 설정 및 가져오기
-							GI->SetBirth(Age);
-							const char* CStr = TCHAR_TO_ANSI(*GI->GetBirth());
-							UE_LOG(LogTemp , Log , TEXT("Age : %hs") , CStr);
+								// 나이 설정 및 가져오기
+								GI->SetBirth(Birth);
+								const char* CStr = TCHAR_TO_ANSI(*GI->GetBirth());
+								UE_LOG(LogTemp , Log , TEXT("Birth : %hs") , CStr);
 
 								// 코인 더하기 및 가져오기
 								GI->SetCoin(Coin);
