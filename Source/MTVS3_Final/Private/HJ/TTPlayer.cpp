@@ -7,6 +7,7 @@
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Blueprint/UserWidget.h"
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -42,6 +43,8 @@ void ATTPlayer::BeginPlay()
 		pc->SetInputMode(InputMode);
 		pc->bShowMouseCursor = true; // 마우스 커서 표시
 	}
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	InitMainUI();
 }
 
 // Called every frame
@@ -119,12 +122,12 @@ void ATTPlayer::OnMyActionJumpComplete(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionRunStart(const FInputActionValue& Value)
 {
-	GetCharacterMovement()->MaxWalkSpeed = 800;
+	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
 }
 
 void ATTPlayer::OnMyActionRunComplete(const FInputActionValue& Value)
 {
-	GetCharacterMovement()->MaxWalkSpeed = 400;
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 }
 
 void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
@@ -153,5 +156,14 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 	else
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
+	}
+}
+
+void ATTPlayer::InitMainUI()
+{
+	MainUI = CastChecked<UUserWidget>(CreateWidget(GetWorld(), MainUIFactory));
+	if ( MainUI )
+	{
+		MainUI->AddToViewport();
 	}
 }

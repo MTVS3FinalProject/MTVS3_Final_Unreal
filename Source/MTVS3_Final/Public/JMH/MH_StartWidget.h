@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -23,6 +23,13 @@ public:
 	class UWidgetSwitcher* WS_StartWidgetSwitcher;
 	
 	//Login
+
+	//아이디 비번 비교없이 바로 세션 접속하도록 버튼 생성 -> 테스트모드
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_test_Login;
+
+	UFUNCTION()
+	void Test_CreateSesstion();
 	
 	UFUNCTION()
 	void GoToLobby();
@@ -31,25 +38,25 @@ public:
 	class UCanvasPanel* Can_Login;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_GoToLobby_SignIn;
+	class UButton*  Btn_GoToLobby_Login;
 
 	UFUNCTION()
 	void OnClickedSignInButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_SignUp;
+	class UButton*  Btn_SignUp_Login;
 
 	UFUNCTION()
 	void OnClickedSignUpButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Exit;
+	class UButton*  Btn_Exit_Login;
 
 	UFUNCTION()
 	void OnClickedExitButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_ForgotPassword;
+	class UButton*  Btn_ForgotPassword_Login;
 
 	UFUNCTION()
 	void OnClickedForgotPasswordButton();
@@ -60,19 +67,63 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_PassWord;
 
+	//QR
+	//서버한테 이미지 받아오는부분
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_QRUi1;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Confirm_QRUi1;
+
+	UFUNCTION()
+	void OnClickedConfirm_QRUi1Button();
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Back_QRUi1;
+
+	UFUNCTION()
+	void OnClickedBack_QRUi1Button();
+	
+	UPROPERTY(VisibleAnywhere)
+	class UTexture2D* QR_Texture;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_QR;
+
+	UFUNCTION()
+	void SetQRImg(class UTexture2D* newTexture);
+	
+	
+	//서버(신원인증 완료시)
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_QRUi2;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Confirm_QRUi2;
+
+	UFUNCTION()
+	void OnClickedConfirm_QRUi2Button();
+	
+	//
+
+	
+	
 	//SignUp
+	
+	//관리자 모드 off
+	bool bIsHost_Signup = false;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_SignUp;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Confirm;
+	class UButton*  Btn_Confirm_Signup;
 	
 	UFUNCTION()
-	void OnClickedConfirmButton();
+	void OnClickedConfirmSignupButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Back;
+	class UButton*  Btn_Back_Signup;
 	
 	UFUNCTION()
 	void OnClickedBackButton();
@@ -92,6 +143,8 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UComboBoxString*  Com_SetAge;
 	
+	int32 Age_SelectedValue;
+	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_AddPicture;
 
@@ -103,9 +156,15 @@ public:
 		
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_SignupPassWord;
+		
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UEditableText* EText_SignupPassWord2;
 
 
 	//Select Avatar
+	//아바타 버튼을 클릭하면 확대.. 그담엔?
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_AvatarImg;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_Avatar;
@@ -150,7 +209,7 @@ public:
 	void OnClickedGenderFeMaleButton();
 			
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_GoToLobby_Avatar;
+	class UButton*  Btn_Confirm_Avatar;
 	
 	UFUNCTION()
 	void OnClickedAvatarConfirmButton();
@@ -166,6 +225,14 @@ public:
 	
 	UFUNCTION()
 	void OnClickedAvatarStyleBButton();
+
+	UPROPERTY()
+	int32 CharacterModelNum = 0;
+
+	// KHJ
+	UFUNCTION()
+	void SetLoadingActive(bool bIsActive);
+	
 	
 	
 };

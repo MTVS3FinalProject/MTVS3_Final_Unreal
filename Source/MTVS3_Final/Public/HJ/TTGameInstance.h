@@ -4,17 +4,42 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "TTGameInstance.generated.h"
 
 /**
  *
  */
+
+ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindSignature, bool, value);
+
 UCLASS()
 class MTVS3_FINAL_API UTTGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
 public:
+	// 세션 관련 델리게이트
+	FFindSignature OnFindSignatureCompleteDelegate;
+
+	virtual void Init() override;
+
+	FString GenerateUniqueSessionName();
+
+	// 온라인 세션 인터페이스를 기억하고 싶다.
+	IOnlineSessionPtr SessionInterface;
+	FString MySessionName = TEXT("Rokke");
+
+	void FindOrCreateSession();
+	void OnFindOrCreateSessionComplete(bool bWasSuccessful);
+	void AttemptJoinSession();
+	void CreateMySession(int32 playerCount , const FString& SessionNam);
+	void OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful);
+	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
+	void OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result);
+
+	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
 	bool bIsHost;
 	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
