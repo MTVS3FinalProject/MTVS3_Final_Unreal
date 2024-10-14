@@ -11,6 +11,7 @@
 #include "HJ/TTPlayer.h"
 #include "HJ/TTGameInstance.h"
 #include "ImageUtils.h"
+#include "Unix/UnixPlatformHttp.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -50,15 +51,31 @@ void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
+	
 	if ( !Http ) return;
 
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
+	// libcurl 옵션 설정 (SSL 인증서 무시)
+//#if PLATFORM_WINDOWS || PLATFORM_LINUX
+//	if ( FPlatformHttp::GetDefaultHttpManager().IsUsingCurl() )
+//	{
+//		CURL* CurlHandle = static_cast<CURL*>(Request->GetHandle());
+//		if ( CurlHandle )
+//		{
+//			curl_easy_setopt(CurlHandle , CURLOPT_SSL_VERIFYPEER , 0L); // SSL 인증서 무시
+//			curl_easy_setopt(CurlHandle , CURLOPT_SSL_VERIFYHOST , 0L); // SSL 호스트 검증 무시
+//		}
+//	}
+//#endif
+
 	// 서버 URL 설정
-	Request->SetURL(TEXT("https://125.132.216.190:7878/api/qr/signup"));
+	//Request->SetURL(TEXT("https://125.132.216.190:7878/api/qr/signup"));
+	Request->SetURL(TEXT("http://172.27.149.47:7878/api/qr/signup"));
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+	//Request->SetHeader(TEXT("Ignore-SSL-Warnings") , TEXT("true"));
 
 	// 전달 데이터 (JSON)
 	FString ContentString;
