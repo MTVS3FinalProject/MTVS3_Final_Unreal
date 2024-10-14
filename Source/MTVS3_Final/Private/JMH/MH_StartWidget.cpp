@@ -8,6 +8,7 @@
 #include "Components/EditableText.h"
 #include "Components/Image.h"
 #include "Components/WidgetSwitcher.h"
+#include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor.h"
 
@@ -50,6 +51,16 @@ void UMH_StartWidget::NativeConstruct()
 			Com_SetAge->AddOption(FString::FromInt(i));
 		}
 	}
+
+	// KHJ
+	SetLoadingActive(false);
+
+	// 게임 인스턴스를 가져와서
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		gi->OnFindSignatureCompleteDelegate.AddDynamic(this, &UMH_StartWidget::SetLoadingActive);  // 세션 탐색 또는 생성
+	}
 }
 
 void UMH_StartWidget::Test_CreateSesstion()
@@ -61,6 +72,14 @@ void UMH_StartWidget::GoToLobby()
 {
 	//로비맵으로 이동(세션 생성,입장)
 	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Create Lobby Session"));
+
+	// KHJ
+	// 게임 인스턴스를 가져와서
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		gi->FindOrCreateSession();  // 세션 탐색 또는 생성
+	}
 }
 
 void UMH_StartWidget::OnClickedSignInButton()
