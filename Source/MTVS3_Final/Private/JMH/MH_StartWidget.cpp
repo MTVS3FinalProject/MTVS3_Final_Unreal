@@ -1,4 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "JMH/MH_StartWidget.h"
@@ -10,19 +10,17 @@
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor.h"
-#include "HJ/TTGameInstance.h"
 
 void UMH_StartWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
 	//Login
 	//이부분 확인해보기, 로그인 함수 하나 더 만들어서 그안에서 세션 생성해야함
 	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignInButton);
 	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
 	Btn_test_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::Test_CreateSesstion); //테스트 세션생성 버튼
 	Btn_Exit_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
-	Btn_AddPicture->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAddPictureButton);
+	//Btn_AddPicture->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAddPictureButton);
 	Btn_ForgotPassword_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
 	//Signup
 	Btn_Confirm_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirmSignupButton);
@@ -31,8 +29,8 @@ void UMH_StartWidget::NativeConstruct()
 	Btn_MANAGER->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedMANAGERButton);
 	Btn_SelectAvatarL->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSelectAvatarLButton);
 	Btn_SelectAvatarR->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSelectAvatarRButton);
-	Btn_GenderMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderMaleButton);
-	Btn_GenderFeMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderFeMaleButton);
+	//Btn_GenderMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderMaleButton);
+	//Btn_GenderFeMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderFeMaleButton);
 	//Avatar
 	Btn_Confirm_Avatar->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAvatarConfirmButton);
 
@@ -52,16 +50,6 @@ void UMH_StartWidget::NativeConstruct()
 			Com_SetAge->AddOption(FString::FromInt(i));
 		}
 	}
-
-	// KHJ
-	SetLoadingActive(false);
-
-	// 게임 인스턴스를 가져와서
-	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
-	{
-		gi->OnFindSignatureCompleteDelegate.AddDynamic(this, &UMH_StartWidget::SetLoadingActive);  // 세션 탐색 또는 생성
-	}
 }
 
 void UMH_StartWidget::Test_CreateSesstion()
@@ -73,14 +61,6 @@ void UMH_StartWidget::GoToLobby()
 {
 	//로비맵으로 이동(세션 생성,입장)
 	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Create Lobby Session"));
-
-	// KHJ
-	// 게임 인스턴스를 가져와서
-	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
-	{
-		gi->FindOrCreateSession();  // 세션 탐색 또는 생성
-	}
 }
 
 void UMH_StartWidget::OnClickedSignInButton()
@@ -103,6 +83,18 @@ void UMH_StartWidget::OnClickedSignInButton()
 
 void UMH_StartWidget::OnClickedSignUpButton()
 {
+	AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
+	if (HttpActor)
+	{
+		HttpActor->ReqPostGetVerifyIdentityQR(EText_Email->GetText());
+	}
+	else
+	{
+		//에러창
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
+	}
+	
 	//회원가입 스위쳐 이동
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(1);
 }
@@ -120,6 +112,18 @@ void UMH_StartWidget::OnClickedForgotPasswordButton()
 void UMH_StartWidget::OnClickedConfirm_QRUi1Button()
 {
 	//확인 버튼 누르면(얼굴인식 확인)->
+	AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
+	if (HttpActor)
+	{
+		HttpActor->ReqPostVerifyIdentity(EText_Email->GetText());
+	}
+	else
+	{
+		//에러창
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
+	}
+	
 	//확인완료 ui로->
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(4);
 }
@@ -139,6 +143,7 @@ void UMH_StartWidget::SetQRImg(UTexture2D* newTexture)
 void UMH_StartWidget::OnClickedConfirm_QRUi2Button()
 {
 	//확인버튼 누르면 ->
+	
 	//아바타 설정ui로 이동.
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
 	
@@ -200,13 +205,6 @@ void UMH_StartWidget::OnClickedMANAGERButton()
 	//bIsHost_Signup = true;
 }
 
-void UMH_StartWidget::OnClickedAddPictureButton()
-{
-	//지워도됨?
-	//사진 서버로 전달
-	//사진 정상적인지 확인
-}
-
 void UMH_StartWidget::OnClickedSelectAvatarRButton()
 {
 	// 아바타 이미지 오른쪽 이미지로
@@ -231,18 +229,6 @@ void UMH_StartWidget::OnClickedSelectAvatarLButton()
 	
 }
 
-//삭제
-void UMH_StartWidget::OnClickedGenderMaleButton()
-{
-	//Gender == Male
-}
-
-void UMH_StartWidget::OnClickedGenderFeMaleButton()
-{
-	//Gender == FeMale
-}
-//
-
 void UMH_StartWidget::OnClickedAvatarConfirmButton()
 {
 	//회원가입 완료-> 로비맵으로 이동(세션 생성,입장) - >콘서트 선택UI로 이동
@@ -262,31 +248,3 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 //회원가입 응답 성공이면 로비로 이동
 	GoToLobby();
 }
-
-//삭제
-void UMH_StartWidget::OnClickedAvatarStyleAButton()
-{
-	//여자캐릭 or 남자캐릭?
-}
-
-void UMH_StartWidget::OnClickedAvatarStyleBButton()
-{
-	//여자캐릭 or 남자캐릭?
-}
-
-void UMH_StartWidget::SetLoadingActive(bool bIsActive)
-{
-	if ( bIsActive )
-	{
-		UE_LOG(LogTemp , Log , TEXT("Searching for sessions..."));
-		// 탐색 중: 버튼 비활성화, 텍스트 표시
-		// (예제) FindSessionsText->SetText(FText::FromString("Searching..."));
-	}
-	else
-	{
-		UE_LOG(LogTemp , Log , TEXT("Session search complete."));
-		// 탐색 종료: 버튼 활성화, 텍스트 숨기기
-		// (예제) FindSessionsText->SetText(FText::FromString(""));
-	}
-}
-//
