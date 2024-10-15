@@ -45,13 +45,16 @@ public:
 #pragma region KHJ
 	ACharacter* OverlappingPlayer = nullptr;  // 오버랩된 플레이어 추적용
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|TTSettings")
+	float SeatOffset = 30.0;
 	FTransform GetSittingTransform();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|TTSettings")
+	float StandingOffset = 50.0;
+	FTransform GetStandingTransform();
 
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "Default|Chair")
 	bool bIsOccupied;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|TTSettings")
-	float SeatOffset = 30.0;
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 #pragma endregion
