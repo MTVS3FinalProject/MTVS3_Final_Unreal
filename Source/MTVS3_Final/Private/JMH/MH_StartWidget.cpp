@@ -176,7 +176,6 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 {
 	//회원가입 완료 -> 유저정보 서버로 전달
 	//비번 중복확인.
-	//FText 끼리 비교? string 으로 비교?
 	FText Password1 = EText_SignupPassWord->GetText();
 	FText Password2 = EText_SignupPassWord2->GetText();
 
@@ -191,9 +190,6 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 	//비밀번호 같은지 확인
 	if (Password1.EqualTo(Password2))
 	{
-		//사진확인 QR로 이동
-		//WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
-		
 		//QR을 서버가 전달 성공했다면
 		AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
@@ -206,9 +202,8 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 			//에러창
 			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
 		}
+	
 		//QR띄워주는 ui로 이동.->
-		//WS_StartWidgetSwitcher->SetActiveWidgetIndex(3);
-		//QR이미지 받아오기 ->
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password!!!"));
 	}
 	else
