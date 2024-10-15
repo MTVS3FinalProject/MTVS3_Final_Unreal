@@ -97,6 +97,7 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 			{
 				// StartUI에서 QR UI로 넘어가는 함수 호출하기
 				StartUI->SetQRImg(Texture);
+				StartUI->SetWidgetSwitcher(3);
 				UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
 			}
 			else
@@ -172,6 +173,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 				{
 					UE_LOG(LogTemp, Log, TEXT("Identity Verified Successfully"));
 					// 로그인 또는 다음 단계로 넘어가는 처리
+					StartUI->SetWidgetSwitcher(4);
 				}
 				else
 				{
@@ -201,7 +203,6 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-
 	FString FormattedUrl = FString::Printf(TEXT("%s/auth/signup") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
@@ -323,7 +324,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 						FString Nickname = MemberInfo->GetStringField(TEXT("nickname"));
 						FString Birth = MemberInfo->GetStringField(TEXT("birth"));
 						int32 Coin = MemberInfo->GetIntegerField(TEXT("coin"));
-						FString AvatarData = MemberInfo->GetStringField(TEXT("avatarData"));
+						//int32 AvatarData = MemberInfo->GetStringField(TEXT("avatarData"));
 
 						ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 						if ( TTPlayer )
@@ -441,7 +442,7 @@ void AHM_HttpActor::OnResPostJoinTTSession(FHttpRequestPtr Request , FHttpRespon
 				{
 					UE_LOG(LogTemp , Log , TEXT("Successfully joined TT session."));
 					// TT 세션 입장 성공 처리
-					// StartUI-> 
+					StartUI->GoToLobby();
 				}
 				else
 				{
