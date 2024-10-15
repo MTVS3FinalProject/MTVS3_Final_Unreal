@@ -311,6 +311,8 @@ void ATTPlayer::MulticastStandUp_Implementation()
 	if ( Chair && Anim )
 	{
 		Chair->bIsOccupied = false;
+		FTransform StandingTransform = Chair->GetStandingTransform();
+		SetActorTransform(StandingTransform);
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);  // 이동 모드 복원
 		Anim->PlayStandUpMontage();
 	}
