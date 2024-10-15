@@ -110,10 +110,6 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 		FPSCameraComp->SetActive(true);
 		TPSCameraComp->SetActive(false);
 
-		// 카메라가 항상 캐릭터의 앞을 바라보게 설정
-		FPSCameraComp->SetWorldLocation(GetActorLocation() + FVector(0.0f , 0.0f , 50.0f));  // 머리 위치로 조정
-		FPSCameraComp->SetRelativeRotation(FRotator::ZeroRotator);  // 정면 방향
-
 		// 플레이어의 회전 방향과 카메라 정렬
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		if ( PC )
@@ -189,11 +185,17 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
 			ServerSetSitting(true);
+
+			// 의자의 회전값 가져오기
+			FRotator ChairRotation = Chair->GetActorRotation();
+
+			// 카메라의 회전을 의자에 맞게 설정
+			FPSCameraComp->SetWorldRotation(ChairRotation);  // 의자 방향으로 카메라 회전 설정
 			SwitchCamera(!bIsThirdPerson);
 
 			// 15초 후에 자동으로 일어나도록 타이머 시작
 			GetWorld()->GetTimerManager().SetTimer(
-				StandUpTimerHandle , this , &ATTPlayer::ForceStandUp , 15.0f , false);
+				StandUpTimerHandle , this , &ATTPlayer::ForceStandUp , MaxSittingDuration , false);
 		}
 		// 의자가 비어 있지 않고 내가 앉아 있으면 일어난다.
 		else if ( Chair->bIsOccupied && bIsSitting )

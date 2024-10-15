@@ -36,7 +36,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UCameraComponent* FPSCameraComp;
 
-	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
+	UPROPERTY(EditAnywhere , Category = "Default|Camera")
 	bool bIsThirdPerson = true;
 	void SwitchCamera(bool _bIsThirdPerson);
 
@@ -119,6 +119,8 @@ public:
 
 private:
 	FTimerHandle StandUpTimerHandle;  // 타이머 핸들
+	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
+	float MaxSittingDuration = 15.0f;
 
 	void ForceStandUp();
 };
