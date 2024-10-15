@@ -190,6 +190,10 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
 			ServerSetSitting(true);
 			SwitchCamera(!bIsThirdPerson);
+
+			// 15초 후에 자동으로 일어나도록 타이머 시작
+			GetWorld()->GetTimerManager().SetTimer(
+				StandUpTimerHandle , this , &ATTPlayer::ForceStandUp , 15.0f , false);
 		}
 		// 의자가 비어 있지 않고 내가 앉아 있으면 일어난다.
 		else if ( Chair->bIsOccupied && bIsSitting )
@@ -256,6 +260,17 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 	// bIsSitting을 개별 클라이언트에 복제
 	DOREPLIFETIME(ATTPlayer , bIsSitting);
+}
+
+void ATTPlayer::ForceStandUp()
+{
+	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	if ( Chair && Chair->bIsOccupied && bIsSitting )
+	{
+		UE_LOG(LogTemp , Warning , TEXT("15초 경과: 강제로 일어납니다."));
+		ServerSetSitting(false);  // 서버에서 상태 업데이트
+		SwitchCamera(bIsThirdPerson);  // 3인칭 시점 복원
+	}
 }
 
 void ATTPlayer::ServerSetSitting_Implementation(bool _bIsSitting)

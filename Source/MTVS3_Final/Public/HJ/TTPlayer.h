@@ -36,7 +36,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UCameraComponent* FPSCameraComp;
 
-	UPROPERTY(EditAnywhere, Category = "Default|TTSettings")
+	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
 	bool bIsThirdPerson = true;
 	void SwitchCamera(bool _bIsThirdPerson);
 
@@ -105,7 +105,7 @@ public:
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "State")
+	UPROPERTY(Replicated , BlueprintReadOnly , Category = "State")
 	bool bIsSitting;
 
 	UFUNCTION(Server , Unreliable)
@@ -116,4 +116,9 @@ public:
 
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastStandUp();
+
+private:
+	FTimerHandle StandUpTimerHandle;  // 타이머 핸들
+
+	void ForceStandUp();
 };
