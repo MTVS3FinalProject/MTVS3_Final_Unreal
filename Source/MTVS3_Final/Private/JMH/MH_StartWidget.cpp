@@ -99,12 +99,6 @@ void UMH_StartWidget::OnClickedSignInButton()
 	if (HttpActor)
 	{
 		HttpActor->ReqPostLogin(EText_Email->GetText() , EText_PassWord->GetText());
-
-		auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-		if (gi)
-		{
-			HttpActor->ReqPostJoinTTSession(gi->AccessToken);
-		}
 	}
 	else
 	{
@@ -334,7 +328,7 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Signup Error"));
 	}
 	//회원가입 응답 성공이면 로비로 이동
-	GoToLobby();
+	//GoToLobby();
 }
 
 void UMH_StartWidget::SetLoadingActive(bool bIsActive)
