@@ -18,15 +18,20 @@ ATTPlayer::ATTPlayer()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
 	SpringArmComp->SetupAttachment(RootComponent);
-	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 100));
+	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 50));
 	SpringArmComp->TargetArmLength = 430;
 	SpringArmComp->bUsePawnControlRotation = true;
 
-	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	CameraComp->SetupAttachment(SpringArmComp);
-	CameraComp->bUsePawnControlRotation = false;
+	TPSCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	TPSCameraComp->SetupAttachment(SpringArmComp);
+	TPSCameraComp->bUsePawnControlRotation = false;
+
+	FPSCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FPSCameraComp->SetupAttachment(RootComponent);
+	FPSCameraComp->SetRelativeLocation(FVector(-100 , 0 , 80));
+	FPSCameraComp->bUsePawnControlRotation = true;
 }
 
 // Called when the game starts or when spawned
@@ -48,6 +53,7 @@ void ATTPlayer::BeginPlay()
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	InitMainUI();
+	SwitchCamera(bIsThirdPerson);
 }
 
 // Called every frame
@@ -82,6 +88,45 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		input->BindAction(IA_Purchase , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionPurchase);
 		input->BindAction(IA_Inventory , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionInventory);
 		input->BindAction(IA_Chat , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionChat);
+	}
+}
+
+void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
+{
+	if ( _bIsThirdPerson ) // 3인칭 모드
+	{
+		GetMesh()->SetOwnerNoSee(false);
+		FPSCameraComp->SetActive(false);
+		TPSCameraComp->SetActive(true);
+		// 플레이어의 회전 방향과 카메라 정렬
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if ( PC )
+		{
+			PC->SetViewTargetWithBlend(this);  // 부드러운 시점 전환
+		}
+	}
+	else // 1인칭 모드
+	{
+		FPSCameraComp->SetActive(true);
+		TPSCameraComp->SetActive(false);
+
+		// 플레이어의 회전 방향과 카메라 정렬
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if ( PC )
+		{
+			// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
+			GetMesh()->SetOwnerNoSee(true);
+
+			// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
+			FRotator ControlRotation = GetActorRotation();
+			PC->SetControlRotation(ControlRotation);
+
+			// 카메라가 항상 캐릭터의 앞을 바라보게 설정
+			FPSCameraComp->SetWorldLocation(GetActorLocation() + FVector(0.0f , 0.0f , 50.0f));  // 머리 위치로 조정
+			FPSCameraComp->SetRelativeRotation(FRotator::ZeroRotator);  // 정면 방향
+
+			PC->SetViewTargetWithBlend(this);  // 부드러운 시점 전환
+		}
 	}
 }
 
@@ -144,12 +189,14 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
 			ServerSetSitting(true);
+			SwitchCamera(!bIsThirdPerson);
 		}
 		// 의자가 비어 있지 않고 내가 앉아 있으면 일어난다.
 		else if ( Chair->bIsOccupied && bIsSitting )
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
 			ServerSetSitting(false);
+			SwitchCamera(bIsThirdPerson);
 		}
 		// 의자가 비어 있지 않고 내가 앉아 있지 않으면 아무 일도 안 일어난다.
 	}
