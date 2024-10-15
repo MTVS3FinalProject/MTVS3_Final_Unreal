@@ -78,6 +78,9 @@ public:
 	UFUNCTION()
 	void OnClickedConfirm_QRUi1Button();
 
+	UFUNCTION()
+	void SetWidgetSwitcher(int32 num);
+
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Back_QRUi1;
 

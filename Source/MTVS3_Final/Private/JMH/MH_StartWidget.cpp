@@ -40,7 +40,7 @@ void UMH_StartWidget::NativeConstruct()
 	Btn_Confirm_QRUi2->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirm_QRUi2Button);
 
 	// OnTextChanged 델리게이트에 함수 바인딩
-	EText_SignupBirth->OnTextChanged.AddDynamic(this, &UMH_StartWidget::OnTextChanged);
+	EText_SignupBirth->OnTextChanged.AddDynamic(this , &UMH_StartWidget::OnTextChanged);
 
 	//나이 설정 1~100
 	if (Com_SetAge)
@@ -54,7 +54,7 @@ void UMH_StartWidget::NativeConstruct()
 
 	//마우스 커서. 
 	APlayerController* Pc = GetWorld()->GetFirstPlayerController();
-	if(Pc)
+	if (Pc)
 	{
 		Pc->SetInputMode(FInputModeUIOnly());
 		Pc->SetShowMouseCursor(true);
@@ -65,12 +65,10 @@ void UMH_StartWidget::NativeConstruct()
 
 	// 게임 인스턴스를 가져와서
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
-		gi->OnFindSignatureCompleteDelegate.AddDynamic(this, &UMH_StartWidget::SetLoadingActive);  // 세션 탐색 또는 생성
+		gi->OnFindSignatureCompleteDelegate.AddDynamic(this , &UMH_StartWidget::SetLoadingActive); // 세션 탐색 또는 생성
 	}
-	
-	
 }
 
 void UMH_StartWidget::Test_CreateSesstion()
@@ -82,15 +80,16 @@ void UMH_StartWidget::GoToLobby()
 {
 	//로비맵으로 이동(세션 생성,입장)
 	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Create Lobby Session"));
-	
+
 	// KHJ
 	// 게임 인스턴스를 가져와서
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
-		gi->FindOrCreateSession();  // 세션 탐색 또는 생성
+		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
 	}
 }
+
 //로그인 버튼
 void UMH_StartWidget::OnClickedSignInButton()
 {
@@ -100,6 +99,12 @@ void UMH_StartWidget::OnClickedSignInButton()
 	if (HttpActor)
 	{
 		HttpActor->ReqPostLogin(EText_Email->GetText() , EText_PassWord->GetText());
+
+		auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+		if (gi)
+		{
+			HttpActor->ReqPostJoinTTSession(gi->AccessToken);
+		}
 	}
 	else
 	{
@@ -107,8 +112,9 @@ void UMH_StartWidget::OnClickedSignInButton()
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Login Error"));
 	}
 	//만약 성공하면 로비로 이동
-	GoToLobby();
+	//GoToLobby();
 }
+
 //회원가입하러 
 void UMH_StartWidget::OnClickedSignUpButton()
 {
@@ -125,6 +131,7 @@ void UMH_StartWidget::OnClickedForgotPasswordButton()
 {
 	//비번찾기
 }
+
 //QR 확인
 void UMH_StartWidget::OnClickedConfirm_QRUi1Button()
 {
@@ -140,9 +147,15 @@ void UMH_StartWidget::OnClickedConfirm_QRUi1Button()
 		//에러창
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
 	}
-	
+
 	//확인완료 ui로->
-	WS_StartWidgetSwitcher->SetActiveWidgetIndex(4);
+	//WS_StartWidgetSwitcher->SetActiveWidgetIndex(4);
+}
+
+void UMH_StartWidget::SetWidgetSwitcher(int32 num)
+{
+	//서버에서 불러와서 입력
+	WS_StartWidgetSwitcher->SetActiveWidgetIndex(num);
 }
 
 void UMH_StartWidget::OnClickedBack_QRUi1Button()
@@ -150,6 +163,7 @@ void UMH_StartWidget::OnClickedBack_QRUi1Button()
 	//회원가입으로 다시 이동
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(1);
 }
+
 //Http에서 서버로 QR 요청
 void UMH_StartWidget::SetQRImg(UTexture2D* newTexture)
 {
@@ -162,7 +176,6 @@ void UMH_StartWidget::OnClickedConfirm_QRUi2Button()
 	//확인버튼 누르면 ->
 	//아바타 설정ui로 이동.
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
-	
 }
 
 void UMH_StartWidget::OnClickedConfirmSignupButton()
@@ -184,13 +197,23 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 	//비밀번호 같은지 확인
 	if (Password1.EqualTo(Password2))
 	{
-
 		//사진확인 QR로 이동
 		//WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
-		//
-		//사진은 어케 불러와->
+		
+		//QR을 서버가 전달 성공했다면
+		AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
+		if (HttpActor)
+		{
+			HttpActor->ReqPostGetVerifyIdentityQR(EText_Email->GetText());
+		}
+		else
+		{
+			//에러창
+			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
+		}
 		//QR띄워주는 ui로 이동.->
-		WS_StartWidgetSwitcher->SetActiveWidgetIndex(3);
+		//WS_StartWidgetSwitcher->SetActiveWidgetIndex(3);
 		//QR이미지 받아오기 ->
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password!!!"));
 	}
@@ -218,10 +241,10 @@ void UMH_StartWidget::OnClickedMANAGERButton()
 	//MANAGER로 유저모드 설정. 관리자모드 on
 	//bIsHost_Signup = true;
 }
+
 //
 void UMH_StartWidget::OnTextChanged(const FText& Text)
 {
-
 	FString InputText = Text.ToString();
 	FString FormattedText = FormatDateInput(InputText);
 
@@ -259,7 +282,7 @@ FString UMH_StartWidget::FormatDateInput(const FString& InputText)
 	}
 	else if (Length > 6)
 	{
-		FormattedText = CleanedText.Left(4) + TEXT("/") + CleanedText.Mid(4, 2) + TEXT("/") + CleanedText.Mid(6);
+		FormattedText = CleanedText.Left(4) + TEXT("/") + CleanedText.Mid(4 , 2) + TEXT("/") + CleanedText.Mid(6);
 	}
 
 	// 최대 길이 제한 (10자리: YYYY/MM/DD)
@@ -274,7 +297,7 @@ FString UMH_StartWidget::FormatDateInput(const FString& InputText)
 void UMH_StartWidget::OnClickedSelectAvatarRButton()
 {
 	// 아바타 이미지 오른쪽 이미지로
-		CharacterModelNum++;
+	CharacterModelNum++;
 	if (CharacterModelNum > 4)
 	{
 		CharacterModelNum = 0;
@@ -292,7 +315,6 @@ void UMH_StartWidget::OnClickedSelectAvatarLButton()
 		CharacterModelNum = 4;
 	}
 	//애니메이션, 사진(버튼) 클릭하면 위젯 확대
-	
 }
 
 void UMH_StartWidget::OnClickedAvatarConfirmButton()
@@ -311,11 +333,10 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 		//에러창
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Signup Error"));
 	}
-//회원가입 응답 성공이면 로비로 이동
+	//회원가입 응답 성공이면 로비로 이동
 	GoToLobby();
 }
 
 void UMH_StartWidget::SetLoadingActive(bool bIsActive)
 {
-	
 }
