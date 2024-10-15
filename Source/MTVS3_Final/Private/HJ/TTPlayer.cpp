@@ -110,6 +110,10 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 		FPSCameraComp->SetActive(true);
 		TPSCameraComp->SetActive(false);
 
+		// 카메라가 항상 캐릭터의 앞을 바라보게 설정
+		FPSCameraComp->SetWorldLocation(GetActorLocation() + FVector(0.0f , 0.0f , 50.0f));  // 머리 위치로 조정
+		FPSCameraComp->SetRelativeRotation(FRotator::ZeroRotator);  // 정면 방향
+
 		// 플레이어의 회전 방향과 카메라 정렬
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		if ( PC )
@@ -120,10 +124,6 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 			// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
 			FRotator ControlRotation = GetActorRotation();
 			PC->SetControlRotation(ControlRotation);
-
-			// 카메라가 항상 캐릭터의 앞을 바라보게 설정
-			FPSCameraComp->SetWorldLocation(GetActorLocation() + FVector(0.0f , 0.0f , 50.0f));  // 머리 위치로 조정
-			FPSCameraComp->SetRelativeRotation(FRotator::ZeroRotator);  // 정면 방향
 
 			PC->SetViewTargetWithBlend(this);  // 부드러운 시점 전환
 		}
