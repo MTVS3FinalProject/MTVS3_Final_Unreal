@@ -32,7 +32,8 @@ public:
 #pragma endregion
 
 	// 백엔드에 요청 보낼 때만 api 포함, 프론트는 api X
-	const FString _url = "https://ticketaka.shop/api";
+	//const FString _url = "https://ticketaka.shop/api";
+	const FString _url = "http://221.163.19.218:7878/api";
 
 //===========================================================================================================
 
@@ -61,14 +62,6 @@ public:
 
 	// 로그인 요청에 대한 응답을 처리하는 함수
 	void OnResPostLogin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-
-//===========================================================================================================
-
-	// TT세션 입장 요청을 서버에 보내는 함수
-	void ReqPostJoinTTSession(FString AccessToken);
-
-	// TT세션 입장 요청에 대한 응답을 처리하는 함수
-	void OnResPostJoinTTSession(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 //===========================================================================================================
 
