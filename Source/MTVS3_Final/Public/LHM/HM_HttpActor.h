@@ -31,7 +31,8 @@ public:
 	class UMH_StartWidget* StartUI;
 #pragma endregion
 
-	const FString _url = "http://121.165.108.133:7878/api";
+	// 백엔드에 요청 보낼 때만 api 포함, 프론트는 api X
+	const FString _url = "https://ticketaka.shop/api";
 
 //===========================================================================================================
 
@@ -64,7 +65,7 @@ public:
 //===========================================================================================================
 
 	// TT세션 입장 요청을 서버에 보내는 함수
-	void ReqPostJoinTTSession(int32 UserId, int64 TTSessionId);
+	void ReqPostJoinTTSession(FString AccessToken);
 
 	// TT세션 입장 요청에 대한 응답을 처리하는 함수
 	void OnResPostJoinTTSession(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
@@ -72,10 +73,16 @@ public:
 //===========================================================================================================
 
 	// 좌석에 접수 신청하는 요청을 서버에 보내는 함수
-	void ReqPostApplyForSeat(int32 UserId, int64 SeatId);
+	void ReqPostApplyForSeat(FString AccessToken , int32 Section , int32 SeatId);
 
 	// 좌석 접수 신청하는 요청에 대한 응답을 처리하는 함수
 	void OnResPostApplyForSeat(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+
+	// 좌석 예약 취소 요청을 서버에 보내는 함수
+	void ReqPostCancleBooking(int32 UserId , int64 SeatId);
+
+	// 좌석 예약 취소 요청에 대한 응답을 처리하는 함수
+	void OnResPostCancleBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 예약을 검증하는 요청을 서버에 보내는 함수
 	//void ReqPostVerifyBooking(int32 UserId, int64 SeatId);
@@ -94,12 +101,6 @@ public:
 
 	// 좌석 예약 완료 요청에 대한 응답을 처리하는 함수
 	//void OnResPostCompleteBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-
-	// 좌석 예약 취소 요청을 서버에 보내는 함수
-	void ReqPostCancleBooking(int32 UserId , int64 SeatId);
-
-	// 좌석 예약 취소 요청에 대한 응답을 처리하는 함수
-	void OnResPostCancleBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	//===========================================================================================================
 

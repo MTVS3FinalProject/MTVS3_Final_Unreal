@@ -321,7 +321,6 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 						//// 받아올 정보 추출
 						FString AccessToken = MemberInfo->GetStringField("accessToken");
 						FString Nickname = MemberInfo->GetStringField(TEXT("nickname"));
-						int32 UserId = MemberInfo->GetIntegerField(TEXT("member_id"));
 						FString Birth = MemberInfo->GetStringField(TEXT("birth"));
 						int32 Coin = MemberInfo->GetIntegerField(TEXT("coin"));
 						FString AvatarData = MemberInfo->GetStringField(TEXT("avatarData"));
@@ -339,11 +338,6 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 								// 닉네임 설정 및 가져오기
 								GI->SetNickname(Nickname);
 								UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
-
-								// 서버에서 주는 UserId 설정 및 가져오기
-								// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
-								GI->SetUserId(UserId);
-								UE_LOG(LogTemp , Log , TEXT("UserId: %d") , GI->GetUserId());
 
 								// 나이 설정 및 가져오기
 								GI->SetBirth(Birth);
@@ -393,7 +387,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 
 //=========================================================================================================================================
 
-void AHM_HttpActor::ReqPostJoinTTSession(int32 UserId , int64 TTSessionId)
+void AHM_HttpActor::ReqPostJoinTTSession(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -411,8 +405,7 @@ void AHM_HttpActor::ReqPostJoinTTSession(int32 UserId , int64 TTSessionId)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("userID"), UserId);
-	Writer->WriteValue(TEXT("ttSessionID"), TTSessionId);
+	Writer->WriteValue(TEXT("accessToken"), AccessToken);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -448,11 +441,13 @@ void AHM_HttpActor::OnResPostJoinTTSession(FHttpRequestPtr Request , FHttpRespon
 				{
 					UE_LOG(LogTemp , Log , TEXT("Successfully joined TT session."));
 					// TT 세션 입장 성공 처리
+					// StartUI-> 
 				}
 				else
 				{
 					UE_LOG(LogTemp , Warning , TEXT("Failed to join TT session."));
 					// TT 세션 입장 실패 처리
+					// StartUI-> 
 				}
 			}
 		}
@@ -469,7 +464,7 @@ void AHM_HttpActor::OnResPostJoinTTSession(FHttpRequestPtr Request , FHttpRespon
 
 //=========================================================================================================================================
 
-void AHM_HttpActor::ReqPostApplyForSeat(int32 UserId , int64 SeatId)
+void AHM_HttpActor::ReqPostApplyForSeat(FString AccessToken , int32 Section , int32 SeatId)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -487,8 +482,9 @@ void AHM_HttpActor::ReqPostApplyForSeat(int32 UserId , int64 SeatId)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("userID") , UserId);
-	Writer->WriteValue(TEXT("seatID") , SeatId);
+	Writer->WriteValue(TEXT("accessToken") , AccessToken);
+	Writer->WriteValue(TEXT("section") , Section);
+	Writer->WriteValue(TEXT("seatId") , SeatId);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
