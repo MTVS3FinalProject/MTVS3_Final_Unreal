@@ -31,10 +31,17 @@ public:
 	class USpringArmComponent* SpringArmComp;
 
 	UPROPERTY(EditDefaultsOnly)
-	class UCameraComponent* CameraComp;
+	class UCameraComponent* TPSCameraComp;
+
+	UPROPERTY(EditDefaultsOnly)
+	class UCameraComponent* FPSCameraComp;
+
+	UPROPERTY(EditAnywhere, Category = "Default|TTSettings")
+	bool bIsThirdPerson = true;
+	void SwitchCamera(bool _bIsThirdPerson);
 
 	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
-	float WalkSpeed = 400.0f;
+	float WalkSpeed = 500.0f;
 	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
 	float RunSpeed = 800.0f;
 
