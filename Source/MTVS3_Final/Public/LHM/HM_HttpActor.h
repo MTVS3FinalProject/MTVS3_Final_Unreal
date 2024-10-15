@@ -31,7 +31,8 @@ public:
 	class UMH_StartWidget* StartUI;
 #pragma endregion
 
-	const FString _url = "http://121.165.108.133:7878/api";
+	// 백엔드에 요청 보낼 때만 api 포함, 프론트는 api X
+	const FString _url = "https://ticketaka.shop/api";
 
 //===========================================================================================================
 
