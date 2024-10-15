@@ -36,11 +36,6 @@ void AHJ_Actor::Tick(float DeltaTime)
 		GI->SetNickname("Nickname");
 		FString Nickname = GI->GetNickname();
 
-		// 서버에서 주는 UserId 설정 및 가져오기
-		// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
-		GI->SetUserId(12345);
-		int32 UserId = GI->GetUserId();
-
 		// 나이 서버에서 받아오기, 나이 가져오기
 		GI->SetBirth(/*나이 저장 변수*/"20");
 		FString Age = GI->GetBirth();

@@ -51,7 +51,7 @@ public:
 	bool bIsOccupied;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|TTSettings")
-	float SeatOffset = 55.0f;
+	float SeatOffset = 30.0;
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 #pragma endregion

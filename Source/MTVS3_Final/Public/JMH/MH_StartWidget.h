@@ -159,7 +159,15 @@ public:
 		
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_SignupPassWord2;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UEditableText* EText_SignupBirth;
 
+	UFUNCTION()
+	void OnTextChanged(const FText& Text);
+
+	UFUNCTION()
+	FString FormatDateInput(const FString& InputText);
 
 	//Select Avatar
 	//아바타 버튼을 클릭하면 확대.. 그담엔?
@@ -181,16 +189,6 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UImage* Img_Avatar4;
 	
-	/*
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UImage* Img_Step1;
-
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UImage* Img_Step2;
-
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UImage* Img_Step3;*/
-	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_SelectAvatarR;
 
@@ -205,38 +203,13 @@ public:
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_Nickname;
-	
-	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	//class UButton*  Btn_GenderMale;
-		
-	//UFUNCTION()
-	//void OnClickedGenderMaleButton();
-		
-	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	//class UButton*  Btn_GenderFeMale;
-
-	//UFUNCTION()
-	//void OnClickedGenderFeMaleButton();
 			
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Confirm_Avatar;
 	
 	UFUNCTION()
 	void OnClickedAvatarConfirmButton();
-
-	/*
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_AvatarStyleA;
 	
-	UFUNCTION()
-	void OnClickedAvatarStyleAButton();
-	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_AvatarStyleB;
-	
-	UFUNCTION()
-	void OnClickedAvatarStyleBButton();
-*/
 	UPROPERTY()
 	int32 CharacterModelNum = 0;
 

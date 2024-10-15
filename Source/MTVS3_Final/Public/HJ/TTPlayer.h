@@ -31,14 +31,21 @@ public:
 	class USpringArmComponent* SpringArmComp;
 
 	UPROPERTY(EditDefaultsOnly)
-	class UCameraComponent* CameraComp;
+	class UCameraComponent* TPSCameraComp;
 
-	UPROPERTY(EditAnywhere, Category = "Default|TTSettings")
-	float WalkSpeed = 400.0f;
-	UPROPERTY(EditAnywhere, Category = "Default|TTSettings")
+	UPROPERTY(EditDefaultsOnly)
+	class UCameraComponent* FPSCameraComp;
+
+	UPROPERTY(EditAnywhere , Category = "Default|Camera")
+	bool bIsThirdPerson = true;
+	void SwitchCamera(bool _bIsThirdPerson);
+
+	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
+	float WalkSpeed = 500.0f;
+	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
 	float RunSpeed = 800.0f;
 
-	#pragma region 입력
+#pragma region 입력
 	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
 	class UInputMappingContext* IMC_TTPlayer;
 
@@ -87,12 +94,33 @@ public:
 	UPROPERTY(EditAnywhere , Category = "Default|Settings")
 	bool bIsChatActive;
 	void OnMyActionChat(const FInputActionValue& Value);
-	#pragma endregion
+#pragma endregion
 
-	UPROPERTY(EditAnywhere, Category = "Default|UI")
+	UPROPERTY(EditAnywhere , Category = "Default|UI")
 	TSubclassOf<class UUserWidget> MainUIFactory;
 	UPROPERTY()
 	class UUserWidget* MainUI;
 
 	void InitMainUI();
+
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+
+	UPROPERTY(Replicated , BlueprintReadOnly , Category = "State")
+	bool bIsSitting;
+
+	UFUNCTION(Server , Unreliable)
+	void ServerSetSitting(bool _bIsSitting);
+
+	UFUNCTION(NetMulticast , Unreliable)
+	void MulticastSitDown();
+
+	UFUNCTION(NetMulticast , Unreliable)
+	void MulticastStandUp();
+
+private:
+	FTimerHandle StandUpTimerHandle;  // 타이머 핸들
+	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
+	float MaxSittingDuration = 15.0f;
+
+	void ForceStandUp();
 };

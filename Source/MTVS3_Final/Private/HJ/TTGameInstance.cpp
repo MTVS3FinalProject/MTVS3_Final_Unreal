@@ -197,21 +197,6 @@ FString UTTGameInstance::GetNickname() const
 	return Nickname;
 }
 
-void UTTGameInstance::SetUserId(const int32& _UserId)
-{
-	UserId = _UserId;
-}
-
-int32 UTTGameInstance::GetUserId() const
-{
-	if ( !UserId )
-	{
-		UE_LOG(LogTemp , Warning , TEXT("UserId is empty , returning default value."));
-		return -1;
-	}
-	return UserId;
-}
-
 void UTTGameInstance::SetAccessToken(const FString& _AccessToken)
 {
 	AccessToken = _AccessToken;

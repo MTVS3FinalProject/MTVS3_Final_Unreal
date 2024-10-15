@@ -3,6 +3,7 @@
 
 #include "JMH/MH_StartWidget.h"
 
+#include "AssetTypeCategories.h"
 #include "Components/Button.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableText.h"
@@ -21,7 +22,6 @@ void UMH_StartWidget::NativeConstruct()
 	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
 	Btn_test_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::Test_CreateSesstion); //테스트 세션생성 버튼
 	Btn_Exit_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
-	//Btn_AddPicture->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAddPictureButton);
 	Btn_ForgotPassword_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
 	//Signup
 	Btn_Confirm_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirmSignupButton);
@@ -30,8 +30,6 @@ void UMH_StartWidget::NativeConstruct()
 	Btn_MANAGER->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedMANAGERButton);
 	Btn_SelectAvatarL->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSelectAvatarLButton);
 	Btn_SelectAvatarR->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSelectAvatarRButton);
-	//Btn_GenderMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderMaleButton);
-	//Btn_GenderFeMale->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedGenderFeMaleButton);
 	//Avatar
 	Btn_Confirm_Avatar->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedAvatarConfirmButton);
 
@@ -41,6 +39,8 @@ void UMH_StartWidget::NativeConstruct()
 	//QR2
 	Btn_Confirm_QRUi2->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirm_QRUi2Button);
 
+	// OnTextChanged 델리게이트에 함수 바인딩
+	EText_SignupBirth->OnTextChanged.AddDynamic(this, &UMH_StartWidget::OnTextChanged);
 
 	//나이 설정 1~100
 	if (Com_SetAge)
@@ -52,6 +52,14 @@ void UMH_StartWidget::NativeConstruct()
 		}
 	}
 
+	//마우스 커서. 
+	APlayerController* Pc = GetWorld()->GetFirstPlayerController();
+	if(Pc)
+	{
+		Pc->SetInputMode(FInputModeUIOnly());
+		Pc->SetShowMouseCursor(true);
+	}
+
 	// KHJ
 	SetLoadingActive(false);
 
@@ -61,6 +69,8 @@ void UMH_StartWidget::NativeConstruct()
 	{
 		gi->OnFindSignatureCompleteDelegate.AddDynamic(this, &UMH_StartWidget::SetLoadingActive);  // 세션 탐색 또는 생성
 	}
+	
+	
 }
 
 void UMH_StartWidget::Test_CreateSesstion()
@@ -72,7 +82,7 @@ void UMH_StartWidget::GoToLobby()
 {
 	//로비맵으로 이동(세션 생성,입장)
 	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Create Lobby Session"));
-
+	
 	// KHJ
 	// 게임 인스턴스를 가져와서
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
@@ -81,7 +91,7 @@ void UMH_StartWidget::GoToLobby()
 		gi->FindOrCreateSession();  // 세션 탐색 또는 생성
 	}
 }
-
+//로그인 버튼
 void UMH_StartWidget::OnClickedSignInButton()
 {
 	//유저정보 확인
@@ -99,21 +109,9 @@ void UMH_StartWidget::OnClickedSignInButton()
 	//만약 성공하면 로비로 이동
 	GoToLobby();
 }
-
+//회원가입하러 
 void UMH_StartWidget::OnClickedSignUpButton()
 {
-	AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
-	if (HttpActor)
-	{
-		HttpActor->ReqPostGetVerifyIdentityQR(EText_Email->GetText());
-	}
-	else
-	{
-		//에러창
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
-	}
-	
 	//회원가입 스위쳐 이동
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(1);
 }
@@ -127,7 +125,7 @@ void UMH_StartWidget::OnClickedForgotPasswordButton()
 {
 	//비번찾기
 }
-
+//QR 확인
 void UMH_StartWidget::OnClickedConfirm_QRUi1Button()
 {
 	//확인 버튼 누르면(얼굴인식 확인)->
@@ -152,7 +150,7 @@ void UMH_StartWidget::OnClickedBack_QRUi1Button()
 	//회원가입으로 다시 이동
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(1);
 }
-
+//Http에서 서버로 QR 요청
 void UMH_StartWidget::SetQRImg(UTexture2D* newTexture)
 {
 	//QR 받아오기
@@ -166,8 +164,6 @@ void UMH_StartWidget::OnClickedConfirm_QRUi2Button()
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
 	
 }
-
-
 
 void UMH_StartWidget::OnClickedConfirmSignupButton()
 {
@@ -221,6 +217,58 @@ void UMH_StartWidget::OnClickedMANAGERButton()
 {
 	//MANAGER로 유저모드 설정. 관리자모드 on
 	//bIsHost_Signup = true;
+}
+//
+void UMH_StartWidget::OnTextChanged(const FText& Text)
+{
+
+	FString InputText = Text.ToString();
+	FString FormattedText = FormatDateInput(InputText);
+
+	// 입력된 텍스트가 수정된 경우에만 업데이트
+	if (InputText != FormattedText)
+	{
+		EText_SignupBirth->SetText(FText::FromString(FormattedText));
+	}
+}
+
+FString UMH_StartWidget::FormatDateInput(const FString& InputText)
+{
+	FString CleanedText;
+
+	// 숫자만 추출하여 새로운 문자열 생성
+	for (TCHAR Character : InputText)
+	{
+		if (FChar::IsDigit(Character))
+		{
+			CleanedText.AppendChar(Character);
+		}
+	}
+
+	int32 Length = CleanedText.Len();
+	FString FormattedText;
+
+	// YYYY/MM/DD 형식으로 포맷팅
+	if (Length > 0 && Length <= 4)
+	{
+		FormattedText = CleanedText;
+	}
+	else if (Length > 4 && Length <= 6)
+	{
+		FormattedText = CleanedText.Left(4) + TEXT("/") + CleanedText.Mid(4);
+	}
+	else if (Length > 6)
+	{
+		FormattedText = CleanedText.Left(4) + TEXT("/") + CleanedText.Mid(4, 2) + TEXT("/") + CleanedText.Mid(6);
+	}
+
+	// 최대 길이 제한 (10자리: YYYY/MM/DD)
+	if (FormattedText.Len() > 10)
+	{
+		FormattedText = FormattedText.Left(10);
+	}
+
+	return FormattedText;
 }
 
 void UMH_StartWidget::OnClickedSelectAvatarRButton()
