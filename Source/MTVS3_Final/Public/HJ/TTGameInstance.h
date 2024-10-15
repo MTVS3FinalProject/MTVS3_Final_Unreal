@@ -53,12 +53,6 @@ public:
 	FString GetNickname() const;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
-	int32 UserId;
-	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
-	void SetUserId(const int32& _UserId);
-	int32 GetUserId() const;
-
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
 	FString AccessToken;
 	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
 	void SetAccessToken(const FString& _AccessToken);
