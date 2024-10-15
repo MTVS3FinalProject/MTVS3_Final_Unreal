@@ -11,6 +11,7 @@
 #include "HJ/TTPlayer.h"
 #include "HJ/TTGameInstance.h"
 #include "ImageUtils.h"
+#include "Unix/UnixPlatformHttp.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -50,13 +51,14 @@ void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
+	
 	if ( !Http ) return;
 
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	// 서버 URL 설정
-	Request->SetURL(TEXT("https://125.132.216.190:7878/api/qr/signup"));
+	FString FormattedUrl = FString::Printf(TEXT("%s/qr/signup") , *_url);
+	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -93,6 +95,7 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 			UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
 			if ( Texture )
 			{
+				// StartUI에서 QR UI로 넘어가는 함수 호출하기
 				StartUI->SetQRImg(Texture);
 				UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
 			}
@@ -124,7 +127,8 @@ void AHM_HttpActor::ReqPostVerifyIdentity(FText Email)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT("https://125.132.216.190:7878/api/qr/verification"));
+	FString FormattedUrl = FString::Printf(TEXT("%s/qr/verification") , *_url);
+	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -187,7 +191,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 	}
 }
 
-void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , FString Age , FText Nickname , int32 AvataData)
+void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , FString Birth , FText Nickname , int32 AvataData)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -197,7 +201,9 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Request->SetURL(TEXT("https://125.132.216.190:7878/api/auth/signup"));
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/auth/signup") , *_url);
+	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
@@ -208,7 +214,7 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	//Writer->WriteValue(TEXT("isHost") , bIsHost);
 	Writer->WriteValue(TEXT("email") , Email.ToString());
 	Writer->WriteValue(TEXT("password") , Password.ToString());
-	Writer->WriteValue(TEXT("ageRange") , Age);
+	Writer->WriteValue(TEXT("birth") , Birth);
 	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
 	Writer->WriteValue(TEXT("avatarData") , AvataData);
 	Writer->WriteObjectEnd();
@@ -258,12 +264,14 @@ void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 	if ( !Http ) return;
 
 	// HTTP 요청 생성
-	TSharedRef<IHttpRequest> Requset = Http->CreateRequest();
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	// 서버 URL 설정
-	Requset->SetURL(TEXT("https://125.132.216.190:7878/api/auth/login"));
-	Requset->SetVerb(TEXT("POST"));
-	Requset->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/auth/login") , *_url);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("POST"));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 전달 데이터 (JSON)
 	FString ContentString;
@@ -275,13 +283,13 @@ void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 	Writer->Close();
 
 	// 요청 본문에 JSON 데이터를 설정
-	Requset->SetContentAsString(ContentString);
+	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
-	Requset->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostLogin);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostLogin);
 
 	// 요청 실행
-	Requset->ProcessRequest();
+	Request->ProcessRequest();
 }
 
 void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
@@ -306,47 +314,55 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 
 				if ( ResponseObject.IsValid() )
 				{
-					// 받아올 정보 추출
-					FString Nickname = ResponseObject->GetStringField(TEXT("nickname"));
-					int32 UserId = ResponseObject->GetIntegerField(TEXT("member_id"));
-					FString Age = ResponseObject->GetStringField(TEXT("ageRange"));
-					int32 Coin = ResponseObject->GetIntegerField(TEXT("coin"));
-					//bool bIsHost = ResponseObject->GetIntegerField(TEXT("isHost"));
-					int32 RemainingTicketCount = ResponseObject->GetIntegerField(TEXT("remainingTicketCount"));
-					int32 AvatarData = ResponseObject->GetIntegerField(TEXT("avatarData"));
-
-					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-					if ( TTPlayer )
+					// "memberInfoDTO" 객체에 접근
+					TSharedPtr<FJsonObject> MemberInfo = ResponseObject->GetObjectField(TEXT("memberInfoDTO"));
+					if ( MemberInfo.IsValid() )
 					{
-						UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-						if ( GI )
+						//// 받아올 정보 추출
+						FString AccessToken = MemberInfo->GetStringField("accessToken");
+						FString Nickname = MemberInfo->GetStringField(TEXT("nickname"));
+						int32 UserId = MemberInfo->GetIntegerField(TEXT("member_id"));
+						FString Birth = MemberInfo->GetStringField(TEXT("birth"));
+						int32 Coin = MemberInfo->GetIntegerField(TEXT("coin"));
+						FString AvatarData = MemberInfo->GetStringField(TEXT("avatarData"));
+
+						ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+						if ( TTPlayer )
 						{
-							// 닉네임 설정 및 가져오기
-							GI->SetNickname(Nickname);
-							UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
+							UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+							if ( GI )
+							{
+								// 토큰 설정 및 가져오기
+								GI->SetAccessToken(AccessToken);
+								UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *GI->GetAccessToken());
 
-							// 서버에서 주는 UserId 설정 및 가져오기
-							// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
-							GI->SetUserId(UserId);
-							UE_LOG(LogTemp , Log , TEXT("UserId: %d") , GI->GetUserId());
+								// 닉네임 설정 및 가져오기
+								GI->SetNickname(Nickname);
+								UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
 
-							// 나이 설정 및 가져오기
-							GI->SetAge(Age);
-							const char* CStr = TCHAR_TO_ANSI(*GI->GetAge());
-							UE_LOG(LogTemp , Log , TEXT("Age : %hs") , CStr);
+								// 서버에서 주는 UserId 설정 및 가져오기
+								// 로그인 시 HTTP 통신으로 응답을 받아와 저장하는 방식
+								GI->SetUserId(UserId);
+								UE_LOG(LogTemp , Log , TEXT("UserId: %d") , GI->GetUserId());
 
-							// 코인 더하기 및 가져오기
-							GI->SetCoin(Coin);
-							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetCoin());
+								// 나이 설정 및 가져오기
+								GI->SetBirth(Birth);
+								const char* CStr = TCHAR_TO_ANSI(*GI->GetBirth());
+								UE_LOG(LogTemp , Log , TEXT("Birth : %hs") , CStr);
 
-							// 아바타 설정 및 가져오기
-							GI->SetAvatarData(AvatarData);
-							UE_LOG(LogTemp , Log , TEXT("AvatarData : %d") , GI->GetAvatarData());
+								// 코인 더하기 및 가져오기
+								GI->SetCoin(Coin);
+								UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetCoin());
 
-							// 티켓 접수 및 접수 가능 개수 가져오기
-							// UseRemainingTicket의 매개변수는 티켓 접수 개수
-							GI->SetRemainingTicketCount(RemainingTicketCount);
-							UE_LOG(LogTemp , Log , TEXT("Remaining Tickets: %d") , GI->GetRemainingTicketCount());
+								// 아바타 설정 및 가져오기
+								//GI->SetAvatarData(AvatarData);
+								//UE_LOG(LogTemp , Log , TEXT("AvatarData : %d") , GI->GetAvatarData());
+
+								// 티켓 접수 및 접수 가능 개수 가져오기
+								// UseRemainingTicket의 매개변수는 티켓 접수 개수
+								//GI->SetRemainingTicketCount(RemainingTicketCount);
+								//UE_LOG(LogTemp , Log , TEXT("Remaining Tickets: %d") , GI->GetRemainingTicketCount());
+							}
 						}
 					}
 				}

@@ -8,6 +8,9 @@
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "JMH/MH_Chair.h"
+#include "HJ/TTPlayerAnim.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -15,15 +18,20 @@ ATTPlayer::ATTPlayer()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
 	SpringArmComp->SetupAttachment(RootComponent);
-	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 70));
+	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 50));
 	SpringArmComp->TargetArmLength = 430;
 	SpringArmComp->bUsePawnControlRotation = true;
 
-	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	CameraComp->SetupAttachment(SpringArmComp);
-	CameraComp->bUsePawnControlRotation = false;
+	TPSCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	TPSCameraComp->SetupAttachment(SpringArmComp);
+	TPSCameraComp->bUsePawnControlRotation = false;
+
+	FPSCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FPSCameraComp->SetupAttachment(RootComponent);
+	FPSCameraComp->SetRelativeLocation(FVector(-100 , 0 , 80));
+	FPSCameraComp->bUsePawnControlRotation = true;
 }
 
 // Called when the game starts or when spawned
@@ -45,6 +53,7 @@ void ATTPlayer::BeginPlay()
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	InitMainUI();
+	SwitchCamera(bIsThirdPerson);
 }
 
 // Called every frame
@@ -79,6 +88,45 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		input->BindAction(IA_Purchase , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionPurchase);
 		input->BindAction(IA_Inventory , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionInventory);
 		input->BindAction(IA_Chat , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionChat);
+	}
+}
+
+void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
+{
+	if ( _bIsThirdPerson ) // 3인칭 모드
+	{
+		GetMesh()->SetOwnerNoSee(false);
+		FPSCameraComp->SetActive(false);
+		TPSCameraComp->SetActive(true);
+		// 플레이어의 회전 방향과 카메라 정렬
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if ( PC )
+		{
+			PC->SetViewTargetWithBlend(this);  // 부드러운 시점 전환
+		}
+	}
+	else // 1인칭 모드
+	{
+		FPSCameraComp->SetActive(true);
+		TPSCameraComp->SetActive(false);
+
+		// 카메라가 항상 캐릭터의 앞을 바라보게 설정
+		FPSCameraComp->SetWorldLocation(GetActorLocation() + FVector(0.0f , 0.0f , 50.0f));  // 머리 위치로 조정
+		FPSCameraComp->SetRelativeRotation(FRotator::ZeroRotator);  // 정면 방향
+
+		// 플레이어의 회전 방향과 카메라 정렬
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if ( PC )
+		{
+			// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
+			GetMesh()->SetOwnerNoSee(true);
+
+			// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
+			FRotator ControlRotation = GetActorRotation();
+			PC->SetControlRotation(ControlRotation);
+
+			PC->SetViewTargetWithBlend(this);  // 부드러운 시점 전환
+		}
 	}
 }
 
@@ -133,6 +181,44 @@ void ATTPlayer::OnMyActionRunComplete(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed E: Interact"));
+	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	if ( Chair )
+	{
+		// 의자가 비어 있을 때 상호작용하면 앉는다.
+		if ( !Chair->bIsOccupied )
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
+			ServerSetSitting(true);
+			SwitchCamera(!bIsThirdPerson);
+
+			// 15초 후에 자동으로 일어나도록 타이머 시작
+			GetWorld()->GetTimerManager().SetTimer(
+				StandUpTimerHandle , this , &ATTPlayer::ForceStandUp , 15.0f , false);
+		}
+		// 의자가 비어 있지 않고 내가 앉아 있으면 일어난다.
+		else if ( Chair->bIsOccupied && bIsSitting )
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
+			ServerSetSitting(false);
+			SwitchCamera(bIsThirdPerson);
+		}
+		// 의자가 비어 있지 않고 내가 앉아 있지 않으면 아무 일도 안 일어난다.
+	}
+}
+
+AActor* ATTPlayer::GetOverlappingActor()
+{
+	TArray<AActor*> OverlappingActors;
+	GetOverlappingActors(OverlappingActors);
+
+	for ( AActor* Actor : OverlappingActors )
+	{
+		if ( Actor->IsA(AMH_Chair::StaticClass()) )
+		{
+			return Actor;  // 오버랩된 의자 반환
+		}
+	}
+	return nullptr;
 }
 
 void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
@@ -161,9 +247,69 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 
 void ATTPlayer::InitMainUI()
 {
-	MainUI = CastChecked<UUserWidget>(CreateWidget(GetWorld(), MainUIFactory));
+	MainUI = CastChecked<UUserWidget>(CreateWidget(GetWorld() , MainUIFactory));
 	if ( MainUI )
 	{
 		MainUI->AddToViewport();
+	}
+}
+
+void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// bIsSitting을 개별 클라이언트에 복제
+	DOREPLIFETIME(ATTPlayer , bIsSitting);
+}
+
+void ATTPlayer::ForceStandUp()
+{
+	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	if ( Chair && Chair->bIsOccupied && bIsSitting )
+	{
+		UE_LOG(LogTemp , Warning , TEXT("15초 경과: 강제로 일어납니다."));
+		ServerSetSitting(false);  // 서버에서 상태 업데이트
+		SwitchCamera(bIsThirdPerson);  // 3인칭 시점 복원
+	}
+}
+
+void ATTPlayer::ServerSetSitting_Implementation(bool _bIsSitting)
+{
+	bIsSitting = _bIsSitting;  // 서버에서 상태 업데이트
+
+	// 앉기 또는 일어나기 애니메이션 재생
+	if ( bIsSitting )
+	{
+		MulticastSitDown();
+	}
+	else
+	{
+		MulticastStandUp();
+	}
+}
+
+void ATTPlayer::MulticastSitDown_Implementation()
+{
+	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if ( Chair && Anim )
+	{
+		Chair->bIsOccupied = true;
+		FTransform SittingTransform = Chair->GetSittingTransform();
+		SetActorTransform(SittingTransform);
+		GetCharacterMovement()->DisableMovement();  // 이동 비활성화
+		Anim->PlaySitDownMontage();
+	}
+}
+
+void ATTPlayer::MulticastStandUp_Implementation()
+{
+	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if ( Chair && Anim )
+	{
+		Chair->bIsOccupied = false;
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);  // 이동 모드 복원
+		Anim->PlayStandUpMontage();
 	}
 }

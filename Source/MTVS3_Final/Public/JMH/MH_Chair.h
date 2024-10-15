@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,8 +10,8 @@ UCLASS()
 class MTVS3_FINAL_API AMH_Chair : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AMH_Chair();
 
@@ -20,19 +20,19 @@ protected:
 	virtual void BeginPlay() override;
 
 
-	
-public:	
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* Boxcomp;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	class UWidgetComponent* Widgetcomp;
 
 	UFUNCTION()
-	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult&SweepResult);
+	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
@@ -41,6 +41,18 @@ public:
 
 	UFUNCTION()
 	void HideText();
-	
 
+#pragma region KHJ
+	ACharacter* OverlappingPlayer = nullptr;  // 오버랩된 플레이어 추적용
+
+	FTransform GetSittingTransform();
+
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Default|Chair")
+	bool bIsOccupied;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|TTSettings")
+	float SeatOffset = 30.0;
+
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+#pragma endregion
 };

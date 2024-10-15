@@ -42,8 +42,8 @@ void AHJ_Actor::Tick(float DeltaTime)
 		int32 UserId = GI->GetUserId();
 
 		// 나이 서버에서 받아오기, 나이 가져오기
-		GI->SetAge(/*나이 저장 변수*/"20");
-		FString Age = GI->GetAge();
+		GI->SetBirth(/*나이 저장 변수*/"20");
+		FString Age = GI->GetBirth();
 
 		// 코인 서버에서 받아오기, 더하기, 가져오기
 		// 더하기로 되어 있으므로 예매 시엔 음수(-) 값 입력
