@@ -192,7 +192,7 @@ FString UTTGameInstance::GetNickname() const
 	if ( Nickname.IsEmpty() )
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Nickname is empty , returning default value."));
-		return TEXT("Empty_Nickname");
+		return TEXT("티케타카");
 	}
 	return Nickname;
 }

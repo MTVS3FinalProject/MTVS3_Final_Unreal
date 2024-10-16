@@ -11,6 +11,8 @@
 #include "JMH/MH_Chair.h"
 #include "HJ/TTPlayerAnim.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/WidgetComponent.h"
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -32,6 +34,15 @@ ATTPlayer::ATTPlayer()
 	FPSCameraComp->SetupAttachment(RootComponent);
 	FPSCameraComp->SetRelativeLocation(FVector(-100 , 0 , 80));
 	FPSCameraComp->bUsePawnControlRotation = true;
+
+	NicknameUIComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("NicknameUI"));
+	// 머리 본(Bone)에 부착
+	NicknameUIComp->SetupAttachment(GetMesh() , TEXT("head"));  // "head" 본에 부착
+
+	// 머리 위로 약간 올리기 위한 위치 조정
+	NicknameUIComp->SetRelativeLocationAndRotation(FVector(30.0f , 0 , 0), FRotator(0, 90.0f, -90.0f));  // 머리 위로 30 단위 상승
+	/*NicknameUIComp->SetupAttachment(RootComponent);
+	NicknameUIComp->SetRelativeLocation(FVector(0 , 0 , 100));*/
 }
 
 // Called when the game starts or when spawned
@@ -66,6 +77,18 @@ void ATTPlayer::Tick(float DeltaTime)
 
 	AddMovementInput(Direction , 1);
 	Direction = FVector::ZeroVector;
+
+	if ( NicknameUIComp && NicknameUIComp->GetVisibleFlag() )
+	{
+		// P = P0 + vt
+		// 카메라 위치
+		FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetCameraLocation();
+		// 체력바와 카메라의 방향 벡터
+		FVector NicknameUIDirection = CamLoc - NicknameUIComp->GetComponentLocation();
+		//NicknameUIDirection.Z = 0.0f;
+
+		NicknameUIComp->SetWorldRotation(NicknameUIDirection.GetSafeNormal().ToOrientationRotator());
+	}
 }
 
 // Called to bind functionality to input
@@ -98,6 +121,8 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 		GetMesh()->SetOwnerNoSee(false);
 		FPSCameraComp->SetActive(false);
 		TPSCameraComp->SetActive(true);
+		NicknameUIComp->SetOwnerNoSee(false);
+
 		// 플레이어의 회전 방향과 카메라 정렬
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		if ( PC )
@@ -109,6 +134,7 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 	{
 		FPSCameraComp->SetActive(true);
 		TPSCameraComp->SetActive(false);
+		NicknameUIComp->SetOwnerNoSee(true);
 
 		// 플레이어의 회전 방향과 카메라 정렬
 		APlayerController* PC = Cast<APlayerController>(GetController());
@@ -181,6 +207,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	if ( Chair )
 	{
 		// 의자가 비어 있을 때 상호작용하면 앉는다.
+		// 1인칭 시점으로 전환
 		if ( !Chair->bIsOccupied )
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
@@ -198,6 +225,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 				StandUpTimerHandle , this , &ATTPlayer::ForceStandUp , MaxSittingDuration , false);
 		}
 		// 의자가 비어 있지 않고 내가 앉아 있으면 일어난다.
+		// 3인칭 시점으로 전환
 		else if ( Chair->bIsOccupied && bIsSitting )
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));

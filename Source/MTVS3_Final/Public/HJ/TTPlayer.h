@@ -101,6 +101,9 @@ public:
 	UPROPERTY()
 	class UUserWidget* MainUI;
 
+	UPROPERTY(EditAnywhere , Category = "Default|UI")
+	class UWidgetComponent* NicknameUIComp;
+
 	void InitMainUI();
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
