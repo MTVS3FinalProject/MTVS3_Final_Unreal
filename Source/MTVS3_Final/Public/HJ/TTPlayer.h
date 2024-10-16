@@ -97,9 +97,14 @@ public:
 #pragma endregion
 
 	UPROPERTY(EditAnywhere , Category = "Default|UI")
-	TSubclassOf<class UUserWidget> MainUIFactory;
+	TSubclassOf<class UMainWidget> MainUIFactory;
 	UPROPERTY()
-	class UUserWidget* MainUI;
+	class UMainWidget* MainUI;
+
+	UPROPERTY(EditAnywhere , Category = "Default|UI")
+	TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
+	UPROPERTY()
+	class UMH_TicketingWidget* TicketingUI;
 
 	UPROPERTY(EditAnywhere , Category = "Default|UI")
 	class UWidgetComponent* NicknameUIComp;
@@ -108,7 +113,7 @@ public:
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 
-	UPROPERTY(Replicated , BlueprintReadOnly , Category = "State")
+	UPROPERTY(Replicated , BlueprintReadOnly , Category = "Default|State")
 	bool bIsSitting;
 
 	UFUNCTION(Server , Unreliable)
@@ -124,6 +129,9 @@ private:
 	FTimerHandle StandUpTimerHandle;  // 타이머 핸들
 	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
 	float MaxSittingDuration = 15.0f;
+
+	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
+	bool bHideOtherPlayersWhileSitting = true;
 
 	void ForceStandUp();
 };

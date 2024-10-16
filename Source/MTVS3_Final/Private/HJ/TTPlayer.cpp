@@ -13,6 +13,11 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/WidgetComponent.h"
+#include "EngineUtils.h"   // TActorIterator 정의 포함
+#include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"
+#include "JMH/MH_TicketingWidget.h"
+#include "JMH/MainWidget.h"
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -63,7 +68,12 @@ void ATTPlayer::BeginPlay()
 		pc->bShowMouseCursor = true; // 마우스 커서 표시
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	InitMainUI();
+
+	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") || UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("HJProtoMap") ) {
+		// 특정 레벨일 때 실행할 코드
+		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
+		InitMainUI();
+	}
 	SwitchCamera(bIsThirdPerson);
 }
 
@@ -211,6 +221,13 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		if ( !Chair->bIsOccupied )
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
+
+			// MainUI 숨기기
+			MainUI->SetVisibleCanvas(false);
+			// 좌석 접수 UI 표시
+			TicketingUI->SetVisibleSwitcher(true);
+			TicketingUI->SetWidgetSwitcher(1);
+
 			ServerSetSitting(true);
 
 			// 의자의 회전값 가져오기
@@ -229,6 +246,12 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		else if ( Chair->bIsOccupied && bIsSitting )
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
+
+			// MainUI 표시
+			MainUI->SetVisibleCanvas(true);
+			// 좌석 접수 UI 숨기기
+			TicketingUI->SetVisibleSwitcher(false);
+
 			ServerSetSitting(false);
 			SwitchCamera(bIsThirdPerson);
 		}
@@ -277,10 +300,16 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 
 void ATTPlayer::InitMainUI()
 {
-	MainUI = CastChecked<UUserWidget>(CreateWidget(GetWorld() , MainUIFactory));
+	MainUI = CastChecked<UMainWidget>(CreateWidget(GetWorld() , MainUIFactory));
 	if ( MainUI )
 	{
 		MainUI->AddToViewport();
+	}
+
+	TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
+	if ( TicketingUI )
+	{
+		TicketingUI->AddToViewport();
 	}
 }
 
@@ -298,6 +327,11 @@ void ATTPlayer::ForceStandUp()
 	if ( Chair && Chair->bIsOccupied && bIsSitting )
 	{
 		UE_LOG(LogTemp , Warning , TEXT("15초 경과: 강제로 일어납니다."));
+
+		// MainUI 표시
+		MainUI->SetVisibleCanvas(true);
+		// 좌석 접수 UI 숨기기
+		TicketingUI->SetVisibleSwitcher(false);
 		ServerSetSitting(false);  // 서버에서 상태 업데이트
 		SwitchCamera(bIsThirdPerson);  // 3인칭 시점 복원
 	}
@@ -330,6 +364,19 @@ void ATTPlayer::MulticastSitDown_Implementation()
 		GetCharacterMovement()->DisableMovement();  // 이동 비활성화
 		Anim->PlaySitDownMontage();
 	}
+
+	// 의자에 앉은 플레이어에게만 다른 플레이어들을 감추기
+	if ( bHideOtherPlayersWhileSitting && IsLocallyControlled() )  // 로컬 플레이어인지 확인
+	{
+		for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+		{
+			ATTPlayer* OtherPlayer = *It;
+			if ( OtherPlayer && OtherPlayer != this )  // 자신 이외의 모든 플레이어 감추기
+			{
+				OtherPlayer->GetMesh()->SetVisibility(false , true);  // 로컬 플레이어 시점에서만 감추기
+			}
+		}
+	}
 }
 
 void ATTPlayer::MulticastStandUp_Implementation()
@@ -343,5 +390,18 @@ void ATTPlayer::MulticastStandUp_Implementation()
 		SetActorTransform(StandingTransform);
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);  // 이동 모드 복원
 		Anim->PlayStandUpMontage();
+	}
+
+	// 의자에서 일어난 플레이어에게 다시 다른 플레이어들이 보이도록 설정
+	if ( bHideOtherPlayersWhileSitting && IsLocallyControlled() )  // 로컬 플레이어인지 확인
+	{
+		for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+		{
+			ATTPlayer* OtherPlayer = *It;
+			if ( OtherPlayer && OtherPlayer != this )  // 자신 이외의 모든 플레이어 다시 보이기
+			{
+				OtherPlayer->GetMesh()->SetVisibility(true , true);  // 로컬 플레이어 시점에서 다시 보이게
+			}
+		}
 	}
 }

@@ -10,18 +10,33 @@
 void UMH_TicketingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
 	Btn_Back1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedBackButton);
 	Btn_Back2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedBackButton);
 	Btn_Confirm_Ticketting->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedConfirmButton);
 	Btn_Cancel_Ticketting1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
 	Btn_Cancel_Ticketting2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
+
+	//위젯 꺼져있는게 기본값
+	SetVisibleSwitcher(false);
 }
 
 void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
 {
 	//서버에서 불러와서 입력
 	WS_RegisterSwitcher->SetActiveWidgetIndex(num);
+}
+
+void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible)
+{
+	if (bVisible)
+	{
+		WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
+	}
+	
+	else if(!bVisible)
+	{
+		WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void UMH_TicketingWidget::OnClickedBackButton()
@@ -85,5 +100,3 @@ void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 {
 	//게임맵으로 세션이동
 }
-
-
