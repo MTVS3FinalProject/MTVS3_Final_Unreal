@@ -107,10 +107,6 @@ public:
 	UFUNCTION()
 	void OnClickedConfirm_QRUi2Button();
 	
-	//
-
-	
-	
 	//SignUp
 	
 	//관리자 모드 off
@@ -147,12 +143,6 @@ public:
 	class UComboBoxString*  Com_SetAge;
 	
 	FString Age_SelectedValue;
-	
-	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	//class UButton*  Btn_AddPicture;
-
-	//UFUNCTION()
-	//void OnClickedAddPictureButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_SignupEmail;
@@ -208,7 +198,7 @@ public:
 	class UEditableText* EText_Nickname;
 			
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Confirm_Avatar;
+	class UButton* Btn_Confirm_Avatar;
 	
 	UFUNCTION()
 	void OnClickedAvatarConfirmButton();

@@ -25,7 +25,12 @@ public:
 	void SetVisibleCanvas(bool bVisible);
 	
 	//미니맵
-	//현재시간
+	//현재시간 받아오기
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_CurrentTime;
+	UFUNCTION()
+	void SetTextCurrentTime(FString CurrentTime);
+	
 	//티켓예매 알람
 	//티켓팅 시간대
 	//상호작용 버튼
