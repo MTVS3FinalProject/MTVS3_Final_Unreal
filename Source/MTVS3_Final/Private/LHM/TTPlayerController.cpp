@@ -5,15 +5,27 @@
 #include "Engine/World.h"
 #include "chrono"
 #include "JMH/MH_TicketingWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 
 void ATTPlayerController::BeginPlay()
 {
     Super::BeginPlay();
 
-    TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld(), TicketingUIFactory));
+    
+	TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
+	if ( TicketingUI )
+	{
+		TicketingUI->AddToViewport();
+		TicketingUI->SetWidgetSwitcher(0);
+	}
 
-    // 추첨 시작 시간 설정
+    auto* pc = UGameplayStatics::GetPlayerController(this , 0);
+    if ( !pc ) return;
+    pc->SetShowMouseCursor(true);
+
+    pc->SetInputMode(FInputModeUIOnly());
+	// 추첨 시작 시간 설정
     SetDrawStartTime();
 }
 
@@ -21,7 +33,7 @@ void ATTPlayerController::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-	TimeReqInterval = 2.f;
+	TimeReqInterval = 0.5f;
 	TimeSinceLastReq += DeltaTime;
 
 	if( TimeSinceLastReq >= TimeReqInterval )
@@ -88,10 +100,13 @@ void ATTPlayerController::SetDrawStartTime()
     int32 Minutes = DrawStartTime.GetMinute();
 
     // 포맷된 시간 문자열 생성
-    FString FormattedTime = FString::Printf(TEXT("추첨 시작 시간: %02d:%02d") , Hours , Minutes);
+    FString FormattedTime = FString::Printf(TEXT("%02d:%02d") , Hours , Minutes);
 
     // UI에 텍스트 설정
-    TicketingUI->SetTextTicketingDeadline(FormattedTime);
+    if ( TicketingUI )
+    {
+		TicketingUI->SetTextTicketingDeadline(FormattedTime);
+    }
 }
 
 void ATTPlayerController::UpdateCountdown(float DeltaTime)
@@ -102,15 +117,18 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
     // 남은 시간 계산
     FTimespan RemainingTime = DrawStartTime - Now;
 
-    if ( RemainingTime.GetTotalSeconds() > 0 )
+    if ( RemainingTime.GetTotalSeconds() > 0.5f )
     {
         int32 Minutes = RemainingTime.GetMinutes();
         int32 Seconds = RemainingTime.GetSeconds() % 60;
 
-        FString CountdownText = FString::Printf(TEXT("남은 시간: %02d:%02d") , Minutes , Seconds);
+        FString CountdownText = FString::Printf(TEXT("%02d:%02d") , Minutes , Seconds);
 
-        TicketingUI->SetTextGameStartTime(CountdownText);
-        UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
+        if ( TicketingUI )
+        {
+			TicketingUI->SetTextGameStartTime(CountdownText);
+        }
+        //UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
     }
     else
     {

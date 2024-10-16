@@ -14,7 +14,7 @@ class MTVS3_FINAL_API ATTPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
-private:
+public:
 	float TimeReqInterval; // 요청 간격
 	float TimeSinceLastReq; // 마지막 요청 이후 경과 시간
     FDateTime DrawStartTime; // 추첨 시작 시간을 저장하는 변수
