@@ -14,6 +14,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/WidgetComponent.h"
 #include "EngineUtils.h"   // TActorIterator 정의 포함
+#include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"
+#include "JMH/MH_TicketingWidget.h"
+#include "JMH/MainWidget.h"
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -64,7 +68,12 @@ void ATTPlayer::BeginPlay()
 		pc->bShowMouseCursor = true; // 마우스 커서 표시
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	InitMainUI();
+
+	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") || UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("HJProtoMap") ) {
+		// 특정 레벨일 때 실행할 코드
+		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
+		InitMainUI();
+	}
 	SwitchCamera(bIsThirdPerson);
 }
 
@@ -212,6 +221,13 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		if ( !Chair->bIsOccupied )
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
+
+			// MainUI 숨기기
+			MainUI->SetVisibleCanvas(false);
+			// 좌석 접수 UI 표시
+			TicketingUI->SetVisibleSwitcher(true);
+			TicketingUI->SetWidgetSwitcher(1);
+
 			ServerSetSitting(true);
 
 			// 의자의 회전값 가져오기
@@ -230,6 +246,12 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		else if ( Chair->bIsOccupied && bIsSitting )
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
+
+			// MainUI 표시
+			MainUI->SetVisibleCanvas(true);
+			// 좌석 접수 UI 숨기기
+			TicketingUI->SetVisibleSwitcher(false);
+
 			ServerSetSitting(false);
 			SwitchCamera(bIsThirdPerson);
 		}
@@ -278,10 +300,16 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 
 void ATTPlayer::InitMainUI()
 {
-	MainUI = CastChecked<UUserWidget>(CreateWidget(GetWorld() , MainUIFactory));
+	MainUI = CastChecked<UMainWidget>(CreateWidget(GetWorld() , MainUIFactory));
 	if ( MainUI )
 	{
 		MainUI->AddToViewport();
+	}
+
+	TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
+	if ( TicketingUI )
+	{
+		TicketingUI->AddToViewport();
 	}
 }
 
@@ -299,6 +327,11 @@ void ATTPlayer::ForceStandUp()
 	if ( Chair && Chair->bIsOccupied && bIsSitting )
 	{
 		UE_LOG(LogTemp , Warning , TEXT("15초 경과: 강제로 일어납니다."));
+
+		// MainUI 표시
+		MainUI->SetVisibleCanvas(true);
+		// 좌석 접수 UI 숨기기
+		TicketingUI->SetVisibleSwitcher(false);
 		ServerSetSitting(false);  // 서버에서 상태 업데이트
 		SwitchCamera(bIsThirdPerson);  // 3인칭 시점 복원
 	}
