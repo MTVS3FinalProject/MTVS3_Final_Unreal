@@ -13,6 +13,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/WidgetComponent.h"
+#include "EngineUtils.h"   // TActorIterator 정의 포함
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -330,6 +331,19 @@ void ATTPlayer::MulticastSitDown_Implementation()
 		GetCharacterMovement()->DisableMovement();  // 이동 비활성화
 		Anim->PlaySitDownMontage();
 	}
+
+	// 의자에 앉은 플레이어에게만 다른 플레이어들을 감추기
+	if ( bHideOtherPlayersWhileSitting && IsLocallyControlled() )  // 로컬 플레이어인지 확인
+	{
+		for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+		{
+			ATTPlayer* OtherPlayer = *It;
+			if ( OtherPlayer && OtherPlayer != this )  // 자신 이외의 모든 플레이어 감추기
+			{
+				OtherPlayer->GetMesh()->SetVisibility(false , true);  // 로컬 플레이어 시점에서만 감추기
+			}
+		}
+	}
 }
 
 void ATTPlayer::MulticastStandUp_Implementation()
@@ -343,5 +357,18 @@ void ATTPlayer::MulticastStandUp_Implementation()
 		SetActorTransform(StandingTransform);
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);  // 이동 모드 복원
 		Anim->PlayStandUpMontage();
+	}
+
+	// 의자에서 일어난 플레이어에게 다시 다른 플레이어들이 보이도록 설정
+	if ( bHideOtherPlayersWhileSitting && IsLocallyControlled() )  // 로컬 플레이어인지 확인
+	{
+		for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+		{
+			ATTPlayer* OtherPlayer = *It;
+			if ( OtherPlayer && OtherPlayer != this )  // 자신 이외의 모든 플레이어 다시 보이기
+			{
+				OtherPlayer->GetMesh()->SetVisibility(true , true);  // 로컬 플레이어 시점에서 다시 보이게
+			}
+		}
 	}
 }

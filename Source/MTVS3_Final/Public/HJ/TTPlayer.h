@@ -108,7 +108,7 @@ public:
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 
-	UPROPERTY(Replicated , BlueprintReadOnly , Category = "State")
+	UPROPERTY(Replicated , BlueprintReadOnly , Category = "Default|State")
 	bool bIsSitting;
 
 	UFUNCTION(Server , Unreliable)
@@ -124,6 +124,9 @@ private:
 	FTimerHandle StandUpTimerHandle;  // 타이머 핸들
 	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
 	float MaxSittingDuration = 15.0f;
+
+	UPROPERTY(EditAnywhere , Category = "Default|TTSettings")
+	bool bHideOtherPlayersWhileSitting = true;
 
 	void ForceStandUp();
 };
