@@ -13,7 +13,80 @@ UCLASS()
 class MTVS3_FINAL_API UMH_TicketingWidget : public UUserWidget
 {
 	GENERATED_BODY()
+public:
+	virtual void NativeConstruct() override;
 	
+	//예매 접수
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_RegisterSwitcher;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Back1;
+	UFUNCTION()
+	void OnClickedBackButton();
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Confirm_Ticketting;
+	UFUNCTION()
+	void OnClickedConfirmButton();
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Cancel_Ticketting1;
+	UFUNCTION()
+	void OnClickedCancelButton();
+	
+	//티켓 금액 받아오기
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_TicketPrice;
+	UFUNCTION()
+	void SetTextTicketPrice(int32 TicketPrice);
+
+	//접수가능 티켓 수 받아오기
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_RemainingTicket;
+	UFUNCTION()
+	void SetTextRemainingTicket(int32 RemainingTicket);
+
+	//접수마감시간 받아오기
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_TicketingDeadline;
+	UFUNCTION()
+	void SetTextTicketingDeadline(FString TicketingDeadline);
+
+	//게임시작시간
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_GameStartTime;
+	UFUNCTION()
+	void SetTextGameStartTime(FString CompetitionStartTime);
+
+	//경쟁률
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_CompetitionRate;
+	UFUNCTION()
+	void SetTextCompetitionRate(int32 CompetitionRate);
+
+	//좌석번호 셋팅
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_SeatID;
+	UFUNCTION()
+	void SetTextSeatID(FString SeatID);
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_GroupSeatInfoText;
+
+	//게임입장
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Back2;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_GotoGameRoom;	
+	UFUNCTION()
+	void OnClickedGotoGameRoomButton();
+	//취소
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Cancel_Ticketting2;
+
+
+	
+	
 };
