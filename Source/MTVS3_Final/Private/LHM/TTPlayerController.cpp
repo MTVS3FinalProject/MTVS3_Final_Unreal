@@ -7,7 +7,6 @@
 #include "JMH/MH_TicketingWidget.h"
 #include "Kismet/GameplayStatics.h"
 
-
 void ATTPlayerController::BeginPlay()
 {
     Super::BeginPlay();
@@ -19,12 +18,7 @@ void ATTPlayerController::BeginPlay()
 		TicketingUI->AddToViewport();
 		TicketingUI->SetWidgetSwitcher(0);
 	}
-
-    auto* pc = UGameplayStatics::GetPlayerController(this , 0);
-    if ( !pc ) return;
-    pc->SetShowMouseCursor(true);
-
-    pc->SetInputMode(FInputModeUIOnly());
+    
 	// 추첨 시작 시간 설정
     SetDrawStartTime();
 }

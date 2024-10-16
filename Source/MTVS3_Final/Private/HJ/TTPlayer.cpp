@@ -4,8 +4,8 @@
 #include "HJ/TTPlayer.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
-#include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
-#include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "JMH/MH_Chair.h"
@@ -69,7 +69,7 @@ void ATTPlayer::BeginPlay()
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
-	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") || UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("KHJProtoMap") ) {
+	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") || UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("HJProtoMap") ) {
 		// 특정 레벨일 때 실행할 코드
 		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
 		InitMainUI();
