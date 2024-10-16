@@ -23,6 +23,9 @@ public:
 	//예매 접수
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_RegisterSwitcher;
+	UFUNCTION()
+	void SetVisibleSwitcher(bool bVisible);
+	
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Back1;

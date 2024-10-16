@@ -18,6 +18,12 @@ public:
 
 	virtual void NativeConstruct() override;
 
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_Main;
+
+	UFUNCTION()
+	void SetVisibleCanvas(bool bVisible);
+	
 	//미니맵
 	//현재시간
 	//티켓예매 알람
