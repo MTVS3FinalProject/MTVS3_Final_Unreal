@@ -152,8 +152,8 @@ void UTTGameInstance::OnMyCreateSessionComplete(FName SessionName , bool bWasSuc
 	if ( bWasSuccessful )
 	{
 		// 리슨 서버로 맵 이동
-		//GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTHallMap?listen"));
-		GetWorld()->ServerTravel(TEXT("/Game/KHJ/Maps/HJProtoMap?listen"));
+		GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTHallMap?listen"));
+		//GetWorld()->ServerTravel(TEXT("/Game/KHJ/Maps/HJProtoMap?listen"));
 	}
 	UE_LOG(LogTemp , Warning , TEXT("Create session : % s") , *MySessionName);
 }

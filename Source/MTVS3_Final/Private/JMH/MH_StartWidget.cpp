@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "JMH/MH_StartWidget.h"
@@ -50,14 +50,6 @@ void UMH_StartWidget::NativeConstruct()
 			// 숫자를 문자열로 변환하여 ComboBoxString에 추가
 			Com_SetAge->AddOption(FString::FromInt(i));
 		}
-	}
-
-	//마우스 커서. 
-	APlayerController* Pc = GetWorld()->GetFirstPlayerController();
-	if (Pc)
-	{
-		Pc->SetInputMode(FInputModeUIOnly());
-		Pc->SetShowMouseCursor(true);
 	}
 
 	// KHJ

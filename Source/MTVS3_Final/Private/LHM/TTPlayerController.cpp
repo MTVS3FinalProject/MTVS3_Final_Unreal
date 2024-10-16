@@ -6,7 +6,6 @@
 #include "chrono"
 #include "JMH/MH_TicketingWidget.h"
 #include "Kismet/GameplayStatics.h"
-
 #include "JMH/MainWidget.h"
 
 void ATTPlayerController::BeginPlay()
@@ -23,11 +22,11 @@ void ATTPlayerController::BeginPlay()
 
     MainUI = CastChecked<UMainWidget>(CreateWidget(GetWorld(), MainUIFactory));
 
-    auto* pc = UGameplayStatics::GetPlayerController(this , 0);
-    if ( !pc ) return;
-    pc->SetShowMouseCursor(true);
+    //auto* pc = UGameplayStatics::GetPlayerController(this , 0);
+    //if ( !pc ) return;
+    //pc->SetShowMouseCursor(true);
+    //pc->SetInputMode(FInputModeGameAndUI());
 
-    pc->SetInputMode(FInputModeGameAndUI());
 	// 추첨 시작 시간 설정
     SetDrawStartTime();
 }
