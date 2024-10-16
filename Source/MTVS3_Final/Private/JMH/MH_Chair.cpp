@@ -31,12 +31,6 @@ void AMH_Chair::BeginPlay()
 {
 	Super::BeginPlay();
 	Widgetcomp->SetVisibility(false);
-
-	APlayerController* Pc = GetWorld()->GetFirstPlayerController();
-	if(Pc)
-	{
-		Pc->SetInputMode(FInputModeUIOnly());
-	}
 }
 
 // Called every frame
