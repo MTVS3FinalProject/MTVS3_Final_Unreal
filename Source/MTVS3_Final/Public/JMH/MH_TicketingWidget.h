@@ -15,6 +15,10 @@ class MTVS3_FINAL_API UMH_TicketingWidget : public UUserWidget
 	GENERATED_BODY()
 public:
 	virtual void NativeConstruct() override;
+
+	//위젯스위처설정
+	UFUNCTION()
+	void SetWidgetSwitcher(int32 num);
 	
 	//예매 접수
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -85,6 +89,8 @@ public:
 	//취소
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Cancel_Ticketting2;
+
+	
 
 
 	

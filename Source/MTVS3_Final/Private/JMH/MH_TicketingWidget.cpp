@@ -5,6 +5,7 @@
 
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Components/WidgetSwitcher.h"
 
 void UMH_TicketingWidget::NativeConstruct()
 {
@@ -15,6 +16,12 @@ void UMH_TicketingWidget::NativeConstruct()
 	Btn_Confirm_Ticketting->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedConfirmButton);
 	Btn_Cancel_Ticketting1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
 	Btn_Cancel_Ticketting2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
+}
+
+void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
+{
+	//서버에서 불러와서 입력
+	WS_RegisterSwitcher->SetActiveWidgetIndex(num);
 }
 
 void UMH_TicketingWidget::OnClickedBackButton()
