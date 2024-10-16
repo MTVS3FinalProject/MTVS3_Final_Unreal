@@ -26,20 +26,22 @@ void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
 
 void UMH_TicketingWidget::OnClickedBackButton()
 {
-	//뒤로가기 (위젯 숨기기 애님)
-	
+	//뒤로가기 (위젯 숨기기 애님 플레이)
 }
 
 void UMH_TicketingWidget::OnClickedConfirmButton()
 {
-	//접수완료, // 접수오류가 생기는 경우도 있나?
+	//접수완료,
 	//접수취소 버튼 보이게
+
+	//접수오류가 생기는 경우도 있나?
+	//경고창 띄우기
 }
 
 void UMH_TicketingWidget::OnClickedCancelButton()
 {
 	//접수 취소는 접수 신청이 완료 되면 보여지게
-	//접수취소 되게
+	//서버접근 접수취소 되게
 }
 
 void UMH_TicketingWidget::SetTextTicketPrice(int32 TicketPrice)
