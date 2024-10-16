@@ -97,9 +97,14 @@ public:
 #pragma endregion
 
 	UPROPERTY(EditAnywhere , Category = "Default|UI")
-	TSubclassOf<class UUserWidget> MainUIFactory;
+	TSubclassOf<class UMainWidget> MainUIFactory;
 	UPROPERTY()
-	class UUserWidget* MainUI;
+	class UMainWidget* MainUI;
+
+	UPROPERTY(EditAnywhere , Category = "Default|UI")
+	TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
+	UPROPERTY()
+	class UMH_TicketingWidget* TicketingUI;
 
 	UPROPERTY(EditAnywhere , Category = "Default|UI")
 	class UWidgetComponent* NicknameUIComp;
