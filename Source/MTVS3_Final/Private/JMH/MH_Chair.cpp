@@ -70,6 +70,7 @@ void AMH_Chair::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 
 void AMH_Chair::ShowText()
 {
+	UE_LOG(LogTemp , Warning , TEXT("Showing Widget: %s") , *GetName());
 	Widgetcomp->SetVisibility(true);
 }
 
