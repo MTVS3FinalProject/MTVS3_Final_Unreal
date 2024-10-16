@@ -93,11 +93,14 @@ void ATTPlayerController::SetDrawStartTime()
     FDateTime Now = FDateTime::Now();
 
     // 현재 시간으로부터 10분 후로 설정
-    DrawStartTime = Now + FTimespan(0 , 10 , 0); // 10분 후
+    //DrawStartTime = Now + FTimespan(0 , 10 , 0); // 10분 후
+
+    // 현재 날짜의 18:00으로 설정
+    DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 19 , 0 , 0); // 18:00:00으로 설정
 
     // DrawStartTime을 원하는 형식으로 변환
     int32 Hours = DrawStartTime.GetHour();
-    int32 Minutes = DrawStartTime.GetMinute();
+    int32 Minutes = DrawStartTime.GetMinute(); 
 
     // 포맷된 시간 문자열 생성
     FString FormattedTime = FString::Printf(TEXT("%02d:%02d") , Hours , Minutes);
