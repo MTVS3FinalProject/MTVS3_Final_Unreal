@@ -24,7 +24,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	#pragma region UI
+#pragma region UI
 	UPROPERTY(EditAnywhere, Category = "Defalut|UI")
 	TSubclassOf<class UMH_StartWidget> StartUIFactory;
 	UPROPERTY()
@@ -64,60 +64,4 @@ public:
 	void OnResPostLogin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 //===========================================================================================================
-
-	// 좌석에 접수 신청하는 요청을 서버에 보내는 함수
-	void ReqPostApplyForSeat(FString AccessToken , int32 Section , int32 SeatId);
-
-	// 좌석 접수 신청하는 요청에 대한 응답을 처리하는 함수
-	void OnResPostApplyForSeat(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-
-	// 좌석 예약 취소 요청을 서버에 보내는 함수
-	void ReqPostCancleBooking(int32 UserId , int64 SeatId);
-
-	// 좌석 예약 취소 요청에 대한 응답을 처리하는 함수
-	void OnResPostCancleBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-
-	// 좌석 예약을 검증하는 요청을 서버에 보내는 함수
-	//void ReqPostVerifyBooking(int32 UserId, int64 SeatId);
-
-	// 좌석 예약 검증 요청에 대한 응답을 처리하는 함수
-	//void OnResPostVerifyBooking(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-
-	// 좌석 예약 검증 결과를 확인하는 요청을 서버에 보내는 함수
-	//void ReqPostOnVerifyBooking(int32 UserId, int64 SeatId);
-
-	// 좌석 예약 검증 결과를 확인하는 요청에 대한 응답을 처리하는 함수
-	//void OnResPostOnVerifyBooking(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-
-	// 좌석 예약 완료 요청을 서버에 보내는 함수
-	//void ReqPostCompleteBooking(int32 UserId, int64 SeatId);
-
-	// 좌석 예약 완료 요청에 대한 응답을 처리하는 함수
-	//void OnResPostCompleteBooking(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-
-	//===========================================================================================================
-
-	// 티켓 예매 시 QR코드 요청을 서버에 보내는 함수
-	void ReqPostGetTicketQR(int32 UserId , int64 SeatId , FText Name , FText PhoneNum , int32 BirthDate , FText Address);
-
-	// 티켓 예매 시 QR코드 요청에 대한 응답을 처리하는 함수
-	void OnResPostGetTicketQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-
-	// 티켓 예매 시 신원 확인 요청을 서버에 보내는 함수
-	void ReqPostVerifyIdentityTicketQR(int32 UserId);
-
-	// 티켓 예매 시 신원 확인 요청에 대한 응답을 처리하는 함수
-	void OnResPostVerifyIdentityTicketQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-
-	// 코인 충전 요청을 서버에 보내는 함수
-	void ReqPostCoinCharge(int32 UserId , int32 Coin);
-
-	// 코인 충전 요청에 대한 응답을 처리하는 함수
-	void OnResPostCoinCharge(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-
-	// 티켓 예매 시 코인 결제 요청을 서버에 보내는 함수
-	void ReqTicketCoinPayment(int32 UserId , int32 Coin);
-
-	// 티켓 예매 시 코인 결제 요청에 대한 응답을 처리하는 함수
-	void OnResTicketCoinPayment(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 };
