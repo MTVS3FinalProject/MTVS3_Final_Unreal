@@ -42,8 +42,6 @@ void AHM_HttpActor::BeginPlay()
 		pc->SetShowMouseCursor(true);
 		pc->SetInputMode(FInputModeUIOnly());
 	}
-
-	
 }
 
 // Called every frame

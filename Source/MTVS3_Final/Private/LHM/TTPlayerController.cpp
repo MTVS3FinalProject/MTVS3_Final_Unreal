@@ -7,24 +7,27 @@
 #include "JMH/MH_TicketingWidget.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "JMH/MainWidget.h"
 
 void ATTPlayerController::BeginPlay()
 {
     Super::BeginPlay();
 
-    
 	TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
 	if ( TicketingUI )
 	{
 		TicketingUI->AddToViewport();
 		TicketingUI->SetWidgetSwitcher(0);
+        TicketingUI->SetVisibleSwitcher(true);
 	}
+
+    MainUI = CastChecked<UMainWidget>(CreateWidget(GetWorld(), MainUIFactory));
 
     auto* pc = UGameplayStatics::GetPlayerController(this , 0);
     if ( !pc ) return;
     pc->SetShowMouseCursor(true);
 
-    pc->SetInputMode(FInputModeUIOnly());
+    pc->SetInputMode(FInputModeGameAndUI());
 	// 추첨 시작 시간 설정
     SetDrawStartTime();
 }
@@ -65,7 +68,7 @@ void ATTPlayerController::ServerGetCurrentTime_Implementation()
 void ATTPlayerController::ClientReceiveCurrentTime_Implementation(const FString& CurrentTime)
 {
     // HUD에 현재 시간 표시 (HUD 업데이트 함수 호출)
-    //메인ui->현재시간함수(CurrentTime);
+    MainUI->SetTextCurrentTime(CurrentTime);
     UE_LOG(LogTemp , Log , TEXT("Current Time from Server: %s") , *CurrentTime);
 }
 
@@ -95,8 +98,8 @@ void ATTPlayerController::SetDrawStartTime()
     // 현재 시간으로부터 10분 후로 설정
     //DrawStartTime = Now + FTimespan(0 , 10 , 0); // 10분 후
 
-    // 현재 날짜의 18:00으로 설정
-    DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 19 , 0 , 0); // 18:00:00으로 설정
+    // 현재 날짜, 임의로 설정한 추첨 시작 시간
+    DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 21 , 0 , 0);
 
     // DrawStartTime을 원하는 형식으로 변환
     int32 Hours = DrawStartTime.GetHour();
