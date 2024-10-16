@@ -84,7 +84,6 @@ void UMH_TicketingWidget::SetTextSeatID(FString SeatID)
 void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 {
 	//게임맵으로 세션이동
-	
 }
 
 
