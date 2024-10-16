@@ -4,35 +4,32 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "MainWidget.generated.h"
+#include "MH_GameWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class MTVS3_FINAL_API UMainWidget : public UUserWidget
+class MTVS3_FINAL_API UMH_GameWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
+	
 public:
-
+	
 	virtual void NativeConstruct() override;
-
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UCanvasPanel* Can_Main;
-
-	UFUNCTION()
-	void SetVisibleCanvas(bool bVisible);
 	
-	//미니맵
-	//현재시간 받아오기
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_CurrentTime;
+	class UWidgetSwitcher* WS_GameWidgetSwitcher;
+
+	//위젯스위처설정
 	UFUNCTION()
-	void SetTextCurrentTime(FString CurrentTime);
+	void SetWidgetSwitcher(int32 num);
+
+	//룰렛1
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_roulette1;
 	
-	//티켓예매 알람
-	//티켓팅 시간대
-	//상호작용 버튼
+	UFUNCTION()
+	void SetTextroulette1(FString roulette1);
 	
 };

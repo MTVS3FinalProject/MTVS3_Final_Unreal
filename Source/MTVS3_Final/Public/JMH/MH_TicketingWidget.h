@@ -28,17 +28,17 @@ public:
 	
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Back1;
+	class UButton* Btn_Back1;
 	UFUNCTION()
 	void OnClickedBackButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Confirm_Ticketting;
+	class UButton* Btn_Confirm_Ticketting;
 	UFUNCTION()
 	void OnClickedConfirmButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Cancel_Ticketting1;
+	class UButton* Btn_Cancel_Ticketting1;
 	UFUNCTION()
 	void OnClickedCancelButton();
 	
