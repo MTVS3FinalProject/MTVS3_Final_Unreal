@@ -101,7 +101,11 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					// 필요한 정보 추출
 					FString ConcertName = ResponseObject->GetStringField(TEXT("concertName"));
 					FString ConcertDate = ResponseObject->GetStringField(TEXT("concertDate"));
-					FString RemainingTickets = ResponseObject->GetStringField(TEXT("remainingTickets"));
+					int32 RemainingTickets = ResponseObject->GetIntegerField(TEXT("remainingTickets"));
+
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("concertName : %s"), *ConcertName));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("concertDate : %s"), *ConcertDate));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("remainingTickets : %d"), RemainingTickets));
 
 					// 희진 GI에 저장
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
@@ -110,9 +114,10 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 						if ( GI )
 						{
-							//GI->콘서트 이름 저장
-							//GI->콘서트 날짜 저장
-							//GI->좌석 id
+							// GI에 콘서트 이름, 날짜, seatId 저장
+							// GI->SetConcertName(ConcertName);
+							// GI->SetConcertDate(ConcertDate);
+							// GI->RemainingTickets(RemainingTickets);
 						}
 					}
 
@@ -122,20 +127,8 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					{
 						TSharedPtr<FJsonObject> SeatObject = SeatValue->AsObject();
 						FString SeatId = SeatObject->GetStringField(TEXT("seatId"));
-						
-						// 희진 GI에 저장
-						ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-						if ( TTPlayer )
-						{
-							UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-							if ( GI )
-							{
-								//GI->
-							}
-						}
 
-						UE_LOG(LogTemp , Log , TEXT("Available Seat ID: %s, Remaining Tickets: %d") , *SeatId , RemainingTickets);
-						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Available Seat ID: %s, Remaining Tickets: %d"), SeatId , RemainingTickets));
+						UE_LOG(LogTemp , Log , TEXT("Available Seat ID: %s") , *SeatId);
 					}
 
 					// 접수 완료된 좌석 목록
@@ -145,19 +138,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						TSharedPtr<FJsonObject> SeatObject = SeatValue->AsObject();
 						FString SeatId = SeatObject->GetStringField(TEXT("seatId"));
 
-						// 희진 GI에 저장
-						ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-						if ( TTPlayer )
-						{
-							UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-							if ( GI )
-							{
-								//GI->
-							}
-						}
-
 						UE_LOG(LogTemp , Log , TEXT("Reception Seat ID: %s") , *SeatId);
-						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Reception Seat ID: %s"), SeatId));
 					}
 
 					// 콘서트 입장하는 함수 호출
