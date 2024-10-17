@@ -27,11 +27,12 @@ public:
 	UFUNCTION()
 	void SetWidgetSwitcher(int32 num);
 
+	//0 티켓 예매정보 확인
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Confirm1;
+	class UButton* Btn_Confirm01;
 	UFUNCTION()
-	void OnClickedConfirm1Button();
-	
+	void OnClickedConfirm01Button();
+
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_Back01;
 	UFUNCTION()
@@ -39,8 +40,33 @@ public:
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UImage* Img_MySeatMap;
-	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* ETex_PhoneNum;
+
+	//1 예매자 정보 및 배송지 입력
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Confirm02;
+	UFUNCTION()
+	void OnClickedConfirm02Button();
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Back02;
+	UFUNCTION()
+	void OnClickedBack02Button();
+	
+    //2 QR 신원인증확인
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_QR;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Confirm_QRUi1;
+	UFUNCTION()
+	void OnClickedConfirm_QRUi1Button();
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Back_QRUi1;
+	UFUNCTION()
+	void OnClickedBack_QRUi1Button();
+	
 	
 };
