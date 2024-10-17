@@ -24,15 +24,10 @@ public:
     virtual void Tick(float DeltaTime) override;
 
 #pragma region UI
-	UPROPERTY(EditAnywhere , Category = "Defalut|UI")
+	UPROPERTY(EditAnywhere, Category = "Defalut|UI")
 	TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
 	UPROPERTY()
 	class UMH_TicketingWidget* TicketingUI;
-
-	UPROPERTY(EditAnywhere , Category = "Defalut|UI")
-	TSubclassOf<class UMainWidget> MainUIFactory;
-	UPROPERTY()
-	class UMainWidget* MainUI;
 #pragma endregion
 
     // 서버와 클라이언트의 시간 동기화
