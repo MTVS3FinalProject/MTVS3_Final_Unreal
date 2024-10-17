@@ -42,16 +42,6 @@ void UMH_StartWidget::NativeConstruct()
 	// OnTextChanged 델리게이트에 함수 바인딩
 	EText_SignupBirth->OnTextChanged.AddDynamic(this , &UMH_StartWidget::OnTextChanged);
 
-	//나이 설정 1~100
-	if (Com_SetAge)
-	{
-		for (int32 i = 1; i <= 100; i++)
-		{
-			// 숫자를 문자열로 변환하여 ComboBoxString에 추가
-			Com_SetAge->AddOption(FString::FromInt(i));
-		}
-	}
-
 	// KHJ
 	SetLoadingActive(false);
 
@@ -170,12 +160,7 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 	//비번 중복확인.
 	FText Password1 = EText_SignupPassWord->GetText();
 	FText Password2 = EText_SignupPassWord2->GetText();
-
-	if (Com_SetAge)
-	{
-		FString SelectedOption = Com_SetAge->GetSelectedOption();
-		Age_SelectedValue = SelectedOption; // 문자열을 int로 변환
-	}
+	
 	//모두 입력했는지 확인
 	//아바타 설정으로 이동
 

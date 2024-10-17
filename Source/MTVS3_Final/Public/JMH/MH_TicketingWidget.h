@@ -89,6 +89,7 @@ public:
 	class UButton*  Btn_GotoGameRoom;	
 	UFUNCTION()
 	void OnClickedGotoGameRoomButton();
+	
 	//취소
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Cancel_Ticketting2;

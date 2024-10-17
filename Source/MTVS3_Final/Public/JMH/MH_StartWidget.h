@@ -139,8 +139,8 @@ public:
 	UFUNCTION()
 	void OnClickedMANAGERButton();
 	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UComboBoxString*  Com_SetAge;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UComboBoxString*  Com_SetAge;
 	
 	FString Age_SelectedValue;
 	
