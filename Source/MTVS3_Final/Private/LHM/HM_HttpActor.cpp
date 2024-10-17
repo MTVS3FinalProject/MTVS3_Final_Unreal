@@ -247,13 +247,17 @@ void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr R
 		if ( Response->GetResponseCode() == 200 ) // 성공 응답 코드 (200)
 		{
 			// 성공 처리 (회원가입 완료)
+			if ( StartUI )
+			{
+				StartUI->SetWidgetSwitcher(0);
+			}
 			UE_LOG(LogTemp , Log , TEXT("Sign-up success"));
 		}
 		else if(Response->GetResponseCode() == 400) // 닉네임 중복 응답 코드 (400)
 		{
 			// 실패 처리 ( 닉네임 중복 )
-			UE_LOG(LogTemp , Warning , TEXT("Sign-up failed, response code: %d") , Response->GetResponseCode());
 			//StartUI->OnLoginFail(?); // 닉네임 중복. (회원가입 실패 처리)
+			UE_LOG(LogTemp , Warning , TEXT("Sign-up failed, response code: %d") , Response->GetResponseCode());
 		}
 	}
 	else
@@ -330,6 +334,10 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 						FString Birth = MemberInfo->GetStringField(TEXT("birth"));
 						int32 Coin = MemberInfo->GetIntegerField(TEXT("coin"));
 						//int32 AvatarData = MemberInfo->GetStringField(TEXT("avatarData"));
+
+						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Nickname : "), Nickname));
+						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Birth : "), Birth));
+						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Coin"), Coin));
 
 						// AccessToken은 authTokenDTO에서 가져와야 함
 						TSharedPtr<FJsonObject> AuthTokenObject = ResponseObject->GetObjectField(TEXT("authTokenDTO"));

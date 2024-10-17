@@ -13,14 +13,16 @@ void ATTPlayerController::BeginPlay()
     Super::BeginPlay();
 
 	TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
-	/*if ( TicketingUI )
+	if ( TicketingUI )
 	{
 		TicketingUI->AddToViewport();
 		TicketingUI->SetWidgetSwitcher(0);
-        TicketingUI->SetVisibleSwitcher(true);
-	}*/
+        //TicketingUI->SetVisibleSwitcher(true); // 테스트용
+	}
 
     MainUI = CastChecked<UMainWidget>(CreateWidget(GetWorld(), MainUIFactory));
+    
+    // 테스트용
     /*if ( MainUI )
     {
         MainUI->AddToViewport();
@@ -98,13 +100,11 @@ void ATTPlayerController::SetDrawStartTime()
     // 현재 시스템 시간 가져오기
     FDateTime Now = FDateTime::Now();
 
-    // 현재 시간으로부터 10분 후로 설정
-    //DrawStartTime = Now + FTimespan(0 , 10 , 0); // 10분 후
-
+    // 시연용
     // 현재 날짜, 임의로 설정한 추첨 시작 시간
-    DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 22 , 0 , 0);
+    DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 11 , 0 , 0);
 
-    // DrawStartTime을 원하는 형식으로 변환
+    // DrawStartTime을 hour:minute 형식으로 변환
     int32 Hours = DrawStartTime.GetHour();
     int32 Minutes = DrawStartTime.GetMinute(); 
 
@@ -138,10 +138,5 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 			TicketingUI->SetTextGameStartTime(CountdownText);
         }
         //UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
-    }
-    else
-    {
-        // 추첨 시작 시간에 도달한 경우 처리
-        UE_LOG(LogTemp , Log , TEXT("추첨이 시작되었습니다!"));
     }
 }

@@ -36,21 +36,27 @@ public:
 
 //===========================================================================================================
 
-	// 좌석 접수 조회 요청
-	void ReqGetSeatRegistrationCount(const FString& SeatId , const FString& AccessToken);
+	// 공연장 입장 요청
+	void ReqGetConcertEntry(FString ConcertName , FString AccessToken);
 
-	// 좌석 접수 조회 요청에 대한 응답
-	void OnResGetSeatRegistrationCount(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	// 공연장 입장 요청에 대한 응답
+	void OnResGetConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 좌석 조회 요청
+	void ReqGetSeatRegistrationInquiry(FString SeatId , FString AccessToken);
+
+	// 좌석 조회 요청에 대한 응답
+	void OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 접수 요청
-	void ReqPostRegisterSeat(const FString& SeatId , const FString& AccessToken);
+	void ReqPostRegisterSeat(FString SeatId , FString AccessToken);
 
 	// 좌석 접수 요청에 대한 응답
 	void OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 취소 요청
-	void ReqDeleteCancelSeat(const FString& SeatId , const FString& AccessToken);
+	void ReqDeleteCancelRegisteredSeat(FString SeatId , FString AccessToken);
 
 	// 좌석 취소 요청에 대한 응답
-	void OnResDeleteCancelSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 };
