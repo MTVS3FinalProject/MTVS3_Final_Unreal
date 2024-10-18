@@ -307,16 +307,18 @@ void ATTPlayer::InitMainUI()
 		MainUI->AddToViewport();
 	}
 
-	ATTPlayerController* MyController = Cast<ATTPlayerController>(GetController());
-	if ( MyController )
-	{
-		MyController->SetMainUI(MainUI);
-	}
-
 	TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
 	if ( TicketingUI )
 	{
 		TicketingUI->AddToViewport();
+	}
+
+	ATTPlayerController* MyController = Cast<ATTPlayerController>(GetController());
+	if ( MyController )
+	{
+		MyController->SetMainUI(MainUI);
+		MyController->SetTicketingUI(TicketingUI);
+		MyController->SetDrawStartTime();
 	}
 }
 
