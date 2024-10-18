@@ -63,7 +63,7 @@ public:
 
 	// 온라인 세션 인터페이스를 기억하고 싶다.
 	IOnlineSessionPtr SessionInterface;
-	FString MySessionName = TEXT("Rokke");
+	FString MySessionName = TEXT("TTHallSession");
 
 	void FindOrCreateSession();
 	void OnFindOrCreateSessionComplete(bool bWasSuccessful);
@@ -74,6 +74,18 @@ public:
 	void OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result);
 
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+
+	// 방 퇴장 요청
+	void ExitSession();
+
+	UFUNCTION(Server, Reliable)
+	void ServerRPCExitSesson();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCExitSession();
+
+	// 방 퇴장 응답
+	void OnMyDestroySessionComplete(FName SessionName, bool bWasSuccessful);
 
 	// Getter 및 Setter 함수
 	FPlayerData GetPlayerData() const;

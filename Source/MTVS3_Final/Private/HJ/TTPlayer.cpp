@@ -18,6 +18,7 @@
 #include "Engine/World.h"
 #include "JMH/MH_TicketingWidget.h"
 #include "JMH/MainWidget.h"
+#include "LHM/TTPlayerController.h"
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -300,7 +301,7 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 
 void ATTPlayer::InitMainUI()
 {
-	MainUI = CastChecked<UMainWidget>(CreateWidget(GetWorld() , MainUIFactory));
+	MainUI = Cast<UMainWidget>(CreateWidget(GetWorld() , MainUIFactory));
 	if ( MainUI )
 	{
 		MainUI->AddToViewport();
@@ -310,6 +311,14 @@ void ATTPlayer::InitMainUI()
 	if ( TicketingUI )
 	{
 		TicketingUI->AddToViewport();
+	}
+
+	ATTPlayerController* MyController = Cast<ATTPlayerController>(GetController());
+	if ( MyController )
+	{
+		MyController->SetMainUI(MainUI);
+		MyController->SetTicketingUI(TicketingUI);
+		MyController->SetDrawStartTime();
 	}
 }
 
