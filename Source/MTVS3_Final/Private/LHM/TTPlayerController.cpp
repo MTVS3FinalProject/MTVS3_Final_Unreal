@@ -4,23 +4,30 @@
 #include "LHM/TTPlayerController.h"
 #include "Engine/World.h"
 #include "chrono"
-#include "JMH/MH_TicketingWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "JMH/MH_TicketingWidget.h"
+#include "JMH/MainWidget.h"
 
 void ATTPlayerController::BeginPlay()
 {
     Super::BeginPlay();
 
     
-	TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
+	/*TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
 	if ( TicketingUI )
 	{
 		TicketingUI->AddToViewport();
 		TicketingUI->SetWidgetSwitcher(0);
+		TicketingUI->SetVisibleSwitcher(true);
 	}
-    
+
+    auto* pc = UGameplayStatics::GetPlayerController(this , 0);
+    if ( !pc ) return;
+    pc->SetShowMouseCursor(true);
+    pc->SetInputMode(FInputModeGameAndUI());*/
+
 	// 추첨 시작 시간 설정
-    SetDrawStartTime();
+    //SetDrawStartTime();
 }
 
 void ATTPlayerController::Tick(float DeltaTime)
@@ -58,9 +65,22 @@ void ATTPlayerController::ServerGetCurrentTime_Implementation()
 
 void ATTPlayerController::ClientReceiveCurrentTime_Implementation(const FString& CurrentTime)
 {
-    // HUD에 현재 시간 표시 (HUD 업데이트 함수 호출)
-    //메인ui->현재시간함수(CurrentTime);
+    // Main UI에 현재 시간 표시
+    if ( MainUI )
+	{
+		MainUI->SetTextCurrentTime(CurrentTime);
+	}
     UE_LOG(LogTemp , Log , TEXT("Current Time from Server: %s") , *CurrentTime);
+}
+
+void ATTPlayerController::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
+{
+    TicketingUI = InTicketingUI; // 전달받은 TicketingUI 참조 저장
+}
+
+void ATTPlayerController::SetMainUI(UMainWidget* InMainUI)
+{
+    MainUI = InMainUI;  // 전달받은 MainUI 참조 저장
 }
 
 FString ATTPlayerController::GetSystemTime()
@@ -75,7 +95,8 @@ FString ATTPlayerController::GetSystemTime()
 
     // 시간 포맷 설정 (yyyy-MM-dd HH:mm:ss)
     char buffer[100];
-    std::strftime(buffer , sizeof(buffer) , "%Y-%m-%d %H:%M:%S" , &localTime);
+    std::strftime(buffer , sizeof(buffer) , "%H:%M" , &localTime);
+    //std::strftime(buffer , sizeof(buffer) , "%Y-%m-%d %H:%M:%S" , &localTime);
 
     // FString로 변환하여 Unreal에서 출력
     return FString(buffer);
@@ -89,12 +110,12 @@ void ATTPlayerController::SetDrawStartTime()
     // 현재 시간으로부터 10분 후로 설정
     //DrawStartTime = Now + FTimespan(0 , 10 , 0); // 10분 후
 
-    // 현재 날짜의 18:00으로 설정
-    DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 19 , 0 , 0); // 18:00:00으로 설정
+    // 현재 날짜, 임의로 설정한 추첨 시작 시간
+    DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 21 , 0 , 0);
 
     // DrawStartTime을 원하는 형식으로 변환
     int32 Hours = DrawStartTime.GetHour();
-    int32 Minutes = DrawStartTime.GetMinute(); 
+    int32 Minutes = DrawStartTime.GetMinute();
 
     // 포맷된 시간 문자열 생성
     FString FormattedTime = FString::Printf(TEXT("%02d:%02d") , Hours , Minutes);
@@ -126,10 +147,5 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 			TicketingUI->SetTextGameStartTime(CountdownText);
         }
         //UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
-    }
-    else
-    {
-        // 추첨 시작 시간에 도달한 경우 처리
-        UE_LOG(LogTemp , Log , TEXT("추첨이 시작되었습니다!"));
     }
 }

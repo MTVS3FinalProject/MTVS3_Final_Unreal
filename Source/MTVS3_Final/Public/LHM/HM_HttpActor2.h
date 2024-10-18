@@ -37,16 +37,16 @@ public:
 //===========================================================================================================
 
 	// 공연장 입장 요청
-	void ReqGetConcertEntry(FString ConcertName , FString AccessToken);
+	void ReqPostConcertEntry(FString ConcertName , FString AccessToken);
 
 	// 공연장 입장 요청에 대한 응답
-	void OnResGetConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void OnResPostConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 조회 요청
-	void ReqGetSeatRegistrationInquiry(FString SeatId , FString AccessToken);
+	void ReqPostSeatRegistrationInquiry(FString SeatId , FString AccessToken);
 
 	// 좌석 조회 요청에 대한 응답
-	void OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 접수 요청
 	void ReqPostRegisterSeat(FString SeatId , FString AccessToken);
@@ -59,4 +59,14 @@ public:
 
 	// 좌석 취소 요청에 대한 응답
 	void OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 좌석 게임 결과 , 응답 필요없음
+	void ReqPostGameResult(FString SeatId , FString AccessToken);
+
+	// 결제시 회원 인증용 QR 요청
+	void ReqGetMemberAuthQR(FString AccessToken);
+
+	// 결제시 회원 인증 사진 업로드 확인
+	void ReqGetPostConfirmMemberPhoto(FString AccessToken);
+
 };
