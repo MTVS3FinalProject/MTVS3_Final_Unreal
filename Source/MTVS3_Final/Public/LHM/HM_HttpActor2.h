@@ -42,6 +42,8 @@ public:
 	// 공연장 입장 요청에 대한 응답
 	void OnResPostConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
+//===========================================================================================================
+
 	// 좌석 조회 요청
 	void ReqPostSeatRegistrationInquiry(FString SeatId , FString AccessToken);
 
@@ -60,6 +62,8 @@ public:
 	// 좌석 취소 요청에 대한 응답
 	void OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
+//===========================================================================================================
+
 	// 좌석 게임 결과 , 응답 필요없음
 	void ReqPostGameResult(FString SeatId , FString AccessToken);
 
@@ -68,5 +72,11 @@ public:
 
 	// 결제시 회원 인증 사진 업로드 확인
 	void ReqGetPostConfirmMemberPhoto(FString AccessToken);
+
+	// 예매자 정보 입력 요청
+	void ReqPostReservationinfo(FString UserName, int32 PhoneNum, FString UserAddress , FString AccessToken);
+
+	// 예매자 정보 입력 요청에 대한 응답
+	void OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 };
