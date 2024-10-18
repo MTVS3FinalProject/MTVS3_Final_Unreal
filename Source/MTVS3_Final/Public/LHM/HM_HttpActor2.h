@@ -70,6 +70,9 @@ public:
 	// 결제시 회원 인증용 QR 요청
 	void ReqGetMemberAuthQR(FString AccessToken);
 
+	// 결제시 회원 인증용 QR 요청에 대한 응답
+	void OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
 	// 결제시 회원 인증 사진 업로드 확인
 	void ReqGetPostConfirmMemberPhoto(FString AccessToken);
 

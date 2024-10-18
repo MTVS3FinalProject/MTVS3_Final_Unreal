@@ -10,6 +10,7 @@
 #include "HJ/TTPlayer.h"
 #include "HJ/TTGameInstance.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
+#include "ImageUtils.h"
 
 // Sets default values
 AHM_HttpActor2::AHM_HttpActor2()
@@ -506,6 +507,33 @@ void AHM_HttpActor2::ReqGetMemberAuthQR(FString AccessToken)
 
 	// 요청 전송
 	Request->ProcessRequest();
+}
+
+void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
+		{
+			TArray<uint8> ImageData = Response->GetContent();
+			FString imagePath = FPaths::ProjectPersistentDownloadDir();
+			FFileHelper::SaveArrayToFile(ImageData , *imagePath);
+			UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+			if ( Texture )
+			{
+				// 결제 시 회원 인증 QR UI로 넘어가는 함수 호출하기
+				// UI-> ????
+				UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
+			}
+			else
+			{
+				UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
+			}
+		}
+	}
 }
 
 void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString AccessToken)
