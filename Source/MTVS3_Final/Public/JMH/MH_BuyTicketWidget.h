@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MH_BuyCoinsWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "MH_BuyTicketWidget.generated.h"
 
@@ -18,8 +19,13 @@ public:
 	
 	virtual void NativeConstruct() override;
 
+	//위젯추가
+	UPROPERTY()
+	TSubclassOf<class UMH_BuyCoinsWidget> BuyCoinWidgetFac;
+	UPROPERTY()
+	class UMH_BuyCoinsWidget* BuyCoinUI;
 		
-	//Start
+	//위젯 스위처
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_BuyTicketSwitcher;
 	
@@ -67,6 +73,85 @@ public:
 	class UButton* Btn_Back_QRUi1;
 	UFUNCTION()
 	void OnClickedBack_QRUi1Button();
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UEditableText* EText_Name;
 	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UEditableText* EText_Phonenum;
 	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UEditableText* EText_Address;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Confirm_QRUi2;
+	UFUNCTION()
+	void OnClickedConfirm_QRUi2SuccessButton();
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Confirm_QRUi3;
+	UFUNCTION()
+	void OnClickedConfirm_QRUi3SuccessButton();
+
+	//결제진행
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_SeatID;
+	UFUNCTION()
+	void SetTextSeatID(FString SeatID);
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TicketNum;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TicketNum2 = Text_TicketNum;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TotalCoin;
+
+	UFUNCTION()
+	void SetTextTicketNum(FString TicketNum);
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TicketPrice;
+	UFUNCTION()
+	void SetTextTicketPrice(int32 TicketPrice);
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_AddCoin;
+	UFUNCTION()
+	void OnClickedAddCoinButton();
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Back03;
+	UFUNCTION()
+	void OnClickedBack03Button();
+
+	//결제완료
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_SeatID2;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TicketNum3 = Text_TicketNum;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TotalCoin_1 = Text_TotalCoin; 
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_UserName;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_UserPhoneNum;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_Address; 
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_SaveTicket;
+	UFUNCTION()
+	void OnClickedSaveTicketButton();
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Btn_Back04;
+	UFUNCTION()
+	void OnClickedBtn_Back04Button();
 };
