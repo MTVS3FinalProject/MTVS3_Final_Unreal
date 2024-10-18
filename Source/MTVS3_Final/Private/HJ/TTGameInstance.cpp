@@ -172,87 +172,106 @@ void UTTGameInstance::OnMyJoinSessionComplete(FName SessionName , EOnJoinSession
 	}
 }
 
+void UTTGameInstance::SetPlayerData(const FPlayerData& NewPlayerData)
+{
+	PlayerData = NewPlayerData;
+}
+
+FPlayerData UTTGameInstance::GetPlayerData() const
+{
+	return PlayerData;
+}
+
 void UTTGameInstance::SetbIsHost(const bool& _bIsHost)
 {
-	bIsHost = _bIsHost;
+	PlayerData.bIsHost = _bIsHost;
+	SetPlayerData(PlayerData);
 }
 
 bool UTTGameInstance::GetbIsHost() const
 {
-	return bIsHost;
+	return PlayerData.bIsHost;
 }
 
 void UTTGameInstance::SetNickname(const FString& _Nickname)
 {
-	Nickname = _Nickname;
+	PlayerData.Nickname = _Nickname;
+	SetPlayerData(PlayerData);
 }
 
 FString UTTGameInstance::GetNickname() const
 {
-	if ( Nickname.IsEmpty() )
+	if ( PlayerData.Nickname.IsEmpty() )
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Nickname is empty , returning default value."));
 		return TEXT("티케타카");
 	}
-	return Nickname;
+	return PlayerData.Nickname;
 }
 
 void UTTGameInstance::SetAccessToken(const FString& _AccessToken)
 {
-	AccessToken = _AccessToken;
+	PlayerData.AccessToken = _AccessToken;
+	SetPlayerData(PlayerData);
 }
 
 FString UTTGameInstance::GetAccessToken() const
 {
-	return AccessToken;
+	return PlayerData.AccessToken;
 }
 
 void UTTGameInstance::SetBirth(const FString& _Birth)
 {
-	Birth = _Birth;
+	PlayerData.Birth = _Birth;
+	SetPlayerData(PlayerData);
 }
 
 FString UTTGameInstance::GetBirth() const
 {
-	return Birth;
+	return PlayerData.Birth;
 }
 
 void UTTGameInstance::SetCoin(const int32& _Coin)
 {
-	Coin = _Coin;
+	PlayerData.Coin = _Coin;
+	SetPlayerData(PlayerData);
 }
 
 void UTTGameInstance::AddCoin(int32 _Coin)
 {
-	Coin += _Coin;
+	PlayerData.Coin += _Coin;
+	SetPlayerData(PlayerData);
 }
 
 int32 UTTGameInstance::GetCoin()
 {
-	return Coin;
+	return PlayerData.Coin;
 }
 
 void UTTGameInstance::SetRemainingTicketCount(const int32& _RemainingTicketCount)
 {
-	RemainingTicketCount = _RemainingTicketCount;
+	PlayerData.RemainingTicketCount = _RemainingTicketCount;
+	SetPlayerData(PlayerData);
 }
 
 void UTTGameInstance::UseRemainingTicket(int32 UsedTicketCount)
 {
-	RemainingTicketCount -= UsedTicketCount;
+	PlayerData.RemainingTicketCount -= UsedTicketCount;
+	SetPlayerData(PlayerData);
 }
 
 int32 UTTGameInstance::GetRemainingTicketCount()
 {
-	return RemainingTicketCount;
+	return PlayerData.RemainingTicketCount;
 }
 
 void UTTGameInstance::SetAvatarData(const int32& _AvatarData)
 {
-	AvatarData = _AvatarData;
+	PlayerData.AvatarData = _AvatarData;
+	SetPlayerData(PlayerData);
 }
 
 int32 UTTGameInstance::GetAvatarData()
 {
-	return AvatarData;
+	return PlayerData.AvatarData;
 }

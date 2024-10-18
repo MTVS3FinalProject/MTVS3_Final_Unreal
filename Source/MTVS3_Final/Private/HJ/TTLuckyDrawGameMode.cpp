@@ -106,6 +106,12 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 			UE_LOG(LogLuckyDraw , Log , TEXT("한 행 또는 열만 남아 탈락을 방지합니다. 룰렛을 다시 돌립니다."));
 			continue; // 한 행 또는 열만 남아있고, 탈락할 경우 전멸 방지를 위해 룰렛을 다시 돌림
 		}
+		else if ( IsSingleRowOrCol && PassOrFail == TEXT("통과") &&
+			(RowOrColRule.Contains(TEXT("과(와) 같은 행 제외")) || RowOrColRule.Contains(TEXT("과(와) 같은 열 제외"))) )
+		{
+			UE_LOG(LogLuckyDraw , Log , TEXT("한 행 또는 열만 남아 통과로 전멸을 방지합니다. 룰렛을 다시 돌립니다."));
+			continue;  // 한 행/열만 남고 통과일 경우 전멸 방지
+		}
 
 		// 전멸 방지 시뮬레이션
 		TArray<int32> SimulatedRemainingPlayers = RemainingPlayers;

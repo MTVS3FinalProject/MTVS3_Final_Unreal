@@ -28,7 +28,12 @@ void AHJ_Actor::Tick(float DeltaTime)
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if ( GI )
 	{
-		// 관리자 여부 설정 및 가져오기
+		// 플레이어 데이터를 구조체로 가져오기
+		//FPlayerData PlayerData = GI->GetPlayerData();  // 현재 플레이어 데이터를 가져옴
+		//// 관리자 여부 설정 및 가져오기
+		//PlayerData.bIsHost = true;
+		//bool bIsHost = PlayerData.bIsHost;
+		//GI->SetPlayerData(PlayerData);
 		GI->SetbIsHost(true);
 		bool bIsHost = GI->GetbIsHost();
 

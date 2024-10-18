@@ -11,13 +11,48 @@
  *
  */
 
- DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindSignature, bool, value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindSignature , bool , value);
+
+USTRUCT(BlueprintType)
+struct FPlayerData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	bool bIsHost;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	FString Nickname;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	FString AccessToken;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	FString Birth;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
+	int32 Coin;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
+	int32 RemainingTicketCount;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Avatar")
+	int32 AvatarData;
+
+	// 기본 생성자
+	FPlayerData()
+		: bIsHost(false) , Nickname(TEXT("티케타카")) , AccessToken(TEXT("")) , Birth(TEXT("")) ,
+		Coin(0) , RemainingTicketCount(0) , AvatarData(0)
+	{}
+};
 
 UCLASS()
 class MTVS3_FINAL_API UTTGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
+private:
+	FPlayerData PlayerData;
 public:
 	// 세션 관련 델리게이트
 	FFindSignature OnFindSignatureCompleteDelegate;
@@ -39,6 +74,10 @@ public:
 	void OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result);
 
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+
+	// Getter 및 Setter 함수
+	FPlayerData GetPlayerData() const;
+	void SetPlayerData(const FPlayerData& NewPlayerData);
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
 	bool bIsHost;
