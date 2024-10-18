@@ -7,6 +7,7 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
+#include "HJ/TTGameInstance.h"
 
 void UMainWidget::NativeConstruct()
 {
@@ -40,5 +41,10 @@ void UMainWidget::SetTextCurrentTime(FString CurrentTime)
 
 void UMainWidget::OnClickedBackMain()
 {
-	//나가기
+	// 방에서 퇴장하고 싶다.
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		gi->ExitSession();
+	}
 }

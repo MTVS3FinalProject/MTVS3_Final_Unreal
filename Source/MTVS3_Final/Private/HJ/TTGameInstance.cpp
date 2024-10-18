@@ -25,6 +25,9 @@ void UTTGameInstance::Init()
 		// 세션 참가 완료 시 호출되는 델리게이트
 		SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(
 			this , &UTTGameInstance::OnMyJoinSessionComplete);
+
+		// 방 퇴장 응답
+		SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this , &UTTGameInstance::OnMyDestroySessionComplete);
 	}
 }
 
@@ -169,6 +172,32 @@ void UTTGameInstance::OnMyJoinSessionComplete(FName SessionName , EOnJoinSession
 		{
 			PlayerController->ClientTravel(URL , ETravelType::TRAVEL_Absolute);
 		}
+	}
+}
+
+void UTTGameInstance::ExitSession()
+{
+	ServerRPCExitSesson();
+}
+
+void UTTGameInstance::ServerRPCExitSesson_Implementation()
+{
+	MulticastRPCExitSession();
+}
+
+void UTTGameInstance::MulticastRPCExitSession_Implementation()
+{
+	// 방 퇴장 요청
+	SessionInterface->DestroySession(FName(MySessionName));
+}
+
+void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSuccessful)
+{
+	if ( bWasSuccessful )
+	{
+		// 클라이언트가 로비로 여행을 가고 싶다.
+		auto* pc = GetWorld()->GetFirstPlayerController();
+		pc->ClientTravel(TEXT("/Game/Ticketaka/TTLobbyMap") , ETravelType::TRAVEL_Absolute);
 	}
 }
 
