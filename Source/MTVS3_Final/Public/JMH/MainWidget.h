@@ -30,7 +30,12 @@ public:
 	class UTextBlock* Tex_CurrentTime;
 	UFUNCTION()
 	void SetTextCurrentTime(FString CurrentTime);
-	
+
+	//나가기
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_BackMain;
+	UFUNCTION()
+	void OnClickedBackMain();
 	//티켓예매 알람
 	//티켓팅 시간대
 	//상호작용 버튼
