@@ -29,8 +29,19 @@ class MTVS3_FINAL_API ATTLuckyDrawGameMode : public AGameModeBase
 public:
     virtual void BeginPlay() override;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defaults|TTSettings")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
+    bool bIsRouletteTestMode;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
     int32 NumPlayers = 30;  // 기본값 30명
+
+    // 다음 라운드로 넘어가기까지의(탈락자 애니메이션) 시간
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
+    float EliminationEffectDuration = 3.0f;
+
+    // 룰렛 딜레이
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
+    float RouletteDelay = 1.5f;
 
     TArray<TArray<FSeat>> Seats;
     TArray<int32> RemainingPlayers;
@@ -53,4 +64,6 @@ private:
     void ShuffleSeats();
     void PrintSeats();
     bool IsGameOver() const;
+    bool CheckSingleRowOrColRemaining();
+    void GetPlayerPosition(int32 Player , int32& OutRow , int32& OutCol);
 };
