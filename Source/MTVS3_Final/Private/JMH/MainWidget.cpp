@@ -15,6 +15,7 @@ void UMainWidget::NativeConstruct()
 	SetVisibleCanvas(true);
 
 	Btn_BackMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBackMain);
+
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
