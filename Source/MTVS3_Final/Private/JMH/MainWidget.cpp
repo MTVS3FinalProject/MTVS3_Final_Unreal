@@ -12,7 +12,6 @@ void UMainWidget::NativeConstruct()
 	Super::NativeConstruct();
 	
 	SetVisibleCanvas(true);
-	GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
