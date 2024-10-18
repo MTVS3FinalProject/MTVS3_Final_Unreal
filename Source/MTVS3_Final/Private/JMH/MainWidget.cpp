@@ -4,6 +4,7 @@
 #include "JMH/MainWidget.h"
 
 #include "AssetTypeCategories.h"
+#include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
 
@@ -12,7 +13,8 @@ void UMainWidget::NativeConstruct()
 	Super::NativeConstruct();
 	
 	SetVisibleCanvas(true);
-	GetWorld()->GetFirstPlayerController()->SetInputMode(FInputModeGameOnly());
+
+	Btn_BackMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBackMain);
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
@@ -32,4 +34,10 @@ void UMainWidget::SetTextCurrentTime(FString CurrentTime)
 {
 	//FString으로 변환해놓은 시간값 받아와서 표시
 	Tex_CurrentTime->SetText(FText::FromString(CurrentTime));
+	
+}
+
+void UMainWidget::OnClickedBackMain()
+{
+	//나가기
 }
