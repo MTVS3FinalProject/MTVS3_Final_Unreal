@@ -24,9 +24,81 @@ public:
 	class UWidgetSwitcher* WS_RegisterSwitcher;
 	UFUNCTION()
 	void SetVisibleSwitcher(bool bVisible);
-	
 
 	//예매 접수
+	//공연정보
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_ConcertName;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_ConcertDateY;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_ConcertDateM;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_ConcertDateD;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_ConcertTime;
+
+	UFUNCTION()
+	void SetConcertInfo(FString ConcertName, int32 ConcertDateY, int32 ConcertDateM, int32 ConcertDateD, FString ConcertTime );
+	
+	//좌석정보
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_SeatFloor;
+	
+	//좌석번호 셋팅
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_SeatID;
+	UFUNCTION()
+	void SetTextSeatID(int32 SeatFloor,FString SeatID);
+
+	//좌석 추첨시간
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TickettingDateY;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TickettingDateM;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TickettingDateD;
+
+	UFUNCTION()
+	void SetTickettingDate(int32 TickettingDateY,int32  TickettingDateM,int32  TickettingDateD);
+
+	//게임예정 시작시간 //애는 다른곳에도 띄워야해서 따로
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_GameStartTime;
+	UFUNCTION()
+	void SetTextGameStartTime(FString CompetitionStartTime);
+
+	//잔여접수 티켓 받아오기
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_RemainingTickets;
+	UFUNCTION()
+	void SetTextRemainingTicket(int32 RemainingTicket);
+
+	//접수 여부에 따라 달라지는 UI
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UVerticalBox* Ver_Completed;
+	UFUNCTION()
+	void SetCompletedVisible(bool bVisible);
+
+	//티켓 금액 받아오기
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TicketPrice;
+	UFUNCTION()
+	void SetTextTicketPrice(int32 TicketPrice);
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_SeatInfoMap;
+	UFUNCTION()
+	void SetSeatInfoMap(FString SeatID);
+
+	
+	//닫기 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_Back1;
 	UFUNCTION()
@@ -36,35 +108,22 @@ public:
 	class UButton* Btn_Confirm_Ticketting;
 	UFUNCTION()
 	void OnClickedConfirmButton();
-	
+
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_Cancel_Ticketting1;
 	UFUNCTION()
 	void OnClickedCancelButton();
-	
-	//티켓 금액 받아오기
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_TicketPrice;
-	UFUNCTION()
-	void SetTextTicketPrice(int32 TicketPrice);
 
-	//접수가능 티켓 수 받아오기
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_RemainingTickets;
-	UFUNCTION()
-	void SetTextRemainingTicket(int32 RemainingTicket);
+	
+	
+
 
 	//접수마감시간 받아오기
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_TicketingDeadline;
 	UFUNCTION()
 	void SetTextTicketingDeadline(FString TicketingDeadline);
-
-	//게임시작시간
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_GameStartTime;
-	UFUNCTION()
-	void SetTextGameStartTime(FString CompetitionStartTime);
+	
 
 	//경쟁률
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -72,11 +131,6 @@ public:
 	UFUNCTION()
 	void SetTextCompetitionRate(int32 CompetitionRate);
 
-	//좌석번호 셋팅
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_SeatID;
-	UFUNCTION()
-	void SetTextSeatID(FString SeatID);
 
 	//게임입장
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -90,13 +144,6 @@ public:
 	//취소
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Cancel_Ticketting2;
-	
-	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	//class UTextBlock* Tex_test;
-
-	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	//class UTextBlock* Tex_test2;
-
 	
 	
 };
