@@ -17,6 +17,8 @@ void UMH_TicketingWidget::NativeConstruct()
 	Btn_Confirm_Ticketting->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedConfirmButton);
 	Btn_Cancel_Ticketting1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
 	Btn_Cancel_Ticketting2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
+	Btn_PlayerVisible->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedPlayerVisibleButton);
+	Btn_Sound->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedSoundButton);
 
 	//위젯 꺼져있는게 기본값
 	SetVisibleSwitcher(false);
@@ -103,23 +105,29 @@ void UMH_TicketingWidget::SetCompletedVisible(bool bVisible)
 void UMH_TicketingWidget::OnClickedBackButton()
 {
 	//뒤로가기 (위젯 숨기기 애님 플레이)
+	if(Can_RegisterAnim_Off)
+	{
+		PlayAnimation(Can_RegisterAnim_Off);
+	}
 }
 
 void UMH_TicketingWidget::OnClickedConfirmButton()
 {
-	//접수완료,
+	//접수완료
+	
 	//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
 	SetCompletedVisible(true);
+	
 	//접수오류가 생기는 경우도 있나?
 	//경고창 띄우기
 }
 
 void UMH_TicketingWidget::OnClickedCancelButton()
 {
-	//접수 취소는 접수 신청이 완료 되면 보여지게
-	//버튼,텍스트 안보이게
+	//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
 	SetCompletedVisible(false);
-	//서버-> 접수취소 되게
+	
+	//서버-> 접수취소
 	
 }
 
@@ -154,4 +162,26 @@ void UMH_TicketingWidget::SetTextCompetitionRate(int32 CompetitionRate)
 void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 {
 	//게임맵으로 세션이동
+}
+
+void UMH_TicketingWidget::OnClickedPlayerVisibleButton()
+{
+	//SetPlayerVisible()
+}
+
+void UMH_TicketingWidget::SetPlayerVisible(bool bVisible)
+{
+	//좌석 카메라에서 플레이어 보이게, 안보이게
+	
+}
+
+void UMH_TicketingWidget::OnClickedSoundButton()
+{
+	//SetSound
+}
+
+void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
+{
+	//소리 들리게, 안들리게.
+	
 }

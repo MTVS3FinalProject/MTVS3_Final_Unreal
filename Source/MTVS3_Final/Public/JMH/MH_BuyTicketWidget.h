@@ -46,8 +46,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UImage* Img_MySeatMap;
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UEditableText* ETex_PhoneNum;
 
 	//1 예매자 정보 및 배송지 입력
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -78,18 +76,18 @@ public:
 	class UEditableText* EText_Name;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UEditableText* EText_Phonenum;
+	class UEditableText* EText_PhoneNum;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_Address;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Confirm_QRUi2;
+	class UButton* Btn_Confirm_QRSuccess;
 	UFUNCTION()
 	void OnClickedConfirm_QRUi2SuccessButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Confirm_QRUi3;
+	class UButton* Btn_Confirm_QRUi2_1;
 	UFUNCTION()
 	void OnClickedConfirm_QRUi3SuccessButton();
 
@@ -128,7 +126,7 @@ public:
 
 	//결제완료
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_SeatID2;
+	class UTextBlock* Text_SeatID2;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_TicketNum3 = Text_TicketNum;
@@ -151,7 +149,7 @@ public:
 	void OnClickedSaveTicketButton();
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Btn_Back04;
+	class UButton* Btn_Back04;
 	UFUNCTION()
 	void OnClickedBtn_Back04Button();
 };

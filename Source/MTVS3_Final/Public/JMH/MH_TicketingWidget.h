@@ -17,12 +17,12 @@ public:
 	virtual void NativeConstruct() override;
 
 	//위젯스위처설정
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetWidgetSwitcher(int32 num);
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_RegisterSwitcher;
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetVisibleSwitcher(bool bVisible);
 
 	//예매 접수
@@ -144,6 +144,26 @@ public:
 	//취소
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Cancel_Ticketting2;
-	
-	
+
+	//설정
+	//PlayerVisible
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_PlayerVisible;
+	UFUNCTION()
+	void OnClickedPlayerVisibleButton();
+	UFUNCTION()
+	void SetPlayerVisible(bool bVisible);
+    //Sound
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Sound;
+	UFUNCTION()
+	void OnClickedSoundButton();
+	UFUNCTION()
+	void SetSound(bool bIsSoundOn);
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* Can_RegisterAnim_Off;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* Can_RegisterAnim_On;
 };
