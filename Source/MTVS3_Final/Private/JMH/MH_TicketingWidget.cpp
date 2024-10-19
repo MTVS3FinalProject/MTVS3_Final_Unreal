@@ -62,37 +62,37 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 void UMH_TicketingWidget::SetTextTicketPrice(int32 TicketPrice)
 {
 	//int 가격 Ftext로 변환해서 티켓가격 입력하기
-	Tex_TicketPrice->SetText(FText::AsNumber(TicketPrice));
+	Text_TicketPrice->SetText(FText::AsNumber(TicketPrice));
 }
 
 void UMH_TicketingWidget::SetTextRemainingTicket(int32 RemainingTicket)
 {
 	//int 가격 Ftext로 변환해서 티켓가격 입력하기
-	Tex_RemainingTicket->SetText(FText::AsNumber(RemainingTicket));
+	Text_RemainingTickets->SetText(FText::AsNumber(RemainingTicket));
 }
 
 void UMH_TicketingWidget::SetTextTicketingDeadline(FString TicketingDeadline)
 {
 	//FString으로 변환해놓은 시간값 받아와서 표시
-	Tex_TicketingDeadline->SetText(FText::FromString(TicketingDeadline));
+	Text_TicketingDeadline->SetText(FText::FromString(TicketingDeadline));
 }
 
 void UMH_TicketingWidget::SetTextGameStartTime(FString CompetitionStartTime)
 {
 	//FString으로 변환해놓은 시간값 받아와서 표시
-	Tex_GameStartTime->SetText(FText::FromString(CompetitionStartTime));
+	Text_GameStartTime->SetText(FText::FromString(CompetitionStartTime));
 }
 
 void UMH_TicketingWidget::SetTextCompetitionRate(int32 CompetitionRate)
 {
 	//int 경쟁률 Ftext로 변환해서 경쟁률 입력하기
-	Tex_CompetitionRate->SetText(FText::AsNumber(CompetitionRate));
+	Text_CompetitionRate->SetText(FText::AsNumber(CompetitionRate));
 }
 
 void UMH_TicketingWidget::SetTextSeatID(FString SeatID)
 {
 	//좌석번호 세팅
-	Tex_SeatID->SetText(FText::FromString(SeatID));
+	Text_SeatID->SetText(FText::FromString(SeatID));
 }
 
 void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
