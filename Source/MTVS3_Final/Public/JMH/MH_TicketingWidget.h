@@ -77,9 +77,6 @@ public:
 	class UTextBlock* Tex_SeatID;
 	UFUNCTION()
 	void SetTextSeatID(FString SeatID);
-	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_GroupSeatInfoText;
 
 	//게임입장
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -95,11 +92,11 @@ public:
 	class UButton*  Btn_Cancel_Ticketting2;
 
 	//콘서트 정보 변수들, 블루프린트 구도 다 날아감 test
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_test;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UTextBlock* Tex_test;
 
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_test2;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UTextBlock* Tex_test2;
 
 	
 	

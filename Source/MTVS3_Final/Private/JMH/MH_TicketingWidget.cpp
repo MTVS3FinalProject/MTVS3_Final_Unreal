@@ -92,8 +92,7 @@ void UMH_TicketingWidget::SetTextCompetitionRate(int32 CompetitionRate)
 void UMH_TicketingWidget::SetTextSeatID(FString SeatID)
 {
 	//좌석번호 세팅
-	//FString으로 변환해놓은 시간값 받아와서 표시
-	Tex_GroupSeatInfoText->SetText(FText::FromString(SeatID));
+	Tex_SeatID->SetText(FText::FromString(SeatID));
 }
 
 void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
