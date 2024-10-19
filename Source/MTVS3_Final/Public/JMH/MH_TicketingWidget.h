@@ -98,6 +98,9 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Tex_test;
 
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Tex_test2;
+
 	
 	
 };
