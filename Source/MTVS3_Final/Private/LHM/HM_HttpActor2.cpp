@@ -129,22 +129,22 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Day : %d") , Day));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Time : %s") , *Time));
 
-					// 희진 GI에 저장
-					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-					if ( TTPlayer )
-					{
-						UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-						if ( GI )
-						{
-							// GI에 콘서트 이름, 날짜, seatId 저장
-							// GI->SetConcertName(ConcertName);
-							// GI->RemainingTickets(RemainingTickets);
-							// GI->Year(Year);
-							// GI->Month(Month);
-							// GI->Day(Day);
-							// GI->Time(Time);
-						}
-					}
+					//// 희진 GI에 저장
+					//ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+					//if ( TTPlayer )
+					//{
+					//	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+					//	if ( GI )
+					//	{
+					//		// GI에 콘서트 이름, 날짜, seatId 저장
+					//		// GI->SetConcertName(ConcertName);
+					//		// GI->RemainingTickets(RemainingTickets);
+					//		// GI->Year(Year);
+					//		// GI->Month(Month);
+					//		// GI->Day(Day);
+					//		// GI->Time(Time);
+					//	}
+					//}
 
 					// 접수 가능한 좌석 목록
 					TArray<TSharedPtr<FJsonValue>> AvailableSeatsArray = ResponseObject->GetArrayField(TEXT("availableSeats"));
@@ -154,6 +154,17 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 						FString SeatId = SeatObject->GetStringField(TEXT("seatId"));
 
 						UE_LOG(LogTemp , Log , TEXT("Available Seat ID: %s") , *SeatId);
+
+						// 희진 GI에 저장
+						ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+						if ( TTPlayer )
+						{
+							UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+							if ( GI )
+							{
+								GI->SetSeatId(SeatId);
+							}
+						}
 					}
 
 					// 접수 완료된 좌석 목록
