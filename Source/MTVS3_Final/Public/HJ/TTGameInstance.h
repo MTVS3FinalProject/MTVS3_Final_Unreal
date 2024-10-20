@@ -53,6 +53,8 @@ class MTVS3_FINAL_API UTTGameInstance : public UGameInstance
 
 private:
 	FPlayerData PlayerData;
+	FString SessionType;
+
 public:
 	// 세션 관련 델리게이트
 	FFindSignature OnFindSignatureCompleteDelegate;
@@ -63,20 +65,20 @@ public:
 
 	// 온라인 세션 인터페이스를 기억하고 싶다.
 	IOnlineSessionPtr SessionInterface;
-	FString MySessionName = TEXT("TTHallSession");
+	FString MySessionName = TEXT("TTSession");
 
-	void FindOrCreateSession();
-	void OnFindOrCreateSessionComplete(bool bWasSuccessful);
-	void AttemptJoinSession();
-	void CreateMySession(int32 playerCount , const FString& SessionNam);
-	void OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful);
-	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
-	void OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result);
+	void FindOrCreateSession(const FString& SessionNamePrefix , int32 MaxPlayers); // 수정된 함수
+	void OnFindOrCreateSessionComplete(bool bWasSuccessful); // 수정된 함수
+	void CreateMySession(int32 playerCount , const FString& SessionName); // 기존 함수
+	void OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful); // 기존 함수
+	void JoinSession(const FOnlineSessionSearchResult& SessionResult); // 기존 함수
+	void OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result); // 기존 함수
+	void ExitSession(); // 기존 함수
 
-	TSharedPtr<FOnlineSessionSearch> SessionSearch;
+	void SwitchSessionToLuckyDraw();
+	bool bSwitchToLuckyDrawSession;
 
-	// 방 퇴장 요청
-	void ExitSession();
+	TSharedPtr<FOnlineSessionSearch> SessionSearch;;
 
 	UFUNCTION(Server, Reliable)
 	void ServerRPCExitSesson();

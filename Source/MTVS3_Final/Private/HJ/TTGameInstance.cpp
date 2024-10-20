@@ -40,20 +40,23 @@ FString UTTGameInstance::GenerateUniqueSessionName()
 }
 
 // 세션 검색 또는 생성 시작
-void UTTGameInstance::FindOrCreateSession()
+void UTTGameInstance::FindOrCreateSession(const FString& SessionNamePrefix , int32 MaxPlayers)
 {
+	SessionType = SessionNamePrefix;  // 현재 세션 타입을 저장
+
 	SessionSearch = MakeShareable(new FOnlineSessionSearch);
 	SessionSearch->QuerySettings.Set(SEARCH_PRESENCE , true , EOnlineComparisonOp::Equals);
-	SessionSearch->bIsLanQuery = true; // LAN 설정 활성화 (같은 컴퓨터 테스트 시 필수)
+	SessionSearch->QuerySettings.Set(SEARCH_KEYWORDS , SessionNamePrefix , EOnlineComparisonOp::Equals);  // 접두사로 세션 검색
+	SessionSearch->bIsLanQuery = true;
 	SessionSearch->MaxSearchResults = 100;
 
 	// 세션 검색 시작
-	SessionInterface->FindSessions(0 , SessionSearch.ToSharedRef());
-
-	// UI에 세션 검색 시작 알림
-	if ( OnFindSignatureCompleteDelegate.IsBound() )
+	if ( SessionInterface.IsValid() )
 	{
-		OnFindSignatureCompleteDelegate.Broadcast(true);
+		SessionInterface->FindSessions(0 , SessionSearch.ToSharedRef());
+
+		// 검색 완료 후 세션 참가 처리
+		SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this , &UTTGameInstance::OnFindOrCreateSessionComplete);
 	}
 }
 
@@ -66,29 +69,16 @@ void UTTGameInstance::OnFindOrCreateSessionComplete(bool bWasSuccessful)
 		OnFindSignatureCompleteDelegate.Broadcast(false);
 	}
 
-	UE_LOG(LogTemp , Log , TEXT("Session search complete. Success: %s, Results: %d") ,
-		   bWasSuccessful ? TEXT("true") : TEXT("false") ,
-		   SessionSearch->SearchResults.Num());
-
-	// 세션 검색이 완료되면 참가 시도
-	AttemptJoinSession();
-}
-
-// 세션에 참가 시도 (인원 초과 시 새로운 세션 생성)
-void UTTGameInstance::AttemptJoinSession()
-{
-	if ( SessionSearch.IsValid() && SessionSearch->SearchResults.Num() > 0 )
+	if ( bWasSuccessful && SessionSearch->SearchResults.Num() > 0 )
 	{
+		// 검색된 세션 중 참가할 수 있는 세션이 있는지 확인
 		for ( const auto& Result : SessionSearch->SearchResults )
 		{
-			int32 CurrentPlayers = Result.Session.SessionSettings.NumPublicConnections -
-				Result.Session.NumOpenPublicConnections;
+			int32 CurrentPlayers = Result.Session.SessionSettings.NumPublicConnections - Result.Session.NumOpenPublicConnections;
 
-			UE_LOG(LogTemp , Log , TEXT("Found session with %d/%d players.") ,
-				   CurrentPlayers , Result.Session.SessionSettings.NumPublicConnections);
+			int32 MaxPlayers = (SessionType == TEXT("TTHallSession")) ? 100 : 30;  // 세션 종류에 따라 최대 플레이어 수 지정
 
-			// 인원이 100명 미만이면 해당 세션에 참가
-			if ( CurrentPlayers < 100 )
+			if ( CurrentPlayers < MaxPlayers )
 			{
 				JoinSession(Result);
 				return;
@@ -96,9 +86,8 @@ void UTTGameInstance::AttemptJoinSession()
 		}
 	}
 
-	// 모든 세션이 가득 찼다면 새로운 세션 생성
-	FString NewSessionName = GenerateUniqueSessionName();
-	CreateMySession(100 , NewSessionName);
+	// 참가할 세션이 없으면 새로운 세션 생성
+	CreateMySession((SessionType == TEXT("TTHallSession")) ? 100 : 30 , SessionType);
 }
 
 // 세션에 참가하는 함수
@@ -106,7 +95,8 @@ void UTTGameInstance::JoinSession(const FOnlineSessionSearchResult& SessionResul
 {
 	if ( SessionInterface.IsValid() )
 	{
-		bool bJoinSuccess = SessionInterface->JoinSession(0 , FName(MySessionName) , SessionResult);
+		MySessionName = SessionResult.Session.SessionInfo->GetSessionId().ToString();
+		bool bJoinSuccess = SessionInterface->JoinSession(0 , FName(*MySessionName) , SessionResult);
 
 		if ( bJoinSuccess )
 		{
@@ -133,19 +123,17 @@ void UTTGameInstance::CreateMySession(int32 playerCount , const FString& Session
 	}
 
 	FOnlineSessionSettings Settings;
-	Settings.bIsDedicated = false;  // 리슨 서버 설정
-	Settings.bIsLANMatch = true;    // LAN 설정
+	Settings.bIsDedicated = false;
+	Settings.bIsLANMatch = true;
 	Settings.bShouldAdvertise = true;
 	Settings.bUsesPresence = true;
 	Settings.bAllowJoinViaPresence = true;
 	Settings.bAllowJoinInProgress = true;
 	Settings.NumPublicConnections = playerCount;
 
-	FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()
-		->GetUniqueNetIdForPlatformUser()
-		.GetUniqueNetId();
+	FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
 
-	// 새로운 세션 생성
+	MySessionName = SessionName;
 	SessionInterface->CreateSession(*NetID , FName(*SessionName) , Settings);
 }
 
@@ -154,11 +142,18 @@ void UTTGameInstance::OnMyCreateSessionComplete(FName SessionName , bool bWasSuc
 {
 	if ( bWasSuccessful )
 	{
-		// 리슨 서버로 맵 이동
-		GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTHallMap?listen"));
-		//GetWorld()->ServerTravel(TEXT("/Game/KHJ/Maps/HJProtoMap?listen"));
+		// 세션 이름에 따라 다른 맵으로 이동
+		if ( SessionType == TEXT("TTHallSession") )
+		{
+			GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTHallMap?listen")); // TTHallMap으로 이동
+		}
+		else if ( SessionType == TEXT("TTLuckyDrawSession") )
+		{
+			GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTLuckyDrawMap?listen")); // TTLuckyDrawMap으로 이동
+		}
 	}
-	UE_LOG(LogTemp , Warning , TEXT("Create session : % s") , *MySessionName);
+
+	UE_LOG(LogTemp , Warning , TEXT("Create session: %s") , *SessionName.ToString());
 }
 
 // 세션 참가 완료 시 호출되는 함수
@@ -180,6 +175,12 @@ void UTTGameInstance::ExitSession()
 	ServerRPCExitSesson();
 }
 
+void UTTGameInstance::SwitchSessionToLuckyDraw()
+{
+	bSwitchToLuckyDrawSession = true;
+	ExitSession(); // 현재 세션 나가기
+}
+
 void UTTGameInstance::ServerRPCExitSesson_Implementation()
 {
 	MulticastRPCExitSession();
@@ -195,10 +196,26 @@ void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSu
 {
 	if ( bWasSuccessful )
 	{
-		// 클라이언트가 로비로 여행을 가고 싶다.
-		auto* pc = GetWorld()->GetFirstPlayerController();
-		pc->ClientTravel(TEXT("/Game/Ticketaka/TTLobbyMap") , ETravelType::TRAVEL_Absolute);
+		UE_LOG(LogTemp , Log , TEXT("Session destroyed: %s") , *SessionName.ToString());
+
+		if ( bSwitchToLuckyDrawSession )
+		{
+			// SwitchSessionToLuckyDraw()가 호출된 경우
+			FindOrCreateSession(TEXT("TTLuckyDrawSession") , 30);
+		}
+		else
+		{
+			// 기본 동작: TTHallSession을 종료하고 TTLobbyMap으로 이동
+			auto* pc = GetWorld()->GetFirstPlayerController();
+			pc->ClientTravel(TEXT("/Game/Ticketaka/TTLobbyMap") , ETravelType::TRAVEL_Absolute);
+		}
 	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("Failed to destroy session: %s") , *SessionName.ToString());
+	}
+	// 상태 플래그 초기화
+	bSwitchToLuckyDrawSession = false;
 }
 
 void UTTGameInstance::SetPlayerData(const FPlayerData& NewPlayerData)

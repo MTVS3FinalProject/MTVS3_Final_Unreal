@@ -46,7 +46,7 @@ ATTPlayer::ATTPlayer()
 	NicknameUIComp->SetupAttachment(GetMesh() , TEXT("head"));  // "head" 본에 부착
 
 	// 머리 위로 약간 올리기 위한 위치 조정
-	NicknameUIComp->SetRelativeLocationAndRotation(FVector(30.0f , 0 , 0), FRotator(0, 90.0f, -90.0f));  // 머리 위로 30 단위 상승
+	NicknameUIComp->SetRelativeLocationAndRotation(FVector(30.0f , 0 , 0) , FRotator(0 , 90.0f , -90.0f));  // 머리 위로 30 단위 상승
 	/*NicknameUIComp->SetupAttachment(RootComponent);
 	NicknameUIComp->SetRelativeLocation(FVector(0 , 0 , 100));*/
 }
@@ -93,7 +93,7 @@ void ATTPlayer::Tick(float DeltaTime)
 	{
 		// P = P0 + vt
 		// 카메라 위치
-		FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0)->GetCameraLocation();
+		FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
 		// 체력바와 카메라의 방향 벡터
 		FVector NicknameUIDirection = CamLoc - NicknameUIComp->GetComponentLocation();
 		//NicknameUIDirection.Z = 0.0f;
@@ -227,7 +227,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			MainUI->SetVisibleCanvas(false);
 			// 좌석 접수 UI 표시
 			TicketingUI->SetVisibleSwitcher(true);
-			TicketingUI->SetWidgetSwitcher(1);
+			TicketingUI->SetWidgetSwitcher(0);
 
 			ServerSetSitting(true);
 
@@ -278,6 +278,15 @@ AActor* ATTPlayer::GetOverlappingActor()
 void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed F: Purchase"));
+	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	if ( Chair )
+	{
+		// MainUI 숨기기
+		MainUI->SetVisibleCanvas(false);
+		// 좌석 경쟁 UI 표시(테스트용)
+		TicketingUI->SetVisibleSwitcher(true);
+		TicketingUI->SetWidgetSwitcher(1);
+	}
 }
 
 void ATTPlayer::OnMyActionInventory(const FInputActionValue& Value)
@@ -319,7 +328,7 @@ void ATTPlayer::InitMainUI()
 		MyController->SetMainUI(MainUI);
 		MyController->SetTicketingUI(TicketingUI);
 		MyController->SetDrawStartTime();
-	}
+	}	
 }
 
 void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

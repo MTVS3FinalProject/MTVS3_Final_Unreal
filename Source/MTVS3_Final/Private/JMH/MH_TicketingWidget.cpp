@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "JMH/MH_TicketingWidget.h"
@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
+#include "HJ/TTGameInstance.h"
 
 void UMH_TicketingWidget::NativeConstruct()
 {
@@ -15,6 +16,7 @@ void UMH_TicketingWidget::NativeConstruct()
 	Btn_Confirm_Ticketting->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedConfirmButton);
 	Btn_Cancel_Ticketting1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
 	Btn_Cancel_Ticketting2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
+	Btn_GotoGameRoom->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedGotoGameRoomButton);
 
 	//위젯 꺼져있는게 기본값
 	SetVisibleSwitcher(false);
@@ -99,4 +101,12 @@ void UMH_TicketingWidget::SetTextSeatID(FString SeatID)
 void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 {
 	//게임맵으로 세션이동
+	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToLuckyDraw"));
+	// KHJ
+	// 게임 인스턴스를 가져와서
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		gi->SwitchSessionToLuckyDraw();
+	}
 }

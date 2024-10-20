@@ -68,7 +68,7 @@ void UMH_StartWidget::GoToLobby()
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+		gi->FindOrCreateSession(TEXT("TTHallSession") , 100); // 세션 탐색 또는 생성
 	}
 }
 
