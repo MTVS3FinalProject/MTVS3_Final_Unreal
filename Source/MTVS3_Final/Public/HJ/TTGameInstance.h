@@ -18,26 +18,38 @@ struct FPlayerData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	bool bIsHost;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	FString Nickname;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	FString AccessToken;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	FString Birth;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	int32 Coin;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	int32 RemainingTicketCount;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Avatar")
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	int32 AvatarData;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
+	FString SeatId;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
+	FString UserName;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
+	int32 UserPhoneNumber;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
+	FString UserAddress;
 
 	// 기본 생성자
 	FPlayerData()
@@ -67,75 +79,79 @@ public:
 	IOnlineSessionPtr SessionInterface;
 	FString MySessionName = TEXT("TTSession");
 
-	void FindOrCreateSession(const FString& SessionNamePrefix , int32 MaxPlayers); // 수정된 함수
-	void OnFindOrCreateSessionComplete(bool bWasSuccessful); // 수정된 함수
-	void CreateMySession(int32 playerCount , const FString& SessionName); // 기존 함수
-	void OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful); // 기존 함수
-	void JoinSession(const FOnlineSessionSearchResult& SessionResult); // 기존 함수
-	void OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result); // 기존 함수
-	void ExitSession(); // 기존 함수
+	void FindOrCreateSession(const FString& SessionNamePrefix , int32 MaxPlayers);
+	void OnFindOrCreateSessionComplete(bool bWasSuccessful);
+	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
+	void OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result);
+	void CreateMySession(int32 playerCount , const FString& SessionName);
+	void OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful);
+	void ExitSession();
 
 	void SwitchSessionToLuckyDraw();
 	bool bSwitchToLuckyDrawSession;
 
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;;
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server , Reliable)
 	void ServerRPCExitSesson();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastRPCExitSession();
 
 	// 방 퇴장 응답
-	void OnMyDestroySessionComplete(FName SessionName, bool bWasSuccessful);
+	void OnMyDestroySessionComplete(FName SessionName , bool bWasSuccessful);
 
-	// Getter 및 Setter 함수
+#pragma region Getter 및 Setter 함수
 	FPlayerData GetPlayerData() const;
 	void SetPlayerData(const FPlayerData& NewPlayerData);
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
-	bool bIsHost;
-	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetbIsHost(const bool& _bIsHost);
 	bool GetbIsHost() const;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
-	FString Nickname;
-	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetNickname(const FString& _Nickname);
 	FString GetNickname() const;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
-	FString AccessToken;
-	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetAccessToken(const FString& _AccessToken);
 	FString GetAccessToken() const;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Authentication")
-	FString Birth;
-	UFUNCTION(BlueprintCallable , Category = "Default|Authentication")
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetBirth(const FString& _Birth);
 	FString GetBirth() const;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
-	int32 Coin;
-	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetCoin(const int32& _Coin);
-	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void AddCoin(int32 _Coin);
 	int32 GetCoin();
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Cash")
-	int32 RemainingTicketCount;
-	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetRemainingTicketCount(const int32& _RemainingTicketCount);
-	UFUNCTION(BlueprintCallable , Category = "Default|Cash")
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void UseRemainingTicket(int32 UsedTicketCount);
 	int32 GetRemainingTicketCount();
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|Avatar")
-	int32 AvatarData;
-	UFUNCTION(BlueprintCallable , Category = "Default|Avatar")
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetAvatarData(const int32& _AvatarData);
 	int32 GetAvatarData();
+
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
+	void SetSeatId(const FString& _SeatID);
+	FString GetSeatId();
+
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
+	void SetUserName(const FString& _UserName);
+	FString GetUserName();
+
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
+	void SetUserPhoneNumber(const int32& _UserPhoneNumber);
+	int32 GetUserPhoneNumber();
+
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
+	void SetUserAddress(const FString& _UserAddress);
+	FString GetUserAddress();
+
+#pragma endregion
 };
