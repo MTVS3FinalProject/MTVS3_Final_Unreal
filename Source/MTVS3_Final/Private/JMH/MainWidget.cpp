@@ -46,5 +46,6 @@ void UMainWidget::OnClickedBackMain()
 	if ( gi )
 	{
 		gi->ExitSession();
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ExitSession"));
 	}
 }

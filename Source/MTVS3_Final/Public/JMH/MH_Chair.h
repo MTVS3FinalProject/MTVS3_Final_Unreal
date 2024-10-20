@@ -57,5 +57,13 @@ public:
 	bool bIsOccupied;
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+	
+	UPROPERTY()
+    class UMainWidget* MainUI;
+	void SetMainUI(UMainWidget* InMainUI);
+
+	UPROPERTY()
+    class UMH_TicketingWidget* TicketingUI;
+	void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
 #pragma endregion
 };

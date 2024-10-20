@@ -8,6 +8,9 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"
 #include <Net/UnrealNetwork.h>
+#include "JMH/MainWidget.h"
+#include <HJ/TTPlayer.h>
+#include <JMH/MH_TicketingWidget.h>
 
 // Sets default values
 AMH_Chair::AMH_Chair()
@@ -43,10 +46,13 @@ void AMH_Chair::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent , AActor
                                UPrimitiveComponent* OtherComp ,
                                int32 OtherBodyIndex , bool bFromSweep , const FHitResult& SweepResult)
 {
-	ACharacter* Player = Cast<ACharacter>(OtherActor);
-	if (Player&&Player->IsLocallyControlled())
+	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
+	if ( TTPlayer && TTPlayer->IsLocallyControlled())
 	{
-		OverlappingPlayer = Player;  // 오버랩된 플레이어 추적
+		SetMainUI(TTPlayer->MainUI);
+		SetTicketingUI(TTPlayer->TicketingUI);
+
+		OverlappingPlayer = TTPlayer;  // 오버랩된 플레이어 추적
 		ShowText();
 	}
 }
@@ -54,11 +60,15 @@ void AMH_Chair::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent , AActor
 void AMH_Chair::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* OtherActor ,
                              UPrimitiveComponent* OtherComp , int32 OtherBodyIndex)
 {
-	ACharacter* Player = Cast<ACharacter>(OtherActor);
-	if (Player&&Player->IsLocallyControlled())
+	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
+	if ( TTPlayer && TTPlayer->IsLocallyControlled())
 	{
 		OverlappingPlayer = nullptr;  // 오버랩 해제 시 플레이어 초기화
 		HideText();
+		// MainUI 표시
+		if ( MainUI) MainUI->SetVisibleCanvas(true);
+		// 좌석 접수 UI 숨기기
+		if ( TicketingUI ) TicketingUI->SetVisibleSwitcher(false);
 	}
 }
 
@@ -116,4 +126,14 @@ void AMH_Chair::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AMH_Chair , bIsOccupied);
+}
+
+void AMH_Chair::SetMainUI(UMainWidget* InMainUI)
+{
+	MainUI = InMainUI;  // 전달받은 MainUI 참조 저장
+}
+
+void AMH_Chair::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
+{
+	TicketingUI = InTicketingUI; // 전달받은 TicketingUI 참조 저장
 }
