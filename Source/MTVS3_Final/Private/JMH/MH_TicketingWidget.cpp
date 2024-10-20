@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "JMH/MH_TicketingWidget.h"
@@ -47,19 +47,19 @@ void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
 
 void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible)
 {
-	if (bVisible)
+	if ( bVisible )
 	{
 		WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
 	}
 
-	else if (!bVisible)
+	else if ( !bVisible )
 	{
 		WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
 void UMH_TicketingWidget::SetConcertInfo(FString ConcertName , int32 ConcertDateY , int32 ConcertDateM ,
-                                         int32 ConcertDateD , FString ConcertTime)
+										 int32 ConcertDateD , FString ConcertTime)
 {
 	//접수화면 콘서트 정보 불러오기
 	Text_ConcertName->SetText(FText::FromString(ConcertName));
@@ -102,14 +102,14 @@ void UMH_TicketingWidget::SetTextRemainingTicket(int32 RemainingTicket)
 void UMH_TicketingWidget::SetCompletedVisible(bool bVisible)
 {
 	//텍스트, 접수신청 버튼같이 꺼주기
-	if (bVisible)
+	if ( bVisible )
 	{
 		Ver_Completed->SetVisibility(ESlateVisibility::Visible);
 		Btn_Cancel_Ticketting1->SetVisibility(ESlateVisibility::Visible);
 		Btn_Confirm_Ticketting->SetVisibility(ESlateVisibility::Hidden);
 	}
-	
-	else if (!bVisible)
+
+	else if ( !bVisible )
 	{
 		Ver_Completed->SetVisibility(ESlateVisibility::Hidden);
 		Btn_Cancel_Ticketting1->SetVisibility(ESlateVisibility::Hidden);
@@ -120,7 +120,7 @@ void UMH_TicketingWidget::SetCompletedVisible(bool bVisible)
 void UMH_TicketingWidget::OnClickedBackButton()
 {
 	//뒤로가기 (위젯 숨기기 애님 플레이)
-	if(Can_RegisterAnim_Off)
+	if ( Can_RegisterAnim_Off )
 	{
 		PlayAnimation(Can_RegisterAnim_Off);
 	}
@@ -129,10 +129,10 @@ void UMH_TicketingWidget::OnClickedBackButton()
 void UMH_TicketingWidget::OnClickedConfirmButton()
 {
 	//접수완료
-	
+
 	//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
 	SetCompletedVisible(true);
-	
+
 	//접수오류가 생기는 경우도 있나?
 	//경고창 띄우기
 }
@@ -141,9 +141,9 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 {
 	//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
 	SetCompletedVisible(false);
-	
+
 	//서버-> 접수취소
-	
+
 }
 
 void UMH_TicketingWidget::SetTextTicketPrice(int32 TicketPrice)
@@ -187,7 +187,7 @@ void UMH_TicketingWidget::OnClickedPlayerVisibleButton()
 void UMH_TicketingWidget::SetPlayerVisible(bool bVisible)
 {
 	//좌석 카메라에서 플레이어 보이게, 안보이게
-	
+
 }
 
 void UMH_TicketingWidget::OnClickedSoundButton()
@@ -198,7 +198,7 @@ void UMH_TicketingWidget::OnClickedSoundButton()
 void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 {
 	//소리 들리게, 안들리게.
-	
+
 }
 
 
@@ -208,126 +208,144 @@ void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 void UMH_TicketingWidget::OnClickedtest1()
 {
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
+	if ( gi )
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
-	}
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if (HttpActor2)
-	{
-		//HttpActor2->ReqPostSeatRegistrationInquiry();
+
+
+
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqPostSeatRegistrationInquiry(gi->GetSeatId() , gi->GetAccessToken());
+		}
 	}
 }
 
 //2.좌석접수요청
 void UMH_TicketingWidget::OnClickedtest2()
 {
-	
+
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
+	if ( gi )
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
-	}
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if (HttpActor2)
-	{
-		//HttpActor2->ReqPostRegisterSeat();
+
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqPostRegisterSeat(gi->GetSeatId() , gi->GetAccessToken());
+		}
 	}
 }
 //3.좌석취소요청
 void UMH_TicketingWidget::OnClickedtest3()
 {
-	
+
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
+	if ( gi )
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
-	}
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if (HttpActor2)
-	{
-		//HttpActor2->ReqDeleteCancelRegisteredSeat();
+
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqDeleteCancelRegisteredSeat(gi->GetSeatId() , gi->GetAccessToken());
+		}
 	}
 }
 //4.게임결과요청
 void UMH_TicketingWidget::OnClickedtest4()
 {
-	
+
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
+	if ( gi )
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
-	}
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if (HttpActor2)
-	{
-		//HttpActor2->ReqPostGameResult();
+
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqPostGameResult(gi->GetSeatId() , gi->GetAccessToken());
+		}
 	}
 }
 //5.회원 인증용 QR요청
 void UMH_TicketingWidget::OnClickedtest5()
 {
-	
+
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
+	if ( gi )
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
-	}
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if (HttpActor2)
-	{
-		//HttpActor2->ReqGetMemberAuthQR();
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqGetMemberAuthQR(gi->GetAccessToken());
+		}
 	}
 }
 //6.회원사진 업로드확인 요청
 void UMH_TicketingWidget::OnClickedtest6()
 {
-	
+
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
+	if ( gi )
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
-	}
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if (HttpActor2)
-	{
-		//HttpActor2->ReqGetPostConfirmMemberPhoto();
+
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqGetPostConfirmMemberPhoto(gi->GetAccessToken());
+		}
 	}
 }
 //7.예매자 정보입력요청
 void UMH_TicketingWidget::OnClickedtest7()
 {
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
+	if ( gi )
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
-	}
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if (HttpActor2)
-	{
-		//HttpActor2-> ReqPostReservationinfo();
+
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqPostReservationinfo(gi->GetUserName() , gi->GetUserPhoneNumber() , gi->GetUserAddress() , gi->GetAccessToken());
+		}
 	}
 }
 //8.좌석 결제요청
 void UMH_TicketingWidget::OnClickedtest8()
 {
-	
+
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
+	if ( gi )
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			FString Name = TEXT("Concert01");
+			HttpActor2->ReqPostPaymentSeat(Name , gi->GetSeatId() , gi->GetAccessToken());
+		}
 	}
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if (HttpActor2)
+}
+
+void UMH_TicketingWidget::OnClickedtest9()
+{
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
 	{
-		//HttpActor2->ReqPostPaymentSeat();
+
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{	
+			FString Name = TEXT("Concert01");
+			HttpActor2->ReqPostConcertEntry(Name , gi->GetAccessToken());
+		}
 	}
 }
