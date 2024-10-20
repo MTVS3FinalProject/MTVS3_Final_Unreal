@@ -12,6 +12,7 @@
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor.h"
+#include "LHM/HM_HttpActor2.h"
 
 void UMH_StartWidget::NativeConstruct()
 {
@@ -70,6 +71,14 @@ void UMH_StartWidget::GoToLobby()
 	{
 		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
 	}
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		FString Name = TEXT("Concert01");
+		HttpActor2->ReqPostConcertEntry(Name,gi->AccessToken);
+	}
+	
 }
 
 //로그인 버튼
@@ -108,7 +117,7 @@ void UMH_StartWidget::OnClickedForgotPasswordButton()
 	//비번찾기
 }
 
-//QR 확인
+//QR 확인 
 void UMH_StartWidget::OnClickedConfirm_QRUi1Button()
 {
 	//확인 버튼 누르면(얼굴인식 확인)->

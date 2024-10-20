@@ -8,6 +8,9 @@
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
+#include "HJ/TTGameInstance.h"
+#include "Kismet/GameplayStatics.h"
+#include "LHM/HM_HttpActor2.h"
 
 void UMH_TicketingWidget::NativeConstruct()
 {
@@ -19,10 +22,21 @@ void UMH_TicketingWidget::NativeConstruct()
 	Btn_Cancel_Ticketting2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
 	Btn_PlayerVisible->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedPlayerVisibleButton);
 	Btn_Sound->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedSoundButton);
+	//현민 test-> 나중에 각자 제자리에 복붙하기
+	btn_test1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest1);
+	btn_test2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest2);
+	btn_test3->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest3);
+	btn_test4->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest4);
+	btn_test5->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest5);
+	btn_test6->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest6);
+	btn_test7->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest7);
 
 	//위젯 꺼져있는게 기본값
 	SetVisibleSwitcher(false);
 	SetCompletedVisible(false);
+
+	//콘서트정보 담아오기
+	//SetConcertInfo();
 }
 
 void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
@@ -53,6 +67,7 @@ void UMH_TicketingWidget::SetConcertInfo(FString ConcertName , int32 ConcertDate
 	Text_ConcertDateM->SetText(FText::AsNumber(ConcertDateM));
 	Text_ConcertDateD->SetText(FText::AsNumber(ConcertDateD));
 	Text_ConcertTime->SetText(FText::FromString(ConcertTime));
+	//가격도 추가?->가격은 좌석마다 다름
 }
 
 void UMH_TicketingWidget::SetTextSeatID(int32 SeatFloor , FString SeatID)
@@ -184,4 +199,135 @@ void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 {
 	//소리 들리게, 안들리게.
 	
+}
+
+
+//현민 test
+
+//1.좌석조회요청
+void UMH_TicketingWidget::OnClickedtest1()
+{
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+	}
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		//HttpActor2->ReqPostSeatRegistrationInquiry();
+	}
+}
+
+//2.좌석접수요청
+void UMH_TicketingWidget::OnClickedtest2()
+{
+	
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+	}
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		//HttpActor2->ReqPostRegisterSeat();
+	}
+}
+//3.좌석취소요청
+void UMH_TicketingWidget::OnClickedtest3()
+{
+	
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+	}
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		//HttpActor2->ReqDeleteCancelRegisteredSeat();
+	}
+}
+//4.게임결과요청
+void UMH_TicketingWidget::OnClickedtest4()
+{
+	
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+	}
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		//HttpActor2->ReqPostGameResult();
+	}
+}
+//5.회원 인증용 QR요청
+void UMH_TicketingWidget::OnClickedtest5()
+{
+	
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+	}
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		//HttpActor2->ReqGetMemberAuthQR();
+	}
+}
+//6.회원사진 업로드확인 요청
+void UMH_TicketingWidget::OnClickedtest6()
+{
+	
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+	}
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		//HttpActor2->ReqGetPostConfirmMemberPhoto();
+	}
+}
+//7.예매자 정보입력요청
+void UMH_TicketingWidget::OnClickedtest7()
+{
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+	}
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		//HttpActor2-> ReqPostReservationinfo();
+	}
+}
+//8.좌석 결제요청
+void UMH_TicketingWidget::OnClickedtest8()
+{
+	
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+	}
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		//HttpActor2->ReqPostPaymentSeat();
+	}
 }

@@ -166,4 +166,47 @@ public:
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* Can_RegisterAnim_On;
+
+	//현민 테스트
+	//좌석조회요청
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  btn_test1;
+	UFUNCTION()
+	void OnClickedtest1();
+	//좌석접수요청
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  btn_test2;
+	UFUNCTION()
+	void OnClickedtest2();
+	//좌석취소요청
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  btn_test3;
+	UFUNCTION()
+	void OnClickedtest3();
+	//게임결과요청
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  btn_test4;
+	UFUNCTION()
+	void OnClickedtest4();
+	//회원 인증용 QR요청
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  btn_test5;
+	UFUNCTION()
+	void OnClickedtest5();
+	//회원사진 업로드확인 요청
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  btn_test6;
+	UFUNCTION()
+	void OnClickedtest6();
+	//예매자 정보입력요청
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  btn_test7;
+	UFUNCTION()
+	void OnClickedtest7();
+
+	//좌석 결제요청
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  btn_test8;
+	UFUNCTION()
+	void OnClickedtest8();
 };
