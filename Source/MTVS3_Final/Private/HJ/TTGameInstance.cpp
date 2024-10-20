@@ -113,6 +113,20 @@ void UTTGameInstance::JoinSession(const FOnlineSessionSearchResult& SessionResul
 	}
 }
 
+// 세션 참가 완료 시 호출되는 함수
+void UTTGameInstance::OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result)
+{
+	if ( Result == EOnJoinSessionCompleteResult::Success )
+	{
+		auto* PlayerController = GetWorld()->GetFirstPlayerController();
+		FString URL;
+		if ( SessionInterface->GetResolvedConnectString(SessionName , URL) && !URL.IsEmpty() )
+		{
+			PlayerController->ClientTravel(URL , ETravelType::TRAVEL_Absolute);
+		}
+	}
+}
+
 // 새로운 세션 생성 함수
 void UTTGameInstance::CreateMySession(int32 playerCount , const FString& SessionName)
 {
@@ -156,20 +170,6 @@ void UTTGameInstance::OnMyCreateSessionComplete(FName SessionName , bool bWasSuc
 	UE_LOG(LogTemp , Warning , TEXT("Create session: %s") , *SessionName.ToString());
 }
 
-// 세션 참가 완료 시 호출되는 함수
-void UTTGameInstance::OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result)
-{
-	if ( Result == EOnJoinSessionCompleteResult::Success )
-	{
-		auto* PlayerController = GetWorld()->GetFirstPlayerController();
-		FString URL;
-		if ( SessionInterface->GetResolvedConnectString(SessionName , URL) && !URL.IsEmpty() )
-		{
-			PlayerController->ClientTravel(URL , ETravelType::TRAVEL_Absolute);
-		}
-	}
-}
-
 void UTTGameInstance::ExitSession()
 {
 	ServerRPCExitSesson();
@@ -205,7 +205,7 @@ void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSu
 		}
 		else
 		{
-			// 기본 동작: TTHallSession을 종료하고 TTLobbyMap으로 이동
+			// TTHallSession을 종료하고 TTLobbyMap으로 이동
 			auto* pc = GetWorld()->GetFirstPlayerController();
 			pc->ClientTravel(TEXT("/Game/Ticketaka/TTLobbyMap") , ETravelType::TRAVEL_Absolute);
 		}
@@ -218,6 +218,7 @@ void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSu
 	bSwitchToLuckyDrawSession = false;
 }
 
+#pragma region Getter 및 Setter 함수
 void UTTGameInstance::SetPlayerData(const FPlayerData& NewPlayerData)
 {
 	PlayerData = NewPlayerData;
@@ -321,3 +322,48 @@ int32 UTTGameInstance::GetAvatarData()
 {
 	return PlayerData.AvatarData;
 }
+
+void UTTGameInstance::SetSeatId(const FString& _SeatID)
+{
+	PlayerData.SeatId = _SeatID;
+	SetPlayerData(PlayerData);
+}
+
+FString UTTGameInstance::GetSeatId()
+{
+	return PlayerData.SeatId;
+}
+
+void UTTGameInstance::SetUserName(const FString& _UserName)
+{
+	PlayerData.UserName = _UserName;
+	SetPlayerData(PlayerData);
+}
+
+FString UTTGameInstance::GetUserName()
+{
+	return PlayerData.UserName;
+}
+
+void UTTGameInstance::SetUserPhoneNumber(const int32& _UserPhoneNumber)
+{
+	PlayerData.UserPhoneNumber = _UserPhoneNumber;
+	SetPlayerData(PlayerData);
+}
+
+int32 UTTGameInstance::GetUserPhoneNumber()
+{
+	return PlayerData.UserPhoneNumber;
+}
+
+void UTTGameInstance::SetUserAddress(const FString& _UserAddress)
+{
+	PlayerData.UserAddress = _UserAddress;
+	SetPlayerData(PlayerData);
+}
+
+FString UTTGameInstance::GetUserAddress()
+{
+	return PlayerData.UserAddress;
+}
+#pragma endregion
