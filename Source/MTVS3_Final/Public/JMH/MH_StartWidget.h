@@ -142,8 +142,6 @@ public:
 	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	//class UComboBoxString*  Com_SetAge;
 	
-	FString Age_SelectedValue;
-	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UEditableText* EText_SignupEmail;
 		

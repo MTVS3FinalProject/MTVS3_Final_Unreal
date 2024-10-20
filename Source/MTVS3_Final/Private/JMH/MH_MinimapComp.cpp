@@ -26,18 +26,21 @@ UMH_MinimapComp::UMH_MinimapComp()
 	MinimapCameraBoom->bInheritYaw = false;
 
 	//SeceneCapture2D
-	//MinimapCapture= CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("MinimapCapture"));
+	MinimapCapture= CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("MinimapCapture"));
 	//카메라암에 붙이기
-	//MinimapCapture->SetupAttachment(MinimapCameraBoom);
+	MinimapCapture->SetupAttachment(MinimapCameraBoom);
 	//카메라 투영타입 거리감없게
-	//MinimapCapture->OrthoWidth = 3072;
+	MinimapCapture->OrthoWidth = 3072;
 	//캡처된 이미지 렌더타겟 로드
-	//ConstructorHelpers::FObjectFinder<UCanvasRenderTarget2D> MH_RenderTarget2D(TEXT("/Game/JMH/Tex/MH_CanRanderTarget.MH_CanRanderTarget"));
-	//if(MH_RenderTarget2D.Succeeded())
-	//{
-		//MinimapCapture->TextureTarget = MH_RenderTarget2D.Object;
-	//}
+	ConstructorHelpers::FObjectFinder<UCanvasRenderTarget2D> MH_RenderTarget2D(TEXT("/Game/JMH/Tex/MH_CanRanderTarget.MH_CanRanderTarget"));
+	if(MH_RenderTarget2D.Succeeded())
+	{
+		MinimapCapture->TextureTarget = MH_RenderTarget2D.Object;
+	}
 
+	//플레이어 위치 이미지
+	MinimapTexture = CreateDefaultSubobject<UTexture>(TEXT("MinimapTexture"));
+	//MinimapTexture->
 	
 	// ...
 }
@@ -63,8 +66,7 @@ void UMH_MinimapComp::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	// ...
 }
 
-//void UMH_MinimapComp::ApplyMinimap()
-//{
+void UMH_MinimapComp::ApplyMinimap()
+{
 	
-//}
-
+}

@@ -34,9 +34,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Minimap, meta = (AllowPrivateAccess = "true"))
 	class USceneCaptureComponent2D* MinimapCapture;
 
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Minimap, meta = (AllowPrivateAccess = "true"))
-	//class UPaperSpriteComponent* MinimapSprite;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Minimap, meta = (AllowPrivateAccess = "true"))
+	class UTexture* MinimapTexture;
 
-	//UFUNCTION(BlueprintCallable)
-	//void ApplyMinimap();
+	UFUNCTION(BlueprintCallable)
+	void ApplyMinimap();
 };

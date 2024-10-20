@@ -31,8 +31,8 @@ void UMH_BuyTicketWidget::NativeConstruct()
 void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num)//0:티켓예매정보,1:배송지,2:QR,3:QR성공,4:QR실패,5:결제진행
 {
 	
-		//서버에서 불러와서 입력
-		WS_BuyTicketSwitcher->SetActiveWidgetIndex(num);
+	//서버에서 불러와서 입력
+	WS_BuyTicketSwitcher->SetActiveWidgetIndex(num);
 }
 
 void UMH_BuyTicketWidget::OnClickedConfirm01Button()

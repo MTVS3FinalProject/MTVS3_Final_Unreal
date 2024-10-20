@@ -125,7 +125,7 @@ void UMH_StartWidget::OnClickedConfirm_QRUi1Button()
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
 	if (HttpActor)
 	{
-		HttpActor->ReqPostVerifyIdentity(EText_Email->GetText());
+		HttpActor->ReqPostVerifyIdentity(EText_SignupEmail->GetText());
 	}
 	else
 	{
@@ -181,7 +181,7 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
 		if (HttpActor)
 		{
-			HttpActor->ReqPostGetVerifyIdentityQR(EText_Email->GetText());
+			HttpActor->ReqPostGetVerifyIdentityQR(EText_SignupEmail->GetText());
 		}
 		else
 		{
@@ -301,7 +301,7 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 	{
 		//관리자 여부, 이메일,비번,나이,닉네임, 캐릭터Num
 		HttpActor->ReqPostSignup(bIsHost_Signup , EText_SignupEmail->GetText() , EText_SignupPassWord->GetText() ,
-		                         Age_SelectedValue , EText_Nickname->GetText() , CharacterModelNum);
+		                         EText_SignupBirth->GetText().ToString() , EText_Nickname->GetText() , CharacterModelNum);
 	}
 	else
 	{
