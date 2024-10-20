@@ -38,10 +38,10 @@ void AHM_HttpActor2::BeginPlay()
 		//	TicketingUI->AddToViewport();
 		//}
 
-		auto* pc = UGameplayStatics::GetPlayerController(this , 0);
-		if ( !pc ) return;
-		pc->SetShowMouseCursor(true);
-		pc->SetInputMode(FInputModeGameAndUI());
+		//auto* pc = UGameplayStatics::GetPlayerController(this , 0);
+		//if ( !pc ) return;
+		//pc->SetShowMouseCursor(true);
+		//pc->SetInputMode(FInputModeGameAndUI());
 	}
 }
 
@@ -50,6 +50,11 @@ void AHM_HttpActor2::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AHM_HttpActor2::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
+{
+	TicketingUI = InTicketingUI; // 전달받은 TicketingUI 참조 저장
 }
 
 //=========================================================================================================================================
@@ -65,7 +70,7 @@ void AHM_HttpActor2::ReqPostConcertEntry(FString ConcertName , FString AccessTok
 
 	//// URL에 쿼리 매개변수로 concertName 추가
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concert?concertName=%s") , *_url , *FGenericPlatformHttp::UrlEncode(ConcertName));
-	FString FormattedUrl = FString::Printf(TEXT("%s/concert") , *_url); // 미정
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -124,22 +129,22 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Day : %d") , Day));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Time : %s") , *Time));
 
-					// 희진 GI에 저장
-					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-					if ( TTPlayer )
-					{
-						UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-						if ( GI )
-						{
-							// GI에 콘서트 이름, 날짜, seatId 저장
-							// GI->SetConcertName(ConcertName);
-							// GI->RemainingTickets(RemainingTickets);
-							// GI->Year(Year);
-							// GI->Month(Month);
-							// GI->Day(Day);
-							// GI->Time(Time);
-						}
-					}
+					//// 희진 GI에 저장
+					//ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+					//if ( TTPlayer )
+					//{
+					//	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+					//	if ( GI )
+					//	{
+					//		// GI에 콘서트 이름, 날짜, seatId 저장
+					//		// GI->SetConcertName(ConcertName);
+					//		// GI->RemainingTickets(RemainingTickets);
+					//		// GI->Year(Year);
+					//		// GI->Month(Month);
+					//		// GI->Day(Day);
+					//		// GI->Time(Time);
+					//	}
+					//}
 
 					// 접수 가능한 좌석 목록
 					TArray<TSharedPtr<FJsonValue>> AvailableSeatsArray = ResponseObject->GetArrayField(TEXT("availableSeats"));
@@ -149,6 +154,17 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 						FString SeatId = SeatObject->GetStringField(TEXT("seatId"));
 
 						UE_LOG(LogTemp , Log , TEXT("Available Seat ID: %s") , *SeatId);
+
+						// 희진 GI에 저장
+						ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+						if ( TTPlayer )
+						{
+							UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+							if ( GI )
+							{
+								GI->SetSeatId(SeatId);
+							}
+						}
 					}
 
 					// 접수 완료된 좌석 목록
@@ -162,6 +178,7 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 					}
 
 					// 콘서트 입장하는 함수 호출
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("콘서트 입장~~~")));
 				}
 			}
 		}
@@ -183,7 +200,7 @@ void AHM_HttpActor2::ReqPostSeatRegistrationInquiry(FString SeatId , FString Acc
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/seat") , *_url); // 미정
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat") , *_url); // 미정
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -278,7 +295,7 @@ void AHM_HttpActor2::ReqPostRegisterSeat(FString SeatId , FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/seat/reception") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/reception") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -371,7 +388,7 @@ void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat(FString SeatId , FString Acce
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/seat/reception") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/reception") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("DELETE"));
 
@@ -459,7 +476,7 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/seat/reception") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/게임결과") , *_url); // 미정
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -560,7 +577,25 @@ void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString AccessToken)
 	Request->ProcessRequest();
 }
 
-void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , int32 PhoneNum , FString UserAddress , FString AccessToken)
+void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
+		}
+		else if ( Response->GetResponseCode() == 400 )
+		{
+			UE_LOG(LogTemp , Log , TEXT("Member authentication failed!"));
+		}
+	}
+}
+
+void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , int32 UserPhoneNum , FString UserAddress , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -581,9 +616,9 @@ void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , int32 PhoneNum , 
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("이름") , UserName); // API테이블 확인하기
-	Writer->WriteValue(TEXT("폰번호") , PhoneNum); // API테이블 확인하기
-	Writer->WriteValue(TEXT("userAddress") , UserAddress); // API테이블 확인하기
+	Writer->WriteValue(TEXT("userName") , UserName);
+	Writer->WriteValue(TEXT("userPhoneNumber") , UserPhoneNum);
+	Writer->WriteValue(TEXT("userAddress") , UserAddress);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -624,10 +659,10 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					int32 UserCoin = ResponseObject->GetIntegerField(TEXT("userCoin"));
 					int32 NeedCoin = ResponseObject->GetIntegerField(TEXT("needCoin"));
 
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("concertName : %s") , *SeatInfo));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("remainingTickets : %d") , SeatPrice));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Year : %d") , UserCoin));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Month : %d") , NeedCoin));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatInfo : %s") , *SeatInfo));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatPrice : %d") , SeatPrice));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserCoin : %d") , UserCoin));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("NeedCoin : %d") , NeedCoin));
 
 					// 희진 GI에 저장
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
@@ -653,4 +688,98 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 		}
 	}
 }
+ 
+void AHM_HttpActor2::ReqPostPaymentSeat(FString ConcertName , FString SeatId , FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
 
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/payment") , *_url); // API테이블 확인하기
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("POST"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 전달 데이터 (JSON)
+	FString ContentString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("concertName") , ConcertName);
+	Writer->WriteValue(TEXT("seatId") , SeatId);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	// 요청 본문에 JSON 데이터를 설정
+	Request->SetContentAsString(ContentString);
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostRegisterSeat);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// 필요한 정보 추출
+					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo"));
+					int32 SeatPrice = ResponseObject->GetIntegerField(TEXT("seatPrice"));
+					int32 UserCoin = ResponseObject->GetIntegerField(TEXT("userCoin"));
+					FString UserName = ResponseObject->GetStringField(TEXT("userName"));
+					FString UserAddress = ResponseObject->GetStringField(TEXT("userAddress"));
+
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatInfo : %s") , *SeatInfo));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatPrice : %d") , SeatPrice));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserCoin : %d") , UserCoin));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserName : %s") , *UserName));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserAddress : %s") , *UserAddress));
+
+					// 희진 GI에 저장
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+					if ( TTPlayer )
+					{
+						UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+						if ( GI )
+						{
+							// GI에 저장
+							// GI->SeatInfo(SeatInfo);
+							// GI->SeatPrice(SeatPrice);
+							// GI->UserCoin(UserCoin);
+							// GI->NeedCoin(NeedCoin);
+						}
+					}
+					// 결제 완료 UI 호출
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Error , TEXT("Failed to Post Payment Seat: %s") , *Response->GetContentAsString());
+		}
+	}
+}

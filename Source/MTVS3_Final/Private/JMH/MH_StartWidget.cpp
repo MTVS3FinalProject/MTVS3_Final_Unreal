@@ -69,7 +69,7 @@ void UMH_StartWidget::GoToLobby()
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
-		gi->FindOrCreateSession(); // 세션 탐색 또는 생성
+		gi->FindOrCreateSession(TEXT("TTHallSession") , 100); // 세션 탐색 또는 생성
 	}
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));

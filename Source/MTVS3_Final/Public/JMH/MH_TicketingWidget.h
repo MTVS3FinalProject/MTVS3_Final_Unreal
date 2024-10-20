@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -209,4 +209,10 @@ public:
 	class UButton*  btn_test8;
 	UFUNCTION()
 	void OnClickedtest8();
+	
+	//공연장 입장 요청
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  btn_test9;
+	UFUNCTION()
+	void OnClickedtest9();
 };

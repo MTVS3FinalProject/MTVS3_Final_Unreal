@@ -70,7 +70,7 @@ void ATTPlayerController::ClientReceiveCurrentTime_Implementation(const FString&
 	{
 		MainUI->SetTextCurrentTime(CurrentTime);
 	}
-    UE_LOG(LogTemp , Log , TEXT("Current Time from Server: %s") , *CurrentTime);
+    //UE_LOG(LogTemp , Log , TEXT("Current Time from Server: %s") , *CurrentTime);
 }
 
 void ATTPlayerController::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)

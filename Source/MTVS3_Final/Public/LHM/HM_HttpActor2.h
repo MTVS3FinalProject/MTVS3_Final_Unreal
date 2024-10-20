@@ -25,10 +25,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 #pragma region UI
-	UPROPERTY(EditAnywhere, Category = "Defalut|UI")
-	TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
+	//UPROPERTY(EditAnywhere, Category = "Defalut|UI")
+	//TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
 	UPROPERTY()
 	class UMH_TicketingWidget* TicketingUI;
+
+    void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
+
 #pragma endregion
 
 	// 백엔드에 요청 보낼 때만 api 포함, 프론트는 api X
@@ -76,10 +79,19 @@ public:
 	// 결제시 회원 인증 사진 업로드 확인
 	void ReqGetPostConfirmMemberPhoto(FString AccessToken);
 
+	// 결제시 회원 인증 사진 업로드 확인에 대한 응답
+	void OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
 	// 예매자 정보 입력 요청
-	void ReqPostReservationinfo(FString UserName, int32 PhoneNum, FString UserAddress , FString AccessToken);
+	void ReqPostReservationinfo(FString UserName, int32 UserPhoneNum , FString UserAddress , FString AccessToken);
 
 	// 예매자 정보 입력 요청에 대한 응답
 	void OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 좌석 결제 요청
+	void ReqPostPaymentSeat(FString ConcertName, FString SeatId, FString AccessToken);
+
+	// 좌석 결제 요청에 대한 응답
+	void OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 };

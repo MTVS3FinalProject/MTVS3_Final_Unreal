@@ -104,7 +104,8 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 				// StartUI에서 QR UI로 넘어가는 함수 호출하기
 				StartUI->SetQRImg(Texture);
 				StartUI->SetWidgetSwitcher(3);
-				UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
+				UE_LOG(LogTemp , Log , TEXT("Image Data Size: %d") , ImageData.Num());
+				UE_LOG(LogTemp , Log , TEXT("Texture created successfully: %s") , *Texture->GetName());
 			}
 			else
 			{
@@ -325,43 +326,60 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 
 				if ( ResponseObject.IsValid() )
 				{
-					// "memberInfoDTO" 객체에 접근
-					TSharedPtr<FJsonObject> MemberInfo = ResponseObject->GetObjectField(TEXT("memberInfoDTO"));
-					if ( MemberInfo.IsValid() )
-					{
-						//// 받아올 정보 추출
-						FString Nickname = MemberInfo->GetStringField(TEXT("nickname"));
-						FString Birth = MemberInfo->GetStringField(TEXT("birth"));
-						int32 Coin = MemberInfo->GetIntegerField(TEXT("coin"));
-						//int32 AvatarData = MemberInfo->GetStringField(TEXT("avatarData"));
+					// 직접 response 객체에서 필드들을 추출
+					FString Nickname = ResponseObject->GetStringField(TEXT("nickname"));
+					FString Birth = ResponseObject->GetStringField(TEXT("birth"));
+					int32 Coin = ResponseObject->GetIntegerField(TEXT("coin"));
+					FString AvatarData = ResponseObject->GetStringField(TEXT("avatarData"));
+					FString AccessToken = ResponseObject->GetStringField(TEXT("accessToken"));
+					// 
+					// 디버그 메시지 출력
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Nickname: %s") , *Nickname));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Birth: %s") , *Birth));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Coin: %d") , Coin));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("AvatarData: %s") , *AvatarData));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("AccessToken: %s") , *AccessToken));
 
-						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Nickname : %s"), *Nickname));
-						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Birth : %s"), *Birth));
-						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Coin : %d"), Coin));
+					//// "memberInfoDTO" 객체에 접근
+					//TSharedPtr<FJsonObject> MemberInfo = ResponseObject->GetObjectField(TEXT("memberInfoDTO"));
+					//if ( MemberInfo.IsValid() )
+					//{
+					//	//// 받아올 정보 추출
+					////	FString Nickname = MemberInfo->GetStringField(TEXT("nickname"));
+					////	FString Birth = MemberInfo->GetStringField(TEXT("birth"));
+					////	int32 Coin = MemberInfo->GetIntegerField(TEXT("coin"));
+					////	int32 AvatarData = MemberInfo->GetStringField(TEXT("avatarData"));
 
-						// AccessToken은 authTokenDTO에서 가져와야 함
-						TSharedPtr<FJsonObject> AuthTokenObject = ResponseObject->GetObjectField(TEXT("authTokenDTO"));
-						if ( AuthTokenObject.IsValid() )
-						{
-							FString AccessToken = AuthTokenObject->GetStringField(TEXT("accessToken"));
-							UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *AccessToken);
+					//	GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Nickname : %s"), *Nickname));
+					//	GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Birth : %s"), *Birth));
+					//	GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Coin : %d"), Coin));
+					//	UE_LOG(LogTemp , Log , TEXT("Nickname : %s"), *Nickname);
+					//	UE_LOG(LogTemp , Log , TEXT("Birth : %s"), *Birth);
+					//	UE_LOG(LogTemp , Log , TEXT("Coin : %d"), Coin);
 
-							ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-							if ( TTPlayer )
-							{
-								UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-								if ( GI )
-								{
-									// 토큰 설정 및 가져오기
-									GI->SetAccessToken(AccessToken);
-									UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *GI->GetAccessToken());
-								}
-							}
-						}
-						else
-						{
-							UE_LOG(LogTemp , Warning , TEXT("authTokenDTO 객체를 찾을 수 없습니다."));
-						}
+					//	// AccessToken은 authTokenDTO에서 가져와야 함
+					//	TSharedPtr<FJsonObject> AuthTokenObject = ResponseObject->GetObjectField(TEXT("authTokenDTO"));
+					//	if ( AuthTokenObject.IsValid() )
+					//	{
+					//		FString AccessToken = AuthTokenObject->GetStringField(TEXT("accessToken"));
+					//		UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *AccessToken);
+
+					//		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+					//		if ( TTPlayer )
+					//		{
+					//			UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+					//			if ( GI )
+					//			{
+					//				// 토큰 설정 및 가져오기
+					//				GI->SetAccessToken(AccessToken);
+					//				UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *GI->GetAccessToken());
+					//			}
+					//		}
+					//	}
+					//	else
+					//	{
+					//		UE_LOG(LogTemp , Warning , TEXT("authTokenDTO 객체를 찾을 수 없습니다."));
+					//	}
 
 						ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 						if ( TTPlayer )
@@ -382,6 +400,10 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 								GI->SetCoin(Coin);
 								UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetCoin());
 
+								// 토큰 설정 및 가져오기
+								GI->SetAccessToken(AccessToken);
+								UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *GI->GetAccessToken());
+
 								// 아바타 설정 및 가져오기
 								//GI->SetAvatarData(AvatarData);
 								//UE_LOG(LogTemp , Log , TEXT("AvatarData : %d") , GI->GetAvatarData());
@@ -394,7 +416,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 						}
 						// 세션 입장
 						StartUI->GoToLobby();
-					}
+					
 				}
 				else
 				{
