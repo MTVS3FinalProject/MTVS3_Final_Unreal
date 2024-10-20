@@ -25,10 +25,10 @@ void AHM_HttpActor2::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") )
-	{
+	//if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") )
+	//{
 		// 특정 레벨일 때 실행할 코드
-		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
+		//UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
 
 		//TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
 
@@ -42,7 +42,7 @@ void AHM_HttpActor2::BeginPlay()
 		//if ( !pc ) return;
 		//pc->SetShowMouseCursor(true);
 		//pc->SetInputMode(FInputModeGameAndUI());
-	}
+	//}
 }
 
 // Called every frame
@@ -61,6 +61,7 @@ void AHM_HttpActor2::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 
 void AHM_HttpActor2::ReqPostConcertEntry(FString ConcertName , FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("AHM_HttpActor2::ReqPostConcertEntry"));
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
