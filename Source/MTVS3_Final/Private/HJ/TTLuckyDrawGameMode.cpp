@@ -2,43 +2,47 @@
 
 
 #include "HJ/TTLuckyDrawGameMode.h"
-#include "TimerManager.h"
 #include "random"  // std::shuffle와 무작위 엔진 사용을 위한 헤더 추가
 
 // LogLuckyDraw 카테고리 정의
 DEFINE_LOG_CATEGORY(LogLuckyDraw);
 
+ATTLuckyDrawGameMode::ATTLuckyDrawGameMode()
+{
+	// 배열 초기화
+	EliminatedPlayersPerRound.Empty();
+	RoundEliminatedPlayers.Empty();
+	RouletteInfosPerRound.Empty();
+}
+
 void ATTLuckyDrawGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if ( bIsRouletteTestMode )
+	// 인원 수를 출력
+	if ( GEngine )
 	{
-		// 인원 수를 출력
-		if ( GEngine )
-		{
-			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Yellow , FString::Printf(TEXT("설정된 인원 수: %d") , NumPlayers));
-		}
-
-		// 3*10 좌석 배열 초기화 (세로 3줄, 가로 10줄)
-		Seats.SetNum(3);  // 열(세로) 수 3
-		for ( int i = 0; i < 3; ++i )
-		{
-			Seats[i].SetNum(10);  // 각 열에 10개의 좌석
-		}
-
-		// 플레이어 번호 부여 및 랜덤 배치
-		RemainingPlayers.Reserve(NumPlayers);
-		for ( int32 i = 0; i < NumPlayers; ++i )
-		{
-			RemainingPlayers.Add(i + 1);  // 플레이어 번호는 1부터 시작
-		}
-
-		ShuffleSeats();
-
-		// 첫 라운드 시작
-		StartRound();
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Yellow , FString::Printf(TEXT("설정된 인원 수: %d") , NumPlayers));
 	}
+
+	// 3*10 좌석 배열 초기화 (세로 3줄, 가로 10줄)
+	Seats.SetNum(3);  // 열(세로) 수 3
+	for ( int i = 0; i < 3; ++i )
+	{
+		Seats[i].SetNum(10);  // 각 열에 10개의 좌석
+	}
+
+	// 플레이어 번호 부여 및 랜덤 배치
+	RemainingPlayers.Reserve(NumPlayers);
+	for ( int32 i = 0; i < NumPlayers; ++i )
+	{
+		RemainingPlayers.Add(i + 1);  // 플레이어 번호는 1부터 시작
+	}
+
+	ShuffleSeats();
+
+	// 첫 라운드 시작
+	StartRound();
 }
 
 // 라운드를 시작하는 함수
@@ -49,17 +53,44 @@ void ATTLuckyDrawGameMode::StartRound()
 		UE_LOG(LogLuckyDraw , Log , TEXT("___________"));
 		UE_LOG(LogLuckyDraw , Log , TEXT("총 라운드 수: %d") , Round);
 		UE_LOG(LogLuckyDraw , Log , TEXT("최종 승자: %d") , RemainingPlayers[0]);
+
+		// 게임 종료 시 라운드별 탈락자 리스트 출력
+		if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("게임 종료! 라운드별 탈락자 및 룰렛 정보 출력:"));
+		for ( int32 i = 0; i < EliminatedPlayersPerRound.Num(); ++i )
+		{
+			if ( RouletteInfosPerRound.Num() > i )
+			{
+				// 룰렛 정보 출력
+				const FRouletteInfo& Info = RouletteInfosPerRound[i];
+				UE_LOG(LogLuckyDraw , Log , TEXT("라운드%d 룰렛 정보: %d %d %d") , i + 1 , Info.Player , static_cast<int32>(Info.Rule) , static_cast<int32>(Info.Result));
+			}
+
+			// 탈락자 정보 출력
+			FString EliminatedPlayersString;
+			for ( int32 Player : EliminatedPlayersPerRound[i] )
+			{
+				EliminatedPlayersString += FString::Printf(TEXT("%d ") , Player);
+			}
+
+			if ( EliminatedPlayersString.IsEmpty() )
+			{
+				UE_LOG(LogLuckyDraw , Log , TEXT("라운드%d 탈락자 없음") , i + 1);
+			}
+			else
+			{
+				UE_LOG(LogLuckyDraw , Log , TEXT("라운드%d 탈락자: %s") , i + 1 , *EliminatedPlayersString);
+			}
+		}
+
 		return;
 	}
 
-	// 라운드가 끝나고 다음 라운드로 넘어가기 전에 출력
-	UE_LOG(LogLuckyDraw , Log , TEXT("___________"));  // 로그 출력
-
+	UE_LOG(LogLuckyDraw , Log , TEXT("___________"));
 	Round++;
-	UE_LOG(LogLuckyDraw , Log , TEXT("\n라운드 수: %d") , Round);
+	UE_LOG(LogLuckyDraw , Log , TEXT("라운드 수: %d") , Round);
 	PrintSeats();
 
-	// 룰렛을 돌리는 함수 호출
+	//SelectRouletteOptions();
 	GetWorld()->GetTimerManager().SetTimer(RouletteTimer , this , &ATTLuckyDrawGameMode::SelectRouletteOptions , EliminationEffectDuration , false);
 }
 
@@ -68,48 +99,46 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 {
 	if ( RemainingPlayers.Num() == 0 )
 	{
-		UE_LOG(LogLuckyDraw , Error , TEXT("남은 플레이어가 없습니다. 룰렛을 돌릴 수 없습니다."));
+		if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Error , TEXT("남은 플레이어가 없습니다. 룰렛을 돌릴 수 없습니다."));
 		return;
 	}
 
 	bool IsValidResult = false;
 	int32 SelectedPlayer = -1;
-	FString RowOrColRule;
-	FString PassOrFail;
+	ERouletteRule SelectedRule;
+	ERouletteResult RouletteOutcome;
+
+	// 시뮬레이션용 좌석 배열 생성 (실제 좌석과 별도로 관리)
+	TArray<TArray<FSeat>> SimulatedSeats = Seats;
 
 	while ( !IsValidResult )
 	{
-		// 남아 있는 플레이어 중에서 랜덤하게 플레이어 선택
 		int32 PlayerIndex = FMath::RandRange(0 , RemainingPlayers.Num() - 1);
 		SelectedPlayer = RemainingPlayers[PlayerIndex];
 
-		// 룰렛2: 행 또는 열 규칙 선택
-		TArray<FString> RowOrColOptions = { TEXT("과(와) 같은 열만"), TEXT("과(와) 같은 행만"), TEXT("과(와) 같은 열 제외"), TEXT("과(와) 같은 행 제외"), TEXT("만") };
-		int32 RowOrColIndex = FMath::RandRange(0 , RowOrColOptions.Num() - 1);
-		RowOrColRule = RowOrColOptions[RowOrColIndex];
+		int32 RuleIndex = FMath::RandRange(0 , 4);  // 룰렛 규칙
+		SelectedRule = static_cast<ERouletteRule>(RuleIndex);
 
-		// 룰렛3: 통과 또는 탈락 선택
-		TArray<FString> PassOrFailOptions = { TEXT("통과"), TEXT("탈락") };
-		int32 PassOrFailIndex = FMath::RandRange(0 , PassOrFailOptions.Num() - 1);
-		PassOrFail = PassOrFailOptions[PassOrFailIndex];
+		int32 OutcomeIndex = FMath::RandRange(0 , 1);  // 통과 or 탈락
+		RouletteOutcome = static_cast<ERouletteResult>(OutcomeIndex);
 
 		// 룰렛2 규칙에 따른 영향을 받는 플레이어 계산
 		TArray<int32> AffectedPlayers;
-		GetAffectedPlayers(SelectedPlayer , RowOrColRule , AffectedPlayers);
+		GetAffectedPlayers(SelectedPlayer , SelectedRule , AffectedPlayers);
 
 		// 한 행 또는 한 열만 남았을 때 전멸 방지 처리
 		bool IsSingleRowOrCol = CheckSingleRowOrColRemaining();
 
-		if ( IsSingleRowOrCol && PassOrFail == TEXT("탈락") &&
-			(RowOrColRule.Contains(TEXT("과(와) 같은 행만")) || RowOrColRule.Contains(TEXT("과(와) 같은 열만"))) )
+		if ( IsSingleRowOrCol && RouletteOutcome == ERouletteResult::Eliminate &&
+			(SelectedRule == ERouletteRule::SameRowOnly || SelectedRule == ERouletteRule::SameColumnOnly) )
 		{
-			UE_LOG(LogLuckyDraw , Log , TEXT("한 행 또는 열만 남아 탈락을 방지합니다. 룰렛을 다시 돌립니다."));
+			if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("한 행 또는 열만 남아 탈락을 방지합니다. 룰렛을 다시 돌립니다."));
 			continue; // 한 행 또는 열만 남아있고, 탈락할 경우 전멸 방지를 위해 룰렛을 다시 돌림
 		}
-		else if ( IsSingleRowOrCol && PassOrFail == TEXT("통과") &&
-			(RowOrColRule.Contains(TEXT("과(와) 같은 행 제외")) || RowOrColRule.Contains(TEXT("과(와) 같은 열 제외"))) )
+		else if ( IsSingleRowOrCol && RouletteOutcome == ERouletteResult::Pass &&
+			(SelectedRule == ERouletteRule::ExcludeSameRow || SelectedRule == ERouletteRule::ExcludeSameColumn) )
 		{
-			UE_LOG(LogLuckyDraw , Log , TEXT("한 행 또는 열만 남아 통과로 전멸을 방지합니다. 룰렛을 다시 돌립니다."));
+			if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("한 행 또는 열만 남아 통과로 전멸을 방지합니다. 룰렛을 다시 돌립니다."));
 			continue;  // 한 행/열만 남고 통과일 경우 전멸 방지
 		}
 
@@ -117,107 +146,191 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 		TArray<int32> SimulatedRemainingPlayers = RemainingPlayers;
 
 		// 탈락 처리 시뮬레이션 (실제 ApplyRouletteOutcome과 동일)
-		if ( PassOrFail == TEXT("통과") )
+		if ( RouletteOutcome == ERouletteResult::Pass )
 		{
-			// 통과: AffectedPlayers만 남고 나머지 탈락
 			for ( int32 i = SimulatedRemainingPlayers.Num() - 1; i >= 0; --i )
 			{
 				if ( !AffectedPlayers.Contains(SimulatedRemainingPlayers[i]) )
 				{
+					//UE_LOG(LogLuckyDraw , Log , TEXT("통과로 인한 탈락자: %d") , SimulatedRemainingPlayers[i]);
 					SimulatedRemainingPlayers.RemoveAt(i);
 				}
 			}
 		}
-		else if ( PassOrFail == TEXT("탈락") )
+		else if ( RouletteOutcome == ERouletteResult::Eliminate )
 		{
-			// 탈락: AffectedPlayers 탈락, 나머지 통과
 			for ( int32 i = SimulatedRemainingPlayers.Num() - 1; i >= 0; --i )
 			{
 				if ( AffectedPlayers.Contains(SimulatedRemainingPlayers[i]) )
 				{
+					//UE_LOG(LogLuckyDraw , Log , TEXT("탈락으로 인한 탈락자: %d") , SimulatedRemainingPlayers[i]);
 					SimulatedRemainingPlayers.RemoveAt(i);
 				}
 			}
 		}
 
+		// 시뮬레이션 좌석 업데이트
+		UpdateSimulatedSeats(SimulatedSeats , SimulatedRemainingPlayers);  // 시뮬레이션 좌석 상태 갱신
+
+		// 좌석 배열을 통해 모든 좌석이 'X'인지 확인
+		bool bAllSeatsEmpty = true;
+		for ( int32 i = 0; i < SimulatedSeats.Num(); ++i )
+		{
+			for ( int32 j = 0; j < SimulatedSeats[i].Num(); ++j )
+			{
+				if ( SimulatedSeats[i][j].PlayerNumber != -1 )  // 플레이어 번호를 기준으로 좌석이 비어 있는지 확인
+				{
+					bAllSeatsEmpty = false;
+					break;
+				}
+			}
+			if ( !bAllSeatsEmpty ) break;
+		}
+
+		// 모든 좌석이 비어 있으면 전멸 처리
+		if ( bAllSeatsEmpty )
+		{
+			if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("전멸을 방지하기 위해 룰렛을 다시 돌립니다."));
+			continue;
+		}
+
+		// 시뮬레이션 좌석 상태 업데이트 및 출력
+		UpdateSimulatedSeats(SimulatedSeats , SimulatedRemainingPlayers);
+
 		if ( SimulatedRemainingPlayers.Num() < 1 )
 		{
-			UE_LOG(LogLuckyDraw , Log , TEXT("전멸 방지를 위해 탈락을 방지합니다. 룰렛을 다시 돌립니다."));
+			if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("전멸 방지를 위해 탈락을 방지합니다. 룰렛을 다시 돌립니다."));
+			continue;
+		}
+
+		// 탈락자가 0명이면 다시 룰렛 돌리기
+		if ( SimulatedRemainingPlayers.Num() == RemainingPlayers.Num() )
+		{
+			if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("탈락자가 없으므로 룰렛을 다시 돌립니다."));
 			continue;
 		}
 
 		IsValidResult = true;
+		//for ( int32 i = SimulatedRemainingPlayers.Num() - 1; i >= 0; --i )
+		//{
+		//	UE_LOG(LogLuckyDraw , Log , TEXT("남은 플레이어 체크: %d") , SimulatedRemainingPlayers[i]);
+		//}
+
+		// 룰렛 정보 저장
+		FRouletteInfo RouletteInfo;
+		RouletteInfo.Player = SelectedPlayer;
+		RouletteInfo.Rule = SelectedRule;
+		RouletteInfo.Result = RouletteOutcome;
+		RouletteInfosPerRound.Add(RouletteInfo);
 	}
 
-	ApplyRouletteOutcome(SelectedPlayer , RowOrColRule , PassOrFail);
+	ApplyRouletteOutcome(SelectedPlayer , SelectedRule , RouletteOutcome);
+}
+
+// 시뮬레이션 중 좌석 출력 함수 추가
+void ATTLuckyDrawGameMode::PrintSimulatedSeats(const TArray<TArray<FSeat>>& SimulatedSeats)
+{
+	if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("시뮬레이션 좌석 배치:"));
+	for ( int32 i = 0; i < SimulatedSeats.Num(); ++i )
+	{
+		FString SeatRow;
+		for ( int32 j = 0; j < SimulatedSeats[i].Num(); ++j )
+		{
+			if ( SimulatedSeats[i][j].PlayerNumber != -1 )
+			{
+				SeatRow += FString::Printf(TEXT("%d\t") , SimulatedSeats[i][j].PlayerNumber);
+			}
+			else
+			{
+				SeatRow += TEXT("X\t");
+			}
+		}
+		if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("%s") , *SeatRow);
+	}
+}
+
+// 시뮬레이션용 좌석 갱신 함수
+void ATTLuckyDrawGameMode::UpdateSimulatedSeats(TArray<TArray<FSeat>>& SimulatedSeats , const TArray<int32>& SimulatedRemainingPlayers)
+{
+	for ( int32 i = 0; i < SimulatedSeats.Num(); ++i )  // i < 3
+	{
+		for ( int32 j = 0; j < SimulatedSeats[i].Num(); ++j )  // j < 10
+		{
+			if ( SimulatedSeats[i][j].PlayerNumber != -1 && !SimulatedRemainingPlayers.Contains(SimulatedSeats[i][j].PlayerNumber) )
+			{
+				SimulatedSeats[i][j].PlayerNumber = -1;  // 시뮬레이션에서 탈락한 플레이어 좌석 제거
+			}
+		}
+	}
+
+	// 시뮬레이션 좌석 상태 출력
+	PrintSimulatedSeats(SimulatedSeats);
 }
 
 // 룰렛 결과를 적용하는 함수
-void ATTLuckyDrawGameMode::ApplyRouletteOutcome(int32 Player , const FString& RowOrColRule , const FString& PassOrFail)
+void ATTLuckyDrawGameMode::ApplyRouletteOutcome(int32 Player , ERouletteRule Rule , ERouletteResult Outcome)
 {
-	// 첫 번째 룰렛 출력 (즉시 출력)
+	// 첫 번째 룰렛 출력
 	UE_LOG(LogLuckyDraw , Log , TEXT("룰렛1: %d") , Player);
 
-	// 1.5초 후 두 번째 룰렛 출력
-	GetWorld()->GetTimerManager().SetTimer(RouletteTimer , [this , Player , RowOrColRule]()
+	// 두 번째 룰렛 출력 (타이머 제거)
+	UE_LOG(LogLuckyDraw , Log , TEXT("룰렛2: %d") , static_cast<int32>(Rule));
+
+	// 세 번째 룰렛 출력 및 결과 적용 (타이머 제거)
+	UE_LOG(LogLuckyDraw , Log , TEXT("룰렛3: %d") , static_cast<int32>(Outcome));
+
+	// 영향을 받는 플레이어 리스트 생성
+	TArray<int32> AffectedPlayers;
+	GetAffectedPlayers(Player , Rule , AffectedPlayers);
+
+	if ( Outcome == ERouletteResult::Pass )
 	{
-		// 두 번째 룰렛 출력
-		UE_LOG(LogLuckyDraw , Log , TEXT("룰렛2: %s") , *RowOrColRule);
-
-		// 1.5초 후 세 번째 룰렛 출력
-		GetWorld()->GetTimerManager().SetTimer(RouletteTimer , [this , Player , RowOrColRule]()
+		// 통과 로직
+		for ( int32 i = RemainingPlayers.Num() - 1; i >= 0; --i )
 		{
-			// 세 번째 룰렛 출력 및 결과 적용
-			FString PassOrFail = FMath::RandBool() ? TEXT("통과") : TEXT("탈락");
-			UE_LOG(LogLuckyDraw , Log , TEXT("룰렛3: %s") , *PassOrFail);
-
-			// 영향을 받는 플레이어 리스트 생성
-			TArray<int32> AffectedPlayers;
-			GetAffectedPlayers(Player , RowOrColRule , AffectedPlayers);
-
-			if ( PassOrFail == TEXT("통과") )
+			if ( !AffectedPlayers.Contains(RemainingPlayers[i]) )
 			{
-				// AffectedPlayers가 탈락, 나머지는 통과
-				for ( int32 i = RemainingPlayers.Num() - 1; i >= 0; --i )
-				{
-					if ( !AffectedPlayers.Contains(RemainingPlayers[i]) )
-					{
-						UE_LOG(LogLuckyDraw , Log , TEXT("플레이어 %d 탈락") , RemainingPlayers[i]);
-						RemainingPlayers.RemoveAt(i);
-					}
-				}
+				if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("플레이어 %d 탈락") , RemainingPlayers[i]);
+				RoundEliminatedPlayers.Add(RemainingPlayers[i]);
+				RemainingPlayers.RemoveAt(i);
 			}
-			else if ( PassOrFail == TEXT("탈락") )
+		}
+	}
+	else if ( Outcome == ERouletteResult::Eliminate )
+	{
+		// 탈락 로직
+		for ( int32 i = RemainingPlayers.Num() - 1; i >= 0; --i )
+		{
+			if ( AffectedPlayers.Contains(RemainingPlayers[i]) )
 			{
-				// AffectedPlayers만 탈락, 나머지는 통과
-				for ( int32 i = RemainingPlayers.Num() - 1; i >= 0; --i )
-				{
-					if ( AffectedPlayers.Contains(RemainingPlayers[i]) )
-					{
-						UE_LOG(LogLuckyDraw , Log , TEXT("플레이어 %d 탈락") , RemainingPlayers[i]);
-						RemainingPlayers.RemoveAt(i);
-					}
-				}
+				if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("플레이어 %d 탈락") , RemainingPlayers[i]);
+				RoundEliminatedPlayers.Add(RemainingPlayers[i]);
+				RemainingPlayers.RemoveAt(i);
 			}
+		}
+	}
 
-			// 좌석 갱신
-			UpdateSeats();
+	// 좌석 갱신
+	UpdateSeats();
 
-			// 게임 종료 조건 체크
-			if ( RemainingPlayers.Num() == 1 )
-			{
-				UE_LOG(LogLuckyDraw , Log , TEXT("___________"));
-				UE_LOG(LogLuckyDraw , Log , TEXT("최종 승자: %d") , RemainingPlayers[0]);
-				UE_LOG(LogLuckyDraw , Log , TEXT("총 라운드 수: %d") , Round);
-				return;
-			}
+	// 라운드가 끝나기 전에 탈락자 로그 출력
+	if ( RoundEliminatedPlayers.Num() > 0 )
+	{
+		FString EliminatedPlayersString;
+		for ( int32 Player : RoundEliminatedPlayers )
+		{
+			EliminatedPlayersString += FString::Printf(TEXT("%d ") , Player);
+		}
+		if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("라운드 %d 탈락자: %s") , Round , *EliminatedPlayersString);
 
-			// 다음 라운드 시작
-			GetWorld()->GetTimerManager().SetTimer(RouletteTimer , this , &ATTLuckyDrawGameMode::StartRound , 3.0f , false);
+		// 현재 라운드의 탈락자를 기록
+		EliminatedPlayersPerRound.Add(RoundEliminatedPlayers);
 
-		} , RouletteDelay , false);
+		// 다음 라운드를 위해 초기화
+		RoundEliminatedPlayers.Empty();
+	}
 
-	} , RouletteDelay , false);
+	StartRound();
 }
 
 // 좌석 갱신 함수
@@ -236,7 +349,7 @@ void ATTLuckyDrawGameMode::UpdateSeats()
 	PrintSeats();
 }
 
-void ATTLuckyDrawGameMode::GetAffectedPlayers(int32 SelectedPlayer , const FString& RowOrColRule , TArray<int32>& AffectedPlayers)
+void ATTLuckyDrawGameMode::GetAffectedPlayers(int32 SelectedPlayer , ERouletteRule Rule , TArray<int32>& AffectedPlayers)
 {
 	AffectedPlayers.Empty();  // 영향을 받는 플레이어 리스트 초기화
 
@@ -254,12 +367,13 @@ void ATTLuckyDrawGameMode::GetAffectedPlayers(int32 SelectedPlayer , const FStri
 				break;
 			}
 		}
-		if ( PlayerRow != -1 ) break;  // 플레이어를 찾으면 루프 종료
+		if ( PlayerRow != -1 ) break; // 플레이어를 찾으면 루프 종료
 	}
 
 	// 룰렛2의 규칙에 따라 영향을 받는 플레이어들을 찾아냄
-	if ( RowOrColRule.Contains(TEXT("과(와) 같은 열만")) )  // 같은 열에 있는 플레이어만 영향받음
+	switch ( Rule )
 	{
+	case ERouletteRule::SameColumnOnly: // 같은 열에 있는 플레이어만 영향받음
 		for ( int32 i = 0; i < Seats.Num(); ++i )  // 행 전체 탐색
 		{
 			if ( Seats[i][PlayerCol].IsOccupied() )
@@ -267,9 +381,9 @@ void ATTLuckyDrawGameMode::GetAffectedPlayers(int32 SelectedPlayer , const FStri
 				AffectedPlayers.Add(Seats[i][PlayerCol].PlayerNumber);  // 같은 열에 있는 플레이어 추가
 			}
 		}
-	}
-	else if ( RowOrColRule.Contains(TEXT("과(와) 같은 행만")) )  // 같은 행에 있는 플레이어만 영향받음
-	{
+		break;
+
+	case ERouletteRule::SameRowOnly: // 같은 행에 있는 플레이어만 영향받음
 		for ( int32 j = 0; j < Seats[PlayerRow].Num(); ++j )  // 열 전체 탐색
 		{
 			if ( Seats[PlayerRow][j].IsOccupied() )
@@ -277,17 +391,9 @@ void ATTLuckyDrawGameMode::GetAffectedPlayers(int32 SelectedPlayer , const FStri
 				AffectedPlayers.Add(Seats[PlayerRow][j].PlayerNumber);  // 같은 행에 있는 플레이어 추가
 			}
 		}
-	}
-	else if ( RowOrColRule.Contains(TEXT("과(와) 같은 열 제외")) )  // 같은 열 제외
-	{
-		//for ( int32 i = 0; i < Seats.Num(); ++i )
-		//{
-		//	if ( Seats[i][PlayerCol].IsOccupied() && i != PlayerRow )  // 열만 비교하여 영향받음
-		//	{
-		//		AffectedPlayers.Add(Seats[i][PlayerCol].PlayerNumber);  // 같은 열을 제외한 플레이어만 영향받음
-		//	}
-		//}
+		break;
 
+	case ERouletteRule::ExcludeSameColumn:  // 같은 열 제외
 		// 같은 열 제외: 선택된 플레이어와 같은 열에 있는 플레이어는 탈락하지 않고, 다른 열에 있는 플레이어가 영향을 받음
 		for ( int32 j = 0; j < Seats[0].Num(); ++j )  // 열 전체 탐색
 		{
@@ -302,9 +408,9 @@ void ATTLuckyDrawGameMode::GetAffectedPlayers(int32 SelectedPlayer , const FStri
 				}
 			}
 		}
-	}
-	else if ( RowOrColRule.Contains(TEXT("과(와) 같은 행 제외")) )  // 같은 행 제외
-	{
+		break;
+
+	case ERouletteRule::ExcludeSameRow:  // 같은 행 제외
 		// 같은 행 제외: 선택된 플레이어와 같은 행에 있는 플레이어는 탈락하지 않고, 다른 행에 있는 플레이어가 영향을 받음
 		for ( int32 i = 0; i < Seats.Num(); ++i )  // 행 전체 탐색
 		{
@@ -319,10 +425,14 @@ void ATTLuckyDrawGameMode::GetAffectedPlayers(int32 SelectedPlayer , const FStri
 				}
 			}
 		}
-	}
-	else if ( RowOrColRule.Contains(TEXT("만")) )  // 선택된 플레이어만
-	{
+		break;
+
+	case ERouletteRule::OnlySelected:  // 선택된 플레이어만
 		AffectedPlayers.Add(SelectedPlayer);  // 선택된 플레이어만 영향받음
+		break;
+
+	default:
+		break;
 	}
 }
 
@@ -366,7 +476,7 @@ void ATTLuckyDrawGameMode::ShuffleSeats()
 // 좌석을 출력하는 함수
 void ATTLuckyDrawGameMode::PrintSeats()
 {
-	UE_LOG(LogLuckyDraw , Log , TEXT("좌석 배치:"));
+	if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("좌석 배치:"));
 	for ( int32 i = 0; i < 3; ++i )
 	{
 		FString SeatRow;
@@ -381,7 +491,7 @@ void ATTLuckyDrawGameMode::PrintSeats()
 				SeatRow += TEXT("X\t");
 			}
 		}
-		UE_LOG(LogLuckyDraw , Log , TEXT("%s") , *SeatRow);
+		if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("%s") , *SeatRow);
 	}
 }
 

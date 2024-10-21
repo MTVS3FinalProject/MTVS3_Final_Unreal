@@ -18,6 +18,40 @@ struct FSeat
 
     bool IsOccupied() const { return PlayerNumber != -1; }
 };
+
+
+UENUM(BlueprintType)
+enum class ERouletteRule : uint8
+{
+    SameColumnOnly,
+    SameRowOnly,
+    ExcludeSameColumn,
+    ExcludeSameRow,
+    OnlySelected
+};
+
+UENUM(BlueprintType)
+enum class ERouletteResult : uint8
+{
+    Pass,
+    Eliminate
+};
+
+USTRUCT(BlueprintType)
+struct FRouletteInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    int32 Player;
+
+    UPROPERTY()
+    ERouletteRule Rule;
+
+    UPROPERTY()
+    ERouletteResult Result;
+};
+
 /**
  * 
  */
@@ -29,36 +63,45 @@ class MTVS3_FINAL_API ATTLuckyDrawGameMode : public AGameModeBase
 public:
     virtual void BeginPlay() override;
 
+    ATTLuckyDrawGameMode();
+
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
     bool bIsRouletteTestMode;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
     int32 NumPlayers = 30;  // 기본값 30명
 
+    TArray<TArray<FSeat>> Seats;
+    TArray<int32> RemainingPlayers;
+
     // 다음 라운드로 넘어가기까지의(탈락자 애니메이션) 시간
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
     float EliminationEffectDuration = 3.0f;
 
-    // 룰렛 딜레이
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
-    float RouletteDelay = 1.5f;
-
-    TArray<TArray<FSeat>> Seats;
-    TArray<int32> RemainingPlayers;
-
 private:
 
-    // 룰렛 타이머
-    FTimerHandle RouletteTimer;
     int Round = 0;
+
+    FTimerHandle RouletteTimer;
+
+    // 각 라운드의 룰렛 정보를 저장하는 배열
+    TArray<FRouletteInfo> RouletteInfosPerRound;
+
+    // 라운드별 탈락자 기록을 저장하는 배열
+    TArray<TArray<int32>> EliminatedPlayersPerRound;
+
+    // 각 라운드에서 탈락한 플레이어를 저장하는 배열
+    TArray<int32> RoundEliminatedPlayers;
 
     // 룰렛 관련 함수
     void StartRound();
     void SelectRouletteOptions();
-    void ApplyRouletteOutcome(int32 Player , const FString& RowOrColRule , const FString& PassOrFail);
+    void PrintSimulatedSeats(const TArray<TArray<FSeat>>& SimulatedSeats);
+    void UpdateSimulatedSeats(TArray<TArray<FSeat>>& SimulatedSeats , const TArray<int32>& SimulatedRemainingPlayers);
+    void ApplyRouletteOutcome(int32 Player , ERouletteRule Rule , ERouletteResult Outcome);
     void UpdateSeats();
 
-    void GetAffectedPlayers(int32 SelectedPlayer , const FString& RowOrColRule , TArray<int32>& AffectedPlayers);
+    void GetAffectedPlayers(int32 SelectedPlayer , ERouletteRule Rule , TArray<int32>& AffectedPlayers);
 
     // 유틸리티 함수
     void ShuffleSeats();
