@@ -18,6 +18,40 @@ struct FSeat
 
     bool IsOccupied() const { return PlayerNumber != -1; }
 };
+
+
+UENUM(BlueprintType)
+enum class ERouletteRule : uint8
+{
+    SameColumnOnly,
+    SameRowOnly,
+    ExcludeSameColumn,
+    ExcludeSameRow,
+    OnlySelected
+};
+
+UENUM(BlueprintType)
+enum class ERouletteResult : uint8
+{
+    Pass,
+    Eliminate
+};
+
+USTRUCT(BlueprintType)
+struct FRouletteInfo
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    int32 Player;
+
+    UPROPERTY()
+    ERouletteRule Rule;
+
+    UPROPERTY()
+    ERouletteResult Result;
+};
+
 /**
  * 
  */
@@ -50,6 +84,9 @@ private:
 
     FTimerHandle RouletteTimer;
 
+    // 각 라운드의 룰렛 정보를 저장하는 배열
+    TArray<FRouletteInfo> RouletteInfosPerRound;
+
     // 라운드별 탈락자 기록을 저장하는 배열
     TArray<TArray<int32>> EliminatedPlayersPerRound;
 
@@ -61,10 +98,10 @@ private:
     void SelectRouletteOptions();
     void PrintSimulatedSeats(const TArray<TArray<FSeat>>& SimulatedSeats);
     void UpdateSimulatedSeats(TArray<TArray<FSeat>>& SimulatedSeats , const TArray<int32>& SimulatedRemainingPlayers);
-    void ApplyRouletteOutcome(int32 Player , const FString& RowOrColRule , const FString& PassOrFail);
+    void ApplyRouletteOutcome(int32 Player , ERouletteRule Rule , ERouletteResult Outcome);
     void UpdateSeats();
 
-    void GetAffectedPlayers(int32 SelectedPlayer , const FString& RowOrColRule , TArray<int32>& AffectedPlayers);
+    void GetAffectedPlayers(int32 SelectedPlayer , ERouletteRule Rule , TArray<int32>& AffectedPlayers);
 
     // 유틸리티 함수
     void ShuffleSeats();
