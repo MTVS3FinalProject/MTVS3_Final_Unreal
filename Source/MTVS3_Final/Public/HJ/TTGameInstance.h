@@ -51,6 +51,9 @@ struct FPlayerData
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	FString UserAddress;
 
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
+	FString UserCode;
+
 	// 기본 생성자
 	FPlayerData()
 		: bIsHost(false) , Nickname(TEXT("티케타카")) , AccessToken(TEXT("")) , Birth(TEXT("")) ,
@@ -152,6 +155,10 @@ public:
 	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetUserAddress(const FString& _UserAddress);
 	FString GetUserAddress();
+
+	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
+	void SetUserCode(const FString& _UserCode);
+	FString GetUserCode();
 
 #pragma endregion
 };

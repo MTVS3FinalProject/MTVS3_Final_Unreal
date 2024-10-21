@@ -366,4 +366,15 @@ FString UTTGameInstance::GetUserAddress()
 {
 	return PlayerData.UserAddress;
 }
+
+void UTTGameInstance::SetUserCode(const FString& _UserCode)
+{
+	PlayerData.UserCode = _UserCode;
+	SetPlayerData(PlayerData);
+}
+
+FString UTTGameInstance::GetUserCode()
+{
+	return PlayerData.UserCode;
+}
 #pragma endregion

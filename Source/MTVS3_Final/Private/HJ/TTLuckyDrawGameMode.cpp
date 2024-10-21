@@ -177,7 +177,7 @@ void ATTLuckyDrawGameMode::ApplyRouletteOutcome(int32 Player , const FString& Ro
 
 			if ( PassOrFail == TEXT("통과") )
 			{
-				// AffectedPlayers만 통과, 나머지는 탈락
+				// AffectedPlayers가 탈락, 나머지는 통과
 				for ( int32 i = RemainingPlayers.Num() - 1; i >= 0; --i )
 				{
 					if ( !AffectedPlayers.Contains(RemainingPlayers[i]) )
