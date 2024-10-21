@@ -71,14 +71,6 @@ void UMH_StartWidget::GoToLobby()
 	{
 		gi->FindOrCreateSession(TEXT("TTHallSession") , 100); // 세션 탐색 또는 생성
 	}
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if (HttpActor2)
-	{
-		FString Name = TEXT("Concert01");
-		HttpActor2->ReqPostConcertEntry(Name,gi->GetAccessToken());
-	}
-	
 }
 
 //로그인 버튼

@@ -18,7 +18,7 @@ public:
 	
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,meta=(BindWidget))
 	class UTextBlock* Tex_Nickname;
 
 	
