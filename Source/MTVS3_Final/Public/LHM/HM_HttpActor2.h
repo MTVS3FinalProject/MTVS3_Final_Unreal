@@ -92,6 +92,9 @@ public:
     const TArray<FSeatIdDTO>& GetReceptionSeats() const { return m_ReceptionSeats; }
     void SetReceptionSeats(const TArray<FSeatIdDTO>& ReceptionSeats) { m_ReceptionSeats = ReceptionSeats; }
 
+    const TArray<FSeatIdDTO>& GetMyReceptionSeats() const { return m_MyReceptionSeats; }
+    void SetMyReceptionSeats(const TArray<FSeatIdDTO>& MyReceptionSeats) { m_MyReceptionSeats = MyReceptionSeats; }
+
     int32 GetCompetitionRate() const { return m_CompetitionRate; }
     void SetCompetitionRate(int32 CompetitionRate) { m_CompetitionRate = CompetitionRate; }
 
@@ -116,6 +119,7 @@ public:
         int32 SeatPrice,
         const TArray<FSeatIdDTO>& AvailableSeats,
         const TArray<FSeatIdDTO>& ReceptionSeats,
+        const TArray<FSeatIdDTO>& MyReceptionSeats ,
         int32 CompetitionRate,
         const FString& UserCode,
         int32 NeedCoin,
@@ -128,6 +132,7 @@ public:
         m_SeatPrice = SeatPrice;
         m_AvailableSeats = AvailableSeats;
         m_ReceptionSeats = ReceptionSeats;
+        m_MyReceptionSeats = MyReceptionSeats;
         m_CompetitionRate = CompetitionRate;
         m_UserCode = UserCode;
         m_NeedCoin = NeedCoin;
@@ -151,6 +156,9 @@ private:
 
     UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
     TArray<FSeatIdDTO> m_ReceptionSeats;
+    
+    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
+    TArray<FSeatIdDTO> m_MyReceptionSeats;
 
     UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|System")
     int32 m_CompetitionRate;
@@ -212,6 +220,9 @@ public:
 
     const TArray<FSeatIdDTO>& GetReceptionSeats() const { return m_ConcertReservation.GetReceptionSeats(); }
     void SetReceptionSeats(const TArray<FSeatIdDTO>& ReceptionSeats) { m_ConcertReservation.SetReceptionSeats(ReceptionSeats); }
+
+    const TArray<FSeatIdDTO>& GetMyReceptionSeats() const { return m_ConcertReservation.GetMyReceptionSeats(); }
+    void SetMyReceptionSeats(const TArray<FSeatIdDTO>& MyReceptionSeats) { m_ConcertReservation.SetMyReceptionSeats(MyReceptionSeats); }
 
     int32 GetCompetitionRate() const { return m_ConcertReservation.GetCompetitionRate(); }
     void SetCompetitionRate(int32 CompetitionRate) { m_ConcertReservation.SetCompetitionRate(CompetitionRate); }
@@ -277,6 +288,12 @@ public:
 
 	// 좌석 접수 요청에 대한 응답
 	void OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+    // 접수된 좌석 조회 요청
+    void ReqPostCompletedRegisteredSeat(FString ConcertName , FString AccessToken);
+
+    // 접수된 좌석 조회 요청에 대한 응답
+    void OnResPostCompletedRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 취소 요청
 	void ReqDeleteCancelRegisteredSeat(FString ConcertName , FString SeatId , FString AccessToken);
