@@ -224,12 +224,14 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	Writer->WriteValue(TEXT("password") , Password.ToString());
 	Writer->WriteValue(TEXT("birth") , Birth);
 	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
-	Writer->WriteValue(TEXT("avatarData") , AvataData);
+	//Writer->WriteValue(TEXT("avatarData") , AvataData);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
 	// 요청 본문에 JSON 데이터를 설정
 	Request->SetContentAsString(ContentString);
+
+	UE_LOG(LogTemp , Log , TEXT("Content String: %s") , *ContentString);
 
 	// 응답받을 함수를 연결
 	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor::OnResPostSignup);
@@ -308,8 +310,21 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
+		// 캐스팅은 여기서 한 번만 실행
 		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+
+		// TTPlayer와 GI가 유효한지 먼저 확인
+		if ( !TTPlayer )
+		{
+			UE_LOG(LogTemp , Error , TEXT("TTPlayer is null"));
+			return;
+		}
+		if ( !GI )
+		{
+			UE_LOG(LogTemp , Error , TEXT("GameInstance is null"));
+			return;
+		}
 
 		// 응답 본문을 로그에 출력
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
@@ -345,33 +360,32 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Coin: %d") , Coin));
 						//GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("AvatarData: %d") , AvatarData));
 
-						if ( TTPlayer )
+						
+						if ( TTPlayer && GI )
 						{
-							if ( GI )
-							{
-								// 닉네임 설정 및 가져오기
-								GI->SetNickname(Nickname);
-								UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
+							// 닉네임 설정 및 가져오기
+							GI->SetNickname(Nickname);
+							UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
 
-								// 나이 설정 및 가져오기
-								GI->SetBirth(Birth);
-								const char* CStr = TCHAR_TO_ANSI(*GI->GetBirth());
-								UE_LOG(LogTemp , Log , TEXT("Birth : %hs") , CStr);
+							// 나이 설정 및 가져오기
+							GI->SetBirth(Birth);
+							const char* CStr = TCHAR_TO_ANSI(*GI->GetBirth());
+							UE_LOG(LogTemp , Log , TEXT("Birth : %hs") , CStr);
 
-								// 코인 더하기 및 가져오기
-								GI->SetCoin(Coin);
-								UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetCoin());
+							// 코인 더하기 및 가져오기
+							GI->SetCoin(Coin);
+							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetCoin());
 
-								// 아바타 설정 및 가져오기
-								//GI->SetAvatarData(AvatarData);
-								//UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetAvatarData());
-							}
+							// 아바타 설정 및 가져오기
+							//GI->SetAvatarData(AvatarData);
+							//UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetAvatarData());
 						}
 					}
 					else
 					{
 						UE_LOG(LogTemp , Warning , TEXT("'memberInfoDTO' 객체를 찾을 수 없습니다."));
 					}
+
 					// "authTokenDTO" 객체에 접근
 					TSharedPtr<FJsonObject> AuthTokenObject = ResponseObject->GetObjectField(TEXT("authTokenDTO"));
 					if ( AuthTokenObject.IsValid() )
@@ -379,16 +393,9 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 						FString AccessToken = AuthTokenObject->GetStringField(TEXT("accessToken"));
 						UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *AccessToken);
 
-						if ( TTPlayer )
-						{
-							if ( GI )
-							{
-								// 토큰 설정 및 가져오기
-								GI->SetAccessToken(AccessToken);
-								UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *GI->GetAccessToken());
-							}
-						}
+						GI->SetAccessToken(AccessToken);
 					}
+				
 					else
 					{
 						UE_LOG(LogTemp , Warning , TEXT("'authTokenDTO' 객체를 찾을 수 없습니다."));
