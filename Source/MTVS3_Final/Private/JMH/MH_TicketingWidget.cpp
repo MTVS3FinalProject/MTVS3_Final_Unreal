@@ -31,6 +31,8 @@ void UMH_TicketingWidget::NativeConstruct()
 	btn_test5->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest5);
 	btn_test6->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest6);
 	btn_test7->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest7);
+	btn_test8->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest8);
+	btn_test9->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest9);
 
 	//위젯 꺼져있는게 기본값
 	SetVisibleSwitcher(false);
@@ -220,13 +222,11 @@ void UMH_TicketingWidget::OnClickedtest1()
 	if ( gi )
 	{
 
-
-
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostSeatRegistrationInquiry(gi->GetSeatId() , gi->GetAccessToken());
+			//HttpActor2->ReqPostSeatRegistrationInquiry(gi->GetSeatId() , gi->GetAccessToken());
 		}
 	}
 }
@@ -243,7 +243,7 @@ void UMH_TicketingWidget::OnClickedtest2()
 	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostRegisterSeat(gi->GetSeatId() , gi->GetAccessToken());
+			//HttpActor2->ReqPostRegisterSeat(gi->GetSeatId() , gi->GetAccessToken());
 		}
 	}
 }
@@ -259,7 +259,7 @@ void UMH_TicketingWidget::OnClickedtest3()
 	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqDeleteCancelRegisteredSeat(gi->GetSeatId() , gi->GetAccessToken());
+			//HttpActor2->ReqDeleteCancelRegisteredSeat(gi->GetSeatId() , gi->GetAccessToken());
 		}
 	}
 }
@@ -275,7 +275,7 @@ void UMH_TicketingWidget::OnClickedtest4()
 	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostGameResult(gi->GetSeatId() , gi->GetAccessToken());
+			//HttpActor2->ReqPostGameResult(gi->GetSeatId() , gi->GetAccessToken());
 		}
 	}
 }
@@ -306,7 +306,7 @@ void UMH_TicketingWidget::OnClickedtest6()
 	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqGetPostConfirmMemberPhoto(gi->GetAccessToken());
+			//HttpActor2->ReqGetPostConfirmMemberPhoto(gi->GetUserCode() , gi->GetAccessToken());
 		}
 	}
 }
@@ -321,7 +321,7 @@ void UMH_TicketingWidget::OnClickedtest7()
 	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostReservationinfo(gi->GetUserName() , gi->GetUserPhoneNumber() , gi->GetUserAddress() , gi->GetAccessToken());
+			//HttpActor2->ReqPostReservationinfo(gi->GetUserName() , gi->GetUserPhoneNumber() , gi->GetUserAddress() , gi->GetAccessToken());
 		}
 	}
 }
@@ -338,7 +338,7 @@ void UMH_TicketingWidget::OnClickedtest8()
 		if ( HttpActor2 )
 		{
 			FString Name = TEXT("Concert01");
-			HttpActor2->ReqPostPaymentSeat(Name , gi->GetSeatId() , gi->GetAccessToken());
+			//HttpActor2->ReqPostPaymentSeat(Name , gi->GetSeatId() , gi->GetAccessToken());
 		}
 	}
 }
@@ -349,8 +349,7 @@ void UMH_TicketingWidget::OnClickedtest9()
 	if ( gi )
 	{
 
-		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{	
 			FString Name = TEXT("Concert01");

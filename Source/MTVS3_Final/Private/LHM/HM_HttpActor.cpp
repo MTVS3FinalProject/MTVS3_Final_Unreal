@@ -96,7 +96,7 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 		if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
 		{
 			TArray<uint8> ImageData = Response->GetContent();
-			FString imagePath = FPaths::ProjectPersistentDownloadDir();
+			FString imagePath = FPaths::ProjectPersistentDownloadDir(); 
 			FFileHelper::SaveArrayToFile(ImageData , *imagePath);
 			UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
 			if ( Texture )
@@ -314,19 +314,6 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 
-		// TTPlayer와 GI가 유효한지 먼저 확인
-		if ( !TTPlayer )
-		{
-			UE_LOG(LogTemp , Error , TEXT("TTPlayer is null"));
-			return;
-		}
-		if ( !GI )
-		{
-			UE_LOG(LogTemp , Error , TEXT("GameInstance is null"));
-			return;
-		}
-
-		// 응답 본문을 로그에 출력
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
@@ -350,15 +337,15 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 					{
 						// 받아올 정보 추출
 						FString Nickname = MemberInfo->GetStringField(TEXT("nickname"));
-						FString Birth = MemberInfo->GetStringField(TEXT("birth"));
+						//FString Birth = MemberInfo->GetStringField(TEXT("birth"));
 						int32 Coin = MemberInfo->GetIntegerField(TEXT("coin"));
-						//int32 AvatarData = MemberInfo->GetIntegerField(TEXT("avatarData"));
+						int32 AvatarData = MemberInfo->GetIntegerField(TEXT("avatarData"));
 
 						// 디버그 메시지 출력
 						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Nickname: %s") , *Nickname));
-						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Birth: %s") , *Birth));
+						//GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Birth: %s") , *Birth));
 						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Coin: %d") , Coin));
-						//GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("AvatarData: %d") , AvatarData));
+						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("AvatarData: %d") , AvatarData));
 
 						
 						if ( TTPlayer && GI )
@@ -367,18 +354,13 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 							GI->SetNickname(Nickname);
 							UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
 
-							// 나이 설정 및 가져오기
-							GI->SetBirth(Birth);
-							const char* CStr = TCHAR_TO_ANSI(*GI->GetBirth());
-							UE_LOG(LogTemp , Log , TEXT("Birth : %hs") , CStr);
-
 							// 코인 더하기 및 가져오기
 							GI->SetCoin(Coin);
 							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetCoin());
 
 							// 아바타 설정 및 가져오기
-							//GI->SetAvatarData(AvatarData);
-							//UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetAvatarData());
+							GI->SetAvatarData(AvatarData);
+							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetAvatarData());
 						}
 					}
 					else
@@ -395,7 +377,6 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 
 						GI->SetAccessToken(AccessToken);
 					}
-				
 					else
 					{
 						UE_LOG(LogTemp , Warning , TEXT("'authTokenDTO' 객체를 찾을 수 없습니다."));
@@ -415,7 +396,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 				//StartUI->OnLoginFail(1); // 로그인 실패 처리
 			}
 		}
-		else if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
+		else if ( Response->GetResponseCode() == 400 )
 		{
 			UE_LOG(LogTemp , Warning , TEXT("로그인 실패, 응답 코드: %d") , Response->GetResponseCode());
 			//StartUI->OnLoginFail(1); // 로그인 실패 처리

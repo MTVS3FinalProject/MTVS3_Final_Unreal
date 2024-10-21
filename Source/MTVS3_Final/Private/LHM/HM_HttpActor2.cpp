@@ -153,17 +153,7 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 						FString SeatId = SeatObject->GetStringField(TEXT("seatId"));
 
 						UE_LOG(LogTemp , Log , TEXT("Available Seat ID: %s") , *SeatId);
-
-						// 희진 GI에 저장
-						ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-						if ( TTPlayer )
-						{
-							UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-							if ( GI )
-							{
-								GI->SetSeatId(SeatId);
-							}
-						}
+						//GI->SetSeatId(SeatId);
 					}
 
 					// 접수 완료된 좌석 목록
