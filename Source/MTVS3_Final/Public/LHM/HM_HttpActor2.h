@@ -77,7 +77,7 @@ public:
 	void OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 결제시 회원 인증 사진 업로드 확인
-	void ReqGetPostConfirmMemberPhoto(FString AccessToken);
+	void ReqGetPostConfirmMemberPhoto(FString UserCode , FString AccessToken);
 
 	// 결제시 회원 인증 사진 업로드 확인에 대한 응답
 	void OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);

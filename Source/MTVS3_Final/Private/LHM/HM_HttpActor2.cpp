@@ -25,10 +25,10 @@ void AHM_HttpActor2::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") )
-	{
+	//if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") )
+	//{
 		// 특정 레벨일 때 실행할 코드
-		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
+		//UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
 
 		//TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
 
@@ -42,7 +42,7 @@ void AHM_HttpActor2::BeginPlay()
 		//if ( !pc ) return;
 		//pc->SetShowMouseCursor(true);
 		//pc->SetInputMode(FInputModeGameAndUI());
-	}
+	//}
 }
 
 // Called every frame
@@ -68,8 +68,6 @@ void AHM_HttpActor2::ReqPostConcertEntry(FString ConcertName , FString AccessTok
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	//// URL에 쿼리 매개변수로 concertName 추가
-	//FString FormattedUrl = FString::Printf(TEXT("%s/concert?concertName=%s") , *_url , *FGenericPlatformHttp::UrlEncode(ConcertName));
 	FString FormattedUrl = FString::Printf(TEXT("%s/concert") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
@@ -86,6 +84,9 @@ void AHM_HttpActor2::ReqPostConcertEntry(FString ConcertName , FString AccessTok
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
+	// 본문 데이터 설정
+	Request->SetContentAsString(ContentString);
+
 	// 응답받을 함수를 연결
 	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostConcertEntry);
 
@@ -99,6 +100,10 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 	{
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		// 캐스팅은 여기서 한 번만 실행
+		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 
 		if ( Response->GetResponseCode() == 200 )
 		{
@@ -129,22 +134,16 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Day : %d") , Day));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Time : %s") , *Time));
 
-					//// 희진 GI에 저장
-					//ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-					//if ( TTPlayer )
-					//{
-					//	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-					//	if ( GI )
-					//	{
-					//		// GI에 콘서트 이름, 날짜, seatId 저장
-					//		// GI->SetConcertName(ConcertName);
-					//		// GI->RemainingTickets(RemainingTickets);
-					//		// GI->Year(Year);
-					//		// GI->Month(Month);
-					//		// GI->Day(Day);
-					//		// GI->Time(Time);
-					//	}
-					//}
+					// 희진 GI에 저장
+					if ( TTPlayer && TTPlayer )
+					{
+						/*GI->SetConcertName(ConcertName);
+						GI->RemainingTickets(RemainingTickets);
+						GI->Year(Year);
+						GI->Month(Month);
+						GI->Day(Day);
+						GI->Time(Time);*/
+					}
 
 					// 접수 가능한 좌석 목록
 					TArray<TSharedPtr<FJsonValue>> AvailableSeatsArray = ResponseObject->GetArrayField(TEXT("availableSeats"));
@@ -154,17 +153,7 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 						FString SeatId = SeatObject->GetStringField(TEXT("seatId"));
 
 						UE_LOG(LogTemp , Log , TEXT("Available Seat ID: %s") , *SeatId);
-
-						// 희진 GI에 저장
-						ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-						if ( TTPlayer )
-						{
-							UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-							if ( GI )
-							{
-								GI->SetSeatId(SeatId);
-							}
-						}
+						//GI->SetSeatId(SeatId);
 					}
 
 					// 접수 완료된 좌석 목록
@@ -436,7 +425,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 				if ( ResponseObject.IsValid() )
 				{
 					// 받아올 정보 추출
-					int32 RemainingTicket = ResponseObject->GetNumberField(TEXT("remainingTicket"));
+					int32 RemainingTicket = ResponseObject->GetIntegerField(TEXT("remainingTicket"));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("RemainingTicket : %d") , RemainingTicket));
 
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
@@ -520,7 +509,7 @@ void AHM_HttpActor2::ReqGetMemberAuthQR(FString AccessToken)
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostConcertEntry);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResGetMemberAuthQR);
 
 	// 요청 전송
 	Request->ProcessRequest();
@@ -549,11 +538,40 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 			{
 				UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
 			}
+
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// 받아올 정보 추출
+					FString UserCode = ResponseObject->GetStringField(TEXT("userCode"));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("userCode : %s") , *UserCode));
+
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+					if ( TTPlayer )
+					{
+						UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+						if ( GI )
+						{
+							// 유저코드 희진이한테 요청
+							//GI->SetUserCode(UserCode);
+						}
+					}
+				}
+			}
 		}
 	}
 }
 
-void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString AccessToken)
+void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString UserCode , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -564,14 +582,22 @@ void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString AccessToken)
 
 	FString FormattedUrl = FString::Printf(TEXT("%s/qr/verification/success") , *_url); // 미정
 	Request->SetURL(FormattedUrl);
-	Request->SetVerb(TEXT("GET"));
+	Request->SetVerb(TEXT("POST"));
 
 	// 헤더 설정
 	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
+	// 전달 데이터 (JSON)
+	FString ContentString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("userCode") , UserCode);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostConcertEntry);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResGetPostConfirmMemberPhoto);
 
 	// 요청 전송
 	Request->ProcessRequest();
@@ -626,7 +652,7 @@ void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , int32 UserPhoneNu
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostRegisterSeat);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostReservationinfo);
 
 	// 요청 전송
 	Request->ProcessRequest();
@@ -719,7 +745,7 @@ void AHM_HttpActor2::ReqPostPaymentSeat(FString ConcertName , FString SeatId , F
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostRegisterSeat);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostPaymentSeat);
 
 	// 요청 전송
 	Request->ProcessRequest();
