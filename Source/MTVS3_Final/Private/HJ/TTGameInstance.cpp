@@ -267,17 +267,6 @@ FString UTTGameInstance::GetAccessToken() const
 	return PlayerData.AccessToken;
 }
 
-void UTTGameInstance::SetBirth(const FString& _Birth)
-{
-	PlayerData.Birth = _Birth;
-	SetPlayerData(PlayerData);
-}
-
-FString UTTGameInstance::GetBirth() const
-{
-	return PlayerData.Birth;
-}
-
 void UTTGameInstance::SetCoin(const int32& _Coin)
 {
 	PlayerData.Coin = _Coin;
@@ -321,60 +310,5 @@ void UTTGameInstance::SetAvatarData(const int32& _AvatarData)
 int32 UTTGameInstance::GetAvatarData()
 {
 	return PlayerData.AvatarData;
-}
-
-void UTTGameInstance::SetSeatId(const FString& _SeatID)
-{
-	PlayerData.SeatId = _SeatID;
-	SetPlayerData(PlayerData);
-}
-
-FString UTTGameInstance::GetSeatId()
-{
-	return PlayerData.SeatId;
-}
-
-void UTTGameInstance::SetUserName(const FString& _UserName)
-{
-	PlayerData.UserName = _UserName;
-	SetPlayerData(PlayerData);
-}
-
-FString UTTGameInstance::GetUserName()
-{
-	return PlayerData.UserName;
-}
-
-void UTTGameInstance::SetUserPhoneNumber(const int32& _UserPhoneNumber)
-{
-	PlayerData.UserPhoneNumber = _UserPhoneNumber;
-	SetPlayerData(PlayerData);
-}
-
-int32 UTTGameInstance::GetUserPhoneNumber()
-{
-	return PlayerData.UserPhoneNumber;
-}
-
-void UTTGameInstance::SetUserAddress(const FString& _UserAddress)
-{
-	PlayerData.UserAddress = _UserAddress;
-	SetPlayerData(PlayerData);
-}
-
-FString UTTGameInstance::GetUserAddress()
-{
-	return PlayerData.UserAddress;
-}
-
-void UTTGameInstance::SetUserCode(const FString& _UserCode)
-{
-	PlayerData.UserCode = _UserCode;
-	SetPlayerData(PlayerData);
-}
-
-FString UTTGameInstance::GetUserCode()
-{
-	return PlayerData.UserCode;
 }
 #pragma endregion
