@@ -76,7 +76,7 @@ void UMH_StartWidget::GoToLobby()
 	if (HttpActor2)
 	{
 		FString Name = TEXT("Concert01");
-		HttpActor2->ReqPostConcertEntry(Name,gi->AccessToken);
+		HttpActor2->ReqPostConcertEntry(Name,gi->GetAccessToken());
 	}
 	
 }
