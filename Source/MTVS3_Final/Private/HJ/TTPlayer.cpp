@@ -75,6 +75,14 @@ void ATTPlayer::BeginPlay()
 		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
 		InitMainUI();
 	}
+
+	// 서브레벨 로드/언로드 시 넣을 코드
+	//if ( ULevelStreaming* SubLevel = UGameplayStatics::GetStreamingLevel(GetWorld() , TEXT("TTHallMap_Sub")) ) {
+	//	if ( SubLevel->IsLevelLoaded() ) {
+	//		// 서브레벨이 로드된 상태일 때 처리할 내용
+	//	}
+	//}
+
 	SwitchCamera(bIsThirdPerson);
 }
 

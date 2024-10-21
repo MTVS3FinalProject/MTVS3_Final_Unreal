@@ -72,20 +72,16 @@ void ATTLuckyDrawGameMode::StartRound()
 				EliminatedPlayersString += FString::Printf(TEXT("%d ") , Player);
 			}
 
-			if ( EliminatedPlayersString.IsEmpty() )
-			{
-				UE_LOG(LogLuckyDraw , Log , TEXT("라운드%d 탈락자 없음") , i + 1);
-			}
-			else
+			if ( !EliminatedPlayersString.IsEmpty() )
 			{
 				UE_LOG(LogLuckyDraw , Log , TEXT("라운드%d 탈락자: %s") , i + 1 , *EliminatedPlayersString);
 			}
 		}
-
+		// 종료
+		UE_LOG(LogLuckyDraw , Log , TEXT("___________"));
 		return;
 	}
 
-	UE_LOG(LogLuckyDraw , Log , TEXT("___________"));
 	Round++;
 	UE_LOG(LogLuckyDraw , Log , TEXT("라운드 수: %d") , Round);
 	PrintSeats();

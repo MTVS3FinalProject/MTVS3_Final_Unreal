@@ -74,9 +74,9 @@ public:
     TArray<TArray<FSeat>> Seats;
     TArray<int32> RemainingPlayers;
 
-    // 다음 라운드로 넘어가기까지의(탈락자 애니메이션) 시간
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
-    float EliminationEffectDuration = 3.0f;
+    // 추첨 테스트 라운드 간 딜레이
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
+    float EliminationEffectDuration = 0.1f;
 
 private:
 
