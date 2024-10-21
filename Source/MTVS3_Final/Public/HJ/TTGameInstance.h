@@ -28,9 +28,6 @@ struct FPlayerData
 	FString AccessToken;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
-	FString Birth;
-
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	int32 Coin;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
@@ -39,24 +36,9 @@ struct FPlayerData
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
 	int32 AvatarData;
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
-	FString SeatId;
-
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
-	FString UserName;
-
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
-	int32 UserPhoneNumber;
-
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
-	FString UserAddress;
-
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "Default|UserInfo")
-	FString UserCode;
-
 	// 기본 생성자
 	FPlayerData()
-		: bIsHost(false) , Nickname(TEXT("티케타카")) , AccessToken(TEXT("")) , Birth(TEXT("")) ,
+		: bIsHost(false) , Nickname(TEXT("티케타카")) , AccessToken(TEXT("")) ,
 		Coin(0) , RemainingTicketCount(0) , AvatarData(0)
 	{}
 };
@@ -121,10 +103,6 @@ public:
 	FString GetAccessToken() const;
 
 	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
-	void SetBirth(const FString& _Birth);
-	FString GetBirth() const;
-
-	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetCoin(const int32& _Coin);
 	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void AddCoin(int32 _Coin);
@@ -139,26 +117,5 @@ public:
 	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
 	void SetAvatarData(const int32& _AvatarData);
 	int32 GetAvatarData();
-
-	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
-	void SetSeatId(const FString& _SeatID);
-	FString GetSeatId();
-
-	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
-	void SetUserName(const FString& _UserName);
-	FString GetUserName();
-
-	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
-	void SetUserPhoneNumber(const int32& _UserPhoneNumber);
-	int32 GetUserPhoneNumber();
-
-	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
-	void SetUserAddress(const FString& _UserAddress);
-	FString GetUserAddress();
-
-	UFUNCTION(BlueprintCallable , Category = "Default|UserInfo")
-	void SetUserCode(const FString& _UserCode);
-	FString GetUserCode();
-
 #pragma endregion
 };
