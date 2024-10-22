@@ -152,7 +152,7 @@ void UMH_TicketingWidget::SetCompletedVisible(bool bVisible)
 void UMH_TicketingWidget::OnClickedBackButton()
 {
 	//뒤로가기 (위젯 숨기기 애님 플레이)
-	SetVisibleSwitcher(false, -1);
+	SetVisibleSwitcher(false, 0);
 }
 
 void UMH_TicketingWidget::OnClickedConfirmButton()
