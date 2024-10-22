@@ -51,7 +51,7 @@ void UTTGameInstance::FindOrCreateSession(const FString& SessionNamePrefix , int
 
 	SessionSearch = MakeShareable(new FOnlineSessionSearch);
 	SessionSearch->QuerySettings.Set(SEARCH_PRESENCE , true , EOnlineComparisonOp::Equals);
-	SessionSearch->QuerySettings.Set(SEARCH_KEYWORDS , SessionNamePrefix , EOnlineComparisonOp::Equals);  // 접두사로 세션 검색
+
 	SessionSearch->bIsLanQuery = true;
 	SessionSearch->MaxSearchResults = 100;
 
@@ -81,27 +81,25 @@ void UTTGameInstance::OnFindOrCreateSessionComplete(bool bWasSuccessful)
 		// 검색된 모든 세션 이름과 인원 수를 로그로 출력
 		for ( const auto& Result : SessionSearch->SearchResults )
 		{
-			FString SessionName = Result.Session.SessionInfo->GetSessionId().ToString();
-			int32 MaxPlayers = Result.Session.SessionSettings.NumPublicConnections;
-			int32 CurrentPlayers = MaxPlayers - Result.Session.NumOpenPublicConnections;
-
-			UE_LOG(LogTemp , Log , TEXT("Session Name: %s, Current Players: %d, Max Players: %d") ,
-				   *SessionName , CurrentPlayers , MaxPlayers);
-		}
-
-		// 검색된 세션 중 참가할 수 있는 세션이 있는지 확인
-		for ( const auto& Result : SessionSearch->SearchResults )
-		{
-			int32 CurrentPlayers = Result.Session.SessionSettings.NumPublicConnections - Result.Session.NumOpenPublicConnections;
-
-			int32 MaxPlayers = (SessionType == TEXT("TTHallSession")) ? 100 : 30;  // 세션 종류에 따라 최대 플레이어 수 지정
-
-			if ( CurrentPlayers < MaxPlayers )
+			FString SessionName;
+			if ( Result.Session.SessionSettings.Get(FName("SessionName") , SessionName) )  // 세션 이름 가져오기
 			{
-				JoinSession(Result);
-				return;
+				int32 MaxPlayers = Result.Session.SessionSettings.NumPublicConnections;
+				int32 CurrentPlayers = MaxPlayers - Result.Session.NumOpenPublicConnections;
+
+				UE_LOG(LogTemp , Log , TEXT("Session Name: %s, Current Players: %d, Max Players: %d") ,
+					   *SessionName , CurrentPlayers , MaxPlayers);
+
+				// 세션 이름 접두사로 필터링
+				if ( SessionName.StartsWith(SessionType) )
+				{
+					JoinSession(Result);
+					return;
+				}
 			}
 		}
+
+		UE_LOG(LogTemp , Warning , TEXT("No session with prefix: %s was found.") , *SessionType);
 	}
 
 	// 참가할 세션이 없으면 새로운 세션 생성
@@ -171,9 +169,20 @@ void UTTGameInstance::CreateMySession(int32 playerCount , const FString& Session
 	Settings.bAllowJoinInProgress = true;
 	Settings.NumPublicConnections = playerCount;
 
-	FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
+	//// 세션 이름 저장
+	//Settings.Set(FName("SessionName") , MySessionName , EOnlineDataAdvertisementType::ViaOnlineService);
+
+	//FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
+
+	//MySessionName = SessionName;
+	//SessionInterface->CreateSession(*NetID , FName(*SessionName) , Settings);
 
 	MySessionName = SessionName;
+	Settings.Set(FName("SessionName") , MySessionName , EOnlineDataAdvertisementType::ViaOnlineService);
+
+	FUniqueNetIdPtr NetID = GetWorld()->GetFirstLocalPlayerFromController()->GetUniqueNetIdForPlatformUser().GetUniqueNetId();
+
+	// 세션 생성 요청
 	SessionInterface->CreateSession(*NetID , FName(*SessionName) , Settings);
 }
 
