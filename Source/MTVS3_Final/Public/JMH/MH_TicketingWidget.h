@@ -23,7 +23,7 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_RegisterSwitcher;
 	UFUNCTION(BlueprintCallable)
-	void SetVisibleSwitcher(bool bVisible);
+	void SetVisibleSwitcher(bool bVisible, int index);
 
 	//예매 접수
 	//공연정보
@@ -166,6 +166,9 @@ public:
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* Can_RegisterAnim_On;
+
+	UPROPERTY()
+	bool bIsVisible;
 
 	//현민 테스트
 	//좌석조회요청

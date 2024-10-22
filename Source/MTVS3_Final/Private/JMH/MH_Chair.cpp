@@ -68,7 +68,7 @@ void AMH_Chair::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 		// MainUI 표시
 		if ( MainUI) MainUI->SetVisibleCanvas(true);
 		// 좌석 접수 UI 숨기기
-		if ( TicketingUI ) TicketingUI->SetVisibleSwitcher(false);
+		if ( TicketingUI ) TicketingUI->SetVisibleSwitcher(false, -1);
 	}
 }
 

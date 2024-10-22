@@ -237,8 +237,8 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			// MainUI 숨기기
 			MainUI->SetVisibleCanvas(false);
 			// 좌석 접수 UI 표시
-			TicketingUI->SetVisibleSwitcher(true);
-			TicketingUI->SetWidgetSwitcher(0);
+			TicketingUI->SetVisibleSwitcher(true, 0);
+			//TicketingUI->SetWidgetSwitcher(0);
 
 			ServerSetSitting(true);
 
@@ -262,7 +262,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			// MainUI 표시
 			MainUI->SetVisibleCanvas(true);
 			// 좌석 접수 UI 숨기기
-			TicketingUI->SetVisibleSwitcher(false);
+			TicketingUI->SetVisibleSwitcher(false, -1);
 
 			ServerSetSitting(false);
 			SwitchCamera(bIsThirdPerson);
@@ -295,8 +295,8 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 		// MainUI 숨기기
 		MainUI->SetVisibleCanvas(false);
 		// 좌석 경쟁 UI 표시(테스트용)
-		TicketingUI->SetVisibleSwitcher(true);
-		TicketingUI->SetWidgetSwitcher(1);
+		TicketingUI->SetVisibleSwitcher(true, 1);
+		//TicketingUI->SetWidgetSwitcher(1);
 	}
 }
 
@@ -348,7 +348,7 @@ void ATTPlayer::OnMyActionCheat(const FInputActionValue& Value)
 			// MainUI 숨기기
 			MainUI->SetVisibleCanvas(false);
 			// 좌석 경쟁 UI 표시
-			TicketingUI->SetVisibleSwitcher(true);
+			TicketingUI->SetVisibleSwitcher(true, 1);
 			TicketingUI->SetWidgetSwitcher(1);
 		}
 		else
@@ -356,7 +356,7 @@ void ATTPlayer::OnMyActionCheat(const FInputActionValue& Value)
 			// MainUI 표시
 			MainUI->SetVisibleCanvas(true);
 			// 좌석 경쟁 UI 숨기기
-			TicketingUI->SetVisibleSwitcher(false);
+			TicketingUI->SetVisibleSwitcher(false, -1);
 		}
 	}
 }
@@ -408,7 +408,7 @@ void ATTPlayer::ForceStandUp()
 		// MainUI 표시
 		MainUI->SetVisibleCanvas(true);
 		// 좌석 접수 UI 숨기기
-		TicketingUI->SetVisibleSwitcher(false);
+		TicketingUI->SetVisibleSwitcher(false, -1);
 		ServerSetSitting(false);  // 서버에서 상태 업데이트
 		SwitchCamera(bIsThirdPerson);  // 3인칭 시점 복원
 	}

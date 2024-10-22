@@ -21,6 +21,17 @@ void UMH_GameWidget::SetWidgetSwitcher(int32 num)
 {
 	//서버에서 불러와서 입력
 	WS_GameWidgetSwitcher->SetActiveWidgetIndex(num);
+	ShoeWidget();
+}
+
+void UMH_GameWidget::HideWidget()
+{
+	WS_GameWidgetSwitcher->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UMH_GameWidget::ShoeWidget()
+{
+	WS_GameWidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UMH_GameWidget::SetTextCurrentPlayer(int32 CurrentPlayer)
@@ -43,16 +54,47 @@ void UMH_GameWidget::SetTextroulette1(FString roulette1)
 	Tex_roulette1->SetText(FText::FromString(roulette1));
 }
 
-void UMH_GameWidget::SetTextroulette2(FString roulette2)
+void UMH_GameWidget::SetTextroulette2(int32 roulette2)
 {
 	//룰렛2
-	Tex_roulette2->SetText(FText::FromString(roulette2));
+	switch (roulette2)
+	{
+	case 0 :
+		Tex_roulette2->SetText(FText::FromString(TEXT("과(와) 같은 열만")));
+		break;
+		
+	case 1 :
+		Tex_roulette2->SetText(FText::FromString(TEXT("과(와) 같은 행만")));
+		break;
+		
+	case 2 :
+		Tex_roulette2->SetText(FText::FromString(TEXT("과(와) 같은 열 제외")));
+		break;
+		
+	case 3 :
+		Tex_roulette2->SetText(FText::FromString(TEXT("과(와) 같은 행 제외")));
+		break;
+
+	case 4 :
+		Tex_roulette2->SetText(FText::FromString(TEXT("만")));
+		break;
+
+		
+	}
+	
 }
 
-void UMH_GameWidget::SetTextroulette3(FString roulette3)
+void UMH_GameWidget::SetTextroulette3(int32 roulette3)
 {
 	//룰렛3
-	Tex_roulette3->SetText(FText::FromString(roulette3));
+	if(roulette3 == 0)
+	{
+		Tex_roulette3->SetText(FText::FromString(TEXT("통과")));
+	}
+	else if(roulette3 == 1)
+	{
+		Tex_roulette3->SetText(FText::FromString(TEXT("탈락")));
+	}
 }
 
 void UMH_GameWidget::SetTextSeatNum1(FString SeatNum1)
@@ -69,7 +111,7 @@ void UMH_GameWidget::SetTextSeatNum2(FString SeatNum2)
 
 void UMH_GameWidget::OnClickedBuyTicket()
 {
-	//예매징행 버튼->
+	//예매진행 버튼->
 	//이겼다는 정보를 gi에 가지고 홀로 세션이동
 	//홀세션
 	//QR UI로 이동
@@ -97,5 +139,6 @@ void UMH_GameWidget::OnClickedBackButton()
 void UMH_GameWidget::OnClickedBack01Button()
 {
 	//미니게임 -> 티켓예매창에서 뒤로가기 누르면
-	//위젯 종료
+	//위젯 종료? 비지블 off?
+	//세션 옮기고 띄우는거면 RemoveWidget해야할까?
 }

@@ -35,8 +35,9 @@ void UMH_TicketingWidget::NativeConstruct()
 	btn_test9->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest9);
 
 	//위젯 꺼져있는게 기본값
-	SetVisibleSwitcher(false);
-	SetCompletedVisible(false);
+	//SetVisibleSwitcher(false);
+	WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+	
 
 	//콘서트정보 담아오기
 	//SetConcertInfo();
@@ -48,17 +49,45 @@ void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
 	WS_RegisterSwitcher->SetActiveWidgetIndex(num);
 }
 
-void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible)
+void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible, int index)
 {
-	if ( bVisible )
+	switch(index)
 	{
-		WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
-	}
+	case 0:
+		if ( bVisible )
+		{
+			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
+			if ( !bIsVisible&& Can_RegisterAnim_On )
+			{
+				bIsVisible = true;
+				PlayAnimation(Can_RegisterAnim_On);
+			}
+		}
 
-	else if ( !bVisible )
-	{
-		WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+		else if ( !bVisible )
+		{
+			if ( bIsVisible && Can_RegisterAnim_Off )
+			{
+				bIsVisible=false;
+				PlayAnimation(Can_RegisterAnim_Off);
+			}
+			//WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+		}
+		break;
+	default:
+		if ( bVisible )
+		{
+			bIsVisible = true;
+			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
+		}
+		else if ( !bVisible )
+		{
+			bIsVisible=false;
+			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+		}
+		break;
 	}
+	
 }
 
 void UMH_TicketingWidget::SetConcertInfo(FString ConcertName , int32 ConcertDateY , int32 ConcertDateM ,
@@ -123,10 +152,7 @@ void UMH_TicketingWidget::SetCompletedVisible(bool bVisible)
 void UMH_TicketingWidget::OnClickedBackButton()
 {
 	//뒤로가기 (위젯 숨기기 애님 플레이)
-	if ( Can_RegisterAnim_Off )
-	{
-		PlayAnimation(Can_RegisterAnim_Off);
-	}
+	SetVisibleSwitcher(false, -1);
 }
 
 void UMH_TicketingWidget::OnClickedConfirmButton()

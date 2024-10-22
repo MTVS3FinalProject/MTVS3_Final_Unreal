@@ -21,10 +21,18 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_GameWidgetSwitcher;
 
-	//위젯스위처설정/ 0: 게임시작,1: 결과, 2:승리(결제연결),3:패배, 4:예매
+	//위젯스위처설정/ 0:게임시작,1: 결과, 2:승리(결제연결),3:패배, 4:예매
 	UFUNCTION()
 	void SetWidgetSwitcher(int32 num);
 	
+	//Hide
+	UFUNCTION()
+	void HideWidget();
+	
+	//Show
+	UFUNCTION()
+	void ShoeWidget();
+
 	
 //InGame
 	//현재 인원
@@ -49,13 +57,13 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Tex_roulette2;
 	UFUNCTION()
-	void SetTextroulette2(FString roulette2);
+	void SetTextroulette2(int32 roulette2);
 
 	//룰렛3
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Tex_roulette3;
 	UFUNCTION()
-	void SetTextroulette3(FString roulette3);
+	void SetTextroulette3(int32 roulette3);
 
 	//룰렛3
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -98,5 +106,7 @@ public:
 	class UButton* Btn_Back01;
 	UFUNCTION()
 	void OnClickedBack01Button();
+
+	
 	
 };
