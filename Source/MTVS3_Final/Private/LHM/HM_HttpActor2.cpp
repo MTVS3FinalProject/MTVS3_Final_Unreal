@@ -432,7 +432,7 @@ void AHM_HttpActor2::OnResPostCompletedRegisteredSeat(FHttpRequestPtr Request , 
 				{
 					// 접수 완료된 좌석 목록
 					TArray<TSharedPtr<FJsonValue>> MyReceptionSeatsArray = ResponseObject->GetArrayField(TEXT("receptionSeats"));
-					TArray<FSeatIdDTO> MyReceptionSeats;
+					TArray<FMyReceptionSeatInfoDTO> MyReceptionSeats;
 
 					for ( const TSharedPtr<FJsonValue>& SeatValue : MyReceptionSeatsArray )
 					{
@@ -440,22 +440,27 @@ void AHM_HttpActor2::OnResPostCompletedRegisteredSeat(FHttpRequestPtr Request , 
 						FString MyReceptionSeatId = SeatObject->GetStringField(TEXT("seatId"));
 						FString ConcertDate = SeatObject->GetStringField(TEXT("concertDate"));
 						FString SeatInfo = SeatObject->GetStringField(TEXT("seatInfo"));
-						//FString DrawingTime = SeatObject->GetStringField(TEXT("drawingTime"));
+						FString DrawingTime = SeatObject->GetStringField(TEXT("drawingTime"));
 						FString CompetitionRate = SeatObject->GetStringField(TEXT("competitionRate"));
 
 						UE_LOG(LogTemp , Log , TEXT("My Reception Seat ID: %s") , *MyReceptionSeatId);
 						UE_LOG(LogTemp , Log , TEXT("My Reception Seat Concert Date: %s") , *ConcertDate);
 						UE_LOG(LogTemp , Log , TEXT("My Reception Seat Info: %s") , *SeatInfo);
-						//UE_LOG(LogTemp , Log , TEXT("My Reception Seat Drawing Time: %s") , *DrawingTime);
+						UE_LOG(LogTemp , Log , TEXT("My Reception Seat Drawing Time: %s") , *DrawingTime);
 						UE_LOG(LogTemp , Log , TEXT("My Reception Seat Competition Rate: %s") , *CompetitionRate);
 
-						FSeatIdDTO SeatDTO;
+						FMyReceptionSeatInfoDTO SeatDTO;
 						SeatDTO.SetSeatId(MyReceptionSeatId);
-						MyReceptionSeats.Add(SeatDTO); // 수정된 부분
+						SeatDTO.SetConcertDate(ConcertDate);
+						SeatDTO.SetSeatInfo(SeatInfo);
+						SeatDTO.SetDrawingTime(DrawingTime);
+						SeatDTO.SetCompetitionRate(CompetitionRate);
+
+						MyReceptionSeats.Add(SeatDTO);
 					}
 
-					// FConcertReservation에 좌석 추가
-					SetMyReceptionSeats(MyReceptionSeats);
+					// FConcertReservation에 데이터 저장
+					m_ConcertReservation.SetMyReceptionSeats(MyReceptionSeats);
 
 					// 콘서트 입장하는 함수 호출
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("콘서트 입장~~~")));
@@ -568,7 +573,7 @@ void AHM_HttpActor2::ReqPostGameResult(FString ConcertName , FString SeatId , FS
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/게임결과") , *_url); // 미정
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/pre-reserve") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
