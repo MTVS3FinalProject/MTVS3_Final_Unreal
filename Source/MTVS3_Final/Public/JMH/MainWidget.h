@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -40,4 +40,25 @@ public:
 	//티켓팅 시간대
 	//상호작용 버튼
 	
+	// ==================================
+	// HttpActor2 공연장 입장 통신 테스트용
+	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
+	class UButton* Btn_GetConcertInfo;
+	UFUNCTION()
+	void OnClickedGetConcertInfo();
+
+	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
+	class UButton* Btn_ConcertEntry;
+	UFUNCTION()
+	void OnClickedConcertEntry();
+
+	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
+	class UButton* Btn_SeatRegistrationInquiry;
+	UFUNCTION()
+	void OnClickedSeatRegistrationInquiry();
+
+	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
+	class UButton* Btn_GameResult;
+	UFUNCTION()
+	void OnClickedGameResult();
 };
