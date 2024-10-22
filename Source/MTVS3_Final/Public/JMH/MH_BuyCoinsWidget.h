@@ -48,8 +48,8 @@ public:
 	UFUNCTION()
 	void OnClickedBuyCoinButton();
 	//뒤로가기
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Back;
-	UFUNCTION()
-	void OnClickedBackButton();
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_Back;
+	//UFUNCTION()
+	//void OnClickedBackButton();
 };

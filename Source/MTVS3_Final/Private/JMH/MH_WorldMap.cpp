@@ -24,15 +24,7 @@ FVector2D UMH_WorldMap::ConvertWorldToMapCoordinates(FVector PlayerLocation, FVe
 	float MapY = YRatio * MapSize.Y;
 	
 	return FVector2D(MapX, MapY);
-	/*
-	float XRatio = (PlayerLocation.X + WorldBounds.X) / (WorldBounds.X * 2.0f);  // X 범위를 [0, 1]로 변환
-	float YRatio = (PlayerLocation.Y + WorldBounds.Y) / (WorldBounds.Y * 2.0f);  // Y 범위를 [0, 1]로 변환
 
-	float MapX = XRatio * MapSize.X;
-	float MapY = YRatio * MapSize.Y;
-	
-	return FVector2D(MapX, MapY);
-*/
 }
 
 void UMH_WorldMap::UpdatePlayerPointer(FVector PlayerLocation, FVector2D WorldMinBounds, FVector2D WorldMaxBounds, FVector2D MapSize)
@@ -65,9 +57,7 @@ void UMH_WorldMap::UpdateWorldMap()
 
 		// 플레이어 포인터 위치 업데이트
 		UpdatePlayerPointer(PlayerLocation, WorldMinBounds, WorldMaxBounds, MapSize);
-
 		
 	}
-
 	
 }

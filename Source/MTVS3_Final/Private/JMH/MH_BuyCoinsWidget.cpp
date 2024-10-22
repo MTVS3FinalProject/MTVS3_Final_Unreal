@@ -15,6 +15,7 @@ void UMH_BuyCoinsWidget::NativeConstruct()
 	Btn_Coin_10000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_10000Button);
 	Btn_Coin_50000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_50000Button);
 	Btn_Coin_100000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_100000Button);
+	Btn_BuyCoin->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedBuyCoinButton);
 	
 }
 
@@ -53,7 +54,7 @@ void UMH_BuyCoinsWidget::OnClickedBuyCoinButton()
 	}
 }
 
-void UMH_BuyCoinsWidget::OnClickedBackButton()
-{
-	SetVisibility(ESlateVisibility::Hidden);
-}
+//void UMH_BuyCoinsWidget::OnClickedBackButton()
+//{
+	//SetVisibility(ESlateVisibility::Hidden);
+//}

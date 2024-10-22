@@ -19,16 +19,16 @@ public:
 	
 	virtual void NativeConstruct() override;
 
+	//위젯 스위처 // 0: 예매정보확인, 계속진행 . 1:QR 인증 . 2:인증성공 . 3:인증실패 . 4:배송지입력 . 5: 결제진행 . 6: 결제완료 . 7:코인충전
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UWidgetSwitcher* WS_BuyTicketSwitcher;
+	
 	//위젯추가
 	UPROPERTY()
 	TSubclassOf<class UMH_BuyCoinsWidget> BuyCoinWidgetFac;
 	UPROPERTY()
 	class UMH_BuyCoinsWidget* BuyCoinUI;
 		
-	//위젯 스위처
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UWidgetSwitcher* WS_BuyTicketSwitcher;
-	
 	//위젯스위처설정
 	UFUNCTION()
 	void SetWidgetSwitcher(int32 num);
@@ -39,10 +39,10 @@ public:
 	UFUNCTION()
 	void OnClickedConfirm01Button();
 
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Back01;
-	UFUNCTION()
-	void OnClickedBack01Button();
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton* Btn_Back01;
+	//UFUNCTION()
+	//void OnClickedBack01Button();
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UImage* Img_MySeatMap;
@@ -87,9 +87,9 @@ public:
 	void OnClickedConfirm_QRUi2SuccessButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Confirm_QRUi2_1;
+	class UButton* Btn_Confirm_QRFailed;
 	UFUNCTION()
-	void OnClickedConfirm_QRUi3SuccessButton();
+	void OnClickedConfirm_QRUiFailedButton();
 
 	//결제진행
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -123,6 +123,13 @@ public:
 	class UButton* Btn_Back03;
 	UFUNCTION()
 	void OnClickedBack03Button();
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_BuyTicketCoin;
+	UFUNCTION()
+	void OnClickedBuyTicketCoinButton();
+
+	
 
 	//결제완료
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -152,4 +159,10 @@ public:
 	class UButton* Btn_Back04;
 	UFUNCTION()
 	void OnClickedBtn_Back04Button();
+
+	//코인 충전창에서 뒤로가기
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Back05;
+	UFUNCTION()
+	void OnClickedBtn_Back05Button();
 };
