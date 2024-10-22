@@ -91,9 +91,21 @@ public:
 
 	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
 	class UInputAction* IA_Chat;
-	UPROPERTY(EditAnywhere , Category = "Default|Settings")
+	UPROPERTY(VisibleAnywhere , Category = "Default|Settings")
 	bool bIsChatActive;
 	void OnMyActionChat(const FInputActionValue& Value);
+
+	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
+	class UInputAction* IA_Map;
+	UPROPERTY(VisibleAnywhere , Category = "Default|Settings")
+	bool bIsMapActive;
+	void OnMyActionMap(const FInputActionValue& Value);
+
+	UPROPERTY(EditDefaultsOnly , Category = "Default|Input")
+	class UInputAction* IA_Cheat;
+	UPROPERTY(VisibleAnywhere , Category = "Default|Settings")
+	bool bIsCheatActive;
+	void OnMyActionCheat(const FInputActionValue& Value);
 #pragma endregion
 
 	UPROPERTY(EditAnywhere , Category = "Default|UI")

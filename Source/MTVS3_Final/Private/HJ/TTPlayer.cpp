@@ -130,6 +130,8 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		input->BindAction(IA_Purchase , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionPurchase);
 		input->BindAction(IA_Inventory , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionInventory);
 		input->BindAction(IA_Chat , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionChat);
+		input->BindAction(IA_Cheat , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat);
+		input->BindAction(IA_Map , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionMap);
 	}
 }
 
@@ -316,6 +318,46 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 	}
 }
 
+void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
+{
+	bIsMapActive = !bIsMapActive;
+
+	if ( bIsMapActive )
+	{
+		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Enable Map"));
+	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Disable Map"));
+	}
+}
+
+void ATTPlayer::OnMyActionCheat(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat"));
+	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") || UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("HJProtoMap") )
+	{
+		// 특정 레벨일 때 실행할 코드
+		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
+		bIsCheatActive = !bIsCheatActive;
+		if ( bIsCheatActive )
+		{
+			// MainUI 숨기기
+			MainUI->SetVisibleCanvas(false);
+			// 좌석 경쟁 UI 표시
+			TicketingUI->SetVisibleSwitcher(true);
+			TicketingUI->SetWidgetSwitcher(1);
+		}
+		else
+		{
+			// MainUI 표시
+			MainUI->SetVisibleCanvas(true);
+			// 좌석 경쟁 UI 숨기기
+			TicketingUI->SetVisibleSwitcher(false);
+		}
+	}
+}
+
 void ATTPlayer::InitMainUI()
 {
 	MainUI = Cast<UMainWidget>(CreateWidget(GetWorld() , MainUIFactory));
@@ -336,7 +378,7 @@ void ATTPlayer::InitMainUI()
 		MyController->SetMainUI(MainUI);
 		MyController->SetTicketingUI(TicketingUI);
 		MyController->SetDrawStartTime();
-	}	
+	}
 }
 
 void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
