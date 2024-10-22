@@ -23,11 +23,11 @@ struct FSeat
 UENUM(BlueprintType)
 enum class ERouletteRule : uint8
 {
-    SameColumnOnly,
-    SameRowOnly,
-    ExcludeSameColumn,
-    ExcludeSameRow,
-    OnlySelected
+    SameColumnOnly, // 과(와) 같은 열만
+    SameRowOnly, // 과(와) 같은 행만
+    ExcludeSameColumn, // 과(와) 같은 열 제외
+    ExcludeSameRow, // 과(와) 같은 행 제외
+    OnlySelected // 만
 };
 
 UENUM(BlueprintType)
