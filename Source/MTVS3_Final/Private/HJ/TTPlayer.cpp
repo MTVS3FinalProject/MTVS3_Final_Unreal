@@ -18,6 +18,7 @@
 #include "Engine/World.h"
 #include "JMH/MH_TicketingWidget.h"
 #include "JMH/MainWidget.h"
+#include "JMH/MH_WorldMap.h"
 #include "LHM/TTPlayerController.h"
 
 // Sets default values
@@ -324,10 +325,12 @@ void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 
 	if ( bIsMapActive )
 	{
+		WorldMapUI->SetVisibleSwitcher(true);
 		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Enable Map"));
 	}
 	else
 	{
+		WorldMapUI->SetVisibleSwitcher(false);
 		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Disable Map"));
 	}
 }
@@ -370,6 +373,12 @@ void ATTPlayer::InitMainUI()
 	if ( TicketingUI )
 	{
 		TicketingUI->AddToViewport();
+	}
+	
+	WorldMapUI = CastChecked<UMH_WorldMap>(CreateWidget(GetWorld() , WorldMapUIFactory));
+	if ( WorldMapUI )
+	{
+		WorldMapUI->AddToViewport();
 	}
 
 	ATTPlayerController* MyController = Cast<ATTPlayerController>(GetController());

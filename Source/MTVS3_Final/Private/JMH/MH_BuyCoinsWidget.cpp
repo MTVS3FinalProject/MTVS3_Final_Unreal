@@ -4,6 +4,7 @@
 #include "JMH/MH_BuyCoinsWidget.h"
 
 #include "Components/Button.h"
+#include "Components/CanvasPanel.h"
 #include "HJ/TTGameInstance.h"
 
 void UMH_BuyCoinsWidget::NativeConstruct()
@@ -16,7 +17,21 @@ void UMH_BuyCoinsWidget::NativeConstruct()
 	Btn_Coin_50000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_50000Button);
 	Btn_Coin_100000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_100000Button);
 	Btn_BuyCoin->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedBuyCoinButton);
+	//SetVisibleCanvas(false);
 	
+}
+
+void UMH_BuyCoinsWidget::SetVisibleCanvas(bool bVisible)
+{
+	if (bVisible)
+	{
+		Can_Main->SetVisibility(ESlateVisibility::Visible);
+	}
+	
+	else if(!bVisible)
+	{
+		Can_Main->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void UMH_BuyCoinsWidget::OnClickedCoin_1000Button()

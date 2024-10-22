@@ -18,6 +18,12 @@ public:
 	
 	virtual void NativeConstruct() override;
 
+	UFUNCTION(BlueprintCallable)
+	void SetVisibleSwitcher(bool bVisible);
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_Main;
+	
 	//플레이어 위치 포인터
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_WorldPosition;

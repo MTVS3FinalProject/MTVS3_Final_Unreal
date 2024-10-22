@@ -3,6 +3,7 @@
 
 #include "JMH/MH_WorldMap.h"
 
+#include "Components/CanvasPanel.h"
 #include "Components/Image.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
@@ -10,9 +11,22 @@
 void UMH_WorldMap::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	//생성될 때 일단 한번 실행
 	UpdateWorldMap();
+	SetVisibleSwitcher(false);
+}
+
+void UMH_WorldMap::SetVisibleSwitcher(bool bVisible)
+{
+	if (bVisible)
+	{
+		Can_Main->SetVisibility(ESlateVisibility::Visible);
+		UpdateWorldMap();
+	}
+	
+	else if(!bVisible)
+	{
+		Can_Main->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 FVector2D UMH_WorldMap::ConvertWorldToMapCoordinates(FVector PlayerLocation, FVector2D WorldMinBounds, FVector2D WorldMaxBounds, FVector2D MapSize)
