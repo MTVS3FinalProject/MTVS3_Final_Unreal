@@ -171,6 +171,10 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 						SeatDTO.SetSeatId(ReceptionSeatId);
 						ReceptionSeats.Add(SeatDTO);
 					}
+
+					// FConcertReservation에 좌석 추가
+					SetReceptionSeats(ReceptionSeats);
+
 					// 콘서트 입장하는 함수 호출
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("콘서트 입장~~~")));
 				}
@@ -245,10 +249,10 @@ void AHM_HttpActor2::OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , 
 				if ( ResponseObject.IsValid() )
 				{
 					// 필요한 정보 추출
-					FString SeatId = JsonObject->GetStringField(TEXT("seatId")); // 로컬 좌석의 공연날짜+넘버와 서버의 seatID가 같은지만 확인
-					FString SeatInfo = JsonObject->GetStringField(TEXT("seatInfo")); // 로컬 좌석 넘버와 서버의 seatInfo가 같은지만 확인
-					//FString DrawingTime = JsonObject->GetStringField(TEXT("drawingTime"));
-					int32 CompetitionRate = JsonObject->GetIntegerField(TEXT("competitionRate"));
+					FString SeatId = ResponseObject->GetStringField(TEXT("seatId")); // 로컬 좌석의 공연날짜+넘버와 서버의 seatID가 같은지만 확인
+					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo")); // 로컬 좌석 넘버와 서버의 seatInfo가 같은지만 확인
+					//FString DrawingTime = ResponseObject->GetStringField(TEXT("drawingTime"));
+					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
 
 					// 로그로 출력
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Seat ID: %s") , *SeatId));
@@ -336,8 +340,8 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 				{
 					// 받아올 정보 추출
 					int32 RemainingTicket = ResponseObject->GetNumberField(TEXT("remainingTicket"));
-					int32 CompetitionRate = JsonObject->GetIntegerField(TEXT("competitionRate"));
-					int32 SeatPrice = JsonObject->GetIntegerField(TEXT("seatPrice"));
+					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
+					int32 SeatPrice = ResponseObject->GetIntegerField(TEXT("seatPrice"));
 
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("RemainingTicket : %d") , RemainingTicket));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Competition Rate : %d") , CompetitionRate));
@@ -363,6 +367,110 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 	else
 	{
 		UE_LOG(LogTemp , Error , TEXT("Failed to register seat: %s") , *Response->GetContentAsString());
+	}
+}
+
+void AHM_HttpActor2::ReqPostCompletedRegisteredSeat(FString ConcertName , FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/my/reception") , *_url);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("POST"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 전달 데이터 (JSON)
+	FString ContentString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("concertName") , ConcertName);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	// 요청 본문에 JSON 데이터를 설정
+	Request->SetContentAsString(ContentString);
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostRegisterSeat);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor2::OnResPostCompletedRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		// 캐스팅은 여기서 한 번만 실행
+		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// 접수 완료된 좌석 목록
+					TArray<TSharedPtr<FJsonValue>> MyReceptionSeatsArray = ResponseObject->GetArrayField(TEXT("receptionSeats"));
+					TArray<FMyReceptionSeatInfoDTO> MyReceptionSeats;
+
+					for ( const TSharedPtr<FJsonValue>& SeatValue : MyReceptionSeatsArray )
+					{
+						TSharedPtr<FJsonObject> SeatObject = SeatValue->AsObject();
+						FString MyReceptionSeatId = SeatObject->GetStringField(TEXT("seatId"));
+						FString ConcertDate = SeatObject->GetStringField(TEXT("concertDate"));
+						FString SeatInfo = SeatObject->GetStringField(TEXT("seatInfo"));
+						FString DrawingTime = SeatObject->GetStringField(TEXT("drawingTime"));
+						FString CompetitionRate = SeatObject->GetStringField(TEXT("competitionRate"));
+
+						UE_LOG(LogTemp , Log , TEXT("My Reception Seat ID: %s") , *MyReceptionSeatId);
+						UE_LOG(LogTemp , Log , TEXT("My Reception Seat Concert Date: %s") , *ConcertDate);
+						UE_LOG(LogTemp , Log , TEXT("My Reception Seat Info: %s") , *SeatInfo);
+						UE_LOG(LogTemp , Log , TEXT("My Reception Seat Drawing Time: %s") , *DrawingTime);
+						UE_LOG(LogTemp , Log , TEXT("My Reception Seat Competition Rate: %s") , *CompetitionRate);
+
+						FMyReceptionSeatInfoDTO SeatDTO;
+						SeatDTO.SetSeatId(MyReceptionSeatId);
+						SeatDTO.SetConcertDate(ConcertDate);
+						SeatDTO.SetSeatInfo(SeatInfo);
+						SeatDTO.SetDrawingTime(DrawingTime);
+						SeatDTO.SetCompetitionRate(CompetitionRate);
+
+						MyReceptionSeats.Add(SeatDTO);
+					}
+
+					// FConcertReservation에 데이터 저장
+					m_ConcertReservation.SetMyReceptionSeats(MyReceptionSeats);
+
+					// 콘서트 입장하는 함수 호출
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("콘서트 입장~~~")));
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Error , TEXT("Failed to get concert entry: %s") , *Response->GetContentAsString());
+		}
 	}
 }
 
@@ -465,7 +573,7 @@ void AHM_HttpActor2::ReqPostGameResult(FString ConcertName , FString SeatId , FS
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/게임결과") , *_url); // 미정
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/pre-reserve") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -527,21 +635,6 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 
 		if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
 		{
-			//TArray<uint8> ImageData = Response->GetContent();
-			//FString imagePath = FPaths::ProjectPersistentDownloadDir();
-			//FFileHelper::SaveArrayToFile(ImageData , *imagePath);
-			//UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-			//if ( Texture )
-			//{
-			//	// 결제 시 회원 인증 QR UI로 넘어가는 함수 호출하기
-			//	// UI-> ????
-			//	UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
-			//}
-			//else
-			//{
-			//	UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
-			//}
-
 			// JSON 응답 파싱
 			FString ResponseBody = Response->GetContentAsString();
 			TSharedPtr<FJsonObject> JsonObject;
@@ -565,9 +658,7 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 					TArray<uint8> ImageData;
 					FBase64::Decode(Base64Image , ImageData);
 
-					// 이미지 데이터를 파일로 저장 (선택적)
-					//FString imagePath = FPaths::ProjectPersistentDownloadDir() / TEXT("AuthQR.png");
-					//FFileHelper::SaveArrayToFile(ImageData , *imagePath);
+					UE_LOG(LogTemp , Log , TEXT("Base64Image : %d, ImageData : %d") , Base64Image.Len() , ImageData.Num());
 
 					// 텍스처로 변환
 					UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);

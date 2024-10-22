@@ -14,6 +14,7 @@ void UMH_GameWidget::NativeConstruct()
 	Btn_BuyTicket->OnClicked.AddDynamic(this , &UMH_GameWidget::OnClickedBuyTicket);
 	Btn_BuyLater->OnClicked.AddDynamic(this , &UMH_GameWidget::OnClickedBuyLater);
 	Btn_Back2->OnClicked.AddDynamic(this , &UMH_GameWidget::OnClickedBuyLater);
+	Btn_Back01->OnClicked.AddDynamic(this , &UMH_GameWidget::OnClickedBack01Button);
 }
 
 void UMH_GameWidget::SetWidgetSwitcher(int32 num)
@@ -68,12 +69,18 @@ void UMH_GameWidget::SetTextSeatNum2(FString SeatNum2)
 
 void UMH_GameWidget::OnClickedBuyTicket()
 {
-	//예매진행하는 UI로 이동
+	//예매징행 버튼->
+	//이겼다는 정보를 gi에 가지고 홀로 세션이동
+	//홀세션
+	//QR UI로 이동
+	SetWidgetSwitcher(4);
 }
 
 void UMH_GameWidget::OnClickedBuyLater()
 {
-	//나중에 예매하기버튼->위젯 종료 메인 위젯으로.
+	//나중에 예매하기버튼->
+	//이겼다는 정보를 gi에 가지고 홀로 세션이동
+	//알림 등록하고, 알림에서 클릭시 결제 진행 가능.
 }
 
 void UMH_GameWidget::SetTextRemainingTicket(int32 RemainingTicket)
@@ -85,4 +92,10 @@ void UMH_GameWidget::SetTextRemainingTicket(int32 RemainingTicket)
 void UMH_GameWidget::OnClickedBackButton()
 {
 	//콘서트 홀로 세션이동
+}
+
+void UMH_GameWidget::OnClickedBack01Button()
+{
+	//미니게임 -> 티켓예매창에서 뒤로가기 누르면
+	//위젯 종료
 }

@@ -21,7 +21,7 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_GameWidgetSwitcher;
 
-	//위젯스위처설정
+	//위젯스위처설정/ 0: 게임시작,1: 결과, 2:승리(결제연결),3:패배, 4:예매
 	UFUNCTION()
 	void SetWidgetSwitcher(int32 num);
 	
@@ -92,5 +92,11 @@ public:
 	class UButton* Btn_Back2;
 	UFUNCTION()
 	void OnClickedBackButton();
+
+	//티켓예매 뒤로가기 버튼 . 게임진행
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Back01;
+	UFUNCTION()
+	void OnClickedBack01Button();
 	
 };

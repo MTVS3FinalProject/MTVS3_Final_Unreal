@@ -20,6 +20,12 @@ public:
 	//충전 결정 변수
 	UPROPERTY()
 	int32 AddCoinAmount = 0;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_Main;
+	
+	UFUNCTION()
+	void SetVisibleCanvas(bool bVisible);
 	
 	//충전 금액 결정 버튼
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -48,8 +54,8 @@ public:
 	UFUNCTION()
 	void OnClickedBuyCoinButton();
 	//뒤로가기
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Back;
-	UFUNCTION()
-	void OnClickedBackButton();
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_Back;
+	//UFUNCTION()
+	//void OnClickedBackButton();
 };
