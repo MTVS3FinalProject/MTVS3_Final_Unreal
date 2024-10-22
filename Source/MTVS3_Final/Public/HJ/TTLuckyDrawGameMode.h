@@ -42,6 +42,13 @@ struct FRouletteInfo
 {
     GENERATED_BODY()
 
+    FRouletteInfo()
+        : Player(-1)  // Player 필드를 -1로 초기화
+        , Rule(ERouletteRule::OnlySelected)  // 기본 룰을 설정
+        , Result(ERouletteResult::Pass)  // 기본 결과를 통과로 설정
+    {
+    }
+
     UPROPERTY()
     int32 Player;
 
