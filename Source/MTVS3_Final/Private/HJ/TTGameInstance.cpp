@@ -32,11 +32,16 @@ void UTTGameInstance::Init()
 }
 
 // 유니크한 세션 이름 생성 (타임스탬프 + 랜덤 값)
-FString UTTGameInstance::GenerateUniqueSessionName()
+FString UTTGameInstance::GenerateUniqueSessionName(const FString& SessionNamePrefix)
 {
 	FDateTime Now = FDateTime::Now();
-	return FString::Printf(TEXT("Session_%d%d%d%d%d") ,
-		Now.GetHour() , Now.GetMinute() , Now.GetSecond() , Now.GetMillisecond() , FMath::Rand());
+	return FString::Printf(TEXT("%s_%d%d%d%d%d") ,
+		*SessionNamePrefix ,
+		Now.GetHour() ,
+		Now.GetMinute() ,
+		Now.GetSecond() ,
+		Now.GetMillisecond() ,
+		FMath::Rand());
 }
 
 // 세션 검색 또는 생성 시작
@@ -71,6 +76,19 @@ void UTTGameInstance::OnFindOrCreateSessionComplete(bool bWasSuccessful)
 
 	if ( bWasSuccessful && SessionSearch->SearchResults.Num() > 0 )
 	{
+		UE_LOG(LogTemp , Log , TEXT("Found %d sessions:") , SessionSearch->SearchResults.Num());
+
+		// 검색된 모든 세션 이름과 인원 수를 로그로 출력
+		for ( const auto& Result : SessionSearch->SearchResults )
+		{
+			FString SessionName = Result.Session.SessionInfo->GetSessionId().ToString();
+			int32 MaxPlayers = Result.Session.SessionSettings.NumPublicConnections;
+			int32 CurrentPlayers = MaxPlayers - Result.Session.NumOpenPublicConnections;
+
+			UE_LOG(LogTemp , Log , TEXT("Session Name: %s, Current Players: %d, Max Players: %d") ,
+				   *SessionName , CurrentPlayers , MaxPlayers);
+		}
+
 		// 검색된 세션 중 참가할 수 있는 세션이 있는지 확인
 		for ( const auto& Result : SessionSearch->SearchResults )
 		{
@@ -87,7 +105,8 @@ void UTTGameInstance::OnFindOrCreateSessionComplete(bool bWasSuccessful)
 	}
 
 	// 참가할 세션이 없으면 새로운 세션 생성
-	CreateMySession((SessionType == TEXT("TTHallSession")) ? 100 : 30 , SessionType);
+	FString NewSessionName = GenerateUniqueSessionName(SessionType);
+	CreateMySession((SessionType == TEXT("TTHallSession")) ? 100 : 30 , NewSessionName);
 }
 
 // 세션에 참가하는 함수
@@ -95,6 +114,13 @@ void UTTGameInstance::JoinSession(const FOnlineSessionSearchResult& SessionResul
 {
 	if ( SessionInterface.IsValid() )
 	{
+		// 이미 세션에 참가했는지 확인
+		if ( SessionInterface->GetNamedSession(FName(*MySessionName)) != nullptr )
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Already in the session: %s") , *MySessionName);
+			return;  // 중복 참가 방지
+		}
+
 		MySessionName = SessionResult.Session.SessionInfo->GetSessionId().ToString();
 		bool bJoinSuccess = SessionInterface->JoinSession(0 , FName(*MySessionName) , SessionResult);
 
@@ -107,7 +133,7 @@ void UTTGameInstance::JoinSession(const FOnlineSessionSearchResult& SessionResul
 			UE_LOG(LogTemp , Warning , TEXT("Failed to join session: %s") , *MySessionName);
 
 			// 세션 참가 실패 시 새로운 유니크 세션 생성
-			FString NewSessionName = GenerateUniqueSessionName();
+			FString NewSessionName = GenerateUniqueSessionName(SessionType);
 			CreateMySession(100 , NewSessionName);
 		}
 	}

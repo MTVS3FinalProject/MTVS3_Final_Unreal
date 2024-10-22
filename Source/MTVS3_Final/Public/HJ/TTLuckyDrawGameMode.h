@@ -42,6 +42,13 @@ struct FRouletteInfo
 {
     GENERATED_BODY()
 
+    FRouletteInfo()
+        : Player(-1)  // Player 필드를 -1로 초기화
+        , Rule(ERouletteRule::OnlySelected)  // 기본 룰을 설정
+        , Result(ERouletteResult::Pass)  // 기본 결과를 통과로 설정
+    {
+    }
+
     UPROPERTY()
     int32 Player;
 
@@ -74,9 +81,9 @@ public:
     TArray<TArray<FSeat>> Seats;
     TArray<int32> RemainingPlayers;
 
-    // 다음 라운드로 넘어가기까지의(탈락자 애니메이션) 시간
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
-    float EliminationEffectDuration = 3.0f;
+    // 추첨 테스트 라운드 간 딜레이
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
+    float EliminationEffectDuration = 0.1f;
 
 private:
 

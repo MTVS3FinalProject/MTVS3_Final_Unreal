@@ -58,7 +58,7 @@ public:
 
 	virtual void Init() override;
 
-	FString GenerateUniqueSessionName();
+	FString GenerateUniqueSessionName(const FString& SessionNamePrefix);
 
 	// 온라인 세션 인터페이스를 기억하고 싶다.
 	IOnlineSessionPtr SessionInterface;
