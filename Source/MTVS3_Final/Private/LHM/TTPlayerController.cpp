@@ -32,44 +32,50 @@ void ATTPlayerController::BeginPlay()
 
 void ATTPlayerController::Tick(float DeltaTime)
 {
-    Super::Tick(DeltaTime);
+	Super::Tick(DeltaTime);
 
 	TimeReqInterval = 0.5f;
 	TimeSinceLastReq += DeltaTime;
+	if ( TimeSinceLastReq >= TimeReqInterval )
+	{
+		RequestServerTime();
+		TimeSinceLastReq = 0.0f;
+	}
 
-	if( TimeSinceLastReq >= TimeReqInterval )
-    {
-        RequestServerTime();
-        TimeSinceLastReq = 0.0f; // 요청 후 리셋
-    }
-
-    // 카운트다운 업데이트
-    UpdateCountdown(DeltaTime);
+	// 카운트다운 업데이트
+	UpdateCountdown(DeltaTime);
 }
 
 void ATTPlayerController::RequestServerTime()
 {
-    if ( HasAuthority() )
-    {
-        // 서버에서 현재 시간 요청
-        ServerGetCurrentTime();
-    }
-}
+	// 서버에서 현재 시간 요청
+	ServerGetCurrentTime();
+}  
 
 void ATTPlayerController::ServerGetCurrentTime_Implementation()
 {
     // 현재 시스템 시간 가져오기
     FString CurrentTime = GetSystemTime();
-    ClientReceiveCurrentTime(CurrentTime);
+
+	ClientReceiveCurrentTime(CurrentTime);
 }
 
 void ATTPlayerController::ClientReceiveCurrentTime_Implementation(const FString& CurrentTime)
 {
     // Main UI에 현재 시간 표시
-    if ( MainUI )
+    /*if ( MainUI )
 	{
 		MainUI->SetTextCurrentTime(CurrentTime);
-	}
+	}*/
+
+    // 클라이언트의 로컬 UI만 업데이트
+    if ( IsLocalController() ) // 로컬 플레이어의 컨트롤러인 경우에만
+    {
+        if ( MainUI )
+        {
+            MainUI->SetTextCurrentTime(CurrentTime);
+        }
+    }
     //UE_LOG(LogTemp , Log , TEXT("Current Time from Server: %s") , *CurrentTime);
 }
 
@@ -129,23 +135,23 @@ void ATTPlayerController::SetDrawStartTime()
 
 void ATTPlayerController::UpdateCountdown(float DeltaTime)
 {
-    // 현재 시스템 시간 가져오기
-    FDateTime Now = FDateTime::Now();
+	// 현재 시스템 시간 가져오기
+	FDateTime Now = FDateTime::Now();
 
-    // 남은 시간 계산
-    FTimespan RemainingTime = DrawStartTime - Now;
+	// 남은 시간 계산
+	FTimespan RemainingTime = DrawStartTime - Now;
 
-    if ( RemainingTime.GetTotalSeconds() > 0.5f )
-    {
-        int32 Minutes = RemainingTime.GetMinutes();
-        int32 Seconds = RemainingTime.GetSeconds() % 60;
+	if ( RemainingTime.GetTotalSeconds() > 0.5f )
+	{
+		int32 Minutes = RemainingTime.GetMinutes();
+		int32 Seconds = RemainingTime.GetSeconds() % 60;
 
-        FString CountdownText = FString::Printf(TEXT("%02d:%02d") , Minutes , Seconds);
+		FString CountdownText = FString::Printf(TEXT("%02d:%02d") , Minutes , Seconds);
 
-        if ( TicketingUI )
-        {
+		if ( TicketingUI )
+		{
 			TicketingUI->SetTextGameStartTime(CountdownText);
-        }
-        //UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
-    }
+		}
+		//UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
+	}
 }
