@@ -20,6 +20,7 @@
 #include "JMH/MainWidget.h"
 #include "JMH/MH_WorldMap.h"
 #include "LHM/TTPlayerController.h"
+#include <LHM/HM_HttpActor2.h>
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -387,6 +388,13 @@ void ATTPlayer::InitMainUI()
 		MyController->SetMainUI(MainUI);
 		MyController->SetTicketingUI(TicketingUI);
 		MyController->SetDrawStartTime();
+	}
+
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if ( HttpActor2 )
+	{
+		HttpActor2->SetMainUI(MainUI);
+		HttpActor2->SetTicketingUI(TicketingUI);
 	}
 }
 
