@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MH_BuyTicketWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "MainWidget.generated.h"
 
@@ -21,6 +22,9 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_Main;
 
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_BuyWidget;
+
 	UFUNCTION()
 	void SetVisibleCanvas(bool bVisible);
 	
@@ -36,12 +40,26 @@ public:
 	class UButton* Btn_BackMain;
 	UFUNCTION()
 	void OnClickedBackMain();
+
+
+	
+	UPROPERTY(meta = (BindWidget))
+	UMH_BuyTicketWidget* BuyWidget;
+	
+	// BuyWidget 컴포넌트에 대한 참조 반환 함수
+	UFUNCTION(BlueprintCallable, Category="UI")
+	UMH_BuyTicketWidget* GetBuyWidget() const
+	{
+		return BuyWidget;
+	}
+
 	//티켓예매 알람
 	//티켓팅 시간대
 	//상호작용 버튼
 	
 	// ==================================
 	// HttpActor2 공연장 입장 통신 테스트용
+	/*
 	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
 	class UButton* Btn_GetConcertInfo;
 	UFUNCTION()
@@ -60,5 +78,5 @@ public:
 	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
 	class UButton* Btn_GameResult;
 	UFUNCTION()
-	void OnClickedGameResult();
+	void OnClickedGameResult();*/
 };

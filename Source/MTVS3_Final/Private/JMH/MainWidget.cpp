@@ -56,7 +56,7 @@ void UMainWidget::OnClickedBackMain()
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ExitSession"));
 	}
 }
-
+/*
 void UMainWidget::OnClickedGetConcertInfo()
 {
     auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
@@ -135,4 +135,4 @@ void UMainWidget::OnClickedGameResult()
             }
         }
     }
-}
+}*/
