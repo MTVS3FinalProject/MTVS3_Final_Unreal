@@ -2,4 +2,26 @@
 
 
 #include "HJ/TTPlayerState.h"
+#include "HJ/TTGameInstance.h"
 
+void ATTPlayerState::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI) SetNickname(GI->GetNickname());
+}
+
+void ATTPlayerState::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
+{
+	LuckyDrawSeatID = _LuckyDrawSeatID;
+	
+	// GI에도 SetLuckyDrawSeatID
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI) GI->SetLuckyDrawSeatID(LuckyDrawSeatID);
+}
+
+void ATTPlayerState::SetRandomSeatNumber(const int32& _RandomSeatNumber)
+{
+	RandomSeatNumber = _RandomSeatNumber;
+}

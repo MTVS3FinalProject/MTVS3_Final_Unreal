@@ -23,18 +23,18 @@ struct FSeat
 UENUM(BlueprintType)
 enum class ERouletteRule : uint8
 {
-    SameColumnOnly, // 과(와) 같은 열만
-    SameRowOnly, // 과(와) 같은 행만
-    ExcludeSameColumn, // 과(와) 같은 열 제외
-    ExcludeSameRow, // 과(와) 같은 행 제외
-    OnlySelected // 만
+    SameColumnOnly = 0, // 과(와) 같은 열만
+    SameRowOnly = 1, // 과(와) 같은 행만
+    ExcludeSameColumn = 2, // 과(와) 같은 열 제외
+    ExcludeSameRow = 3, // 과(와) 같은 행 제외
+    OnlySelected = 4, // 만
 };
 
 UENUM(BlueprintType)
 enum class ERouletteResult : uint8
 {
-    Pass,
-    Eliminate
+    Pass = 0,
+    Eliminate = 1,
 };
 
 USTRUCT(BlueprintType)
@@ -72,17 +72,17 @@ public:
 
     ATTLuckyDrawGameMode();
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
     bool bIsRouletteTestMode;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
     int32 NumPlayers = 30;  // 기본값 30명
 
     TArray<TArray<FSeat>> Seats;
     TArray<int32> RemainingPlayers;
 
     // 추첨 테스트 라운드 간 딜레이
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RouletteTestMode|TTSettings")
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
     float EliminationEffectDuration = 0.1f;
 
 private:
