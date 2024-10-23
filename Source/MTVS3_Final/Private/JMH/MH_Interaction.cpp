@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "JMH/MH_Interaction.h"
@@ -11,15 +11,7 @@ void UMH_Interaction::NativeConstruct()
 	
 }
 
-void UMH_Interaction::SetVisibilityInteraction(bool bISVisible, int index)
+void UMH_Interaction::SetActiveWidgetIndex(int index)
 {
-	if(bISVisible)
-	{
-		WS_InteractionWidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		WS_InteractionWidgetSwitcher->SetVisibility(ESlateVisibility::Hidden);
-	}
-	WS_InteractionWidgetSwitcher(index);
+	WS_InteractionWidgetSwitcher->SetActiveWidgetIndex(index);
 }
