@@ -83,7 +83,7 @@ void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/????????") , *_url); // 미정
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -691,6 +691,49 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 	}
 }
 
+void AHM_HttpActor2::ReqPostNoticeGameStart(FString ConcertName , FString SeatId , FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/drawing") , *_url);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("POST"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 전달 데이터 (JSON)
+	FString ContentString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("concertName") , ConcertName);
+	Writer->WriteValue(TEXT("seatId") , SeatId);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	UE_LOG(LogTemp , Log , TEXT("추첨 시작 알림 요청 SeatId : %s") , *SeatId);
+
+	// 요청 본문에 JSON 데이터를 설정
+	Request->SetContentAsString(ContentString);
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostNoticeGameStart);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+{
+
+}
+
 //=========================================================================================================================================
 
 // 좌석 게임 결과 , 응답 필요없음
@@ -815,8 +858,15 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 					if ( Texture )
 					{
 						// 결제 시 회원 인증 QR UI로 넘어가는 함수 호출하기
-						BuyTicketUI->SetQRImg(Texture);
-						BuyTicketUI->SetWidgetSwitcher(1);
+						if ( BuyTicketUI )
+						{
+							BuyTicketUI->SetQRImg(Texture);
+							BuyTicketUI->SetWidgetSwitcher(1);
+						}
+						else
+						{
+							UE_LOG(LogTemp , Warning , TEXT("BuyTicketUI is null."));
+						}
 						UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
 					}
 					else
@@ -884,7 +934,7 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 }
 
 // 예매자 정보 입력 요청
-void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , int32 UserPhoneNum , FString UserAddress , FString AccessToken)
+void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , FString UserPhoneNum , FString UserAddress , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -893,7 +943,7 @@ void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , int32 UserPhoneNu
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/payment") , *_url); // API테이블 확인하기
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/member/delivery-address") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -907,7 +957,7 @@ void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , int32 UserPhoneNu
 	Writer->WriteObjectStart();
 	Writer->WriteValue(TEXT("userName") , UserName);
 	Writer->WriteValue(TEXT("userPhoneNumber") , UserPhoneNum);
-	Writer->WriteValue(TEXT("userAddress") , UserAddress);
+	Writer->WriteValue(TEXT("userAddress1") , UserAddress);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 

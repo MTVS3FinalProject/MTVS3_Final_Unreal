@@ -127,7 +127,7 @@ struct FConcertReservation
 public:
     FConcertReservation()
         : m_SeatId(TEXT("")), m_SeatInfo(TEXT("")) , m_SeatPrice(0), m_CompetitionRate(0), m_UserCode(TEXT("")),
-          m_NeedCoin(0), m_UserName(TEXT("")), m_UserPhoneNumber(0), m_UserAddress(TEXT("")) {}
+          m_NeedCoin(0), m_UserName(TEXT("")), m_UserPhoneNumber(TEXT("")), m_UserAddress(TEXT("")) {}
 
     const FString& GetSeatId() const { return m_SeatId; }
     void SetSeatId(const FString& SeatId) { m_SeatId = SeatId; }
@@ -159,8 +159,8 @@ public:
     const FString& GetUserName() const { return m_UserName; }
     void SetUserName(const FString& UserName) { m_UserName = UserName; }
 
-    int32 GetUserPhoneNumber() const { return m_UserPhoneNumber; }
-    void SetUserPhoneNumber(int32 UserPhoneNumber) { m_UserPhoneNumber = UserPhoneNumber; }
+    const FString& GetUserPhoneNumber() const { return m_UserPhoneNumber; }
+    void SetUserPhoneNumber(const FString& UserPhoneNumber) { m_UserPhoneNumber = UserPhoneNumber; }
 
     const FString& GetUserAddress() const { return m_UserAddress; }
     void SetUserAddress(const FString& UserAddress) { m_UserAddress = UserAddress; }
@@ -176,7 +176,7 @@ public:
         const FString& UserCode,
         int32 NeedCoin,
         const FString& UserName,
-        int32 UserPhoneNumber,
+        const FString& UserPhoneNumber,
         const FString& UserAddress)
     {
         m_SeatId = SeatId;
@@ -225,7 +225,7 @@ private:
     FString m_UserName;
 
     UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|User")
-    int32 m_UserPhoneNumber;
+    FString m_UserPhoneNumber;
 
     UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|User")
     FString m_UserAddress;
@@ -288,8 +288,8 @@ public:
     const FString& GetUserName() const { return m_ConcertReservation.GetUserName(); }
     void SetUserName(const FString& UserName) { m_ConcertReservation.SetUserName(UserName); }
 
-    int32 GetUserPhoneNumber() const { return m_ConcertReservation.GetUserPhoneNumber(); }
-    void SetUserPhoneNumber(int32 UserPhoneNumber) { m_ConcertReservation.SetUserPhoneNumber(UserPhoneNumber); }
+    const FString& GetUserPhoneNumber() const { return m_ConcertReservation.GetUserPhoneNumber(); }
+    void SetUserPhoneNumber(const FString& UserPhoneNumber) { m_ConcertReservation.SetUserPhoneNumber(UserPhoneNumber); }
 
     const FString& GetUserAddress() const { return m_ConcertReservation.GetUserAddress(); }
     void SetUserAddress(const FString& UserAddress) { m_ConcertReservation.SetUserAddress(UserAddress); }
@@ -365,6 +365,12 @@ public:
 	// 좌석 취소 요청에 대한 응답
 	void OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
+    // 추첨 시작 알림 요청
+    void ReqPostNoticeGameStart(FString ConcertName , FString SeatId , FString AccessToken);
+
+    // 추첨 시작 알림 요청에 대한 응답
+    void OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
 //===========================================================================================================
 
 	// 좌석 게임 결과 요청
@@ -386,7 +392,7 @@ public:
 	void OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 예매자 정보 입력 요청
-	void ReqPostReservationinfo(FString UserName, int32 UserPhoneNum , FString UserAddress , FString AccessToken);
+	void ReqPostReservationinfo(FString UserName, FString UserPhoneNum , FString UserAddress , FString AccessToken);
 
 	// 예매자 정보 입력 요청에 대한 응답
 	void OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
