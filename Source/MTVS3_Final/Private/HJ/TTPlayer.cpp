@@ -23,6 +23,7 @@
 #include <LHM/HM_HttpActor2.h>
 #include "HJ/TTGameInstance.h"
 #include <HJ/TTPlayerState.h>
+#include <HJ/HJ_Actor.h>
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -280,8 +281,8 @@ void ATTPlayer::OnMyActionRunComplete(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp , Warning , TEXT("Pressed E: Interact"));
 	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	AHJ_Actor* InteractiveActor = Cast<AHJ_Actor>(GetOverlappingActor());
 	if ( Chair )
 	{
 		// 의자가 비어 있을 때 상호작용하면 앉는다.
@@ -325,6 +326,11 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		}
 		// 의자가 비어 있지 않고 내가 앉아 있지 않으면 아무 일도 안 일어난다.
 	}
+	else if ( InteractiveActor && InteractiveActor->ActorHasTag(TEXT("SelectConcert")) )
+	{
+		MainUI->SetWidgetSwitcher(5);
+	}
+	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
 
 AActor* ATTPlayer::GetOverlappingActor()
@@ -334,9 +340,9 @@ AActor* ATTPlayer::GetOverlappingActor()
 
 	for ( AActor* Actor : OverlappingActors )
 	{
-		if ( Actor->IsA(AMH_Chair::StaticClass()) )
+		if ( Actor->IsA(AMH_Chair::StaticClass()) || Actor->IsA(AHJ_Actor::StaticClass()) )
 		{
-			return Actor;  // 오버랩된 의자 반환
+			return Actor;
 		}
 	}
 	return nullptr;
