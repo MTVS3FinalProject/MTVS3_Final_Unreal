@@ -22,7 +22,7 @@ void ATTLuckyDrawGameMode::BeginPlay()
 	// 인원 수를 출력
 	if ( GEngine )
 	{
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Yellow , FString::Printf(TEXT("설정된 인원 수: %d") , NumPlayers));
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Yellow , FString::Printf(TEXT("설정된 인원 수: %d") , RouletteTestNumPlayers));
 	}
 
 	// 3*10 좌석 배열 초기화 (세로 3줄, 가로 10줄)
@@ -33,8 +33,8 @@ void ATTLuckyDrawGameMode::BeginPlay()
 	}
 
 	// 플레이어 번호 부여 및 랜덤 배치
-	RemainingPlayers.Reserve(NumPlayers);
-	for ( int32 i = 0; i < NumPlayers; ++i )
+	RemainingPlayers.Reserve(RouletteTestNumPlayers);
+	for ( int32 i = 0; i < RouletteTestNumPlayers; ++i )
 	{
 		RemainingPlayers.Add(i + 1);  // 플레이어 번호는 1부터 시작
 	}

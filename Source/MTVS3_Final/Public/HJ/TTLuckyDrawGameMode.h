@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 #include "TTLuckyDrawGameMode.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogLuckyDraw , Log , All);  // 로깅 카테고리 선언
@@ -63,7 +63,7 @@ struct FRouletteInfo
  * 
  */
 UCLASS()
-class MTVS3_FINAL_API ATTLuckyDrawGameMode : public AGameModeBase
+class MTVS3_FINAL_API ATTLuckyDrawGameMode : public AGameMode
 {
 	GENERATED_BODY()
 	
@@ -76,7 +76,7 @@ public:
     bool bIsRouletteTestMode;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
-    int32 NumPlayers = 30;  // 기본값 30명
+    int32 RouletteTestNumPlayers = 30;  // 기본값 30명
 
     TArray<TArray<FSeat>> Seats;
     TArray<int32> RemainingPlayers;
