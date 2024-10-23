@@ -7,6 +7,7 @@
 #include "Components/WidgetComponent.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_Interaction.h"
+#include "JMH/MainWidget.h"
 
 // Sets default values
 AHJ_Actor::AHJ_Actor()
@@ -42,8 +43,7 @@ void AHJ_Actor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent , AActor
 	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
 	if ( TTPlayer && TTPlayer->IsLocallyControlled() )
 	{
-		//SetMainUI(TTPlayer->MainUI);
-		//SetTicketingUI(TTPlayer->TicketingUI);
+		SetMainUI(TTPlayer->MainUI);
 
 		OverlappingPlayer = TTPlayer;  // 오버랩된 플레이어 추적
 		ShowText();
@@ -57,10 +57,7 @@ void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 	{
 		OverlappingPlayer = nullptr;  // 오버랩 해제 시 플레이어 초기화
 		HideText();
-		//// MainUI 표시
-		//if ( MainUI ) MainUI->SetVisibleCanvas(true);
-		//// 좌석 접수 UI 숨기기
-		//if ( TicketingUI ) TicketingUI->SetVisibleSwitcher(false , 0);
+		if ( MainUI ) MainUI->SetWidgetSwitcher(0);
 	}
 }
 
@@ -91,5 +88,10 @@ void AHJ_Actor::ShowText()
 void AHJ_Actor::HideText()
 {
 	Widgetcomp->SetVisibility(false);
+}
+
+void AHJ_Actor::SetMainUI(UMainWidget* InMainUI)
+{
+	MainUI = InMainUI;
 }
 
