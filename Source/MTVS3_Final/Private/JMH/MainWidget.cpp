@@ -20,11 +20,13 @@ void UMainWidget::NativeConstruct()
 
 	Btn_BackMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBackMain);
 	Btn_BuyTicket->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyTicket);
-	Btn_BuyLater->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyBack);
-	Btn_FailBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyBack);
-	Btn_BuyTickerBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyBack);
-	Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyBack);
+	Btn_BuyLater->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
+	Btn_FailBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
+	Btn_BuyTickerBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
+	Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
+	Btn_SelectConcertBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
+	Btn_Concert01->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert01);
 
 	
 	//// HttpActor2 공연장 입장 통신 테스트용
@@ -88,7 +90,7 @@ void UMainWidget::SetTextSeatNum2(FString SeatNum2)
 	Tex_SeatNum2->SetText(FText::FromString(SeatNum2));
 }
 
-void UMainWidget::OnClickedBuyBack()
+void UMainWidget::OnClickedBack_Map()
 {
 	//나중에 예매하기버튼-> 위젯 끄기 Map 0으로 이동
 	//알림 등록하고, 알림에서 클릭시 결제 진행 가능.
@@ -104,6 +106,13 @@ void UMainWidget::SetTextRemainingTicket(int32 RemainingTicket)
 void UMainWidget::OnClickedBuyCoinsButton()
 {
 	SetWidgetSwitcher(4);
+}
+
+void UMainWidget::OnClickedConcert01()
+{
+	//현민
+	//서버에서 콘서트 정보 받아오기
+	//로비로이동
 }
 
 /*

@@ -24,7 +24,7 @@ public:
 
 	//위젯스위처설정 
 	UFUNCTION()
-	void SetWidgetSwitcher(int32 num);//0:미니맵,1:승리(결제연결),2:패배, 3:BuyTicket, 4:BuyCoin
+	void SetWidgetSwitcher(int32 num);//0:미니맵,1:승리(결제연결),2:패배, 3:BuyTicket, 4:BuyCoin, 5:SelectConcert
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_Main;
@@ -84,7 +84,7 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_BuyLater;
 	UFUNCTION()
-	void OnClickedBuyBack();
+	void OnClickedBack_Map();
 
 	//2: Fail
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -108,6 +108,13 @@ public:
 	UFUNCTION()
 	void OnClickedBuyCoinsButton();
 	
+	//5: SelectConcert
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Concert01;
+	UFUNCTION()
+	void OnClickedConcert01();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_SelectConcertBack;
 	
 	//티켓예매 알람
 	//티켓팅 시간대
