@@ -101,8 +101,8 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 
 	bool IsValidResult = false;
 	int32 SelectedPlayer = -1;
-	ERouletteRule SelectedRule;
-	ERouletteResult RouletteOutcome;
+	ERouletteRule SelectedRule = ERouletteRule::SameColumnOnly;
+	ERouletteResult RouletteOutcome = ERouletteResult::Pass;
 
 	// 시뮬레이션용 좌석 배열 생성 (실제 좌석과 별도로 관리)
 	TArray<TArray<FSeat>> SimulatedSeats = Seats;
@@ -313,9 +313,9 @@ void ATTLuckyDrawGameMode::ApplyRouletteOutcome(int32 Player , ERouletteRule Rul
 	if ( RoundEliminatedPlayers.Num() > 0 )
 	{
 		FString EliminatedPlayersString;
-		for ( int32 Player : RoundEliminatedPlayers )
+		for ( int32 SelectedPlayer : RoundEliminatedPlayers )
 		{
-			EliminatedPlayersString += FString::Printf(TEXT("%d ") , Player);
+			EliminatedPlayersString += FString::Printf(TEXT("%d ") , SelectedPlayer);
 		}
 		if ( bIsRouletteTestMode ) UE_LOG(LogLuckyDraw , Log , TEXT("라운드 %d 탈락자: %s") , Round , *EliminatedPlayersString);
 
