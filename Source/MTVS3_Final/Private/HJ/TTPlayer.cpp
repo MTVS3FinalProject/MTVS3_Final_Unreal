@@ -20,6 +20,7 @@
 #include "JMH/MainWidget.h"
 #include "JMH/MH_WorldMap.h"
 #include "LHM/TTPlayerController.h"
+#include <LHM/HM_HttpActor2.h>
 
 // Sets default values
 ATTPlayer::ATTPlayer()
@@ -74,7 +75,10 @@ void ATTPlayer::BeginPlay()
 	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") || UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("HJProtoMap") ) {
 		// 특정 레벨일 때 실행할 코드
 		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
-		InitMainUI();
+		if ( IsLocallyControlled() )
+		{
+			InitMainUI();
+		}
 	}
 
 	// 서브레벨 로드/언로드 시 넣을 코드
@@ -147,7 +151,7 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 
 		// 플레이어의 회전 방향과 카메라 정렬
 		APlayerController* PC = Cast<APlayerController>(GetController());
-		if ( PC )
+		if ( PC && PC->IsLocalController() )
 		{
 			PC->SetViewTargetWithBlend(this);  // 부드러운 시점 전환
 		}
@@ -160,7 +164,7 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 
 		// 플레이어의 회전 방향과 카메라 정렬
 		APlayerController* PC = Cast<APlayerController>(GetController());
-		if ( PC )
+		if ( PC && PC->IsLocalController() )
 		{
 			// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
 			GetMesh()->SetOwnerNoSee(true);
@@ -387,6 +391,13 @@ void ATTPlayer::InitMainUI()
 		MyController->SetMainUI(MainUI);
 		MyController->SetTicketingUI(TicketingUI);
 		MyController->SetDrawStartTime();
+	}
+
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if ( HttpActor2 )
+	{
+		HttpActor2->SetMainUI(MainUI);
+		HttpActor2->SetTicketingUI(TicketingUI);
 	}
 }
 

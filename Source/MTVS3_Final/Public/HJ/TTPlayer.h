@@ -122,8 +122,13 @@ public:
 	UPROPERTY(EditAnywhere , Category = "Default|UI")
 	TSubclassOf<class UMH_WorldMap> WorldMapUIFactory;
 	UPROPERTY()
-	class UMH_WorldMap*  WorldMapUI;
+	class UMH_WorldMap* WorldMapUI;
 	//
+
+	//UPROPERTY(EditAnywhere , Category = "Default|UI")
+	//TSubclassOf<class UMH_BuyTicketWidget> BuyTicketUIFactory;
+	//UPROPERTY()
+	//class UMH_BuyTicketWidget* BuyTicketUI;
 
 	UPROPERTY(EditAnywhere , Category = "Default|UI")
 	class UWidgetComponent* NicknameUIComp;
