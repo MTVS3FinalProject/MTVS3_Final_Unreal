@@ -11,6 +11,7 @@
 #include "HJ/TTGameInstance.h"
 #include "GenericPlatform/GenericPlatformHttp.h"
 #include "ImageUtils.h"
+#include "JMH/MH_BuyTicketWidget.h"
 
 // Sets default values
 AHM_HttpActor2::AHM_HttpActor2()
@@ -52,13 +53,132 @@ void AHM_HttpActor2::Tick(float DeltaTime)
 
 }
 
+// 전달받은 MainUI 참조 저장
+void AHM_HttpActor2::SetMainUI(UMainWidget* InMainUI)
+{
+	MainUI = InMainUI;
+}
+
+// 전달받은 TicketingUI 참조 저장
 void AHM_HttpActor2::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 {
-	TicketingUI = InTicketingUI; // 전달받은 TicketingUI 참조 저장
+	TicketingUI = InTicketingUI;
+}
+
+// 전달받은 BuyTicketingUI 참조 저장
+void AHM_HttpActor2::SetBuyTicketUI(UMH_BuyTicketWidget* InBuyTicketUI)
+{
+	BuyTicketUI = InBuyTicketUI;
 }
 
 //=========================================================================================================================================
 
+// 공연장 선택 UI 요청
+void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/????????") , *_url); // 미정
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::ResGetConcertInfo);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+// 공연장 선택 UI 요청에 대한 응답
+void AHM_HttpActor2::ResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		// 캐스팅은 여기서 한 번만 실행
+		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// 콘서트 목록
+					TArray<TSharedPtr<FJsonValue>> ConcertList = ResponseObject->GetArrayField(TEXT("concertNameList"));
+					TArray<FConcertDTO> ConcertNameList;
+
+					for ( const TSharedPtr<FJsonValue>& ConcertValue : ConcertList )
+					{
+						TSharedPtr<FJsonObject> ConcertObject = ConcertValue->AsObject();
+						FString ConcertName = ConcertObject->GetStringField(TEXT("concertName"));
+						int32 Year = ConcertObject->GetIntegerField(TEXT("year"));
+						int32 Month = ConcertObject->GetIntegerField(TEXT("month"));
+						int32 Day = ConcertObject->GetIntegerField(TEXT("day"));
+						FString Time = ConcertObject->GetStringField(TEXT("time"));
+
+						UE_LOG(LogTemp , Log , TEXT("Concert Name : %s") , *ConcertName);
+						UE_LOG(LogTemp , Log , TEXT("Concert Year : %d") , Year);
+						UE_LOG(LogTemp , Log , TEXT("Concert Month : %d") , Month);
+						UE_LOG(LogTemp , Log , TEXT("Concert Day : %d") , Day);
+						UE_LOG(LogTemp , Log , TEXT("Concert Time : %s") , *Time);
+
+						FConcertDTO ConcertDTO;
+						ConcertDTO.SetConcertName(ConcertName);
+						ConcertDTO.SetConcertYear(Year);
+						ConcertDTO.SetConcertMonth(Month);
+						ConcertDTO.SetConcertDay(Day);
+						ConcertDTO.SetConcertTime(Time);
+						ConcertNameList.Add(ConcertDTO);
+					}
+
+					// 접수 완료된 좌석 목록
+					TArray<TSharedPtr<FJsonValue>> ReceptionSeatsArray = ResponseObject->GetArrayField(TEXT("receptionSeats"));
+					TArray<FSeatIdDTO> ReceptionSeats;
+
+					for ( const TSharedPtr<FJsonValue>& SeatValue : ReceptionSeatsArray )
+					{
+						TSharedPtr<FJsonObject> SeatObject = SeatValue->AsObject();
+						FString ReceptionSeatId = SeatObject->GetStringField(TEXT("seatId"));
+
+						UE_LOG(LogTemp , Log , TEXT("Reception Seat ID: %s") , *ReceptionSeatId);
+						FSeatIdDTO SeatDTO;
+						SeatDTO.SetSeatId(ReceptionSeatId);
+						ReceptionSeats.Add(SeatDTO);
+					}
+
+					
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Error , TEXT("Failed to get concert entry: %s") , *Response->GetContentAsString());
+		}
+	}
+}
+
+// 공연장 입장 요청
 void AHM_HttpActor2::ReqPostConcertEntry(FString ConcertName , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -94,6 +214,7 @@ void AHM_HttpActor2::ReqPostConcertEntry(FString ConcertName , FString AccessTok
 	Request->ProcessRequest();
 }
 
+// 공연장 입장 요청에 대한 응답
 void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -189,6 +310,7 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 
 //=========================================================================================================================================
 
+// 좌석 조회 요청
 void AHM_HttpActor2::ReqPostSeatRegistrationInquiry(FString ConcertName, FString SeatId , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -227,6 +349,7 @@ void AHM_HttpActor2::ReqPostSeatRegistrationInquiry(FString ConcertName, FString
 	Request->ProcessRequest();
 }
 
+// 좌석 조회 요청에 대한 응답
 void AHM_HttpActor2::OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -264,7 +387,7 @@ void AHM_HttpActor2::OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , 
 					if ( TicketingUI )
 					{
 						//TicketingUI->SetTextCompetitionRate(CompetitionRate);
-						//TicketingUI->SetVisibleSwitcher(true);
+						//TicketingUI->SetVisibleSwitcher(true); 
 					}
 				}
 			}
@@ -276,6 +399,7 @@ void AHM_HttpActor2::OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , 
 	}
 }
 
+// 좌석 접수 요청
 void AHM_HttpActor2::ReqPostRegisterSeat(FString ConcertName , FString SeatId , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -314,6 +438,7 @@ void AHM_HttpActor2::ReqPostRegisterSeat(FString ConcertName , FString SeatId , 
 	Request->ProcessRequest();
 }
 
+// 좌석 접수 요청에 대한 응답
 void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -356,9 +481,9 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 					{
 						// 접수 성공했을 때 UI연결
 						SetSeatPrice(SeatPrice);
-						//TicketingUI->SetTextTicketPrice(SeatPrice);
-						//TicketingUI->SetTextCompetitionRate(CompetitionRate);
-						//TicketingUI->SetCompletedVisible(true);
+						TicketingUI->SetTextTicketPrice(SeatPrice);
+						TicketingUI->SetTextCompetitionRate(CompetitionRate);
+						TicketingUI->SetCompletedVisible(true);
 					}
 				}
 			}
@@ -370,6 +495,7 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 	}
 }
 
+// 접수된 좌석 조회 요청
 void AHM_HttpActor2::ReqPostCompletedRegisteredSeat(FString ConcertName , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -405,6 +531,7 @@ void AHM_HttpActor2::ReqPostCompletedRegisteredSeat(FString ConcertName , FStrin
 	Request->ProcessRequest();
 }
 
+// 접수된 좌석 조회 요청 응답
 void AHM_HttpActor2::OnResPostCompletedRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -474,6 +601,7 @@ void AHM_HttpActor2::OnResPostCompletedRegisteredSeat(FHttpRequestPtr Request , 
 	}
 }
 
+// 좌석 취소 요청
 void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat(FString ConcertName , FString SeatId , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -512,6 +640,7 @@ void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat(FString ConcertName , FString
 	Request->ProcessRequest();
 }
 
+// 좌석 취소 요청에 대한 응답
 void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -550,7 +679,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 					if ( TicketingUI )
 					{
 						// 접수 취소 성공했을 때
-						//TicketingUI->다시 접수 가능하게 바뀌는 함수 ( 아 직 안 함 )
+						TicketingUI->SetCompletedVisible(false);
 					}
 				}
 			}
@@ -564,6 +693,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 
 //=========================================================================================================================================
 
+// 좌석 게임 결과 , 응답 필요없음
 void AHM_HttpActor2::ReqPostGameResult(FString ConcertName , FString SeatId , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -602,6 +732,25 @@ void AHM_HttpActor2::ReqPostGameResult(FString ConcertName , FString SeatId , FS
 	Request->ProcessRequest();
 }
 
+void AHM_HttpActor2::OnResPostGameResult(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			UE_LOG(LogTemp , Log , TEXT("Request Post Game Result successful!"));
+		}
+		else if ( Response->GetResponseCode() == 400 )
+		{
+			UE_LOG(LogTemp , Log , TEXT("Request Post Game Result failed!"));
+		}
+	}
+}
+
+// 결제시 회원 인증용 QR 요청
 void AHM_HttpActor2::ReqGetMemberAuthQR(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -626,6 +775,7 @@ void AHM_HttpActor2::ReqGetMemberAuthQR(FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// 결제시 회원 인증용 QR 요청에 대한 응답
 void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -665,7 +815,8 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 					if ( Texture )
 					{
 						// 결제 시 회원 인증 QR UI로 넘어가는 함수 호출하기
-						// UI-> ????
+						BuyTicketUI->SetQRImg(Texture);
+						BuyTicketUI->SetWidgetSwitcher(1);
 						UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
 					}
 					else
@@ -678,6 +829,7 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 	}
 }
 
+// 결제시 회원 인증 사진 업로드 확인 요청
 void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString UserCode , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -710,6 +862,7 @@ void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString UserCode , FString Acc
 	Request->ProcessRequest();
 }
 
+// 결제시 회원 인증 사진 업로드 확인 요청에 대한 응답
 void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -719,15 +872,18 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 
 		if ( Response->GetResponseCode() == 200 )
 		{
+			BuyTicketUI->SetWidgetSwitcher(2);
 			UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
 		}
 		else if ( Response->GetResponseCode() == 400 )
 		{
+			BuyTicketUI->SetWidgetSwitcher(3);
 			UE_LOG(LogTemp , Log , TEXT("Member authentication failed!"));
 		}
 	}
 }
 
+// 예매자 정보 입력 요청
 void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , int32 UserPhoneNum , FString UserAddress , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -765,6 +921,7 @@ void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , int32 UserPhoneNu
 	Request->ProcessRequest();
 }
 
+// 예매자 정보 입력 요청에 대한 응답
 void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -808,7 +965,7 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					SetSeatPrice(SeatPrice);
 					SetNeedCoin(NeedCoin);
 
-					// 결제 완료 UI 호출
+					BuyTicketUI->SetWidgetSwitcher(5);
 				}
 			}
 		}
@@ -819,6 +976,7 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 	}
 }
  
+// 좌석 결제 요청
 void AHM_HttpActor2::ReqPostPaymentSeat(FString ConcertName , FString SeatId , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -857,6 +1015,7 @@ void AHM_HttpActor2::ReqPostPaymentSeat(FString ConcertName , FString SeatId , F
 	Request->ProcessRequest();
 }
 
+// 좌석 결제 요청에 대한 응답
 void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -903,7 +1062,7 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					SetUserName(UserName);
 					SetUserAddress(UserAddress);
 
-					// 결제 완료 UI 호출
+					BuyTicketUI->SetWidgetSwitcher(6);
 				}
 			}
 		}

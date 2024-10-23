@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -61,6 +61,9 @@ public:
     //2 QR 신원인증확인
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UImage* Img_QR;
+
+	UFUNCTION()
+	void SetQRImg(UTexture2D* newTexture);
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_Confirm_QRUi1;

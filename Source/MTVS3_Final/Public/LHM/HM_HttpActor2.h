@@ -73,13 +73,18 @@ private:
 
 // Concert 구조체
 USTRUCT()
-struct FConcert
+struct FConcertDTO
 {
     GENERATED_BODY()
 
 public:
-    FConcert()
-        : m_ConcertName(TEXT("Concert01")), m_ConcertYear(0), m_ConcertMonth(0), m_ConcertDay(0), m_ConcertTime(TEXT("")) {}
+    FConcertDTO()
+        : m_ConcertName(TEXT("Concert01")) // 테스트용 나중에 받아올거임
+        , m_ConcertYear(0)
+        , m_ConcertMonth(0)
+        , m_ConcertDay(0)
+        , m_ConcertTime(TEXT(""))
+    {}
 
     const FString& GetConcertName() const { return m_ConcertName; }
     void SetConcertName(const FString& ConcertName) { m_ConcertName = ConcertName; }
@@ -232,7 +237,7 @@ class MTVS3_FINAL_API AHM_HttpActor2 : public AActor
 	GENERATED_BODY()
 
 private:
-    FConcert m_Concert; // 콘서트 정보를 저장할 변수
+    FConcertDTO m_Concert; // 콘서트 정보를 저장할 변수
     FConcertReservation m_ConcertReservation; // 콘서트 예약 정보를 저장할 변수
 
 public:
@@ -302,12 +307,18 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	
 #pragma region UI
-	//UPROPERTY(EditAnywhere, Category = "Defalut|UI")
-	//TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
+
+	UPROPERTY()
+	class UMainWidget* MainUI;
+    void SetMainUI(UMainWidget* InMainUI);
+
 	UPROPERTY()
 	class UMH_TicketingWidget* TicketingUI;
-
     void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
+
+	UPROPERTY()
+	class UMH_BuyTicketWidget* BuyTicketUI;
+    void SetBuyTicketUI(UMH_BuyTicketWidget* InBuyTicketUI);
 
 #pragma endregion
 
@@ -316,7 +327,13 @@ public:
 
 //===========================================================================================================
 
-	// 공연장 입장 요청
+	// 공연장 선택 UI 요청
+    void ReqGetConcertInfo(FString AccessToken);
+
+    // 공연장 선택 UI 요청에 대한 응답
+    void ResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+    
+    // 공연장 입장 요청
 	void ReqPostConcertEntry(FString ConcertName , FString AccessToken);
 
 	// 공연장 입장 요청에 대한 응답
@@ -350,8 +367,11 @@ public:
 
 //===========================================================================================================
 
-	// 좌석 게임 결과 , 응답 필요없음
+	// 좌석 게임 결과 요청
 	void ReqPostGameResult(FString ConcertName , FString SeatId , FString AccessToken);
+
+    // 좌석 게임 결과 요청에 대한 응답
+    void OnResPostGameResult(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 결제시 회원 인증용 QR 요청
 	void ReqGetMemberAuthQR(FString AccessToken);
