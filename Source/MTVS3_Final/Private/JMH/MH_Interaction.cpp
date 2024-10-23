@@ -21,5 +21,5 @@ void UMH_Interaction::SetVisibilityInteraction(bool bISVisible, int index)
 	{
 		WS_InteractionWidgetSwitcher->SetVisibility(ESlateVisibility::Hidden);
 	}
-	WS_InteractionWidgetSwitcher(index);
+	WS_InteractionWidgetSwitcher->SetActiveWidgetIndex(index);
 }
