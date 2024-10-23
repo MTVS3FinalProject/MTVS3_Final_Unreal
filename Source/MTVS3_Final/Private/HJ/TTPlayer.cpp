@@ -283,6 +283,10 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 {
 	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
 	AHJ_Actor* InteractiveActor = Cast<AHJ_Actor>(GetOverlappingActor());
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if ( !HttpActor2 || !GI ) return;
+
 	if ( Chair )
 	{
 		// 의자가 비어 있을 때 상호작용하면 앉는다.
@@ -329,6 +333,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	else if ( InteractiveActor && InteractiveActor->ActorHasTag(TEXT("SelectConcert")) )
 	{
 		MainUI->SetWidgetSwitcher(5);
+		HttpActor2->ReqGetConcertInfo(GI->GetAccessToken());
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
