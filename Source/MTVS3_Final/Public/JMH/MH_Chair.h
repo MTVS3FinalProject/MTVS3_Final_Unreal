@@ -28,7 +28,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* Boxcomp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTSettings|UI")
 	class UWidgetComponent* Widgetcomp;
 
 	UFUNCTION()
@@ -45,15 +45,15 @@ public:
 #pragma region KHJ
 	ACharacter* OverlappingPlayer = nullptr;  // 오버랩된 플레이어 추적용
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|TTSettings")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
 	float SeatOffset = 30.0;
 	FTransform GetSittingTransform();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|TTSettings")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
 	float StandingOffset = 50.0;
 	FTransform GetStandingTransform();
 
-	UPROPERTY(Replicated, VisibleAnywhere, Category = "Default|Chair")
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "TTSettings|State")
 	bool bIsOccupied;
 
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;

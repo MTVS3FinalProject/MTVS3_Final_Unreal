@@ -16,8 +16,27 @@ class MTVS3_FINAL_API ATTPlayerState : public APlayerState
 
 protected:
 	// Called when the game starts or when spawned
-	//virtual void BeginPlay() override;
+	virtual void BeginPlay() override;
 
 public:
 
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString Nickname;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetNickname(const FString& _Nickname) { Nickname = _Nickname; };
+	FString GetNickname() const { return Nickname; };
+
+	// 추첨을 시작할 좌석 ID
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString LuckyDrawSeatID;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
+	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
+
+	// 랜덤으로 배치된 좌석 번호
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	int32 RandomSeatNumber = -1;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
+	int32 GetRandomSeatNumber() const { return RandomSeatNumber; }
 };
