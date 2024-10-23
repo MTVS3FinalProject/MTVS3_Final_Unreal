@@ -92,19 +92,13 @@ void ATTPlayer::BeginPlay()
 		{
 		case ELuckyDrawState::Winner:
 			// 추첨 당첨 UI 표시
-			if ( bShowDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
-			{
-				GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("Show Winner UI")));
-			}
+			MainUI->SetWidgetSwitcher(1);
 			// HTTP 요청
-			HttpActor2->ReqPostGameResult(GI->GetConcertName(), GI->GetLuckyDrawSeatID(), GI->GetAccessToken());
+			HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 			break;
 		case ELuckyDrawState::Loser:
 			// 추첨 탈락 UI 표시
-			if ( bShowDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
-			{
-				GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("Show Loser UI")));
-			}
+			MainUI->SetWidgetSwitcher(2);
 			break;
 		case ELuckyDrawState::Neutral:
 			if ( bShowDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
@@ -113,11 +107,6 @@ void ATTPlayer::BeginPlay()
 			}
 			break;
 		}
-	}
-	else if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTLuckyDrawMap") )
-	{
-		// EPlaceState 추첨방 상태
-		GI->SetPlaceState(EPlaceState::LuckyDrawRoom);
 	}
 
 	// 서브레벨 로드/언로드 시 넣을 코드
@@ -151,6 +140,29 @@ void ATTPlayer::Tick(float DeltaTime)
 		//NicknameUIDirection.Z = 0.0f;
 
 		NicknameUIComp->SetWorldRotation(NicknameUIDirection.GetSafeNormal().ToOrientationRotator());
+	}
+
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	ATTPlayerController* PC = Cast<ATTPlayerController>(GetWorld()->GetFirstPlayerController());
+	ATTPlayer* Player = Cast<ATTPlayer>(PC->GetPawn());
+	if ( !GI || !PC || !Player ) return;
+
+	if ( bShowDebug && GEngine /*&& GetWorld()->GetNetMode() == NM_Client*/ )
+	{
+		// mState를 문자열로 변환
+		FString PlaceStateText = UEnum::GetValueAsString(GI->GetPlaceState());
+		FString LuckyDrawStateText = UEnum::GetValueAsString(GI->GetLuckyDrawState());
+
+		// Actor 위치에서 약간 위로 세 번째 줄을 표시하도록 설정
+		FVector PlayerLocation = Player->GetActorLocation();
+		FVector textLocation = PlayerLocation + FVector(0 , 0 , 100); // 첫 번째 줄 위치
+		FVector textLocation2 = textLocation + FVector(0 , 0 , 20);  // 두 번째 줄 위치
+		//FVector textLocation3 = textLocation2 + FVector(0 , 0 , 20); // 세 번째 줄 위치
+		//FVector textLocation4 = textLocation3 + FVector(0 , 0 , 20); // 세 번째 줄 위치
+
+		// 드로우디버그
+		DrawDebugString(GetWorld() , textLocation , PlaceStateText , nullptr , FColor::Yellow , 0 , true);
+		DrawDebugString(GetWorld() , textLocation2 , LuckyDrawStateText , nullptr , FColor::Green , 0 , true);
 	}
 }
 
@@ -381,15 +393,18 @@ void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 {
-	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") || UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("HJProtoMap") )
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if ( !GI ) return;
+	switch ( GI->GetPlaceState() )
 	{
-		// 특정 레벨일 때 실행할 코드
-		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
+	case EPlaceState::Plaza:
+	case EPlaceState::ConcertHall:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTHallMap"));
 		bIsCheat1Active = !bIsCheat1Active;
 		if ( bIsCheat1Active )
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1"));
-			
+
 			// MainUI 숨기기
 			MainUI->SetVisibleCanvas(false);
 			// 좌석 경쟁 UI 표시
@@ -405,6 +420,10 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 			// 좌석 경쟁 UI 숨기기
 			TicketingUI->SetVisibleSwitcher(false , 1);
 		}
+		break;
+	case EPlaceState::LuckyDrawRoom:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap"));
+		break;
 	}
 }
 
@@ -412,43 +431,30 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 {
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if ( !GI || !HttpActor2 ) return;
-
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if ( !PS ) return;
+	if ( !GI || !Local || !PS ) return;
 
-	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") || UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("HJProtoMap") )
+	switch ( GI->GetPlaceState() )
 	{
-		// 특정 레벨일 때 실행할 코드
-		UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
-		bIsCheat2Active = !bIsCheat2Active;
-		if ( bIsCheat2Active )
-		{
-			UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Enable Cheat2"));
-			GI->SetLuckyDrawState(ELuckyDrawState::Winner);
-			PS->SetLuckyDrawSeatID("CheatSeat");
+	case EPlaceState::Plaza:
+	case EPlaceState::ConcertHall:
+		if ( !HttpActor2 ) return;
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Enable Cheat2 in TTHallMap"));
+		GI->SetLuckyDrawState(ELuckyDrawState::Winner);
+		PS->SetLuckyDrawSeatID("CheatSeat");
 
-			// MainUI 숨기기
-			MainUI->SetVisibleCanvas(false);
+		// 추첨 당첨 UI 표시
+		MainUI->SetWidgetSwitcher(1);
 
-			// 추첨 당첨 UI 표시
-
-			// HTTP 통신 요청
-			HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
-		}
-		else
-		{
-			UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Disable Cheat2"));
-			GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
-			PS->SetLuckyDrawSeatID("-1");
-
-			// MainUI 표시
-			MainUI->SetVisibleCanvas(true);
-
-			// 추첨 당첨 UI 숨기기
-
-		}
+		// HTTP 통신 요청
+		HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
+		break;
+	case EPlaceState::LuckyDrawRoom:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Enable Cheat2 in TTLuckyDrawMap"));
+		GI->SwitchSession(EPlaceState::Plaza);
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
+		break;
 	}
 }
 

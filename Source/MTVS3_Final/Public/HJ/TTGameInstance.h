@@ -79,6 +79,10 @@ public:
 	FFindSignature OnFindSignatureCompleteDelegate;
 	virtual void Init() override;
 
+	// 세션 이동 시 모든 클라이언트 함께 이동할지 여부
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
+	bool bEnableServerTravel = true;
+
 # pragma region 세션
 	FString GenerateUniqueSessionName(const FString& SessionNamePrefix);
 
@@ -94,8 +98,9 @@ public:
 	void OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful);
 	void ExitSession();
 
-	void SwitchSessionToLuckyDraw();
+	void SwitchSession(EPlaceState Destination);
 	bool bSwitchToLuckyDrawSession;
+	bool bSwitchToHallSession;
 
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;;
 
@@ -112,16 +117,12 @@ public:
 	UPROPERTY(EditAnywhere , Category = "TTSettings|State")
 	EPlaceState PlaceState = EPlaceState::Plaza;
 	void SetPlaceState(EPlaceState NextPlaceState);
-	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = "TTSettings|Debug")
-	bool bShowPlaceStateDebug = true;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")
 	EPlaceState GetPlaceState() const { return PlaceState; }
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|State")
 	ELuckyDrawState LuckyDrawState = ELuckyDrawState::Neutral;
 	void SetLuckyDrawState(ELuckyDrawState NextLuckyDrawState);
-	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = "TTSettings|Debug")
-	bool bShowLuckyDrawStateDebug = true;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")
 	ELuckyDrawState GetLuckyDrawState() const { return LuckyDrawState; }
 
@@ -135,7 +136,7 @@ public:
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetNickname(const FString& _Nickname);
-	FString GetNickname() const;
+	FString GetNickname() const { return PlayerData.Nickname; };
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetAccessToken(const FString& _AccessToken);
