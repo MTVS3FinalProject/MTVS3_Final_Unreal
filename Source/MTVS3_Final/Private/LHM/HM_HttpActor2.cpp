@@ -12,6 +12,7 @@
 #include "GenericPlatform/GenericPlatformHttp.h"
 #include "ImageUtils.h"
 #include "JMH/MH_BuyTicketWidget.h"
+#include "GameFramework/PlayerState.h"
 
 // Sets default values
 AHM_HttpActor2::AHM_HttpActor2()
@@ -731,7 +732,60 @@ void AHM_HttpActor2::ReqPostNoticeGameStart(FString ConcertName , FString SeatId
 
 void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
+		// 캐스팅은 여기서 한 번만 실행
+		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+		APlayerState* PS = Cast<APlayerState>( GetWorld()->GetFirstPlayerController()->GetPlayerState<APlayerState>());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// nicknameList 파싱
+					TArray<FString> NicknameList;
+					const TArray<TSharedPtr<FJsonValue>>* NicknameArray;
+					if ( ResponseObject->TryGetArrayField(TEXT("nicknameList") , NicknameArray) )
+					{
+						for ( const TSharedPtr<FJsonValue>& Value : *NicknameArray )
+						{
+							NicknameList.Add(Value->AsString());
+						}
+						UE_LOG(LogTemp , Log , TEXT("Received %d nicknames") , NicknameList.Num());
+					}
+
+					// competitionRate 파싱
+					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
+					UE_LOG(LogTemp , Log , TEXT("Competition Rate: %d") , CompetitionRate);
+
+					// PS의 네임리스트를 관리하는 함수에 매개변수로 넘겨주기
+					if ( PS )
+					{
+						// GI->SetNicknameList(NicknameList);
+						// GI->SetCompetitionRate(CompetitionRate);
+					}
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Error , TEXT("Failed to get concert entry: %s") , *Response->GetContentAsString());
+		}
+	}
 }
 
 //=========================================================================================================================================
@@ -746,7 +800,7 @@ void AHM_HttpActor2::ReqPostGameResult(FString ConcertName , FString SeatId , FS
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/pre-reserve") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/draw-result") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 

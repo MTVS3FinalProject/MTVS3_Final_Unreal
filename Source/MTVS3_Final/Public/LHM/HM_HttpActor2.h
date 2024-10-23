@@ -126,8 +126,16 @@ struct FConcertReservation
 
 public:
     FConcertReservation()
-        : m_SeatId(TEXT("")), m_SeatInfo(TEXT("")) , m_SeatPrice(0), m_CompetitionRate(0), m_UserCode(TEXT("")),
-          m_NeedCoin(0), m_UserName(TEXT("")), m_UserPhoneNumber(TEXT("")), m_UserAddress(TEXT("")) {}
+        : m_SeatId(TEXT(""))
+        , m_SeatInfo(TEXT(""))
+        , m_SeatPrice(0)
+        , m_CompetitionRate(0)
+        , m_UserCode(TEXT(""))
+        , m_NeedCoin(0)
+        , m_UserName(TEXT(""))
+        , m_UserPhoneNumber(TEXT(""))
+        , m_UserAddress(TEXT(""))
+        {}
 
     const FString& GetSeatId() const { return m_SeatId; }
     void SetSeatId(const FString& SeatId) { m_SeatId = SeatId; }
@@ -164,34 +172,6 @@ public:
 
     const FString& GetUserAddress() const { return m_UserAddress; }
     void SetUserAddress(const FString& UserAddress) { m_UserAddress = UserAddress; }
-
-    void SetReservationInfo(
-        const FString& SeatId,
-        FString& SeatInfo,
-        int32 SeatPrice,
-        const TArray<FSeatIdDTO>& AvailableSeats,
-        const TArray<FSeatIdDTO>& ReceptionSeats,
-        const TArray<FMyReceptionSeatInfoDTO>& MyReceptionSeats,
-        int32 CompetitionRate,
-        const FString& UserCode,
-        int32 NeedCoin,
-        const FString& UserName,
-        const FString& UserPhoneNumber,
-        const FString& UserAddress)
-    {
-        m_SeatId = SeatId;
-        m_SeatInfo = SeatInfo;
-        m_SeatPrice = SeatPrice;
-        m_AvailableSeats = AvailableSeats;
-        m_ReceptionSeats = ReceptionSeats;
-        m_MyReceptionSeats = MyReceptionSeats;
-        m_CompetitionRate = CompetitionRate;
-        m_UserCode = UserCode;
-        m_NeedCoin = NeedCoin;
-        m_UserName = UserName;
-        m_UserPhoneNumber = UserPhoneNumber;
-        m_UserAddress = UserAddress;
-    }
 
 private:
     UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
