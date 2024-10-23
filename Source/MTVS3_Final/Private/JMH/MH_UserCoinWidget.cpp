@@ -4,16 +4,21 @@
 #include "JMH/MH_UserCoinWidget.h"
 
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
+#include "HJ/TTGameInstance.h"
 
 void UMH_UserCoinWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMH_UserCoinWidget::OnClickedBuyCoinsButton);
+	
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		SetUserCoin(gi->GetCoin());
+	}
 }
 
-void UMH_UserCoinWidget::OnClickedBuyCoinsButton()
+void UMH_UserCoinWidget::SetUserCoin(int32 UserCoin)
 {
-	//MainUI -> 스위치 , 코인 충전 UI 이동
-	 
+	Text_UserCoin->SetText(FText::AsNumber(UserCoin));
 }

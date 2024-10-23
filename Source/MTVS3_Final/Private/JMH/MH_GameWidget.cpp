@@ -10,18 +10,13 @@
 void UMH_GameWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	Btn_BuyTicket->OnClicked.AddDynamic(this , &UMH_GameWidget::OnClickedBuyTicket);
-	Btn_BuyLater->OnClicked.AddDynamic(this , &UMH_GameWidget::OnClickedBuyLater);
-	Btn_Back2->OnClicked.AddDynamic(this , &UMH_GameWidget::OnClickedBuyLater);
-	Btn_Back01->OnClicked.AddDynamic(this , &UMH_GameWidget::OnClickedBack01Button);
 }
 
 void UMH_GameWidget::SetWidgetSwitcher(int32 num)
 {
 	//서버에서 불러와서 입력
 	WS_GameWidgetSwitcher->SetActiveWidgetIndex(num);
-	ShoeWidget();
+	ShowWidget();
 }
 
 void UMH_GameWidget::HideWidget()
@@ -29,7 +24,7 @@ void UMH_GameWidget::HideWidget()
 	WS_GameWidgetSwitcher->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void UMH_GameWidget::ShoeWidget()
+void UMH_GameWidget::ShowWidget()
 {
 	WS_GameWidgetSwitcher->SetVisibility(ESlateVisibility::Visible);
 }
@@ -97,18 +92,7 @@ void UMH_GameWidget::SetTextroulette3(int32 roulette3)
 	}
 }
 
-void UMH_GameWidget::SetTextSeatNum1(FString SeatNum1)
-{
-	//좌석 구역
-	Tex_roulette3->SetText(FText::FromString(SeatNum1));
-}
-
-void UMH_GameWidget::SetTextSeatNum2(FString SeatNum2)
-{
-	//좌석 번호
-	Tex_roulette3->SetText(FText::FromString(SeatNum2));
-}
-
+/*
 void UMH_GameWidget::OnClickedBuyTicket()
 {
 	//예매진행 버튼->
@@ -141,4 +125,4 @@ void UMH_GameWidget::OnClickedBack01Button()
 	//미니게임 -> 티켓예매창에서 뒤로가기 누르면
 	//위젯 종료? 비지블 off?
 	//세션 옮기고 띄우는거면 RemoveWidget해야할까?
-}
+}*/

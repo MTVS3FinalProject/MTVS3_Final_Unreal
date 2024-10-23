@@ -7,6 +7,7 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
+#include "Components/WidgetSwitcher.h"
 #include "HJ/TTGameInstance.h"
 #include "LHM/HM_HttpActor2.h" // 통신 테스트용
 #include "Kismet/GameplayStatics.h" // 통신 테스트용
@@ -18,12 +19,24 @@ void UMainWidget::NativeConstruct()
 	SetVisibleCanvas(true);
 
 	Btn_BackMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBackMain);
+	Btn_BuyTicket->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyTicket);
+	Btn_BuyLater->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyBack);
+	Btn_FailBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyBack);
+	Btn_BuyTickerBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyBack);
+	Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyBack);
+	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
 
+	
 	//// HttpActor2 공연장 입장 통신 테스트용
 	//Btn_GetConcertInfo->OnClicked.AddDynamic(this, &UMainWidget::OnClickedGetConcertInfo);
 	//Btn_ConcertEntry->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertEntry);
 	//Btn_SeatRegistrationInquiry->OnClicked.AddDynamic(this , &UMainWidget::OnClickedSeatRegistrationInquiry);
 	//Btn_GameResult->OnClicked.AddDynamic(this , &UMainWidget::OnClickedGameResult);
+}
+
+void UMainWidget::SetWidgetSwitcher(int32 num)
+{
+	WS_MainWidgetSwitcher->SetActiveWidgetIndex(num);
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
@@ -56,7 +69,43 @@ void UMainWidget::OnClickedBackMain()
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ExitSession"));
 	}
 }
-<<<<<<< HEAD
+
+void UMainWidget::OnClickedBuyTicket()
+{
+	//예매진행 버튼-> ButTicket으로 
+	SetWidgetSwitcher(3);
+}
+
+void UMainWidget::SetTextSeatNum1(FString SeatNum1)
+{
+	//좌석 구역
+	Tex_SeatNum1->SetText(FText::FromString(SeatNum1));
+}
+
+void UMainWidget::SetTextSeatNum2(FString SeatNum2)
+{
+	//좌석 번호
+	Tex_SeatNum2->SetText(FText::FromString(SeatNum2));
+}
+
+void UMainWidget::OnClickedBuyBack()
+{
+	//나중에 예매하기버튼-> 위젯 끄기 Map 0으로 이동
+	//알림 등록하고, 알림에서 클릭시 결제 진행 가능.
+	SetWidgetSwitcher(0);
+}
+
+void UMainWidget::SetTextRemainingTicket(int32 RemainingTicket)
+{
+	//게임인스턴스에서 남아있는 티켓 잔여횟수 받아오기
+	Text_RemainingTickets->SetText(FText::AsNumber(RemainingTicket));
+}
+
+void UMainWidget::OnClickedBuyCoinsButton()
+{
+	SetWidgetSwitcher(4);
+}
+
 /*
 void UMainWidget::OnClickedGetConcertInfo()
 {
@@ -137,7 +186,7 @@ void UMainWidget::OnClickedGameResult()
         }
     }
 }*/
-=======
+
 
 //void UMainWidget::OnClickedGetConcertInfo()
 //{
@@ -218,4 +267,4 @@ void UMainWidget::OnClickedGameResult()
 //        }
 //    }
 //}
->>>>>>> 87ec297d7e2deda26a5cf248f5dc03f8d6eecced
+
