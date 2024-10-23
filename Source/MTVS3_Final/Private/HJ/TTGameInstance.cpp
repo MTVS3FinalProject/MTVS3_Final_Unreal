@@ -5,6 +5,7 @@
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "Online/OnlineSessionNames.h"
+#include "HJ/TTPlayerState.h"
 
 void UTTGameInstance::Init()
 {
@@ -31,6 +32,7 @@ void UTTGameInstance::Init()
 	}
 }
 
+#pragma region 세션
 // 유니크한 세션 이름 생성 (타임스탬프 + 랜덤 값)
 FString UTTGameInstance::GenerateUniqueSessionName(const FString& SessionNamePrefix)
 {
@@ -252,33 +254,48 @@ void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSu
 	// 상태 플래그 초기화
 	bSwitchToLuckyDrawSession = false;
 }
+#pragma endregion
+
+void UTTGameInstance::SetPlaceState(EPlaceState NextPlaceState)
+{
+	EPlaceState PrevPlaceState = PlaceState;
+	PlaceState = NextPlaceState;
+
+	if ( bShowPlaceStateDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
+	{
+		FString PlaceStateText = UEnum::GetValueAsString(PlaceState);
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("%s") , *PlaceStateText));
+	}
+}
+
+void UTTGameInstance::SetLuckyDrawState(ELuckyDrawState NextLuckyDrawState)
+{
+	ELuckyDrawState PrevLuckyDrawState = LuckyDrawState;
+	LuckyDrawState = NextLuckyDrawState;
+
+	if ( bShowLuckyDrawStateDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
+	{
+		FString LuckyDrawStateText = UEnum::GetValueAsString(LuckyDrawState);
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("%s") , *LuckyDrawStateText));
+	}
+}
 
 #pragma region Getter 및 Setter 함수
-void UTTGameInstance::SetPlayerData(const FPlayerData& NewPlayerData)
-{
-	PlayerData = NewPlayerData;
-}
-
-FPlayerData UTTGameInstance::GetPlayerData() const
-{
-	return PlayerData;
-}
-
 void UTTGameInstance::SetbIsHost(const bool& _bIsHost)
 {
 	PlayerData.bIsHost = _bIsHost;
 	SetPlayerData(PlayerData);
 }
 
-bool UTTGameInstance::GetbIsHost() const
-{
-	return PlayerData.bIsHost;
-}
-
 void UTTGameInstance::SetNickname(const FString& _Nickname)
 {
 	PlayerData.Nickname = _Nickname;
 	SetPlayerData(PlayerData);
+
+	// PS에 닉네임 저장
+	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
+	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
+	if (PS) PS->SetNickname(_Nickname);
 }
 
 FString UTTGameInstance::GetNickname() const
@@ -297,11 +314,6 @@ void UTTGameInstance::SetAccessToken(const FString& _AccessToken)
 	SetPlayerData(PlayerData);
 }
 
-FString UTTGameInstance::GetAccessToken() const
-{
-	return PlayerData.AccessToken;
-}
-
 void UTTGameInstance::SetCoin(const int32& _Coin)
 {
 	PlayerData.Coin = _Coin;
@@ -312,11 +324,6 @@ void UTTGameInstance::AddCoin(int32 _Coin)
 {
 	PlayerData.Coin += _Coin;
 	SetPlayerData(PlayerData);
-}
-
-int32 UTTGameInstance::GetCoin()
-{
-	return PlayerData.Coin;
 }
 
 void UTTGameInstance::SetRemainingTicketCount(const int32& _RemainingTicketCount)
@@ -331,19 +338,21 @@ void UTTGameInstance::UseRemainingTicket(int32 UsedTicketCount)
 	SetPlayerData(PlayerData);
 }
 
-int32 UTTGameInstance::GetRemainingTicketCount()
-{
-	return PlayerData.RemainingTicketCount;
-}
-
 void UTTGameInstance::SetAvatarData(const int32& _AvatarData)
 {
 	PlayerData.AvatarData = _AvatarData;
 	SetPlayerData(PlayerData);
 }
 
-int32 UTTGameInstance::GetAvatarData()
+void UTTGameInstance::SetConcertName(const FString& _ConcertName)
 {
-	return PlayerData.AvatarData;
+	PlayerData.ConcertName = _ConcertName;
+	SetPlayerData(PlayerData);
+}
+
+void UTTGameInstance::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
+{
+	PlayerData.LuckyDrawSeatID = _LuckyDrawSeatID;
+	SetPlayerData(PlayerData);
 }
 #pragma endregion
