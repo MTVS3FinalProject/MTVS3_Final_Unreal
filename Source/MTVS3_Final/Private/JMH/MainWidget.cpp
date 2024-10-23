@@ -120,9 +120,16 @@ void UMainWidget::OnClickedBuyCoinsButton()
 
 void UMainWidget::OnClickedConcert01()
 {
-	//현민
-	//서버에서 콘서트 정보 받아오기
-	//로비로이동
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqPostConcertEntry(gi->GetConcertName() , gi->GetAccessToken());
+		}
+	}
 }
 
 /*
