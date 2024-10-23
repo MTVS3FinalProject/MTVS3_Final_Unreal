@@ -256,7 +256,7 @@ void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if ( gi )
 	{
-		gi->SwitchSessionToLuckyDraw();
+		gi->SwitchSession(EPlaceState::LuckyDrawRoom);
 	}
 }
 

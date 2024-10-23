@@ -200,7 +200,18 @@ void UTTGameInstance::OnMyCreateSessionComplete(FName SessionName , bool bWasSuc
 		}
 		else if ( SessionType == TEXT("TTLuckyDrawSession") )
 		{
-			GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTLuckyDrawMap?listen")); // TTLuckyDrawMap으로 이동
+			if ( bEnableServerTravel )
+			{
+				// 클라이언트 같이 이동시키고 싶은 경우
+				GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTLuckyDrawMap?listen"));
+			}
+			else
+			{
+				// 홀 관리자 1, 추첨방 관리자 1 해서 각자 이동하고 싶은 경우
+				auto* pc = GetWorld()->GetFirstPlayerController();
+				pc->ClientTravel(TEXT("/Game/Ticketaka/TTLuckyDrawMap") , ETravelType::TRAVEL_Absolute); // TTLuckyDrawMap으로 이동
+				SetPlaceState(EPlaceState::LuckyDrawRoom);
+			}
 		}
 	}
 
@@ -212,9 +223,21 @@ void UTTGameInstance::ExitSession()
 	ServerRPCExitSesson();
 }
 
-void UTTGameInstance::SwitchSessionToLuckyDraw()
+void UTTGameInstance::SwitchSession(EPlaceState Destination)
 {
-	bSwitchToLuckyDrawSession = true;
+	switch ( Destination )
+	{
+		// 목적지가 추첨방이면
+	case EPlaceState::LuckyDrawRoom:
+		bSwitchToLuckyDrawSession = true;
+		break;
+		// 목적지가 광장 또는 콘서트홀이면(광장에 스폰)
+	case EPlaceState::Plaza:
+	case EPlaceState::ConcertHall:
+		bSwitchToHallSession = true;
+		break;
+	}
+
 	ExitSession(); // 현재 세션 나가기
 }
 
@@ -237,8 +260,11 @@ void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSu
 
 		if ( bSwitchToLuckyDrawSession )
 		{
-			// SwitchSessionToLuckyDraw()가 호출된 경우
 			FindOrCreateSession(TEXT("TTLuckyDrawSession") , 30);
+		}
+		else if ( bSwitchToHallSession )
+		{
+			FindOrCreateSession(TEXT("TTHallSession") , 100);
 		}
 		else
 		{
@@ -253,6 +279,7 @@ void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSu
 	}
 	// 상태 플래그 초기화
 	bSwitchToLuckyDrawSession = false;
+	bSwitchToHallSession = false;
 }
 #pragma endregion
 
@@ -260,24 +287,12 @@ void UTTGameInstance::SetPlaceState(EPlaceState NextPlaceState)
 {
 	EPlaceState PrevPlaceState = PlaceState;
 	PlaceState = NextPlaceState;
-
-	if ( bShowPlaceStateDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
-	{
-		FString PlaceStateText = UEnum::GetValueAsString(PlaceState);
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("%s") , *PlaceStateText));
-	}
 }
 
 void UTTGameInstance::SetLuckyDrawState(ELuckyDrawState NextLuckyDrawState)
 {
 	ELuckyDrawState PrevLuckyDrawState = LuckyDrawState;
 	LuckyDrawState = NextLuckyDrawState;
-
-	if ( bShowLuckyDrawStateDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
-	{
-		FString LuckyDrawStateText = UEnum::GetValueAsString(LuckyDrawState);
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("%s") , *LuckyDrawStateText));
-	}
 }
 
 #pragma region Getter 및 Setter 함수
@@ -295,17 +310,7 @@ void UTTGameInstance::SetNickname(const FString& _Nickname)
 	// PS에 닉네임 저장
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if (PS) PS->SetNickname(_Nickname);
-}
-
-FString UTTGameInstance::GetNickname() const
-{
-	if ( PlayerData.Nickname.IsEmpty() )
-	{
-		UE_LOG(LogTemp , Warning , TEXT("Nickname is empty , returning default value."));
-		return TEXT("티케타카");
-	}
-	return PlayerData.Nickname;
+	if ( PS ) PS->SetNickname(_Nickname);
 }
 
 void UTTGameInstance::SetAccessToken(const FString& _AccessToken)
