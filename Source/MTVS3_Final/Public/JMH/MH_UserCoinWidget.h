@@ -18,12 +18,11 @@ public:
 
 	virtual void NativeConstruct() override;
 
-	//코인 충전버튼
+	//내 현재 코인 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_BuyCoins;
+	class UTextBlock* Text_UserCoin;
 	UFUNCTION()
-	void OnClickedBuyCoinsButton();
-
+	void SetUserCoin(int32 UserCoin);
 	
 	
 };
