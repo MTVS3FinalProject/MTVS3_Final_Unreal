@@ -40,5 +40,8 @@ public:
 	UFUNCTION()
 	void HideText();
 
-	ACharacter* OverlappingPlayer = nullptr;  // 오버랩된 플레이어 추적용
+	ACharacter* OverlappingPlayer = nullptr;
+
+	class UMainWidget* MainUI;
+	void SetMainUI(UMainWidget* InMainUI);
 };
