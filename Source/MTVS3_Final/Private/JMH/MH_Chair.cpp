@@ -7,10 +7,11 @@
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"
-#include <Net/UnrealNetwork.h>
+#include "Net/UnrealNetwork.h"
 #include "JMH/MainWidget.h"
-#include <HJ/TTPlayer.h>
-#include <JMH/MH_TicketingWidget.h>
+#include "HJ/TTPlayer.h"
+#include "JMH/MH_TicketingWidget.h"
+#include "JMH/MH_Interaction.h"
 
 // Sets default values
 AMH_Chair::AMH_Chair()
@@ -74,8 +75,27 @@ void AMH_Chair::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 
 void AMH_Chair::ShowText()
 {
-	UE_LOG(LogTemp , Warning , TEXT("Showing Widget: %s") , *GetName());
 	Widgetcomp->SetVisibility(true);
+
+	// GetWidget()을 사용하여 위젯 인스턴스를 가져옴
+	UUserWidget* WidgetCompUI = Cast<UUserWidget>(Widgetcomp->GetWidget());
+	if ( WidgetCompUI )
+	{
+		// 위젯 인스턴스를 UMH_Interaction으로 캐스팅
+		UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(WidgetCompUI);
+		if ( InteractionUI )
+		{
+			InteractionUI->SetActiveWidgetIndex(0);
+		}
+		else
+		{
+			UE_LOG(LogTemp , Warning , TEXT("No interaction UI: %s") , *GetName());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("No widget found in component: %s") , *GetName());
+	}
 }
 
 void AMH_Chair::HideText()

@@ -3,7 +3,10 @@
 
 #include "HJ/HJ_Actor.h"
 #include "HJ/TTPlayer.h"
-#include "HJ/TTGameInstance.h"
+#include "Components/BoxComponent.h"
+#include "Components/WidgetComponent.h"
+#include "HJ/TTPlayer.h"
+#include "JMH/MH_Interaction.h"
 
 // Sets default values
 AHJ_Actor::AHJ_Actor()
@@ -11,51 +14,82 @@ AHJ_Actor::AHJ_Actor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	Boxcomp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
+	SetRootComponent(Boxcomp);
+
+	Boxcomp->OnComponentBeginOverlap.AddDynamic(this , &AHJ_Actor::OnBeginOverlap);
+	Boxcomp->OnComponentEndOverlap.AddDynamic(this , &AHJ_Actor::OnEndOverlap);
+
+	Widgetcomp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComp"));
+	Widgetcomp->SetupAttachment(Boxcomp);
 }
 
 // Called when the game starts or when spawned
 void AHJ_Actor::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	Widgetcomp->SetVisibility(false);
 }
 
 // Called every frame
 void AHJ_Actor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
 
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if ( GI )
+void AHJ_Actor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent , AActor* OtherActor , UPrimitiveComponent* OtherComp , int32 OtherBodyIndex , bool bFromSweep , const FHitResult& SweepResult)
+{
+	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
+	if ( TTPlayer && TTPlayer->IsLocallyControlled() )
 	{
-		// 플레이어 데이터를 구조체로 가져오기
-		//FPlayerData PlayerData = GI->GetPlayerData();  // 현재 플레이어 데이터를 가져옴
-		//// 관리자 여부 설정 및 가져오기
-		//PlayerData.bIsHost = true;
-		//bool bIsHost = PlayerData.bIsHost;
-		//GI->SetPlayerData(PlayerData);
-		GI->SetbIsHost(true);
-		bool bIsHost = GI->GetbIsHost();
+		//SetMainUI(TTPlayer->MainUI);
+		//SetTicketingUI(TTPlayer->TicketingUI);
 
-		// 닉네임 설정 및 가져오기
-		GI->SetNickname("Nickname");
-		FString Nickname = GI->GetNickname();
-
-		// 코인 서버에서 받아오기, 더하기, 가져오기
-		// 더하기로 되어 있으므로 예매 시엔 음수(-) 값 입력
-		GI->SetCoin(/*코인 저장 변수*/100000);
-		GI->AddCoin(-30);
-		int32 Coin = GI->GetCoin();
-
-		// 티켓 접수 가능 개수 서버에서 받아오기, 티켓 접수, 접수 가능 개수 가져오기
-		// UseRemainingTicket의 매개변수는 티켓 접수 개수
-		GI->SetRemainingTicketCount(/*티켓 접수 가능 개수 저장 변수*/2);
-		GI->UseRemainingTicket(1);
-		int32 RemainingTicketCount = GI->GetRemainingTicketCount();
-
-		// 아바타 데이터 서버에서 받아오기, 아바터 데이터 가져오기
-		GI->SetAvatarData(/*아바타 데이터 저장 변수*/1);
-		int32 AvatarData = GI->GetAvatarData();
+		OverlappingPlayer = TTPlayer;  // 오버랩된 플레이어 추적
+		ShowText();
 	}
+}
+
+void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* OtherActor , UPrimitiveComponent* OtherComp , int32 OtherBodyIndex)
+{
+	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
+	if ( TTPlayer && TTPlayer->IsLocallyControlled() )
+	{
+		OverlappingPlayer = nullptr;  // 오버랩 해제 시 플레이어 초기화
+		HideText();
+		//// MainUI 표시
+		//if ( MainUI ) MainUI->SetVisibleCanvas(true);
+		//// 좌석 접수 UI 숨기기
+		//if ( TicketingUI ) TicketingUI->SetVisibleSwitcher(false , 0);
+	}
+}
+
+void AHJ_Actor::ShowText()
+{
+	Widgetcomp->SetVisibility(true);
+	// GetWidget()을 사용하여 위젯 인스턴스를 가져옴
+	UUserWidget* WidgetCompUI = Cast<UUserWidget>(Widgetcomp->GetWidget());
+	if ( WidgetCompUI )
+	{
+		// 위젯 인스턴스를 UMH_Interaction으로 캐스팅
+		UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(WidgetCompUI);
+		if ( InteractionUI )
+		{
+			InteractionUI->SetActiveWidgetIndex(1);
+		}
+		else
+		{
+			UE_LOG(LogTemp , Warning , TEXT("No interaction UI: %s") , *GetName());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("No widget found in component: %s") , *GetName());
+	}
+}
+
+void AHJ_Actor::HideText()
+{
+	Widgetcomp->SetVisibility(false);
 }
 
