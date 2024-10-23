@@ -60,6 +60,7 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible, int index)
 			if ( !bIsVisible&& Can_RegisterAnim_On )
 			{
 				bIsVisible = true;
+				WS_RegisterSwitcher->SetActiveWidgetIndex(0);
 				PlayAnimation(Can_RegisterAnim_On);
 			}
 		}
@@ -78,6 +79,7 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible, int index)
 		if ( bVisible )
 		{
 			bIsVisible = true;
+			WS_RegisterSwitcher->SetActiveWidgetIndex(1);
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
 		}
 		else if ( !bVisible )
