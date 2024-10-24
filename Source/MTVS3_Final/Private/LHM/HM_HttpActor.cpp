@@ -319,7 +319,6 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 	if ( bWasSuccessful && Response.IsValid() )
 	{
 		// 캐스팅은 여기서 한 번만 실행
-		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
@@ -356,7 +355,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("AvatarData: %d") , AvatarData));
 
 						
-						if ( TTPlayer && GI )
+						if ( GI )
 						{
 							// 닉네임 설정 및 가져오기
 							GI->SetNickname(Nickname);
