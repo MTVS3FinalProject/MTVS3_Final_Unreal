@@ -10,15 +10,22 @@ void UPlayerNicknameWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	//// 게임 인스턴스를 가져와서
-	//auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	//if (gi)
-	//{
-	//	Tex_Nickname->SetText(FText::FromString(gi->GetNickname()));
-	//}
-
-	// PS에 닉네임 저장
+	// 게임 인스턴스를 가져와서
+	auto* GI = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if ( PS ) Tex_Nickname->SetText(FText::FromString(PS->GetNickname()));
+	if (!GI || !Local || !PS) return;
+
+	switch ( GI->GetPlaceState() )
+	{
+	case EPlaceState::Plaza:
+	case EPlaceState::ConcertHall:
+		Tex_Nickname->SetText(FText::FromString(PS->GetNickname()));
+		break;
+	case EPlaceState::LuckyDrawRoom:
+		Tex_Nickname->SetText(FText::FromString(FString::FromInt(PS->GetRandomSeatNumber())));
+		break;
+	}
+
+	
 }

@@ -146,24 +146,27 @@ void ATTPlayer::Tick(float DeltaTime)
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	ATTPlayerController* PC = Cast<ATTPlayerController>(GetWorld()->GetFirstPlayerController());
 	ATTPlayer* Player = Cast<ATTPlayer>(PC->GetPawn());
-	if ( !GI || !PC || !Player ) return;
+	ATTPlayerState* PS = Cast<ATTPlayerState>(Player->GetPlayerState());
+	if ( !GI || !PC || !Player || !PS ) return;
 
 	if ( bShowDebug && GEngine /*&& GetWorld()->GetNetMode() == NM_Client*/ )
 	{
 		// mState를 문자열로 변환
 		FString PlaceStateText = UEnum::GetValueAsString(GI->GetPlaceState());
 		FString LuckyDrawStateText = UEnum::GetValueAsString(GI->GetLuckyDrawState());
+		FString BIsHostText = FString::Printf(TEXT("bIsHost: %s") , PS->GetbIsHost() ? TEXT("True") : TEXT("False"));
 
 		// Actor 위치에서 약간 위로 세 번째 줄을 표시하도록 설정
 		FVector PlayerLocation = Player->GetActorLocation();
 		FVector textLocation = PlayerLocation + FVector(0 , 0 , 100); // 첫 번째 줄 위치
 		FVector textLocation2 = textLocation + FVector(0 , 0 , 20);  // 두 번째 줄 위치
-		//FVector textLocation3 = textLocation2 + FVector(0 , 0 , 20); // 세 번째 줄 위치
+		FVector textLocation3 = textLocation2 + FVector(0 , 0 , 20); // 세 번째 줄 위치
 		//FVector textLocation4 = textLocation3 + FVector(0 , 0 , 20); // 세 번째 줄 위치
 
-		// 드로우디버그
+		// 드로우디버그: 아랫줄부터 출력됨
 		DrawDebugString(GetWorld() , textLocation , PlaceStateText , nullptr , FColor::Yellow , 0 , true);
 		DrawDebugString(GetWorld() , textLocation2 , LuckyDrawStateText , nullptr , FColor::Green , 0 , true);
+		DrawDebugString(GetWorld() , textLocation3 , BIsHostText , nullptr , FColor::Blue , 0 , true);
 	}
 }
 
@@ -187,9 +190,10 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		input->BindAction(IA_Purchase , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionPurchase);
 		input->BindAction(IA_Inventory , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionInventory);
 		input->BindAction(IA_Chat , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionChat);
+		input->BindAction(IA_Map , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionMap);
 		input->BindAction(IA_Cheat1 , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat1);
 		input->BindAction(IA_Cheat2 , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat2);
-		input->BindAction(IA_Map , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionMap);
+		input->BindAction(IA_Cheat3 , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat3);
 	}
 }
 
@@ -443,6 +447,9 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap"));
+		GI->SwitchSession(EPlaceState::Plaza);
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
+		bIsCheat1Active = !bIsCheat1Active;
 		break;
 	}
 }
@@ -472,10 +479,19 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Enable Cheat2 in TTLuckyDrawMap"));
-		GI->SwitchSession(EPlaceState::Plaza);
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
+
 		break;
 	}
+}
+
+void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
+{
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if ( !GI ) return;
+
+	UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3"));
+	bIsCheat3Active = !bIsCheat3Active;
+	GI->SetbIsHost(bIsCheat3Active);
 }
 
 void ATTPlayer::InitMainUI()
