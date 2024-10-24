@@ -941,7 +941,8 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 				{
 					// 받아올 정보 추출
 					FString UserCode = ResponseObject->GetStringField(TEXT("userCode"));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("userCode : %s") , *UserCode));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserCode : %s") , *UserCode));
+					UE_LOG(LogTemp , Log , TEXT("UserCode : %s"), *UserCode);
 
 					SetUserCode(UserCode);
 
@@ -1002,6 +1003,11 @@ void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString UserCode , FString Acc
 	Writer->WriteValue(TEXT("userCode") , UserCode);
 	Writer->WriteObjectEnd();
 	Writer->Close();
+
+	UE_LOG(LogTemp , Log , TEXT("회원인증 확인 요청 userCode : %s"), *UserCode);
+
+	// JSON 본문 설정
+	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
 	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResGetPostConfirmMemberPhoto);

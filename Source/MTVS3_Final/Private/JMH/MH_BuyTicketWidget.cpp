@@ -104,6 +104,7 @@ void UMH_BuyTicketWidget::OnClickedConfirm_QRUi1Button()
 		if ( HttpActor2 )
 		{
 			HttpActor2->ReqGetPostConfirmMemberPhoto(HttpActor2->GetUserCode() , gi->GetAccessToken());
+			UE_LOG(LogTemp , Log , TEXT("HttpActor2->GetUserCode() : %s"), *HttpActor2->GetUserCode());
 		}
 	}
 }
