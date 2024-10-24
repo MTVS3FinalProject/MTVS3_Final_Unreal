@@ -54,7 +54,7 @@ void AHM_HttpActor::Tick(float DeltaTime)
 //=========================================================================================================================================
 
 // QR코드 요청을 서버에 보내는 함수
-void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
+void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email, FText Password)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -74,6 +74,7 @@ void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email)
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
 	Writer->WriteValue(TEXT("email") , Email.ToString());
+	Writer->WriteValue(TEXT("passWord") , Password.ToString());
 	Writer->WriteObjectEnd();
 	Writer->Close();
 

@@ -29,24 +29,6 @@ void AHM_HttpActor2::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("TTHallMap") )
-	//{
-		// 특정 레벨일 때 실행할 코드
-		//UE_LOG(LogTemp , Warning , TEXT("현재 레벨은 TTHallMap입니다."));
-
-		//TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
-
-		//// 테스트용
-		//if ( TicketingUI )
-		//{
-		//	TicketingUI->AddToViewport();
-		//}
-
-		//auto* pc = UGameplayStatics::GetPlayerController(this , 0);
-		//if ( !pc ) return;
-		//pc->SetShowMouseCursor(true);
-		//pc->SetInputMode(FInputModeGameAndUI());
-	//}
 }
 
 // Called every frame
@@ -1044,7 +1026,7 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 }
 
 // 예매자 정보 입력 요청
-void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , FString UserPhoneNum , FString UserAddress1 , FString UserAddress2 , FString AccessToken)
+void AHM_HttpActor2::ReqPostReservationinfo(FText UserName , FText UserPhoneNum , FText UserAddress1 , FText UserAddress2 , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -1065,10 +1047,10 @@ void AHM_HttpActor2::ReqPostReservationinfo(FString UserName , FString UserPhone
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("userName") , UserName);
-	Writer->WriteValue(TEXT("userPhoneNumber") , UserPhoneNum);
-	Writer->WriteValue(TEXT("userAddress1") , UserAddress1);
-	Writer->WriteValue(TEXT("userAddress2") , UserAddress2);
+	Writer->WriteValue(TEXT("userName") , UserName.ToString());
+	Writer->WriteValue(TEXT("userPhoneNumber") , UserPhoneNum.ToString());
+	Writer->WriteValue(TEXT("userAddress1") , UserAddress1.ToString());
+	Writer->WriteValue(TEXT("userAddress2") , UserAddress2.ToString());
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -1211,6 +1193,7 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 				if ( ResponseObject.IsValid() )
 				{
 					// 필요한 정보 추출
+					FString SeatId = ResponseObject->GetStringField(TEXT("seatId"));
 					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo"));
 					int32 SeatNum = ResponseObject->GetIntegerField(TEXT("seatNum"));
 					int32 SeatPrice = ResponseObject->GetIntegerField(TEXT("seatPrice"));
@@ -1219,13 +1202,14 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					FString UserPhoneNum = ResponseObject->GetStringField(TEXT("userPhoneNumber"));
 					FString UserAddress = ResponseObject->GetStringField(TEXT("userAddress"));
 
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatInfo : %s") , *SeatInfo));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatNum : %d") , SeatNum));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatPrice : %d") , SeatPrice));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserCoin : %d") , UserCoin));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserName : %s") , *UserName));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserPhoneNum : %s") , *UserPhoneNum));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserAddress : %s") , *UserAddress));
+					UE_LOG(LogTemp , Log , TEXT("SeatId : %s") , *SeatId);
+					UE_LOG(LogTemp , Log , TEXT("SeatInfo : %s") , *SeatInfo);
+					UE_LOG(LogTemp , Log , TEXT("SeatNum : %d") , SeatNum);
+					UE_LOG(LogTemp , Log , TEXT("SeatPrice : %d") , SeatPrice);
+					UE_LOG(LogTemp , Log , TEXT("UserCoin : %d") , UserCoin);
+					UE_LOG(LogTemp , Log , TEXT("UserName : %s") , *UserName);
+					UE_LOG(LogTemp , Log , TEXT("UserPhoneNum : %s") , *UserPhoneNum);
+					UE_LOG(LogTemp , Log , TEXT("UserAddress : %s") , *UserAddress);
 
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -1254,3 +1238,44 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 		}
 	}
 }
+
+
+
+
+
+
+// ======================== 개발자 키(2) Cheat Seat 좌석 게임 결과 요청 ========================
+void AHM_HttpActor2::ReqPostCheatGameResult(FString ConcertName , FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/draw-cheat") , *_url);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("POST"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 전달 데이터 (JSON)
+	FString ContentString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("concertName") , ConcertName);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	// 요청 본문에 JSON 데이터를 설정
+	Request->SetContentAsString(ContentString);
+
+	// 요청 전송
+	Request->ProcessRequest();
+
+	UE_LOG(LogTemp , Log , TEXT("Cheat Seat 좌석 게임 결과 요청"));
+}
+
