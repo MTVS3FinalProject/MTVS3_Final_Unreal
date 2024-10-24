@@ -125,6 +125,10 @@ public:
 	UPROPERTY(VisibleAnywhere , Category = "TTSettings|State")
 	bool bIsCheat3Active;
 	void OnMyActionCheat3(const FInputActionValue& Value);
+
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	class UInputAction* IA_Cheat4;
+	void OnMyActionCheat4(const FInputActionValue& Value);
 #pragma endregion
 
 #pragma region UI

@@ -194,6 +194,7 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		input->BindAction(IA_Cheat1 , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat1);
 		input->BindAction(IA_Cheat2 , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat2);
 		input->BindAction(IA_Cheat3 , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat3);
+		input->BindAction(IA_Cheat4, ETriggerEvent::Started, this, &ATTPlayer::OnMyActionCheat4);
 	}
 }
 
@@ -483,6 +484,12 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3"));
 	bIsCheat3Active = !bIsCheat3Active;
 	GI->SetbIsHost(bIsCheat3Active);
+}
+
+void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Pressed 4: Cheat4"));
+	bShowDebug = !bShowDebug;
 }
 
 void ATTPlayer::InitMainUI()
