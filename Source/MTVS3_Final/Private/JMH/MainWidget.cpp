@@ -128,13 +128,13 @@ void UMainWidget::OnClickedConcert01()
 
 	GI->SetPlaceState(EPlaceState::ConcertHall);
 
-	if ( gi )
+	if ( GI )
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostConcertEntry(gi->GetConcertName() , gi->GetAccessToken());
+			HttpActor2->ReqPostConcertEntry(GI->GetConcertName() , GI->GetAccessToken());
 		}
 	}
 
