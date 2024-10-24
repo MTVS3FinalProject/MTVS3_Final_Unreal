@@ -300,6 +300,11 @@ void UTTGameInstance::SetbIsHost(const bool& _bIsHost)
 {
 	PlayerData.bIsHost = _bIsHost;
 	SetPlayerData(PlayerData);
+
+	// PS에 호스트 여부 저장
+	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
+	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
+	if ( PS ) PS->SetbIsHost(_bIsHost);
 }
 
 void UTTGameInstance::SetNickname(const FString& _Nickname)
