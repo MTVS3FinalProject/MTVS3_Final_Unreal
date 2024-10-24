@@ -3,11 +3,13 @@
 
 #include "JMH/MH_Minmimap.h"
 
+#include "PaperSprite.h"
 #include "PaperSpriteComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 class UCanvasRenderTarget2D;
 // Sets default values
@@ -15,10 +17,9 @@ AMH_Minmimap::AMH_Minmimap()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	
 	MinimapCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	//카메라 각도 회전
-	MinimapCameraBoom->SetWorldRotation(FRotator::MakeFromEuler(FVector(0.f , -90.f , 0.f)));
-	//미니맵 회전 유무
+	MinimapCameraBoom->SetWorldRotation(FRotator(-90.f, 0.f, 0.f));  // Pointing downward
 	MinimapCameraBoom->bUsePawnControlRotation = false;
 	MinimapCameraBoom->bInheritPitch = false;
 	MinimapCameraBoom->bInheritRoll = false;
@@ -26,32 +27,30 @@ AMH_Minmimap::AMH_Minmimap()
 
 	//SeceneCapture2D
 	MinimapCapture = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("MinimapCapture"));
-
 	//카메라 투영타입 거리감없게
 	MinimapCapture->OrthoWidth = 2000;
+	MinimapCapture->SetupAttachment(MinimapCameraBoom);
 	
 	//캡처된 이미지 렌더타겟 로드
-	ConstructorHelpers::FObjectFinder<UCanvasRenderTarget2D> FOBJ_RenderTarget2D(TEXT("/Game/JMH/Tex/MH_CanRanderTarget.MH_CanRanderTarget"));
-	if (FOBJ_RenderTarget2D.Succeeded())
-	{
-		MinimapCapture->TextureTarget = Cast<UTextureRenderTarget2D>(FOBJ_RenderTarget2D.Object);
-	}
+	//ConstructorHelpers::FObjectFinder<UCanvasRenderTarget2D> FOBJ_RenderTarget2D(TEXT("/Game/JMH/Tex/MH_CanRanderTarget.MH_CanRanderTarget"));
+	// Create the render target
+	//MinimapCapture->TextureTarget = NewObject<UTextureRenderTarget2D>();
+	//MinimapCapture->TextureTarget->InitAutoFormat(1024, 1024);
 	
 	//플레이어 위치 이미지
 	MinimapSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("MinimapSprite"));
-	MinimapSprite->SetWorldRotation(FRotator::MakeFromEuler(FVector(90.f , 0.f , -90.f)));
+	MinimapSprite->SetWorldRotation(FRotator(90.f, 0.f, -90.f));  // Set rotation for top-down view
 	MinimapSprite->SetWorldScale3D(FVector(0.5f));
-	MinimapSprite->SetWorldLocation(FVector(0.f , 0.f , 300.f));
-	
 	//인게임에서는 안보이게
 	MinimapSprite->bVisibleInSceneCaptureOnly = true;
 
-	ConstructorHelpers::FObjectFinder<UPaperSprite> FOBJ_PaperSprite(TEXT("/Game/JMH/Tex/Point_Sprite1.Point_Sprite1"));
-	if (FOBJ_PaperSprite.Succeeded())
-	{
-		MinimapSprite->SetSprite(FOBJ_PaperSprite.Object);
-		MinimapSprite->SetRelativeScale3D(FVector(.8f , .8f , .8f));
-	}
+	//ConstructorHelpers::FObjectFinder<UPaperSprite> FOBJ_PaperSprite(TEXT("/Game/JMH/Tex/Point_Sprite1.Point_Sprite1"));
+	//ConstructorHelpers::FObjectFinder<UPaperSprite> FOBJ_PaperSprite(TEXT("/Game/JMH/Tex/Point_Sprite1.Point_Sprite1"));
+	//if (FOBJ_PaperSprite.Succeeded())
+	//{
+	//	MinimapSprite->SetSprite(FOBJ_PaperSprite.Object);
+	//	MinimapSprite->SetRelativeScale3D(FVector(.8f, .8f, .8f));
+	//}
 }
 
 // Called when the game starts or when spawned
@@ -59,13 +58,21 @@ void AMH_Minmimap::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	ACharacter* Player = Cast<ACharacter>(GetWorld()->GetFirstPlayerController()->GetCharacter());
-	UPrimitiveComponent* OwnerRootComponent = Cast<UPrimitiveComponent>(Player->GetRootComponent());
-	if (OwnerRootComponent)
+	Player = UGameplayStatics::GetPlayerCharacter(this, 0); 
+	if (Player)
 	{
 		MinimapCameraBoom->AttachToComponent(Player->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-		MinimapCapture->AttachToComponent(MinimapCameraBoom, FAttachmentTransformRules::KeepRelativeTransform);
 		MinimapSprite->AttachToComponent(Player->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+	}
+
+	if (MinimapRenderTargetClass)
+	{
+		MinimapCapture->TextureTarget = NewObject<UTextureRenderTarget2D>(this, MinimapRenderTargetClass);
+	}
+
+	if (MinimapSpriteClass)
+	{
+		MinimapSprite->SetSprite(NewObject<UPaperSprite>(this, MinimapSpriteClass));
 	}
 	//플레이어가 미니맵에 보이기 않게 메쉬만 숨기기
 	USkeletalMeshComponent* PlayerMesh = Player->FindComponentByClass<USkeletalMeshComponent>();
@@ -88,7 +95,7 @@ void AMH_Minmimap::Tick(float DeltaTime)
 void AMH_Minmimap::ApplyMinimap()
 {
 	// 오너 캐릭터 확인 및 미니맵 업데이트
-	ACharacter* Player = Cast<ACharacter>(GetOwner());
+	Player = UGameplayStatics::GetPlayerCharacter(this, 0); 
 	if (Player)
 	{
 		//카메라 위치 업뎃
@@ -116,5 +123,9 @@ void AMH_Minmimap::ApplyMinimap()
 		MinimapSprite->SetWorldRotation(MinimapSpriteRotation);
 	}
 	
+}
+
+void AMH_Minmimap::FollowPlayer()
+{
 }
 

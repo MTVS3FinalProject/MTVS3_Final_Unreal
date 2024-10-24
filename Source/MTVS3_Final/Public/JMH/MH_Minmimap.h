@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PaperSprite.h"
 #include "GameFramework/Actor.h"
 #include "MH_Minmimap.generated.h"
 
@@ -22,16 +23,28 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Minimap, meta = (AllowPrivateAccess = "true"))
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
 	class USpringArmComponent* MinimapCameraBoom;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Minimap, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
 	class USceneCaptureComponent2D* MinimapCapture;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Minimap, meta = (AllowPrivateAccess = "true"))
-	class UPaperSpriteComponent* MinimapSprite;	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
+	class UPaperSpriteComponent* MinimapSprite;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minimap")
+	TSubclassOf<UTextureRenderTarget2D> MinimapRenderTargetClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minimap")
+	TSubclassOf<UPaperSprite> MinimapSpriteClass;
+
+	UPROPERTY()
+	ACharacter* Player;
+	
 	UFUNCTION(BlueprintCallable)
 	void ApplyMinimap();
+
+	UFUNCTION(BlueprintCallable)
+	void FollowPlayer();
 };
