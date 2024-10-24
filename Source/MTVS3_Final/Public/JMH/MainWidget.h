@@ -97,8 +97,8 @@ public:
 	void SetTextRemainingTicket(int32 RemainingTicket);
 
 	//3: BuyTicket
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_BuyTickerBack;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton* Btn_BuyTickerBack;
 	//4: BuyCoins
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_BuyCoinsBack2;

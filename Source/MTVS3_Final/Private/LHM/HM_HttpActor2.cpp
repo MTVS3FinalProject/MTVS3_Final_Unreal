@@ -14,6 +14,7 @@
 #include "JMH/MH_BuyTicketWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "JMH/MainWidget.h"
+#include "Components/Button.h"
 
 // Sets default values
 AHM_HttpActor2::AHM_HttpActor2()
