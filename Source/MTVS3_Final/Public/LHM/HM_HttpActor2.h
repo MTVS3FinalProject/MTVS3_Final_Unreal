@@ -323,7 +323,7 @@ public:
     void ReqGetConcertInfo(FString AccessToken);
 
     // 공연장 선택 UI 요청에 대한 응답
-    void ResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+    void OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
     
     // 공연장 입장 요청
 	void ReqPostConcertEntry(FString ConcertName , FString AccessToken);

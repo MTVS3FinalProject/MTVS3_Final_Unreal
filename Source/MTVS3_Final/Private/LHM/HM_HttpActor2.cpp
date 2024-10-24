@@ -88,14 +88,14 @@ void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken)
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::ResGetConcertInfo);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResGetConcertInfo);
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
 // 공연장 선택 UI 요청에 대한 응답
-void AHM_HttpActor2::ResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
