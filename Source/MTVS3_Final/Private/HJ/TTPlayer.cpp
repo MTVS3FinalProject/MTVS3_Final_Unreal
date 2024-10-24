@@ -289,6 +289,9 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 
 	if ( Chair )
 	{
+		// Chair의 태그를 가져와서 매개변수로 넘김
+		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
+		UE_LOG(LogTemp , Log , TEXT("ChairTag : %s"), *ChairTag);
 		// 의자가 비어 있을 때 상호작용하면 앉는다.
 		// 1인칭 시점으로 전환
 		if ( !Chair->bIsOccupied )
@@ -300,6 +303,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			// 좌석 접수 UI 표시
 			TicketingUI->SetVisibleSwitcher(true , 0);
 			//TicketingUI->SetWidgetSwitcher(0);
+			HttpActor2->ReqPostSeatRegistrationInquiry(GI->GetConcertName(), ChairTag ,GI->GetAccessToken());
 
 			ServerSetSitting(true);
 
@@ -356,14 +360,19 @@ AActor* ATTPlayer::GetOverlappingActor()
 void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed F: Purchase"));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
-	if ( Chair )
+	// Chair의 태그를 가져와서 매개변수로 넘김
+	FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
+	if ( Chair && HttpActor2 )
 	{
 		// MainUI 숨기기
 		MainUI->SetVisibleCanvas(false);
 		// 좌석 경쟁 UI 표시(테스트용)
 		TicketingUI->SetVisibleSwitcher(true , 0);
 		//TicketingUI->SetWidgetSwitcher(1);
+		HttpActor2->ReqPostSeatRegistrationInquiry(GI->GetConcertName(), ChairTag, GI->GetAccessToken());
 	}
 }
 
