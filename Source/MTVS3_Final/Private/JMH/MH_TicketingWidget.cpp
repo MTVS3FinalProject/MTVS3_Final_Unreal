@@ -159,7 +159,7 @@ void UMH_TicketingWidget::OnClickedBackButton()
 
 void UMH_TicketingWidget::OnClickedConfirmButton()
 {
-	//접수완료
+	//접수 클릭 버튼
 	
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if ( gi )
@@ -179,7 +179,7 @@ void UMH_TicketingWidget::OnClickedConfirmButton()
 				FString FirstAvailableSeatId = AvailableSeats[0].GetSeatId();
 				UE_LOG(LogTemp , Log , TEXT("AvailableSeats[0] : %s") , *FirstAvailableSeatId);
 
-				HttpActor2->ReqPostRegisterSeat(HttpActor2->GetConcertName() , FirstAvailableSeatId , gi->GetAccessToken());
+				HttpActor2->ReqPostRegisterSeat(gi->GetConcertName() , FirstAvailableSeatId , gi->GetAccessToken());
 				//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
 				//SetCompletedVisible(true); 응답 완료했을 때 호출하게 해줬음
 			}
@@ -211,7 +211,7 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 				FString FirstAvailableSeatId = AvailableSeats[0].GetSeatId();
 				UE_LOG(LogTemp , Log , TEXT("AvailableSeats[0] : %s") , *FirstAvailableSeatId);
 
-				HttpActor2->ReqDeleteCancelRegisteredSeat(HttpActor2->GetConcertName() , FirstAvailableSeatId , gi->GetAccessToken());
+				HttpActor2->ReqDeleteCancelRegisteredSeat(gi->GetConcertName() , FirstAvailableSeatId , gi->GetAccessToken());
 				//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
 				//SetCompletedVisible(false);
 			}

@@ -9,7 +9,7 @@ void UMH_Interaction::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-}
+} 
 
 void UMH_Interaction::SetActiveWidgetIndex(int index)
 {

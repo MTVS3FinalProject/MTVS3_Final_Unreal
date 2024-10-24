@@ -10,6 +10,7 @@
 #include "HJ/TTGameInstance.h"
 #include "LHM/HM_HttpActor2.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 
 class AHM_HttpActor;
 
@@ -78,7 +79,7 @@ void UMH_BuyTicketWidget::OnClickedConfirm02Button()
 	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostReservationinfo(HttpActor2->GetUserName(), HttpActor2->GetUserPhoneNumber(), HttpActor2->GetUserAddress(), gi->GetAccessToken());
+			HttpActor2->ReqPostReservationinfo(HttpActor2->GetUserName(), HttpActor2->GetUserPhoneNumber(), HttpActor2->GetUserAddress1() , HttpActor2->GetUserAddress2(), gi->GetAccessToken());
 		}
 	}
 }
@@ -140,14 +141,36 @@ void UMH_BuyTicketWidget::SetTextSeatID(FString SeatID)
 	}*/
 }
 
-void UMH_BuyTicketWidget::SetTextTicketNum(FString TicketNum)
+void UMH_BuyTicketWidget::SetTextTotalCoin(int32 TotalCoin)
 {
-	
+	Text_TotalCoin->SetText(FText::AsNumber(TotalCoin));
+}
+
+void UMH_BuyTicketWidget::UpdateTotalCoin()
+{
+	int32 TicketNum = Text_TicketNum->GetText().ToString().IsNumeric() ? FCString::Atoi(*Text_TicketNum->GetText().ToString()) : 0;
+	int32 TicketPrice = Text_TicketPrice->GetText().ToString().IsNumeric() ? FCString::Atoi(*Text_TicketPrice->GetText().ToString()) : 0;
+
+	// 티켓 가격과 수를 곱하여 총 코인을 계산
+	int32 TotalCoin = TicketNum * TicketPrice;
+
+	// 계산한 총 코인을 텍스트에 반영
+	SetTextTotalCoin(TotalCoin);
+}
+
+void UMH_BuyTicketWidget::SetTextNeedCoin(int32 NeedCoin)
+{
+	Text_NeedCoin->SetText(FText::AsNumber(NeedCoin));
+}
+
+void UMH_BuyTicketWidget::SetTextTicketNum(int32 TicketNum)
+{
+	Text_TicketNum->SetText(FText::AsNumber(TicketNum));
 }
 
 void UMH_BuyTicketWidget::SetTextTicketPrice(int32 TicketPrice)
 {
-	//
+	Text_TicketPrice->SetText(FText::AsNumber(TicketPrice));
 }
 
 void UMH_BuyTicketWidget::OnClickedAddCoinButton()
@@ -179,12 +202,26 @@ void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostPaymentSeat(HttpActor2->GetConcertName(),HttpActor2->GetSeatId(), gi->GetAccessToken());
+			HttpActor2->ReqPostPaymentSeat(gi->GetConcertName(),HttpActor2->GetSeatId(), gi->GetAccessToken());
 		}
 	}
-	//SetWidgetSwitcher(6); // 통신 응답에서 호출했음
 	//아니라면
 	//충전해야한다고 경고창
+}
+
+void UMH_BuyTicketWidget::SetTextUserName(FString UserName)
+{
+	Tex_UserName->SetText(FText::FromString(UserName));
+}
+
+void UMH_BuyTicketWidget::SetTextUserPhoneNum(FString UserPhoneNum)
+{
+	Tex_UserPhoneNum->SetText(FText::FromString(UserPhoneNum));
+}
+
+void UMH_BuyTicketWidget::SetTextUserAddress(FString UserAddress)
+{
+	Tex_Address->SetText(FText::FromString(UserAddress));
 }
 
 void UMH_BuyTicketWidget::OnClickedSaveTicketButton()

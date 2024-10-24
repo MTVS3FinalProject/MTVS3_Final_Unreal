@@ -120,12 +120,23 @@ void UMainWidget::OnClickedBuyCoinsButton()
 
 void UMainWidget::OnClickedConcert01()
 {
+
 	// KHJ: EPlaceState::ConcertHall로 변경
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 	if ( !GI || !Local) return;
 
 	GI->SetPlaceState(EPlaceState::ConcertHall);
+
+	if ( GI )
+	{
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqPostConcertEntry(GI->GetConcertName() , GI->GetAccessToken());
+		}
+	}
 
 	//현민
 	//서버에서 콘서트 정보 받아오기

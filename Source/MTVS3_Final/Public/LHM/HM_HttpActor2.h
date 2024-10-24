@@ -19,9 +19,15 @@ public:
     const FString& GetSeatId() const { return SeatId; }
     void SetSeatId(const FString& InSeatId) { SeatId = InSeatId; }
 
+    const FString& GetDrawingTime() const { return DrawingTime; }
+    void SetDrawingTime(const FString& InDrawingTime) { DrawingTime = InDrawingTime; }
+
 private:
     UPROPERTY(VisibleAnywhere, Category = "Default|Seat")
     FString SeatId;
+
+    UPROPERTY(VisibleAnywhere, Category = "Default|Seat")
+    FString DrawingTime;
 };
 
 // MyReceptionSeatInfoDTO 구조체
@@ -134,7 +140,8 @@ public:
         , m_NeedCoin(0)
         , m_UserName(TEXT(""))
         , m_UserPhoneNumber(TEXT(""))
-        , m_UserAddress(TEXT(""))
+        , m_UserAddress1(TEXT(""))
+        , m_UserAddress2(TEXT(""))
         {}
 
     const FString& GetSeatId() const { return m_SeatId; }
@@ -170,8 +177,11 @@ public:
     const FString& GetUserPhoneNumber() const { return m_UserPhoneNumber; }
     void SetUserPhoneNumber(const FString& UserPhoneNumber) { m_UserPhoneNumber = UserPhoneNumber; }
 
-    const FString& GetUserAddress() const { return m_UserAddress; }
-    void SetUserAddress(const FString& UserAddress) { m_UserAddress = UserAddress; }
+    const FString& GetUserAddress1() const { return m_UserAddress1; }
+    void SetUserAddress1(const FString& UserAddress1) { m_UserAddress1 = UserAddress1; }
+
+    const FString& GetUserAddress2() const { return m_UserAddress2; }
+    void SetUserAddress2(const FString& UserAddress2) { m_UserAddress2 = UserAddress2; }
 
 private:
     UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
@@ -208,7 +218,10 @@ private:
     FString m_UserPhoneNumber;
 
     UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|User")
-    FString m_UserAddress;
+    FString m_UserAddress1;
+
+    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|User")
+    FString m_UserAddress2;
 };
 
 UCLASS()
@@ -271,8 +284,11 @@ public:
     const FString& GetUserPhoneNumber() const { return m_ConcertReservation.GetUserPhoneNumber(); }
     void SetUserPhoneNumber(const FString& UserPhoneNumber) { m_ConcertReservation.SetUserPhoneNumber(UserPhoneNumber); }
 
-    const FString& GetUserAddress() const { return m_ConcertReservation.GetUserAddress(); }
-    void SetUserAddress(const FString& UserAddress) { m_ConcertReservation.SetUserAddress(UserAddress); }
+    const FString& GetUserAddress1() const { return m_ConcertReservation.GetUserAddress1(); }
+    void SetUserAddress1(const FString& UserAddress1) { m_ConcertReservation.SetUserAddress1(UserAddress1); }
+
+    const FString& GetUserAddress2() const { return m_ConcertReservation.GetUserAddress2(); }
+    void SetUserAddress2(const FString& UserAddress2) { m_ConcertReservation.SetUserAddress2(UserAddress2); }
 
 public:	
 	// Sets default values for this actor's properties
@@ -296,10 +312,6 @@ public:
 	class UMH_TicketingWidget* TicketingUI;
     void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
 
-	UPROPERTY()
-	class UMH_BuyTicketWidget* BuyTicketUI;
-    void SetBuyTicketUI(UMH_BuyTicketWidget* InBuyTicketUI);
-
 #pragma endregion
 
 	// 백엔드에 요청 보낼 때만 api 포함, 프론트는 api X
@@ -311,7 +323,7 @@ public:
     void ReqGetConcertInfo(FString AccessToken);
 
     // 공연장 선택 UI 요청에 대한 응답
-    void ResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+    void OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
     
     // 공연장 입장 요청
 	void ReqPostConcertEntry(FString ConcertName , FString AccessToken);
@@ -333,11 +345,11 @@ public:
 	// 좌석 접수 요청에 대한 응답
 	void OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
-    // 접수된 좌석 조회 요청
-    void ReqPostCompletedRegisteredSeat(FString ConcertName , FString AccessToken);
+    // 내가 접수한 좌석 조회 요청
+    void ReqPostMyRegisteredSeat(FString ConcertName , FString AccessToken);
 
-    // 접수된 좌석 조회 요청에 대한 응답
-    void OnResPostCompletedRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+    // 내가 접수한 좌석 조회 요청에 대한 응답
+    void OnResPostMyRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 취소 요청
 	void ReqDeleteCancelRegisteredSeat(FString ConcertName , FString SeatId , FString AccessToken);
@@ -372,7 +384,7 @@ public:
 	void OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 예매자 정보 입력 요청
-	void ReqPostReservationinfo(FString UserName, FString UserPhoneNum , FString UserAddress , FString AccessToken);
+	void ReqPostReservationinfo(FString UserName, FString UserPhoneNum , FString UserAddress1 , FString UserAddress2 , FString AccessToken);
 
 	// 예매자 정보 입력 요청에 대한 응답
 	void OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);

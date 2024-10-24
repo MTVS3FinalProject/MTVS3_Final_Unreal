@@ -107,15 +107,28 @@ public:
 	class UTextBlock* Text_TicketNum2 = Text_TicketNum;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_NeedCoin;
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_TotalCoin;
 
-	UFUNCTION()
-	void SetTextTicketNum(FString TicketNum);
-	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
 	class UTextBlock* Text_TicketPrice;
+
+	UFUNCTION()
+	void SetTextNeedCoin(int32 NeedCoin);
+
+	UFUNCTION()
+	void SetTextTicketNum(int32 TicketNum);
+
 	UFUNCTION()
 	void SetTextTicketPrice(int32 TicketPrice);
+
+	UFUNCTION()
+	void SetTextTotalCoin(int32 TotalCoin);
+
+	UFUNCTION()
+	void UpdateTotalCoin();
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_AddCoin;
@@ -146,12 +159,18 @@ public:
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Tex_UserName;
+	UFUNCTION()
+	void SetTextUserName(FString UserName);
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Tex_UserPhoneNum;
+	UFUNCTION()
+	void SetTextUserPhoneNum(FString UserPhoneNum);
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_Address; 
+	class UTextBlock* Tex_Address;
+	UFUNCTION()
+	void SetTextUserAddress(FString Address);
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_SaveTicket;
