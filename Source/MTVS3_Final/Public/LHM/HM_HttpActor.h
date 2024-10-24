@@ -38,7 +38,7 @@ public:
 //===========================================================================================================
 
 	// QR코드 요청을 서버에 보내는 함수
-	void ReqPostGetVerifyIdentityQR(FText Email);
+	void ReqPostGetVerifyIdentityQR(FText Email, FText Password);
 
 	// QR코드 요청에 대한 응답을 처리하는 함수
 	void OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);

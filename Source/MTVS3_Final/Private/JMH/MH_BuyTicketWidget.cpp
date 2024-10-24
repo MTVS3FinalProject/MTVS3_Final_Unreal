@@ -11,6 +11,7 @@
 #include "LHM/HM_HttpActor2.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/EditableText.h"
 
 class AHM_HttpActor;
 
@@ -27,9 +28,9 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	Btn_Confirm_QRSuccess->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUi2SuccessButton);
 	Btn_Confirm_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUiFailedButton);
 	Btn_AddCoin->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedAddCoinButton);
-	Btn_BuyTicketCoin->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedAddCoinButton);
+	Btn_BuyTicketCoin->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton);
 	Btn_Back03->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack03Button);
-	Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton);
+	//Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::티켓저장버튼);
 	Btn_Back04->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBtn_Back04Button);
 	Btn_Back05->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBtn_Back05Button);
 }
@@ -79,7 +80,7 @@ void UMH_BuyTicketWidget::OnClickedConfirm02Button()
 	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostReservationinfo(HttpActor2->GetUserName(), HttpActor2->GetUserPhoneNumber(), HttpActor2->GetUserAddress1() , HttpActor2->GetUserAddress2(), gi->GetAccessToken());
+			HttpActor2->ReqPostReservationinfo(EText_Name->GetText() , EText_PhoneNum->GetText(), EText_Address1->GetText(), EText_Address2->GetText(), gi->GetAccessToken());
 		}
 	}
 }
