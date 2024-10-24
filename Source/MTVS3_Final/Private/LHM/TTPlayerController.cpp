@@ -130,6 +130,7 @@ void ATTPlayerController::SetDrawStartTime()
     if ( TicketingUI )
     {
 		TicketingUI->SetTextTicketingDeadline(FormattedTime);
+        TicketingUI->SetTextGameStartTime(FormattedTime);
     }
 }
 
@@ -150,7 +151,7 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 
 		if ( TicketingUI )
 		{
-			TicketingUI->SetTextGameStartTime(CountdownText);
+			TicketingUI->SetTextGameCountDown(CountdownText);
 		}
 		//UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
 	}

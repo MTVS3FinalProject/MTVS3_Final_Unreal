@@ -406,7 +406,7 @@ void AHM_HttpActor2::OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , 
 
 						// TicketingUI에 Set Text
 						TicketingUI->SetTickettingDate(Year , Month , Day);
-						TicketingUI->SetTextGameStartTime(Time);
+						//TicketingUI->SetTextGameStartTime(Time);
 					}
 
 				}
@@ -497,7 +497,7 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 						GI->UseRemainingTicket(1);
 					}
 
-					if ( TicketingUI )
+					if ( GI && TicketingUI )
 					{
 						// 접수 성공했을 때 UI연결
 						SetSeatPrice(SeatPrice);

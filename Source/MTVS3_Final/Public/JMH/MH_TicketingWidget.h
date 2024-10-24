@@ -115,7 +115,11 @@ public:
 	void OnClickedCancelButton();
 
 	
-	
+	//추첨 입장전 게임 카운트다운
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_GameCountDown;
+	UFUNCTION()
+	void SetTextGameCountDown(FString GameCountDown);
 
 
 	//접수마감시간 받아오기
@@ -175,6 +179,11 @@ public:
 	// HttpActor2 공연장 입장 통신 테스트용
 
 	
+	// 내가 접수한 좌석 조회
+	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
+	class UButton* Btn_CancelRegisteredSeat;
+	UFUNCTION()
+	void OnClickedCancelRegisteredSeat();
 
 	// 내가 접수한 좌석 조회
 	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
