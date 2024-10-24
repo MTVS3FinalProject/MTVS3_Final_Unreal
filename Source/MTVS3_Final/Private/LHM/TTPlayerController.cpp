@@ -117,7 +117,7 @@ void ATTPlayerController::SetDrawStartTime()
     //DrawStartTime = Now + FTimespan(0 , 10 , 0); // 10분 후
 
     // 현재 날짜, 임의로 설정한 추첨 시작 시간
-    DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 22 , 0 , 0);
+    DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 16 , 0 , 0);
 
     // DrawStartTime을 원하는 형식으로 변환
     int32 Hours = DrawStartTime.GetHour();
@@ -130,6 +130,7 @@ void ATTPlayerController::SetDrawStartTime()
     if ( TicketingUI )
     {
 		TicketingUI->SetTextTicketingDeadline(FormattedTime);
+        TicketingUI->SetTextGameStartTime(FormattedTime);
     }
 }
 
@@ -150,7 +151,7 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 
 		if ( TicketingUI )
 		{
-			TicketingUI->SetTextGameStartTime(CountdownText);
+			TicketingUI->SetTextGameCountDown(CountdownText);
 		}
 		//UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
 	}

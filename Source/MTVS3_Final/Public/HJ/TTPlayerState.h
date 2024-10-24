@@ -19,6 +19,11 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	bool bIsHost;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetbIsHost(const bool& _bIsHost) { bIsHost = _bIsHost; };
+	bool GetbIsHost() const { return bIsHost; };
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString Nickname;

@@ -14,6 +14,7 @@
 #include "JMH/MH_BuyTicketWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "JMH/MainWidget.h"
+#include "Components/Button.h"
 
 // Sets default values
 AHM_HttpActor2::AHM_HttpActor2()
@@ -144,7 +145,7 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 
 						if ( TTPlayer && GI )
 						{
-							//GI->콘서트네임 저장(ConcertName);
+							GI->SetConcertName(ConcertName);
 						}
 						
 						// 공연장 입장 UI에 Set Text (아직안만듬)
@@ -374,44 +375,41 @@ void AHM_HttpActor2::OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , 
 					// Ticketing UI에 SetText
 					if ( TicketingUI )
 					{
-						TicketingUI->SetTextSeatID(Floor, SeatInfo);
+						TicketingUI->SetTextSeatID(Floor , SeatInfo);
 						TicketingUI->SetTextCompetitionRate(CompetitionRate);
 					}
 
-					TSharedPtr<FJsonObject> TimeDtoObject = ResponseObject->GetObjectField(TEXT("timeDTO"));
-					if ( TimeDtoObject.IsValid() )
+					// "concertTime" 객체를 얻음
+					TSharedPtr<FJsonObject> ConcertTimeObject = ResponseObject->GetObjectField(TEXT("concertTime"));
+					if ( ConcertTimeObject.IsValid() )
 					{
-						// "concertTime" 객체를 얻음
-						TSharedPtr<FJsonObject> ConcertTimeObject = TimeDtoObject->GetObjectField(TEXT("concertTime"));
-						if ( ConcertTimeObject.IsValid() )
-						{
-							int32 Year = ConcertTimeObject->GetIntegerField(TEXT("year"));
-							int32 Month = ConcertTimeObject->GetIntegerField(TEXT("month"));
-							int32 Day = ConcertTimeObject->GetIntegerField(TEXT("day"));
-							FString Time = ConcertTimeObject->GetStringField(TEXT("time"));
+						int32 Year = ConcertTimeObject->GetIntegerField(TEXT("year"));
+						int32 Month = ConcertTimeObject->GetIntegerField(TEXT("month"));
+						int32 Day = ConcertTimeObject->GetIntegerField(TEXT("day"));
+						FString Time = ConcertTimeObject->GetStringField(TEXT("time"));
 
-							UE_LOG(LogTemp , Log , TEXT("Concert Time: %d-%d-%d %s") , Year , Month , Day , *Time);
+						UE_LOG(LogTemp , Log , TEXT("Concert Time: %d-%d-%d %s") , Year , Month , Day , *Time);
 
-							// TicketingUI에 Set Text // 콘서트 네임은 GI에서 가져올 수도 있음
-							TicketingUI->SetConcertInfo(GetConcertName() , Year , Month , Day , Time);
-						}
-
-						// "drawingTime" 객체를 얻음
-						TSharedPtr<FJsonObject> DrawingTimeObject = TimeDtoObject->GetObjectField(TEXT("drawingTime"));
-						if ( DrawingTimeObject.IsValid() )
-						{
-							int32 Year = DrawingTimeObject->GetIntegerField(TEXT("year"));
-							int32 Month = DrawingTimeObject->GetIntegerField(TEXT("month"));
-							int32 Day = DrawingTimeObject->GetIntegerField(TEXT("day"));
-							FString Time = DrawingTimeObject->GetStringField(TEXT("time"));
-
-							UE_LOG(LogTemp , Log , TEXT("Drawing Time: %d-%d-%d %s") , Year , Month , Day , *Time);
-
-							// TicketingUI에 Set Text
-							TicketingUI->SetTickettingDate(Year , Month , Day);
-							TicketingUI->SetTextGameStartTime(Time);
-						}
+						// TicketingUI에 Set Text // 콘서트 네임은 GI에서 가져올 수도 있음
+						TicketingUI->SetConcertInfo(GetConcertName() , Year , Month , Day , Time);
 					}
+
+					// "drawingTime" 객체를 얻음
+					TSharedPtr<FJsonObject> DrawingTimeObject = ResponseObject->GetObjectField(TEXT("drawingTime"));
+					if ( DrawingTimeObject.IsValid() )
+					{
+						int32 Year = DrawingTimeObject->GetIntegerField(TEXT("year"));
+						int32 Month = DrawingTimeObject->GetIntegerField(TEXT("month"));
+						int32 Day = DrawingTimeObject->GetIntegerField(TEXT("day"));
+						FString Time = DrawingTimeObject->GetStringField(TEXT("time"));
+
+						UE_LOG(LogTemp , Log , TEXT("Drawing Time: %d-%d-%d %s") , Year , Month , Day , *Time);
+
+						// TicketingUI에 Set Text
+						TicketingUI->SetTickettingDate(Year , Month , Day);
+						//TicketingUI->SetTextGameStartTime(Time);
+					}
+
 				}
 			}
 		}
@@ -495,15 +493,16 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("RemainingTicket : %d") , RemainingTicket));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Competition Rate : %d") , CompetitionRate));
 
-					if( TTPlayer && GI )
+					if( TTPlayer && GI && MainUI )
 					{
 						GI->UseRemainingTicket(1);
 					}
 
-					if ( TicketingUI )
+					if ( GI && TicketingUI )
 					{
 						// 접수 성공했을 때 UI연결
 						SetSeatPrice(SeatPrice);
+						TicketingUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
 						TicketingUI->SetTextTicketPrice(SeatPrice);
 						TicketingUI->SetTextCompetitionRate(CompetitionRate);
 						TicketingUI->SetCompletedVisible(true);
@@ -696,7 +695,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 					int32 RemainingTicket = ResponseObject->GetIntegerField(TEXT("remainingTicket"));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("RemainingTicket : %d") , RemainingTicket));
 
-					if ( TTPlayer && GI )
+					if ( TTPlayer && GI && MainUI )
 					{
 						GI->UseRemainingTicket(-1);
 					}
@@ -704,6 +703,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 					if ( TicketingUI )
 					{
 						// 접수 취소 성공했을 때
+						TicketingUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
 						TicketingUI->SetCompletedVisible(false);
 					}
 				}
@@ -849,7 +849,7 @@ void AHM_HttpActor2::ReqPostGameResult(FString ConcertName , FString SeatId , FS
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResDeleteCancelRegisteredSeat);
+	//Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResDeleteCancelRegisteredSeat);
 
 	// 요청 전송
 	Request->ProcessRequest();
@@ -857,20 +857,38 @@ void AHM_HttpActor2::ReqPostGameResult(FString ConcertName , FString SeatId , FS
 
 void AHM_HttpActor2::OnResPostGameResult(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
-	if ( bWasSuccessful && Response.IsValid() )
-	{
-		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
-		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+	//if ( bWasSuccessful && Response.IsValid() )
+	//{
+	//	UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+	//	UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
-		if ( Response->GetResponseCode() == 200 )
+	//	if ( Response->GetResponseCode() == 200 )
+	//	{
+	//		UE_LOG(LogTemp , Log , TEXT("Request Post Game Result successful!"));
+	//		// 추첨이 끝났을 때 당첨자에게만 예매창 UI 띄우는 함수에 연결
+	//		if ( MainUI->GetBuyTicketWidget() )
+	//		{
+	//			MainUI->BuyTicketWidget->SetWidgetSwitcher(0);
+	//		}
+	//	}
+	//	else if ( Response->GetResponseCode() == 400 )
+	//	{
+	//		UE_LOG(LogTemp , Log , TEXT("Request Post Game Result failed!"));
+	//	}
+	//}
+
+	if ( bWasSuccessful )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Request Post Game Result successful!"));
+		// 추첨이 끝났을 때 당첨자에게만 예매창 UI 띄우는 함수에 연결
+		if ( MainUI->GetBuyTicketWidget() )
 		{
-			UE_LOG(LogTemp , Log , TEXT("Request Post Game Result successful!"));
-			// 추첨이 끝났을 때 당첨자에게만 예매창 UI 띄우는 함수에 연결
+			MainUI->BuyTicketWidget->SetWidgetSwitcher(0);
 		}
-		else if ( Response->GetResponseCode() == 400 )
-		{
-			UE_LOG(LogTemp , Log , TEXT("Request Post Game Result failed!"));
-		}
+	}
+	else
+	{
+		UE_LOG(LogTemp , Log , TEXT("Request Post Game Result failed!"));
 	}
 }
 
@@ -923,7 +941,8 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 				{
 					// 받아올 정보 추출
 					FString UserCode = ResponseObject->GetStringField(TEXT("userCode"));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("userCode : %s") , *UserCode));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("UserCode : %s") , *UserCode));
+					UE_LOG(LogTemp , Log , TEXT("UserCode : %s"), *UserCode);
 
 					SetUserCode(UserCode);
 
@@ -940,7 +959,7 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 						if ( MainUI->GetBuyTicketWidget() )
 						{
 							MainUI->BuyTicketWidget->SetQRImg(Texture);
-							MainUI->SetWidgetSwitcher(1);
+							MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
 
 							UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
 						}
@@ -984,6 +1003,11 @@ void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString UserCode , FString Acc
 	Writer->WriteValue(TEXT("userCode") , UserCode);
 	Writer->WriteObjectEnd();
 	Writer->Close();
+
+	UE_LOG(LogTemp , Log , TEXT("회원인증 확인 요청 userCode : %s"), *UserCode);
+
+	// JSON 본문 설정
+	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
 	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResGetPostConfirmMemberPhoto);

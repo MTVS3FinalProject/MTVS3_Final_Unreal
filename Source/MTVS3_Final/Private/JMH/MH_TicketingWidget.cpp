@@ -11,6 +11,8 @@
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
+#include "JMH/MH_Chair.h"
+#include "JMH/MainWidget.h"
 
 void UMH_TicketingWidget::NativeConstruct()
 {
@@ -23,16 +25,6 @@ void UMH_TicketingWidget::NativeConstruct()
 	Btn_PlayerVisible->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedPlayerVisibleButton);
 	Btn_Sound->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedSoundButton);
 	Btn_GotoGameRoom->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedGotoGameRoomButton);
-	//현민 test-> 나중에 각자 제자리에 복붙하기
-	/*btn_test1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest1);
-	btn_test2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest2);
-	btn_test3->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest3);
-	btn_test4->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest4);
-	btn_test5->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest5);
-	btn_test6->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest6);
-	btn_test7->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest7);
-	btn_test8->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest8);
-	btn_test9->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedtest9);*/
 
 	//위젯 꺼져있는게 기본값
 	//SetVisibleSwitcher(false);
@@ -41,6 +33,13 @@ void UMH_TicketingWidget::NativeConstruct()
 
 	//콘서트정보 담아오기
 	//SetConcertInfo();
+
+
+	//// HttpActor2 공연장 입장 통신 테스트용
+	Btn_CancelRegisteredSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelRegisteredSeat);
+	Btn_MyRegisterSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedMyRegisterSeat);
+	Btn_NoticeGameStart->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedNoticeGameStart);
+	Btn_GameResult->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedGameResult);
 }
 
 void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
@@ -97,9 +96,9 @@ void UMH_TicketingWidget::SetConcertInfo(FString ConcertName , int32 ConcertDate
 {
 	//접수화면 콘서트 정보 불러오기
 	Text_ConcertName->SetText(FText::FromString(ConcertName));
-	Text_ConcertDateY->SetText(FText::AsNumber(ConcertDateY));
-	Text_ConcertDateM->SetText(FText::AsNumber(ConcertDateM));
-	Text_ConcertDateD->SetText(FText::AsNumber(ConcertDateD));
+	Text_ConcertDateY->SetText(FText::FromString(FString::FromInt(ConcertDateY)));
+    Text_ConcertDateM->SetText(FText::AsNumber(ConcertDateM));
+    Text_ConcertDateD->SetText(FText::AsNumber(ConcertDateD));
 	Text_ConcertTime->SetText(FText::FromString(ConcertTime));
 	//가격도 추가?->가격은 좌석마다 다름
 }
@@ -115,7 +114,7 @@ void UMH_TicketingWidget::SetTextSeatID(int32 SeatFloor , FString SeatID)
 void UMH_TicketingWidget::SetTickettingDate(int32 TickettingDateY , int32 TickettingDateM , int32 TickettingDateD)
 {
 	//좌석 추첨 날짜 정보
-	Text_TickettingDateY->SetText(FText::AsNumber(TickettingDateY));
+	Text_TickettingDateY->SetText(FText::FromString(FString::FromInt(TickettingDateY)));
 	Text_TickettingDateM->SetText(FText::AsNumber(TickettingDateM));
 	Text_TickettingDateD->SetText(FText::AsNumber(TickettingDateD));
 }
@@ -166,26 +165,20 @@ void UMH_TicketingWidget::OnClickedConfirmButton()
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if ( HttpActor2 )
+		AMH_Chair* Chair = Cast<AMH_Chair>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
+		if ( HttpActor2 && Chair )
 		{
-			// AvailableSeats 배열을 가져옴
-			const TArray<FSeatIdDTO>& AvailableSeats = HttpActor2->GetAvailableSeats();
+			// Chair의 태그를 가져와서 매개변수로 넘김
+			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 
-			// AvailableSeats의 첫 번째 요소가 있는지 확인
-			if ( AvailableSeats.Num() > 0 )
-			{
-				// 통신 테스트용 : 첫 번째 좌석 ID를 가져옴
-				// 프로토 때 : 액터의 (좌석넘버) 태그를 가져와야 함
-				FString FirstAvailableSeatId = AvailableSeats[0].GetSeatId();
-				UE_LOG(LogTemp , Log , TEXT("AvailableSeats[0] : %s") , *FirstAvailableSeatId);
+			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-				HttpActor2->ReqPostRegisterSeat(gi->GetConcertName() , FirstAvailableSeatId , gi->GetAccessToken());
-				//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
-				//SetCompletedVisible(true); 응답 완료했을 때 호출하게 해줬음
-			}
+			HttpActor2->ReqPostRegisterSeat(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
+			//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
+			//SetCompletedVisible(true); 응답 완료했을 때 호출하게 해줬음
 		}
 	}
-
 	//접수오류가 생기는 경우도 있나?
 	//경고창 띄우기
 }
@@ -198,25 +191,25 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if ( HttpActor2 )
+		AMH_Chair* Chair = Cast<AMH_Chair>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
+		if ( HttpActor2 && Chair )
 		{
-			// AvailableSeats 배열을 가져옴
-			const TArray<FSeatIdDTO>& AvailableSeats = HttpActor2->GetAvailableSeats();
+			// Chair의 태그를 가져와서 매개변수로 넘김
+			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 
-			// AvailableSeats의 첫 번째 요소가 있는지 확인
-			if ( AvailableSeats.Num() > 0 )
-			{
-				// 통신 테스트용 : 첫 번째 좌석 ID를 가져옴
-				// 프로토 때 : 액터의 (좌석넘버) 태그를 가져와야 함
-				FString FirstAvailableSeatId = AvailableSeats[0].GetSeatId();
-				UE_LOG(LogTemp , Log , TEXT("AvailableSeats[0] : %s") , *FirstAvailableSeatId);
+			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-				HttpActor2->ReqDeleteCancelRegisteredSeat(gi->GetConcertName() , FirstAvailableSeatId , gi->GetAccessToken());
-				//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
-				//SetCompletedVisible(false);
-			}
+			HttpActor2->ReqDeleteCancelRegisteredSeat(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
+			//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
+			//SetCompletedVisible(false);
 		}
 	}
+}
+
+void UMH_TicketingWidget::SetTextGameCountDown(FString GameCountDown)
+{
+	Text_GameCountDown->SetText(FText::FromString(GameCountDown));
 }
 
 void UMH_TicketingWidget::SetTextTicketPrice(int32 TicketPrice)
@@ -281,3 +274,82 @@ void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 	//소리 들리게, 안들리게.
 
 }
+
+void UMH_TicketingWidget::OnClickedCancelRegisteredSeat()
+{
+	//서버-> 접수취소
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		AMH_Chair* Chair = Cast<AMH_Chair>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
+		if ( HttpActor2 && Chair )
+		{
+			// Chair의 태그를 가져와서 매개변수로 넘김
+			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
+
+			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
+
+			HttpActor2->ReqDeleteCancelRegisteredSeat(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
+		}
+	}
+}
+
+void UMH_TicketingWidget::OnClickedMyRegisterSeat()
+{
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( HttpActor2 )
+		{
+			HttpActor2->ReqPostMyRegisteredSeat(gi->GetConcertName() , gi->GetAccessToken());
+		}
+	}
+}
+
+void UMH_TicketingWidget::OnClickedNoticeGameStart()
+{
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		AMH_Chair* Chair = Cast<AMH_Chair>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
+		if ( HttpActor2 && Chair )
+		{
+			// Chair의 태그를 가져와서 매개변수로 넘김
+			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
+
+			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
+
+			HttpActor2->ReqPostNoticeGameStart(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
+		}
+	}
+}
+
+void UMH_TicketingWidget::OnClickedGameResult()
+{
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		AMH_Chair* Chair = Cast<AMH_Chair>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
+		if ( HttpActor2 && Chair )
+		{
+			// Chair의 태그를 가져와서 매개변수로 넘김
+			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
+
+			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
+
+			HttpActor2->ReqPostGameResult(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
+		}
+	}
+}
+
