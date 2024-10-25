@@ -4,21 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameState.h"
-#include "TTLuckyDrawGameState.generated.h"
+#include "TTHallGameState.generated.h"
 
 /**
  *
  */
 UCLASS()
-class MTVS3_FINAL_API ATTLuckyDrawGameState : public AGameState
+class MTVS3_FINAL_API ATTHallGameState : public AGameState
 {
 	GENERATED_BODY()
 
 protected:
 	virtual void BeginPlay() override;
 
-public:
-	void AssignSeatNumber(APlayerState* PlayerState);
-
-	int32 CurrentSeatNumber = 1;
 };

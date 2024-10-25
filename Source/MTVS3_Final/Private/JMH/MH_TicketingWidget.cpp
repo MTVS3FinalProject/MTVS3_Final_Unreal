@@ -109,6 +109,7 @@ void UMH_TicketingWidget::SetTextSeatID(int32 SeatFloor , FString SeatID)
 	Text_SeatFloor->SetText(FText::AsNumber(SeatFloor));
 	//좌석번호 세팅
 	Text_SeatID->SetText(FText::FromString(SeatID));
+	Text_SeatInfo->SetText(FText::FromString(SeatID));
 }
 
 void UMH_TicketingWidget::SetTickettingDate(int32 TickettingDateY , int32 TickettingDateM , int32 TickettingDateD)
@@ -216,6 +217,7 @@ void UMH_TicketingWidget::SetTextTicketPrice(int32 TicketPrice)
 {
 	//int 가격 Ftext로 변환해서 티켓가격 입력하기
 	Text_TicketPrice->SetText(FText::AsNumber(TicketPrice));
+	Text_TicketPrice2->SetText(FText::AsNumber(TicketPrice));
 }
 
 void UMH_TicketingWidget::SetSeatInfoMap(FString SeatID)

@@ -62,8 +62,8 @@ void UTTGameInstance::FindOrCreateSession(const FString& SessionNamePrefix , int
 	{
 		SessionInterface->FindSessions(0 , SessionSearch.ToSharedRef());
 
-		// 검색 완료 후 세션 참가 처리
-		SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this , &UTTGameInstance::OnFindOrCreateSessionComplete);
+		//// 검색 완료 후 세션 참가 처리
+		//SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this , &UTTGameInstance::OnFindOrCreateSessionComplete);
 	}
 }
 
@@ -114,6 +114,17 @@ void UTTGameInstance::JoinSession(const FOnlineSessionSearchResult& SessionResul
 {
 	if ( SessionInterface.IsValid() )
 	{
+		FString FoundSessionName;
+		if ( SessionResult.Session.SessionSettings.Get(FName("SessionName") , FoundSessionName) )
+		{
+			MySessionName = FoundSessionName;
+		}
+		else
+		{
+			UE_LOG(LogTemp , Warning , TEXT("SessionName not found in session settings."));
+			return;
+		}
+
 		// 이미 세션에 참가했는지 확인
 		if ( SessionInterface->GetNamedSession(FName(*MySessionName)) != nullptr )
 		{
@@ -121,7 +132,6 @@ void UTTGameInstance::JoinSession(const FOnlineSessionSearchResult& SessionResul
 			return;  // 중복 참가 방지
 		}
 
-		MySessionName = SessionResult.Session.SessionInfo->GetSessionId().ToString();
 		bool bJoinSuccess = SessionInterface->JoinSession(0 , FName(*MySessionName) , SessionResult);
 
 		if ( bJoinSuccess )
@@ -148,8 +158,14 @@ void UTTGameInstance::OnMyJoinSessionComplete(FName SessionName , EOnJoinSession
 		FString URL;
 		if ( SessionInterface->GetResolvedConnectString(SessionName , URL) && !URL.IsEmpty() )
 		{
+			// 세션 참가 성공 시 레벨 이동
 			PlayerController->ClientTravel(URL , ETravelType::TRAVEL_Absolute);
+			UE_LOG(LogTemp , Log , TEXT("Successfully joined session and travelling to URL: %s") , *URL);
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("Failed to join session: %s") , *SessionName.ToString());
 	}
 }
 
@@ -210,7 +226,6 @@ void UTTGameInstance::OnMyCreateSessionComplete(FName SessionName , bool bWasSuc
 				// 홀 관리자 1, 추첨방 관리자 1 해서 각자 이동하고 싶은 경우
 				auto* pc = GetWorld()->GetFirstPlayerController();
 				pc->ClientTravel(TEXT("/Game/Ticketaka/TTLuckyDrawMap") , ETravelType::TRAVEL_Absolute); // TTLuckyDrawMap으로 이동
-				SetPlaceState(EPlaceState::LuckyDrawRoom);
 			}
 		}
 	}
@@ -300,22 +315,12 @@ void UTTGameInstance::SetbIsHost(const bool& _bIsHost)
 {
 	PlayerData.bIsHost = _bIsHost;
 	SetPlayerData(PlayerData);
-
-	// PS에 호스트 여부 저장
-	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
-	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if ( PS ) PS->SetbIsHost(_bIsHost);
 }
 
 void UTTGameInstance::SetNickname(const FString& _Nickname)
 {
 	PlayerData.Nickname = _Nickname;
 	SetPlayerData(PlayerData);
-
-	// PS에 닉네임 저장
-	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
-	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if ( PS ) PS->SetNickname(_Nickname);
 }
 
 void UTTGameInstance::SetAccessToken(const FString& _AccessToken)

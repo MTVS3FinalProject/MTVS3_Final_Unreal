@@ -35,6 +35,13 @@ public:
 
 	//0 티켓 예매정보 확인
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TicketPrice1;
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TicketPrice1_1;
+	UFUNCTION()
+	void SetTextTicketPrice(int32 TicketPrice);
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_Confirm01;
 	UFUNCTION()
 	void OnClickedConfirm01Button();
@@ -107,7 +114,7 @@ public:
 	class UTextBlock* Text_TicketNum;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_TicketNum2 = Text_TicketNum;
+	class UTextBlock* Text_TicketNum2;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_NeedCoin;
@@ -116,7 +123,9 @@ public:
 	class UTextBlock* Text_TotalCoin;
 
 	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
-	class UTextBlock* Text_TicketPrice;
+	class UTextBlock* Text_TicketPrice2;
+	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
+	class UTextBlock* Text_TicketPrice2_2;
 
 	UFUNCTION()
 	void SetTextNeedCoin(int32 NeedCoin);
@@ -125,13 +134,7 @@ public:
 	void SetTextTicketNum(int32 TicketNum);
 
 	UFUNCTION()
-	void SetTextTicketPrice(int32 TicketPrice);
-
-	UFUNCTION()
 	void SetTextTotalCoin(int32 TotalCoin);
-
-	UFUNCTION()
-	void UpdateTotalCoin();
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_AddCoin;
@@ -153,12 +156,20 @@ public:
 	//결제완료
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_SeatID2;
+	UFUNCTION()
+	void SetTextSeatID2(FString SeatID2);
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_TicketNum3 = Text_TicketNum;
+	class UTextBlock* Text_TicketNum3;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_TicketNum4;
+	
+	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
+	class UTextBlock* Text_TicketPrice3;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_TotalCoin_1 = Text_TotalCoin; 
+	class UTextBlock* Text_TotalCoin_1; 
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Tex_UserName;

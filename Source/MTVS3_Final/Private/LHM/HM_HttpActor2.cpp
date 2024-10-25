@@ -345,11 +345,13 @@ void AHM_HttpActor2::OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , 
 				if ( ResponseObject.IsValid() )
 				{
 					// 필요한 정보 추출
+					FString SeatId = ResponseObject->GetStringField(TEXT("seatId"));
 					int32 Floor = ResponseObject->GetIntegerField(TEXT("floor"));
 					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo")); // ex: A1구역 13번
 					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
 
 					// 로그로 출력
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatId: %s") , *SeatId));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Floor: %d") , Floor));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Seat Info: %s") , *SeatInfo));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Competition Rate: %d") , CompetitionRate));
@@ -467,17 +469,26 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 				if ( ResponseObject.IsValid() )
 				{
 					// 받아올 정보 추출
+					FString SeatId = ResponseObject->GetStringField(TEXT("seatId"));
 					int32 SeatPrice = ResponseObject->GetIntegerField(TEXT("seatPrice"));
 					int32 RemainingTicket = ResponseObject->GetNumberField(TEXT("remainingTicket"));
 					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
 
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("seatPrice : %d") , SeatPrice));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("RemainingTicket : %d") , RemainingTicket));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Competition Rate : %d") , CompetitionRate));
+					UE_LOG(LogTemp , Log , TEXT("SeatId : %s") , *SeatId);
+					UE_LOG(LogTemp , Log , TEXT("seatPrice : %d") , SeatPrice);
+					UE_LOG(LogTemp , Log , TEXT("RemainingTicket : %d") , RemainingTicket);
+					UE_LOG(LogTemp , Log , TEXT("CompetitionRate : %d") , CompetitionRate);
+
+					// DTO 생성 및 데이터 설정
+					FMyReceptionSeatInfoDTO MySeatDTO;
+					MySeatDTO.SetMySeatId(SeatId);
+					UE_LOG(LogTemp , Log , TEXT("MySeatDTO.SetMySeatId(SeatId) : %s") , *MySeatDTO.GetMySeatId());
+					SetMySeatId(SeatId);
 
 					if( TTPlayer && GI && MainUI )
 					{
 						GI->UseRemainingTicket(1);
+						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 					}
 
 					if ( GI && TicketingUI )
@@ -1093,12 +1104,12 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					int32 UserCoin = ResponseObject->GetIntegerField(TEXT("userCoin"));
 					int32 NeededCoin = ResponseObject->GetIntegerField(TEXT("neededCoin"));
 
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatInfo : %s") , *SeatInfo));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatNum : %d") , SeatNum));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatPrice : %d") , SeatPrice));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Coin : %d") , UserCoin));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("NeededCoin : %d") , NeededCoin));
-					
+					UE_LOG(LogTemp , Log , TEXT("SeatInfo : %s"), *SeatInfo);
+					UE_LOG(LogTemp , Log , TEXT("SeatNum : %d") , SeatNum);
+					UE_LOG(LogTemp , Log , TEXT("SeatPrice : %d") , SeatPrice);
+					UE_LOG(LogTemp , Log , TEXT("Coin : %d") , UserCoin);
+					UE_LOG(LogTemp , Log , TEXT("NeededCoin : %d") , NeededCoin);
+
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 					if ( TTPlayer && GI )
@@ -1109,18 +1120,18 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					//SetSeatInfo(SeatInfo);
 					//SetSeatPrice(SeatPrice);
 					//SetNeedCoin(NeedCoin);
-
+					
 					// 결제 진행하는 위젯스위쳐 Set
 					if ( MainUI->GetBuyTicketWidget() )
 					{
 						MainUI->BuyTicketWidget->SetTextSeatID(SeatInfo);
-						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
+						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 						MainUI->BuyTicketWidget->SetTextNeedCoin(NeededCoin);
-						MainUI->BuyTicketWidget->UpdateTotalCoin();
+						int32 TotalCoin = SeatNum*SeatPrice;
+						MainUI->BuyTicketWidget->SetTextTotalCoin(TotalCoin);
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(5);
 					}
-					
 				}
 			}
 		}
@@ -1141,7 +1152,7 @@ void AHM_HttpActor2::ReqPostPaymentSeat(FString ConcertName , FString SeatId , F
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/payment") , *_url); // API테이블 확인하기
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/reservation") , *_url); // API테이블 확인하기
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1224,6 +1235,8 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					SetUserAddress1(UserAddress);*/
 					if ( MainUI->GetBuyTicketWidget() )
 					{
+						MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
+						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextUserName(UserName);
 						MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
 						MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
