@@ -99,7 +99,6 @@ void UMainWidget::OnClickedBack_Map()
 	if ( !GI || !Local || !PS ) return;
 
 	GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
-	PS->SetLuckyDrawSeatID("-1");
 }
 
 void UMainWidget::SetTextRemainingTicket(int32 RemainingTicket)
