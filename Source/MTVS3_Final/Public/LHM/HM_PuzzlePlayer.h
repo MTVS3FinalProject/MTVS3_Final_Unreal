@@ -36,9 +36,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UCameraComponent* FPSCameraComp;
 
-	UPROPERTY(EditInstanceOnly , Category = "TTSettings|State")
-	bool bIsThirdPerson = true;
-	void SwitchCamera(bool _bIsThirdPerson);
+	// UPROPERTY(EditInstanceOnly , Category = "TTSettings|State")
+	// bool bIsThirdPerson = true;
+	// void SwitchCamera(bool _bIsThirdPerson);
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
 	float WalkSpeed = 500.0f;
@@ -83,14 +83,23 @@ public:
 	void OnMyActionLaunchPickedUpPiece(const FInputActionValue& Value);
 #pragma endregion
 
-	bool bIsHoldingPiece;
-
-	void PickupPiece();
-
-	void LaunchPickedUpPiece();
-
-	bool HasPickedUpPiece() const { return PickedUpPiece != nullptr; }
 
 private:
 	class AHM_PuzzlePiece* PickedUpPiece;
+	class UPhysicsHandleComponent* PhysicsHandle;
+	bool bIsHoldingPiece = false;
+	bool bIsInTriggerZone = false;
+
+public:
+	// 트리거 존 상태 설정 함수들
+	void PickupPiece();
+	void DropPiece();
+	void LaunchPickedUpPiece();
+	
+	void LaunchPiece();
+	void TryPickupPiece();
+	
+	bool HasPickedUpPiece() const { return PickedUpPiece != nullptr; }
+	void SetIsInTriggerZone(bool bInZone) { bIsInTriggerZone = bInZone; }
+	bool IsInTriggerZone() const { return bIsInTriggerZone; }
 };

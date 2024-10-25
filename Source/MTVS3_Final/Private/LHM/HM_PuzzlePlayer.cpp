@@ -6,12 +6,14 @@
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "LHM/HM_PuzzlePiece.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 // Sets default values
 AHM_PuzzlePlayer::AHM_PuzzlePlayer()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandle"));
 	
 }
 
@@ -20,7 +22,8 @@ void AHM_PuzzlePlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if ( !IsLocallyControlled() ) return;
+
+	if (!IsLocallyControlled()) return;
 
 	auto* pc = Cast<APlayerController>(Controller);
 	if ( pc )
@@ -35,6 +38,9 @@ void AHM_PuzzlePlayer::BeginPlay()
 		pc->bShowMouseCursor = true; // 마우스 커서 표시
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+
+	bIsHoldingPiece = false;
+	bIsInTriggerZone = false;
 }
 
 // Called every frame
@@ -48,12 +54,16 @@ void AHM_PuzzlePlayer::Tick(float DeltaTime)
 	AddMovementInput(Direction , 1);
 	Direction = FVector::ZeroVector;
 
-
-	if ( bIsHoldingPiece && PickedUpPiece )
+	// Physics Handle의 위치 업데이트
+	if (PhysicsHandle && bIsHoldingPiece)
 	{
-		// 플레이어 앞에 퍼즐 조각을 위치시킴 (예: 손의 위치 앞쪽에 고정)
-		FVector NewLocation = GetActorLocation() + GetActorForwardVector() * 100.0f; // 플레이어 앞쪽 100 유닛
-		PickedUpPiece->SetActorLocation(NewLocation);
+		// 플레이어 전방 위치 계산
+		//FVector HoldLocation = GetActorLocation() + (GetActorForwardVector() * 100.0f) + (GetActorUpVector() * 50.0f);
+		// Physics Handle의 목표 위치/회전 업데이트
+		//PhysicsHandle->SetTargetLocationAndRotation(HoldLocation, GetActorRotation());
+
+		FVector HoldLocation = GetActorLocation() + (GetActorForwardVector() * 100.0f) + (GetActorUpVector() * 50.0f);
+		PickedUpPiece->SetActorLocation(HoldLocation);
 	}
 }
 
@@ -74,7 +84,7 @@ void AHM_PuzzlePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		input->BindAction(IA_Run , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionRunStart);
 		input->BindAction(IA_Run , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionRunComplete);
 		input->BindAction(IA_Pickup , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionPickupPiece);
-		input->BindAction(IA_Launch , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionLaunchPickedUpPiece);
+		input->BindAction(IA_Launch , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionLaunchPickedUpPiece);
 	}
 }
 
@@ -129,6 +139,16 @@ void AHM_PuzzlePlayer::OnMyActionRunComplete(const FInputActionValue& Value)
 void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
 	PickupPiece();
+	// if (!bIsHoldingPiece)
+	// {
+	// 	PickupPiece();
+	// 	GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("!bIsHoldingPiece / PickupPiece();")));
+	// }
+	// else if (bIsHoldingPiece)
+	// {
+	// 	DropPiece();
+	// 	GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("bIsHoldingPiece / DropPiece();")));
+	// }
 }
 
 void AHM_PuzzlePlayer::OnMyActionLaunchPickedUpPiece(const FInputActionValue& Value)
@@ -138,60 +158,207 @@ void AHM_PuzzlePlayer::OnMyActionLaunchPickedUpPiece(const FInputActionValue& Va
 
 void AHM_PuzzlePlayer::PickupPiece()
 {
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	GetController()->GetPlayerViewPoint(CameraLocation , CameraRotation);
+	// 플레이어의 현재 위치를 중심으로 스피어 트레이스
+	FVector PlayerLocation = GetActorLocation();
+	float SphereRadius = 120.0f; // 감지 범위 100 단위
 
-	FVector TraceStart = CameraLocation;
-	FVector TraceEnd = TraceStart + (CameraRotation.Vector() * 1000.0f);
-
+	// 스피어 트레이스로 조각 감지
 	FHitResult HitResult;
-	FCollisionQueryParams TraceParams(FName(TEXT("BlockPickupTrace")) , true , this);
+	FCollisionQueryParams TraceParams(FName(TEXT("SpherePickupTrace")), true, this);
 	TraceParams.bTraceComplex = true;
 	TraceParams.bReturnPhysicalMaterial = false;
 
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult , TraceStart , TraceEnd , ECC_Visibility , TraceParams);
-
-	// 디버그 라인 그리기
-	FColor LineColor = bHit ? FColor::Green : FColor::Red; // 히트 여부에 따라 색상 변경
-	DrawDebugLine(GetWorld() , TraceStart , TraceEnd , LineColor , false , 1.0f , 0 , 1.0f);
-
-	if ( bHit )
+	// 스피어 트레이스 실행
+	bool bHit = GetWorld()->SweepSingleByChannel(
+		HitResult,
+		PlayerLocation,          // 시작 위치
+		PlayerLocation,          // 끝 위치 (같은 위치로 설정하여 순수 구체 체크)
+		FQuat::Identity,        // 회전 없음
+		ECC_Visibility,         // 채널
+		FCollisionShape::MakeSphere(SphereRadius), // 구체 모양
+		TraceParams
+		);
+		
+	// 디버그 구체 표시
+	DrawDebugSphere(
+		GetWorld(),
+		PlayerLocation,
+		SphereRadius,
+		32,                     // 세그먼트 수
+		bHit ? FColor::Green : FColor::Red,
+		false,                  // 지속성 없음
+		1.0f,                   // 표시 시간
+		0,                      // 우선순위
+		1.0f                    // 두께
+	);
+	
+	if(bHit)
 	{
 		AHM_PuzzlePiece* Piece = Cast<AHM_PuzzlePiece>(HitResult.GetActor());
-		if ( Piece )
+		if (Piece && PhysicsHandle)
 		{
-			UE_LOG(LogTemp , Log , TEXT("Picked Up Block: %s") , *Piece->GetName());
+			// 물리 핸들링 설정
+			UPrimitiveComponent* PieceComponent = Piece->GetPiece();
+			if (PieceComponent)
+			{
+				// 물리 시뮬레이션 비활성화
+				PieceComponent->SetSimulatePhysics(true);
+				PieceComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				
+				// // Physics Handle을 사용하여 컴포넌트 제약
+				// PhysicsHandle->GrabComponentAtLocationWithRotation(
+				// 	PieceComponent ,
+				// 	NAME_None ,
+				// 	PieceComponent->GetComponentLocation() ,
+				// 	PieceComponent->GetComponentRotation()
+				// );
 
-			// 퍼즐 조각을 플레이어가 "들고" 있는 상태로 만듭니다.
-			PickedUpPiece = Piece;
+				// 상태 업데이트
+				PickedUpPiece = Piece;
+				bIsHoldingPiece = true;
 
-			// 물리 상호작용 비활성화
-			Piece->GetPiece()->SetSimulatePhysics(false);
+				// 디버그 메시지
+				UE_LOG(LogTemp , Log , TEXT("Picked Up Block: %s") , *Piece->GetName());
+				GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Pick up Piece!")));
+			}
+		}
+	}
+}
 
-			// 조각을 따라오게 함
-			bIsHoldingPiece = true;
+void AHM_PuzzlePlayer::DropPiece()
+{
+	if (PickedUpPiece)
+	{
+		UPrimitiveComponent* PieceComponent = PickedUpPiece->GetPiece();
+		if (PieceComponent)
+		{
+			// 물리 시뮬레이션과 충돌을 다시 활성화
+			PieceComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			PieceComponent->SetSimulatePhysics(true);
+
+			// 상태 초기화
+			PickedUpPiece = nullptr;
+			bIsHoldingPiece = false;
+
+			UE_LOG(LogTemp, Log, TEXT("Piece Dropped"));
 		}
 	}
 }
 
 void AHM_PuzzlePlayer::LaunchPickedUpPiece()
 {
-	if ( PickedUpPiece )
+	// 트리거 존에 있고 피스를 들고 있을 때만 발사 가능
+	if (bIsInTriggerZone && PhysicsHandle && bIsHoldingPiece && PickedUpPiece)
 	{
-		// 블럭의 물리 상호작용을 다시 활성화
-		PickedUpPiece->GetPiece()->SetSimulatePhysics(true);
-
-		// 블럭의 앞방향 (Forward Vector)으로 날림
-		FVector LaunchDirection = GetActorForwardVector(); // 플레이어의 앞방향
-		FVector Impulse = LaunchDirection * 1000.0f; // 임펄스 크기
-
-		PickedUpPiece->GetPiece()->AddImpulse(Impulse , NAME_None , true);
-
-		// 블럭을 놓았으므로 참조 해제
-		PickedUpPiece = nullptr;
-
-		// 플레이어가 블럭을 들고 있지 않음을 표시
-		bIsHoldingPiece = false;
+		LaunchPiece();
 	}
+	if (!bIsHoldingPiece) // 피스를 들고 있지 않을 때
+	{
+		TryPickupPiece();
+	}
+}
+
+void AHM_PuzzlePlayer::LaunchPiece()
+{
+	//PhysicsHandle->ReleaseComponent();
+
+	// 물리 시뮬레이션 다시 활성화
+	UPrimitiveComponent* Piece = PickedUpPiece->GetPiece();
+	if(Piece)
+	{
+		// 물리 시뮬레이션 활성화
+		Piece->SetSimulatePhysics(true);
+		Piece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+            
+		// 블럭의 앞방향으로 날림
+		FVector LaunchDirection = GetActorForwardVector();
+		//FVector Impulse = LaunchDirection * 1000.0f;
+		//Piece->AddImpulse(Impulse, NAME_None, true);
+
+		FVector LaunchVelocity = LaunchDirection * 1000.0f;
+		Piece->SetPhysicsLinearVelocity(LaunchVelocity, true);
+		
+		// 약간의 회전도 추가
+		// FVector RandomRotation(FMath::RandRange(-1.0f, 1.0f), 
+		// 					 FMath::RandRange(-1.0f, 1.0f), 
+		// 					 FMath::RandRange(-1.0f, 1.0f));
+		// Piece->AddAngularImpulseInDegrees(RandomRotation * 100.0f, NAME_None, true);
+		
+		PickedUpPiece = nullptr;
+		bIsHoldingPiece = false;
+
+		// 디버그 메시지
+		GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Yellow ,
+		                                 FString::Printf(TEXT("Piece Launched!")));
+	}
+}
+
+void AHM_PuzzlePlayer::TryPickupPiece()
+{
+	// 스피어 트레이스로 새로운 피스 찾기
+        FHitResult HitResult;
+        FCollisionQueryParams TraceParams(FName(TEXT("SpherePickupTrace")), true, this);
+        TraceParams.bTraceComplex = true;
+        TraceParams.bReturnPhysicalMaterial = false;
+
+        // 플레이어의 현재 위치
+        FVector PlayerLocation = GetActorLocation();
+        float SphereRadius = 120.0f;
+
+        // 스피어 트레이스 실행
+        bool bHit = GetWorld()->SweepSingleByChannel(
+            HitResult,
+            PlayerLocation,
+            PlayerLocation,
+            FQuat::Identity,
+            ECC_Visibility,
+            FCollisionShape::MakeSphere(SphereRadius),
+            TraceParams
+        );
+
+        // 디버그 스피어 표시
+        DrawDebugSphere(
+            GetWorld(),
+            PlayerLocation,
+            SphereRadius,
+            32,
+            bHit ? FColor::Green : FColor::Red,
+            false,
+            1.0f,
+            0,
+            1.0f
+        );
+
+        if (bHit)
+        {
+            AHM_PuzzlePiece* Piece = Cast<AHM_PuzzlePiece>(HitResult.GetActor());
+            if (Piece && PhysicsHandle)
+            {
+                // 물리 핸들링 설정
+                UPrimitiveComponent* PieceComponent = Piece->GetPiece();
+                if (PieceComponent)
+                {
+                    // 물리 시뮬레이션 비활성화
+                    PieceComponent->SetSimulatePhysics(false);
+                	PieceComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly); // 충돌은 쿼리만 가능하도록
+
+                    // // Physics Handle을 사용하여 컴포넌트 제약
+                    // PhysicsHandle->GrabComponentAtLocationWithRotation(
+                    //     PieceComponent,
+                    //     NAME_None,
+                    //     PieceComponent->GetComponentLocation(),
+                    //     PieceComponent->GetComponentRotation()
+                    // );
+
+                    // 상태 업데이트
+                    PickedUpPiece = Piece;
+                    bIsHoldingPiece = true;
+
+                    // 디버그 메시지
+                    UE_LOG(LogTemp, Log, TEXT("Picked Up Piece: %s"), *Piece->GetName());
+                    GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, 
+                        FString::Printf(TEXT("Pick up Piece!")));
+                }
+            }
+        }
 }

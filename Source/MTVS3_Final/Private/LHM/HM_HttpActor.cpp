@@ -230,7 +230,7 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	Writer->WriteValue(TEXT("password") , Password.ToString());
 	Writer->WriteValue(TEXT("birth") , Birth);
 	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
-	//Writer->WriteValue(TEXT("avatarData") , AvataData);
+	Writer->WriteValue(TEXT("avatarData") , AvataData);
 	Writer->WriteObjectEnd();
 	Writer->Close();
 

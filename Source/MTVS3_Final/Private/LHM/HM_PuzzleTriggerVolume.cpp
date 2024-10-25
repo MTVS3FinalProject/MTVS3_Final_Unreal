@@ -18,6 +18,7 @@ AHM_PuzzleTriggerVolume::AHM_PuzzleTriggerVolume()
 
     // 오버랩 이벤트 바인딩
     TriggerBox->OnComponentBeginOverlap.AddDynamic(this , &AHM_PuzzleTriggerVolume::OnOverlapBegin);
+    TriggerBox->OnComponentEndOverlap.AddDynamic(this , &AHM_PuzzleTriggerVolume::OnOverlapEnd);
 }
 
 void AHM_PuzzleTriggerVolume::BeginPlay()
@@ -25,13 +26,30 @@ void AHM_PuzzleTriggerVolume::BeginPlay()
     Super::BeginPlay();
 }
 
-void AHM_PuzzleTriggerVolume::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent , AActor* OtherActor , UPrimitiveComponent* OtherComp , int32 OtherBodyIndex , bool bFromSweep , const FHitResult& SweepResult)
+void AHM_PuzzleTriggerVolume::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent ,
+    AActor* OtherActor ,
+    UPrimitiveComponent* OtherComp ,
+    int32 OtherBodyIndex ,
+    bool bFromSweep ,
+    const FHitResult& SweepResult)
 {
     AHM_PuzzlePlayer* Player = Cast<AHM_PuzzlePlayer>(OtherActor);
-    if ( Player && Player->HasPickedUpPiece() )
+    if ( Player )
     {
-        // 플레이어가 블럭을 가지고 구역에 들어왔을 때 퍼즐 조각을 날림
-        Player->LaunchPickedUpPiece();
+        Player->SetIsInTriggerZone(true);
+        GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, 
+            FString::Printf(TEXT("Entered Launch Zone")));
     }
-    GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("TriggerBox::OnOverlapBegin")));
+}
+
+void AHM_PuzzleTriggerVolume::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+    AHM_PuzzlePlayer* Player = Cast<AHM_PuzzlePlayer>(OtherActor);
+    if (Player)
+    {
+        Player->SetIsInTriggerZone(false);
+        GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+            FString::Printf(TEXT("Left Launch Zone")));
+    }
 }
