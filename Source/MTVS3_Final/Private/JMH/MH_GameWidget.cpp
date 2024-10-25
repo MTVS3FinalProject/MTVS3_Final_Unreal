@@ -34,7 +34,6 @@ void UMH_GameWidget::SetTextCurrentPlayer(int32 CurrentPlayer)
 	//남아있는 현재 인원
 	//게임모드에서? 게임룰 진행되면서 가져오기
 	Tex_CurrentPlayer->SetText(FText::AsNumber(CurrentPlayer));
-	
 }
 
 void UMH_GameWidget::SetTextCountDown(FString CountDownTime)
@@ -73,8 +72,6 @@ void UMH_GameWidget::SetTextroulette2(int32 roulette2)
 	case 4 :
 		Tex_roulette2->SetText(FText::FromString(TEXT("만")));
 		break;
-
-		
 	}
 	
 }

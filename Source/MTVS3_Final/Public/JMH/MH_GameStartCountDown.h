@@ -20,10 +20,11 @@ public:
 
 	UPROPERTY()
 	int32 CountdownValue;
+	
 	//카운트다운
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* Tex_CountDown;
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void StartCountdown();
 	UFUNCTION()
 	void UpdateCountdown();

@@ -10,6 +10,7 @@ void UMH_GameStartCountDown::NativeConstruct()
 	Super::NativeConstruct();
 	
 	CountdownValue = 5;
+	StartCountdown();
 }
 
 void UMH_GameStartCountDown::StartCountdown()
