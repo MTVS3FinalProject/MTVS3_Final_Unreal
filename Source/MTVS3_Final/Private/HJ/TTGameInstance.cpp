@@ -226,7 +226,6 @@ void UTTGameInstance::OnMyCreateSessionComplete(FName SessionName , bool bWasSuc
 				// 홀 관리자 1, 추첨방 관리자 1 해서 각자 이동하고 싶은 경우
 				auto* pc = GetWorld()->GetFirstPlayerController();
 				pc->ClientTravel(TEXT("/Game/Ticketaka/TTLuckyDrawMap") , ETravelType::TRAVEL_Absolute); // TTLuckyDrawMap으로 이동
-				SetPlaceState(EPlaceState::LuckyDrawRoom);
 			}
 		}
 	}

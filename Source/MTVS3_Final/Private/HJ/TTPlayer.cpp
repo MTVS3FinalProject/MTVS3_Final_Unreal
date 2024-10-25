@@ -63,9 +63,21 @@ void ATTPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if ( IsLocallyControlled() )
+
+	if ( !IsLocallyControlled() )
 	{
-		SetNickname(GI->GetNickname());
+		if ( GI->GetPlaceState() == EPlaceState::Plaza )
+		{
+			SetNickname(GetNickname());
+		}
+		else if ( GI->GetPlaceState() == EPlaceState::LuckyDrawRoom )
+		{
+			SetRandomSeatNumber(GetRandomSeatNumber());
+		}
+		SetbIsHost(GetbIsHost());
+	}
+	else
+	{
 		SetbIsHost(GI->GetbIsHost());
 
 		if ( NicknameUIFactory )
@@ -76,97 +88,65 @@ void ATTPlayer::BeginPlay()
 			NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
 			NicknameUI->ChangeColorNicknameUI();
 		}
-	}
-	else
-	{
-		SetNickname(GetNickname());
-		SetbIsHost(GetbIsHost());
-		return;
-	}
 
-	auto* PC = Cast<APlayerController>(Controller);
-	if ( PC )
-	{
-		UEnhancedInputLocalPlayerSubsystem* subSys = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
-		if ( subSys ) subSys->AddMappingContext(IMC_TTPlayer , 0);
-
-		FInputModeGameAndUI InputMode;
-		InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-		InputMode.SetHideCursorDuringCapture(false); // 클릭 시 커서가 사라지지 않도록 설정
-		PC->SetInputMode(InputMode);
-		PC->bShowMouseCursor = true; // 마우스 커서 표시
-	}
-
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-
-	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-	if ( !HttpActor2 ) return;
-
-	// TTHallMap에서는 ELuckyDrawState에 따라 추첨 관련 UI 표시할지 결정
-	// TTHallMap의 시작은 Plaza(광장)
-	if ( GI->GetPlaceState() == EPlaceState::Plaza ) {
-		InitMainUI();
-
-		switch ( GI->GetLuckyDrawState() )
+		auto* PC = Cast<APlayerController>(Controller);
+		if ( PC )
 		{
-		case ELuckyDrawState::Winner:
-			// 추첨 당첨 UI 표시
-			MainUI->SetWidgetSwitcher(1);
-			// HTTP 요청
-			HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
-			break;
-		case ELuckyDrawState::Loser:
-			// 추첨 탈락 UI 표시
-			MainUI->SetWidgetSwitcher(2);
-			break;
-		case ELuckyDrawState::Neutral:
-			if ( bShowDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
+			UEnhancedInputLocalPlayerSubsystem* subSys = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
+			if ( subSys ) subSys->AddMappingContext(IMC_TTPlayer , 0);
+
+			FInputModeGameAndUI InputMode;
+			InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			InputMode.SetHideCursorDuringCapture(false); // 클릭 시 커서가 사라지지 않도록 설정
+			PC->SetInputMode(InputMode);
+			PC->bShowMouseCursor = true; // 마우스 커서 표시
+		}
+
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if ( !HttpActor2 ) return;
+
+		// TTHallMap에서는 ELuckyDrawState에 따라 추첨 관련 UI 표시할지 결정
+		// TTHallMap의 시작은 Plaza(광장)
+		if ( GI->GetPlaceState() == EPlaceState::Plaza )
+		{
+			SwitchCamera(true);
+			SetNickname(GI->GetNickname());
+			InitMainUI();
+
+			switch ( GI->GetLuckyDrawState() )
 			{
-				GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("Show Neutral UI")));
+			case ELuckyDrawState::Winner:
+				// 추첨 당첨 UI 표시
+				MainUI->SetWidgetSwitcher(1);
+				// HTTP 요청
+				HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
+				break;
+			case ELuckyDrawState::Loser:
+				// 추첨 탈락 UI 표시
+				MainUI->SetWidgetSwitcher(2);
+				break;
+			case ELuckyDrawState::Neutral:
+				if ( bShowDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
+				{
+					GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("Show Neutral UI")));
+				}
+				break;
 			}
-			break;
 		}
-	}
-
-	// 서브레벨 로드/언로드 시 넣을 코드
-	//if ( ULevelStreaming* SubLevel = UGameplayStatics::GetStreamingLevel(GetWorld() , TEXT("TTHallMap_Sub")) ) {
-	//	if ( SubLevel->IsLevelLoaded() ) {
-	//		// 서브레벨이 로드된 상태일 때 처리할 내용
-	//	}
-	//}
-
-	SwitchCamera(bIsThirdPerson);
-}
-
-void ATTPlayer::UpdateNicknameUI()
-{
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if ( !GI ) return;
-
-	if ( NicknameUIFactory )
-	{
-		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
-
-		// C++ 클래스로 캐스팅하여 접근
-		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-		// NicknameUI가 아직 초기화되지 않은 경우
-		if ( !NicknameUI )
+		else if ( GI->GetPlaceState() == EPlaceState::LuckyDrawRoom )
 		{
-			UE_LOG(LogTemp , Error , TEXT("UpdateNicknameUI() is null, retrying..."));
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle_Retry , this , &ATTPlayer::UpdateNicknameUI , 1.0f , false);
-			return;
+			SetRandomSeatNumber(GetRandomSeatNumber());
+			SwitchCamera(false);
 		}
 
-		switch ( GI->GetPlaceState() )
-		{
-		case EPlaceState::Plaza:
-		case EPlaceState::ConcertHall:
-			NicknameUI->UpdateNicknameUI(GetNickname());
-			break;
-		case EPlaceState::LuckyDrawRoom:
-			NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-			break;
-		}
+		// 서브레벨 로드/언로드 시 넣을 코드
+		//if ( ULevelStreaming* SubLevel = UGameplayStatics::GetStreamingLevel(GetWorld() , TEXT("TTHallMap_Sub")) ) {
+		//	if ( SubLevel->IsLevelLoaded() ) {
+		//		// 서브레벨이 로드된 상태일 때 처리할 내용
+		//	}
+		//}
 	}
 }
 
@@ -237,7 +217,7 @@ void ATTPlayer::SetNickname(const FString& _Nickname)
 		NicknameUI->UpdateNicknameUI(Nickname);
 	}
 
-	ServerSetNickname(Nickname);
+	if (IsLocallyControlled()) ServerSetNickname(Nickname);
 }
 
 void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
@@ -249,6 +229,17 @@ void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
 void ATTPlayer::OnRep_Nickname()
 {
 	if ( NicknameUI ) NicknameUI->UpdateNicknameUI(Nickname);
+}
+
+void ATTPlayer::SetbIsHost(const bool& _bIsHost)
+{
+	bIsHost = _bIsHost;
+	if ( IsLocallyControlled() ) ServerSetbIsHost(bIsHost);
+}
+
+void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
+{
+	bIsHost = _bIsHost;
 }
 
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
@@ -263,6 +254,32 @@ void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 void ATTPlayer::SetRandomSeatNumber(const int32& _RandomSeatNumber)
 {
 	RandomSeatNumber = _RandomSeatNumber;
+
+	if ( NicknameUIFactory )
+	{
+		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
+
+		// C++ 클래스로 캐스팅하여 접근
+		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
+		NicknameUI->UpdateNicknameUI(FString::FromInt(RandomSeatNumber));
+	}
+
+	if ( IsLocallyControlled() ) ServerSetRandomSeatNumber(RandomSeatNumber);
+}
+
+void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSeatNumber)
+{
+	RandomSeatNumber = _RandomSeatNumber;
+	OnRep_RandomSeatNumber();
+}
+
+void ATTPlayer::OnRep_RandomSeatNumber()
+{
+	if ( NicknameUI )
+	{
+		UE_LOG(LogTemp , Warning , TEXT("OnRep_RandomSeatNumber: %d") , RandomSeatNumber);
+		NicknameUI->UpdateNicknameUI(FString::FromInt(RandomSeatNumber));
+	}
 }
 
 void ATTPlayer::PrintStateLog()
@@ -579,6 +596,7 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3"));
 	bIsCheat3Active = !bIsCheat3Active;
 	GI->SetbIsHost(bIsCheat3Active);
+	SetbIsHost(bIsCheat3Active);
 }
 
 void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
@@ -630,6 +648,7 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	// bIsSitting을 개별 클라이언트에 복제
 	DOREPLIFETIME(ATTPlayer , bIsSitting);
 	DOREPLIFETIME(ATTPlayer , Nickname);
+	DOREPLIFETIME(ATTPlayer , RandomSeatNumber);
 }
 
 void ATTPlayer::ForceStandUp()
