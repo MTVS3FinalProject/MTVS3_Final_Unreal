@@ -14,9 +14,14 @@ class MTVS3_FINAL_API UPlayerNicknameWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
+protected:
 	virtual void NativeConstruct() override;
 
+	FTimerHandle TimerHandle_Retry;
+public:
 	UPROPERTY(EditAnywhere , BlueprintReadWrite , meta = (BindWidget))
 	class UTextBlock* Tex_Nickname;
+
+	void UpdateNicknameUI(const FString& _Nickname);
+	void ChangeColorNicknameUI();
 };

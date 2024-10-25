@@ -14,14 +14,6 @@ void ATTPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	ATTPlayerState* PS = Cast<ATTPlayerState>(PlayerState);
-	if ( PS && GI /*&& PS->Nickname.IsEmpty()*/ )  // 닉네임이 비어 있을 때만 설정
-	{
-		PS->SetNickname(GI->GetNickname());
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ATTPlayerController::BeginPlay()"));
-	}
-
 	/*TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
 	if ( TicketingUI )
 	{
