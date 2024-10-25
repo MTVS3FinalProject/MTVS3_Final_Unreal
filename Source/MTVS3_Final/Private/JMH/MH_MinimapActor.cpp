@@ -37,7 +37,7 @@ AMH_MinimapActor::AMH_MinimapActor()
 	//플레이어 위치 이미지
 	MinimapSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("MinimapSprite"));
 	MinimapSprite->SetWorldRotation(FRotator(90.f , 0.f , -90.f)); // Set rotation for top-down view
-	MinimapSprite->SetWorldScale3D(FVector(0.5f));
+	MinimapSprite->SetWorldScale3D(FVector(1.f));
 	MinimapSprite->SetWorldLocation(FVector(0.f , 0.f , 300.f));
 	
 	//인게임에서는 안보이게
