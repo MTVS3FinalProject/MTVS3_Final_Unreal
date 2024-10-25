@@ -68,9 +68,11 @@ class MTVS3_FINAL_API ATTLuckyDrawGameMode : public AGameMode
 	GENERATED_BODY()
 	
 public:
-    virtual void BeginPlay() override;
-
     ATTLuckyDrawGameMode();
+
+    void PostLogin(APlayerController* NewPlayer);
+
+    virtual void BeginPlay() override;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
     bool bIsRouletteTestMode;

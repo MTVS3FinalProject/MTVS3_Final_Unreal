@@ -20,12 +20,50 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void UpdateNicknameUI();
+
+	FTimerHandle TimerHandle_Retry;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+#pragma region 플레이어 정보
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	bool bIsHost;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetbIsHost(const bool& _bIsHost) { bIsHost = _bIsHost; };
+	bool GetbIsHost() const { return bIsHost; };
+
+	UPROPERTY(ReplicatedUsing = OnRep_Nickname, VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString Nickname;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetNickname(const FString& _Nickname);
+	FString GetNickname() const { return Nickname; };
+
+	UFUNCTION(Server , Unreliable)
+	void ServerSetNickname(const FString& _Nickname);
+
+	UFUNCTION()
+	void OnRep_Nickname();
+
+	// 추첨을 시작할 좌석 ID
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString LuckyDrawSeatID;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
+	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
+
+	// 랜덤으로 배치된 좌석 번호
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	int32 RandomSeatNumber = -1;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
+	int32 GetRandomSeatNumber() const { return RandomSeatNumber; }
+#pragma endregion
 
 #pragma region 디버그
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Debug")
@@ -34,8 +72,9 @@ public:
 	//{
 	//	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("Show Winner UI")));
 	//}
-#pragma endregion
 
+	void PrintStateLog();
+#pragma endregion
 	UPROPERTY(EditDefaultsOnly)
 	class USpringArmComponent* SpringArmComp;
 
@@ -149,6 +188,9 @@ public:
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	class UWidgetComponent* NicknameUIComp;
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UPlayerNicknameWidget> NicknameUIFactory;
+	class UPlayerNicknameWidget* NicknameUI;
 
 	void InitMainUI();
 #pragma endregion

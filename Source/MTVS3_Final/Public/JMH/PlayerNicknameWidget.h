@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -7,19 +7,21 @@
 #include "PlayerNicknameWidget.generated.h"
 
 /**
- * 
+ *
  */
 UCLASS()
 class MTVS3_FINAL_API UPlayerNicknameWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-public:
-	
+protected:
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,meta=(BindWidget))
+	FTimerHandle TimerHandle_Retry;
+public:
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , meta = (BindWidget))
 	class UTextBlock* Tex_Nickname;
 
-	
+	void UpdateNicknameUI(const FString& _Nickname);
+	void ChangeColorNicknameUI();
 };

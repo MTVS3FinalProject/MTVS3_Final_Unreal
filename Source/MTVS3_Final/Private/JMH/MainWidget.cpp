@@ -14,6 +14,8 @@
 #include <HJ/TTPlayer.h>
 #include <HJ/TTPlayerState.h>
 
+#include "Components/Image.h"
+
 void UMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -69,6 +71,11 @@ void UMainWidget::OnClickedBackMain()
 	}
 }
 
+void UMainWidget::SetMinimapImage(UTexture2D* img)
+{
+	Img_MinimapImg->SetBrushFromTexture(img);
+}
+
 void UMainWidget::OnClickedBuyTicket()
 {
 	//예매진행 버튼-> ButTicket으로 
@@ -99,7 +106,6 @@ void UMainWidget::OnClickedBack_Map()
 	if ( !GI || !Local || !PS ) return;
 
 	GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
-	PS->SetLuckyDrawSeatID("-1");
 }
 
 void UMainWidget::SetTextRemainingTicket(int32 RemainingTicket)

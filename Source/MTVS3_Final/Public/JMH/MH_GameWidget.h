@@ -40,8 +40,7 @@ public:
 	class UTextBlock* Tex_CurrentPlayer;
 	UFUNCTION()
 	void SetTextCurrentPlayer(int32 CurrentPlayer);
-
-	//현재 인원
+	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Tex_CountDown;
 	UFUNCTION()
@@ -65,48 +64,21 @@ public:
 	UFUNCTION()
 	void SetTextroulette3(int32 roulette3);
 
-	/*
-	//룰렛3
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_SeatNum1;
+	//애니메이션
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* Roulette01Anim;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* Roulette02Anim;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* Roulette03Anim;
+	//룰렛 시작 애니메이션 함수
 	UFUNCTION()
-	void SetTextSeatNum1(FString SeatNum1);
+	void PlayRouletteAnim();
+
+	//처음 어떻게 있을지 정해야함.
+	//결과 바뀔때 애니메이션 해야함.
 	
-	//룰렛3
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_SeatNum2;
-	UFUNCTION()
-	void SetTextSeatNum2(FString SeatNum2);
-
-	//예매성공
-	//티켓 결제
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_BuyTicket;
-	UFUNCTION()
-	void OnClickedBuyTicket();
 	
-	//나중에 구매
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_BuyLater;
-	UFUNCTION()
-	void OnClickedBuyLater();
-//====
-	//예매실패
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_RemainingTicket;
-	UFUNCTION()
-	void SetTextRemainingTicket(int32 RemainingTicket);
-
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Back2;
-	UFUNCTION()
-	void OnClickedBackButton();
-
-	//티켓예매 뒤로가기 버튼 . 게임진행
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Back01;
-	UFUNCTION()
-	void OnClickedBack01Button();*/
 
 	
 	

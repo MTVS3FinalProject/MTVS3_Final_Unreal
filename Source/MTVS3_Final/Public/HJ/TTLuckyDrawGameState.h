@@ -16,4 +16,8 @@ class MTVS3_FINAL_API ATTLuckyDrawGameState : public AGameState
 
 protected:
 	virtual void BeginPlay() override;
+
+public:
+	void AssignSeatNumber(APlayerState* PlayerState);
+
 };

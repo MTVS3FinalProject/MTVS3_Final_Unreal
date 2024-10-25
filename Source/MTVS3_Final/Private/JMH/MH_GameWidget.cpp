@@ -92,37 +92,11 @@ void UMH_GameWidget::SetTextroulette3(int32 roulette3)
 	}
 }
 
-/*
-void UMH_GameWidget::OnClickedBuyTicket()
+//룰렛 플레이 시작
+void UMH_GameWidget::PlayRouletteAnim()
 {
-	//예매진행 버튼->
-	//이겼다는 정보를 gi에 가지고 홀로 세션이동
-	//홀세션
-	//QR UI로 이동
-	SetWidgetSwitcher(4);
+	PlayAnimation(Roulette01Anim);
+	PlayAnimation(Roulette02Anim);
+	PlayAnimation(Roulette03Anim);
 }
 
-void UMH_GameWidget::OnClickedBuyLater()
-{
-	//나중에 예매하기버튼->
-	//이겼다는 정보를 gi에 가지고 홀로 세션이동
-	//알림 등록하고, 알림에서 클릭시 결제 진행 가능.
-}
-
-void UMH_GameWidget::SetTextRemainingTicket(int32 RemainingTicket)
-{
-	//게임인스턴스에서 남아있는 티켓 잔여횟수 받아오기
-	Tex_CurrentPlayer->SetText(FText::AsNumber(RemainingTicket));
-}
-
-void UMH_GameWidget::OnClickedBackButton()
-{
-	//콘서트 홀로 세션이동
-}
-
-void UMH_GameWidget::OnClickedBack01Button()
-{
-	//미니게임 -> 티켓예매창에서 뒤로가기 누르면
-	//위젯 종료? 비지블 off?
-	//세션 옮기고 띄우는거면 RemoveWidget해야할까?
-}*/

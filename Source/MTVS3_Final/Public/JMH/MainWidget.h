@@ -63,6 +63,12 @@ public:
 		return BuyTicketWidget;
 	}
 	
+	//0:Minimap
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_MinimapImg;
+
+	UFUNCTION()
+	void SetMinimapImage(UTexture2D* img);
 	//1: Win
 	//티켓 결제
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -115,6 +121,8 @@ public:
 	void OnClickedConcert01();
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_SelectConcertBack;
+
+	
 	
 	//티켓예매 알람
 	//티켓팅 시간대
