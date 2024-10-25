@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "JMH/MH_Minmimap.h"
+#include "JMH/MH_MinimapActor.h"
 
 #include "PaperSprite.h"
 #include "PaperSpriteComponent.h"
@@ -9,16 +9,20 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "JMH/MainWidget.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
-AMH_Minmimap::AMH_Minmimap()
+AMH_MinimapActor::AMH_MinimapActor()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+ 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	//Camera SpringArm
 	MinimapCameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
-	MinimapCameraBoom->SetWorldRotation(FRotator(-90.f , 0.f , 0.f)); // Pointing downward
+	//카메라 회전
+	MinimapCameraBoom->SetWorldRotation(FRotator::MakeFromEuler(FVector(0.f , -90.f , 0.f)));
+	//미니맵 회전 유무
 	MinimapCameraBoom->bUsePawnControlRotation = false;
 	MinimapCameraBoom->bInheritPitch = false;
 	MinimapCameraBoom->bInheritRoll = false;
@@ -29,32 +33,30 @@ AMH_Minmimap::AMH_Minmimap()
 	//카메라 투영타입 거리감없게
 	MinimapCapture->OrthoWidth = 2000;
 	MinimapCapture->SetupAttachment(MinimapCameraBoom);
-	//MinimapCapture->TextureTarget = NewObject<UTextureRenderTarget2D>();
-	//MinimapCapture->TextureTarget->InitAutoFormat(1024 , 1024);
-
 	
 	//플레이어 위치 이미지
 	MinimapSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("MinimapSprite"));
 	MinimapSprite->SetWorldRotation(FRotator(90.f , 0.f , -90.f)); // Set rotation for top-down view
 	MinimapSprite->SetWorldScale3D(FVector(0.5f));
+	MinimapSprite->SetWorldLocation(FVector(0.f , 0.f , 300.f));
+	
 	//인게임에서는 안보이게
 	MinimapSprite->bVisibleInSceneCaptureOnly = true;
 	
 	RenderTarget = NewObject<UTextureRenderTarget2D>();
-	RenderTarget->InitAutoFormat(1024, 1024); // 1024x1024 크기로 초기화
+	//RenderTarget->InitAutoFormat(1024, 1024); // 1024x1024 크기로 초기화
 	MinimapCapture->TextureTarget = RenderTarget;
 }
 
 // Called when the game starts or when spawned
-void AMH_Minmimap::BeginPlay()
+void AMH_MinimapActor::BeginPlay()
 {
 	Super::BeginPlay();
-		
+
 	Player = UGameplayStatics::GetPlayerCharacter(this , 0);
 	if (Player)
 	{
-		MinimapCameraBoom->AttachToComponent(Player->GetRootComponent() ,
-		                                     FAttachmentTransformRules::KeepRelativeTransform);
+		MinimapCameraBoom->AttachToComponent(Player->GetRootComponent() , FAttachmentTransformRules::KeepRelativeTransform);
 		MinimapSprite->AttachToComponent(Player->GetRootComponent() , FAttachmentTransformRules::KeepRelativeTransform);
 	}
 
@@ -67,8 +69,6 @@ void AMH_Minmimap::BeginPlay()
 	{
 		MinimapSprite->SetSprite(NewObject<UPaperSprite>(this , MinimapSpriteClass));
 	}
-	//플레이어가 미니맵에 보이기 않게 메쉬만 숨기기
-	USkeletalMeshComponent* PlayerMesh = Player->FindComponentByClass<USkeletalMeshComponent>();
 
 	//플레이어 메쉬 숨김
 	MinimapCapture->ShowFlags.SetSkeletalMeshes(false);
@@ -76,25 +76,25 @@ void AMH_Minmimap::BeginPlay()
 	// 동적 그림자 비활성화
 	MinimapCapture->ShowFlags.DynamicShadows = false;
 
+	
 }
 
 // Called every frame
-void AMH_Minmimap::Tick(float DeltaTime)
+void AMH_MinimapActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
-		ApplyMinimap();
-	
+
+	ApplyMinimap();
+
 }
 
-void AMH_Minmimap::ApplyMinimap()
+void AMH_MinimapActor::ApplyMinimap()
 {
 	// 오너 캐릭터 확인 및 미니맵 업데이트
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this , 0);
 	if (PlayerController)
 	{
 		Player = PlayerController->GetCharacter();
-		//MinimapUI->SetMinimapImage();
 		if (Player)
 		{
 			//카메라 위치 업뎃
@@ -122,6 +122,5 @@ void AMH_Minmimap::ApplyMinimap()
 			MinimapSprite->SetWorldRotation(MinimapSpriteRotation);
 		}
 	}
-	MinimapUI = Cast<UMainWidget>(MinimapWidgetClass);
-	MinimapUI->SetMinimapImage(RenderTarget);
 }
+

@@ -53,6 +53,12 @@ public:
 	class UButton*  Btn_BuyCoin;
 	UFUNCTION()
 	void OnClickedBuyCoinButton();
+
+	//코인충전 버튼
+	UPROPERTY()
+	TArray<UButton*> ButtonArray;
+	UFUNCTION()
+	void OnButtonClicked(UButton* ClickedButton);
 	//뒤로가기
 	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	//class UButton*  Btn_Back;

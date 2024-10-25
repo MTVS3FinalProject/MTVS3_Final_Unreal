@@ -180,8 +180,7 @@ public:
 
 	UPROPERTY()
 	bool bIsVisible;
-
-
+	
 	// ==================================
 	// HttpActor2 공연장 입장 통신 테스트용
 

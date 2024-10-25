@@ -3,19 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MainWidget.h"
 #include "PaperSprite.h"
 #include "GameFramework/Actor.h"
-#include "MH_Minmimap.generated.h"
+#include "MH_MinimapActor.generated.h"
 
 UCLASS()
-class MTVS3_FINAL_API AMH_Minmimap : public AActor
+class MTVS3_FINAL_API AMH_MinimapActor : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AMH_Minmimap();
+	AMH_MinimapActor();
 
 protected:
 	// Called when the game starts or when spawned
@@ -24,7 +23,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
 	class USpringArmComponent* MinimapCameraBoom;
 
@@ -46,15 +45,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyMinimap();
 
-	UPROPERTY(EditAnywhere, Category = "Minimap")
-	TSubclassOf<UMainWidget> MinimapWidgetClass;
-
-	UPROPERTY()
-	UMainWidget* MinimapUI;
-
 	//
 	// Render Target 텍스처
 	UPROPERTY()
 	UTextureRenderTarget2D* RenderTarget;
-};
 
+};

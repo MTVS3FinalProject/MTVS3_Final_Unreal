@@ -3,6 +3,7 @@
 
 #include "JMH/MH_GameStartCountDown.h"
 
+#include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
 
 void UMH_GameStartCountDown::NativeConstruct()
@@ -10,7 +11,7 @@ void UMH_GameStartCountDown::NativeConstruct()
 	Super::NativeConstruct();
 	
 	CountdownValue = 5;
-	StartCountdown();
+	//StartCountdown();
 }
 
 void UMH_GameStartCountDown::StartCountdown()
@@ -20,9 +21,9 @@ void UMH_GameStartCountDown::StartCountdown()
 
 void UMH_GameStartCountDown::UpdateCountdown()
 {
-	if (Tex_CountDown)
+	if (Text_CountDown)
 	{
-		Tex_CountDown->SetText(FText::FromString(FString::FromInt(CountdownValue)));
+		Text_CountDown->SetText(FText::FromString(FString::FromInt(CountdownValue)));
 		PlayAnimation(CountDownAnim);
 	}
 	
@@ -31,5 +32,17 @@ void UMH_GameStartCountDown::UpdateCountdown()
 	if (CountdownValue < 0)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
+	}
+}
+
+void UMH_GameStartCountDown::StartCountDownVisible(bool bIsvisible)
+{
+	if(bIsvisible)
+	{
+		Can_StartCountDown->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		Can_StartCountDown->SetVisibility(ESlateVisibility::Hidden);
 	}
 }

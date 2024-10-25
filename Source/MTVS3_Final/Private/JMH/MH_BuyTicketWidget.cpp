@@ -20,13 +20,14 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	Btn_Confirm01->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm01Button);
+	Btn_Confirm_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm01Button);
 	//Btn_Back01->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack01Button);
 	Btn_Confirm02->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm02Button);
 	Btn_Back02->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack02Button);
 	Btn_Confirm_QRUi1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUi1Button);
 	Btn_Back_QRUi1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack_QRUi1Button);
 	Btn_Confirm_QRSuccess->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUi2SuccessButton);
-	Btn_Confirm_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUiFailedButton);
+	Btn_Back_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUiFailedButton);
 	Btn_AddCoin->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedAddCoinButton);
 	Btn_BuyTicketCoin->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton);
 	Btn_Back03->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack03Button);
@@ -64,14 +65,6 @@ void UMH_BuyTicketWidget::OnClickedConfirm01Button()
 		}
 	}
 }
-
-//void UMH_BuyTicketWidget::OnClickedBack01Button()
-//{
-	//뒤로가기 하면 어디로?// 비지블 끄기, 위젯 스위쳐 옮가기?
-
-
-	//메인에선 닫기 해야해서 그냥 이거 없애고 거기서 버튼 붙여주기
-//}
 
 // 결제시 서버에서 받아온 회원 인증 QR 이미지 넣어주기
 void UMH_BuyTicketWidget::SetQRImg(UTexture2D* newTexture)

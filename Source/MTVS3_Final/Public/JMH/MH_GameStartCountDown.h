@@ -18,16 +18,20 @@ public:
 	
 	virtual void NativeConstruct() override;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="CountValue")
 	int32 CountdownValue;
 	
 	//카운트다운
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* Tex_CountDown;
+	class UTextBlock* Text_CountDown;
+	UPROPERTY(meta = (BindWidget))
+	class UCanvasPanel* Can_StartCountDown;
 	UFUNCTION(BlueprintCallable)
 	void StartCountdown();
 	UFUNCTION()
 	void UpdateCountdown();
+	UFUNCTION()
+	void StartCountDownVisible(bool visible);
 
 	UPROPERTY()
 	FTimerHandle CountdownTimerHandle;
