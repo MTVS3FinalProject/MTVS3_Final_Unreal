@@ -173,7 +173,7 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
 		if (HttpActor)
 		{
-			HttpActor->ReqPostGetVerifyIdentityQR(EText_SignupEmail->GetText());
+			HttpActor->ReqPostGetVerifyIdentityQR(EText_SignupEmail->GetText(),EText_PassWord->GetText());
 		}
 		else
 		{

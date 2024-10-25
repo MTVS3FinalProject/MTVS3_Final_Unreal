@@ -384,7 +384,7 @@ public:
 	void OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 예매자 정보 입력 요청
-	void ReqPostReservationinfo(FString UserName, FString UserPhoneNum , FString UserAddress1 , FString UserAddress2 , FString AccessToken);
+	void ReqPostReservationinfo(FText UserName, FText UserPhoneNum , FText UserAddress1 , FText UserAddress2 , FString AccessToken);
 
 	// 예매자 정보 입력 요청에 대한 응답
 	void OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
@@ -394,5 +394,10 @@ public:
 
 	// 좌석 결제 요청에 대한 응답
 	void OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+    //=======================================================================================================
+
+    // 개발자 키(2) Cheat Seat 좌석 게임 결과 요청
+    void ReqPostCheatGameResult(FString ConcertName , FString AccessToken);
 
 };

@@ -82,7 +82,10 @@ public:
 	class UEditableText* EText_PhoneNum;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UEditableText* EText_Address;
+	class UEditableText* EText_Address1;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UEditableText* EText_Address2;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_Confirm_QRSuccess;

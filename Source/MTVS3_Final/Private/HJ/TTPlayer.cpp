@@ -471,7 +471,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 		MainUI->SetWidgetSwitcher(1);
 
 		// HTTP 통신 요청
-		HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
+		HttpActor2->ReqPostCheatGameResult(GI->GetConcertName() , GI->GetAccessToken());
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Enable Cheat2 in TTLuckyDrawMap"));
