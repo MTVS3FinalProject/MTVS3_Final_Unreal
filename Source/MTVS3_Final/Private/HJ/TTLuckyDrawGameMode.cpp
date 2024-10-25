@@ -2,7 +2,8 @@
 
 
 #include "HJ/TTLuckyDrawGameMode.h"
-#include "random"  // std::shuffle와 무작위 엔진 사용을 위한 헤더 추가
+#include "random"
+#include "HJ/TTLuckyDrawGameState.h"
 
 // LogLuckyDraw 카테고리 정의
 DEFINE_LOG_CATEGORY(LogLuckyDraw);
@@ -13,6 +14,17 @@ ATTLuckyDrawGameMode::ATTLuckyDrawGameMode()
 	EliminatedPlayersPerRound.Empty();
 	RoundEliminatedPlayers.Empty();
 	RouletteInfosPerRound.Empty();
+}
+
+void ATTLuckyDrawGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	ATTLuckyDrawGameState* LocalGameState = GetGameState<ATTLuckyDrawGameState>();
+	if ( LocalGameState )
+	{
+		LocalGameState->AssignSeatNumber(NewPlayer->PlayerState);
+	}
 }
 
 void ATTLuckyDrawGameMode::BeginPlay()

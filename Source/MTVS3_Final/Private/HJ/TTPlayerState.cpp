@@ -3,6 +3,7 @@
 
 #include "HJ/TTPlayerState.h"
 #include "HJ/TTGameInstance.h"
+#include "Net/UnrealNetwork.h"
 
 void ATTPlayerState::BeginPlay()
 {
@@ -11,6 +12,11 @@ void ATTPlayerState::BeginPlay()
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI) SetNickname(GI->GetNickname());
 }
+
+void ATTPlayerState::SetNickname(const FString& _Nickname)
+{
+	Nickname = _Nickname;
+};
 
 void ATTPlayerState::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 {

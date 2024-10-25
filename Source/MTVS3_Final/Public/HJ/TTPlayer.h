@@ -34,8 +34,9 @@ public:
 	//{
 	//	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green , FString::Printf(TEXT("Show Winner UI")));
 	//}
-#pragma endregion
 
+	void PrintStateLog();
+#pragma endregion
 	UPROPERTY(EditDefaultsOnly)
 	class USpringArmComponent* SpringArmComp;
 
