@@ -22,7 +22,7 @@ public:
 	int32 CountdownValue;
 	//카운트다운
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* CountdownText;
+	class UTextBlock* Tex_CountDown;
 	UFUNCTION()
 	void StartCountdown();
 	UFUNCTION()
@@ -30,4 +30,8 @@ public:
 
 	UPROPERTY()
 	FTimerHandle CountdownTimerHandle;
+	
+	//애니메이션
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* CountDownAnim;
 };

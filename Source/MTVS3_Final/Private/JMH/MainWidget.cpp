@@ -14,6 +14,8 @@
 #include <HJ/TTPlayer.h>
 #include <HJ/TTPlayerState.h>
 
+#include "Components/Image.h"
+
 void UMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -67,6 +69,11 @@ void UMainWidget::OnClickedBackMain()
 		gi->ExitSession();
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ExitSession"));
 	}
+}
+
+void UMainWidget::SetMinimapImage(UTexture2D* img)
+{
+	Img_MinimapImg->SetBrushFromTexture(img);
 }
 
 void UMainWidget::OnClickedBuyTicket()

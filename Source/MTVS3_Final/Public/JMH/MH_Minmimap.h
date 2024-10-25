@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MainWidget.h"
 #include "PaperSprite.h"
 #include "GameFramework/Actor.h"
 #include "MH_Minmimap.generated.h"
@@ -45,6 +46,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyMinimap();
 
-	UFUNCTION(BlueprintCallable)
-	void FollowPlayer();
+	UPROPERTY(EditAnywhere, Category = "Minimap")
+	TSubclassOf<UMainWidget> MinimapWidgetClass;
+
+	UPROPERTY()
+	UMainWidget* MinimapUI;
 };
+

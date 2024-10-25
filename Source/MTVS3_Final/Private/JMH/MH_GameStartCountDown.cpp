@@ -19,9 +19,10 @@ void UMH_GameStartCountDown::StartCountdown()
 
 void UMH_GameStartCountDown::UpdateCountdown()
 {
-	if (CountdownText)
+	if (Tex_CountDown)
 	{
-		CountdownText->SetText(FText::FromString(FString::FromInt(CountdownValue)));
+		Tex_CountDown->SetText(FText::FromString(FString::FromInt(CountdownValue)));
+		PlayAnimation(CountDownAnim);
 	}
 	
 	CountdownValue--;

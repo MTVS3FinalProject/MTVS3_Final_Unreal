@@ -40,8 +40,7 @@ public:
 	class UTextBlock* Tex_CurrentPlayer;
 	UFUNCTION()
 	void SetTextCurrentPlayer(int32 CurrentPlayer);
-
-	//현재 인원
+	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Tex_CountDown;
 	UFUNCTION()
