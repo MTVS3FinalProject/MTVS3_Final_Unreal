@@ -9,6 +9,7 @@
 /**
  *
  */
+
 UCLASS()
 class MTVS3_FINAL_API ATTPlayerState : public APlayerState
 {
@@ -18,17 +19,17 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:
+public:	
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	bool bIsHost;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetbIsHost(const bool& _bIsHost) { bIsHost = _bIsHost; };
 	bool GetbIsHost() const { return bIsHost; };
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString Nickname;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void SetNickname(const FString& _Nickname) { Nickname = _Nickname; };
+	void SetNickname(const FString& _Nickname);
 	FString GetNickname() const { return Nickname; };
 
 	// 추첨을 시작할 좌석 ID
