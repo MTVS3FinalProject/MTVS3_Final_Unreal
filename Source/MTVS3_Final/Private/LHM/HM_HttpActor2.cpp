@@ -488,6 +488,7 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 					if( TTPlayer && GI && MainUI )
 					{
 						GI->UseRemainingTicket(1);
+						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 					}
 
 					if ( GI && TicketingUI )
@@ -1103,12 +1104,12 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					int32 UserCoin = ResponseObject->GetIntegerField(TEXT("userCoin"));
 					int32 NeededCoin = ResponseObject->GetIntegerField(TEXT("neededCoin"));
 
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatInfo : %s") , *SeatInfo));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatNum : %d") , SeatNum));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("SeatPrice : %d") , SeatPrice));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Coin : %d") , UserCoin));
-					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("NeededCoin : %d") , NeededCoin));
-					
+					UE_LOG(LogTemp , Log , TEXT("SeatInfo : %s"), *SeatInfo);
+					UE_LOG(LogTemp , Log , TEXT("SeatNum : %d") , SeatNum);
+					UE_LOG(LogTemp , Log , TEXT("SeatPrice : %d") , SeatPrice);
+					UE_LOG(LogTemp , Log , TEXT("Coin : %d") , UserCoin);
+					UE_LOG(LogTemp , Log , TEXT("NeededCoin : %d") , NeededCoin);
+
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 					if ( TTPlayer && GI )
@@ -1119,18 +1120,18 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					//SetSeatInfo(SeatInfo);
 					//SetSeatPrice(SeatPrice);
 					//SetNeedCoin(NeedCoin);
-
+					
 					// 결제 진행하는 위젯스위쳐 Set
 					if ( MainUI->GetBuyTicketWidget() )
 					{
 						MainUI->BuyTicketWidget->SetTextSeatID(SeatInfo);
-						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
+						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 						MainUI->BuyTicketWidget->SetTextNeedCoin(NeededCoin);
-						MainUI->BuyTicketWidget->UpdateTotalCoin();
+						int32 TotalCoin = SeatNum*SeatPrice;
+						MainUI->BuyTicketWidget->SetTextTotalCoin(TotalCoin);
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(5);
 					}
-					
 				}
 			}
 		}
@@ -1234,6 +1235,8 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					SetUserAddress1(UserAddress);*/
 					if ( MainUI->GetBuyTicketWidget() )
 					{
+						MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
+						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextUserName(UserName);
 						MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
 						MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);

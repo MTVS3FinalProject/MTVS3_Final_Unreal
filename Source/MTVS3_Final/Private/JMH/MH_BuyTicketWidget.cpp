@@ -41,6 +41,15 @@ void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num)//0:티켓예매정보,1:Q
 	WS_BuyTicketSwitcher->SetActiveWidgetIndex(num);
 }
 
+void UMH_BuyTicketWidget::SetTextTicketPrice(int32 TicketPrice)
+{
+	Text_TicketPrice1->SetText(FText::AsNumber(TicketPrice));
+	Text_TicketPrice1_1->SetText(FText::AsNumber(TicketPrice));
+	Text_TicketPrice2->SetText(FText::AsNumber(TicketPrice));
+	Text_TicketPrice2_2->SetText(FText::AsNumber(TicketPrice));
+	Text_TicketPrice3->SetText(FText::AsNumber(TicketPrice));
+}
+
 // HTTP : 회원 인증 QR 요청
 void UMH_BuyTicketWidget::OnClickedConfirm01Button()
 {
@@ -146,18 +155,7 @@ void UMH_BuyTicketWidget::SetTextSeatID(FString SeatID)
 void UMH_BuyTicketWidget::SetTextTotalCoin(int32 TotalCoin)
 {
 	Text_TotalCoin->SetText(FText::AsNumber(TotalCoin));
-}
-
-void UMH_BuyTicketWidget::UpdateTotalCoin()
-{
-	int32 TicketNum = Text_TicketNum->GetText().ToString().IsNumeric() ? FCString::Atoi(*Text_TicketNum->GetText().ToString()) : 0;
-	int32 TicketPrice = Text_TicketPrice->GetText().ToString().IsNumeric() ? FCString::Atoi(*Text_TicketPrice->GetText().ToString()) : 0;
-
-	// 티켓 가격과 수를 곱하여 총 코인을 계산
-	int32 TotalCoin = TicketNum * TicketPrice;
-
-	// 계산한 총 코인을 텍스트에 반영
-	SetTextTotalCoin(TotalCoin);
+	Text_TotalCoin_1->SetText(FText::AsNumber(TotalCoin));
 }
 
 void UMH_BuyTicketWidget::SetTextNeedCoin(int32 NeedCoin)
@@ -168,11 +166,9 @@ void UMH_BuyTicketWidget::SetTextNeedCoin(int32 NeedCoin)
 void UMH_BuyTicketWidget::SetTextTicketNum(int32 TicketNum)
 {
 	Text_TicketNum->SetText(FText::AsNumber(TicketNum));
-}
-
-void UMH_BuyTicketWidget::SetTextTicketPrice(int32 TicketPrice)
-{
-	Text_TicketPrice->SetText(FText::AsNumber(TicketPrice));
+	Text_TicketNum2->SetText(FText::AsNumber(TicketNum));
+	Text_TicketNum3->SetText(FText::AsNumber(TicketNum));
+	Text_TicketNum4->SetText(FText::AsNumber(TicketNum));
 }
 
 void UMH_BuyTicketWidget::OnClickedAddCoinButton()
@@ -210,6 +206,11 @@ void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
 	}
 	//아니라면
 	//충전해야한다고 경고창
+}
+
+void UMH_BuyTicketWidget::SetTextSeatID2(FString SeatID2)
+{
+	Text_SeatID2->SetText(FText::FromString(SeatID2));
 }
 
 void UMH_BuyTicketWidget::SetTextUserName(FString UserName)
