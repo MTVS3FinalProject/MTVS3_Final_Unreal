@@ -204,7 +204,8 @@ void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostPaymentSeat(gi->GetConcertName(),HttpActor2->GetSeatId(), gi->GetAccessToken());
+			HttpActor2->ReqPostPaymentSeat(gi->GetConcertName(), HttpActor2->GetMySeatId() , gi->GetAccessToken());
+			UE_LOG(LogTemp , Log , TEXT("HttpActor2->GetMySeatId(): %s") , *HttpActor2->GetMySeatId());
 		}
 	}
 	//아니라면

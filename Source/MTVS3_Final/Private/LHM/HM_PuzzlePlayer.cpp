@@ -138,7 +138,6 @@ void AHM_PuzzlePlayer::OnMyActionLaunchPickedUpPiece(const FInputActionValue& Va
 
 void AHM_PuzzlePlayer::PickupPiece()
 {
-	// 라인 트레이스를 사용하여 블럭 액터를 찾습니다.
 	FVector CameraLocation;
 	FRotator CameraRotation;
 	GetController()->GetPlayerViewPoint(CameraLocation , CameraRotation);
@@ -167,11 +166,11 @@ void AHM_PuzzlePlayer::PickupPiece()
 			// 퍼즐 조각을 플레이어가 "들고" 있는 상태로 만듭니다.
 			PickedUpPiece = Piece;
 
-			// 물리 상호작용 비활성화 (선택적)
+			// 물리 상호작용 비활성화
 			Piece->GetPiece()->SetSimulatePhysics(false);
 
 			// 조각을 따라오게 함
-			bIsHoldingPiece = true; // 이 변수는 플레이어가 블럭을 들고 있는 상태를 나타냅니다.
+			bIsHoldingPiece = true;
 		}
 	}
 }
