@@ -24,6 +24,7 @@
 #include <HJ/TTPlayerState.h>
 #include <HJ/HJ_Actor.h>
 #include "HJ/TTLuckyDrawGameState.h"
+#include "JMH/MH_GameWidget.h"
 #include "JMH/PlayerNicknameWidget.h"
 
 class ALuckyDrawManager;

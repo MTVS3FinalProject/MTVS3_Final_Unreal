@@ -35,6 +35,7 @@ void UMH_GameStartCountDown::UpdateCountdown()
 	}
 }
 
+/*
 void UMH_GameStartCountDown::StartCountDownVisible(bool bIsvisible)
 {
 	if(bIsvisible)
@@ -45,4 +46,4 @@ void UMH_GameStartCountDown::StartCountDownVisible(bool bIsvisible)
 	{
 		Can_StartCountDown->SetVisibility(ESlateVisibility::Hidden);
 	}
-}
+}*/

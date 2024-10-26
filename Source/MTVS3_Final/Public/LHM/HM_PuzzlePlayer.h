@@ -75,22 +75,61 @@ public:
 	void OnMyActionRunStart(const FInputActionValue& Value);
 	void OnMyActionRunComplete(const FInputActionValue& Value);
 
+	// UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	// class UInputAction* IA_Pickup;
+	// UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	// class UInputAction* IA_Launch;
+	// void OnMyActionPickupPiece(const FInputActionValue& Value);
+	// void OnMyActionLaunchPickedUpPiece(const FInputActionValue& Value);
+
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Pickup;
-	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
-	class UInputAction* IA_Launch;
 	void OnMyActionPickupPiece(const FInputActionValue& Value);
-	void OnMyActionLaunchPickedUpPiece(const FInputActionValue& Value);
+
+	void MyTakePiece();
+	void MyReleasePiece();
+	
 #pragma endregion
 
-	bool bIsHoldingPiece;
+	
+	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
+	bool bHasPiece = false;
+	
+	// 태어날 때 모든 피스 조각 목록을 기억하고 싶다.
+	UPROPERTY()
+	TArray<AHM_PuzzlePiece*> PieceList;
 
-	void PickupPiece();
+	// 잡은 피스 조각의 참조
+	UPROPERTY(Replicated)
+	class AHM_PuzzlePiece* PickupPieceActor;
 
-	void LaunchPickedUpPiece();
+	// 피스 조각을 잡았을 때 위치
+	UPROPERTY(EditDefaultsOnly, Category = Piece)
+	class USceneComponent* HandComp;
 
-	bool HasPickedUpPiece() const { return PickedUpPiece != nullptr; }
+	// 피스 조각과의 거리 제한
+	UPROPERTY(EditDefaultsOnly, Category = Piece)
+	float PickupDistance = 500;
 
-private:
-	class AHM_PuzzlePiece* PickedUpPiece;
+	// 피스 조각 잡기와 놓기 기능
+	void AttachPiece(AHM_PuzzlePiece* pieceActor);
+	void DetachPiece(AHM_PuzzlePiece* pieceActor);
+
+	// --------------- Multiplayer 요소들 ---------------
+public:
+	// 피스 잡기 RPC
+	UFUNCTION(Server, Reliable)
+	void ServerRPCTakePiece();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCTakePiece(AHM_PuzzlePiece* pieceActor);
+
+	// 피스 놓기 RPC
+	UFUNCTION(Server, Reliable)
+	void ServerRPCReleasePiece();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCReleasePiece(AHM_PuzzlePiece* pieceActor);
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

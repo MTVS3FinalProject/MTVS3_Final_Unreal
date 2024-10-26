@@ -3,18 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TTPlayer.h"
 #include "GameFramework/Actor.h"
-#include "LuckyDrawManager.generated.h"
+#include "MH_CountDownActor.generated.h"
 
 UCLASS()
-class MTVS3_FINAL_API ALuckyDrawManager : public AActor
+class MTVS3_FINAL_API AMH_CountDownActor : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ALuckyDrawManager();
+	AMH_CountDownActor();
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,9 +22,15 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void ConvertSeatAssignments();
-	void MovePlayersToChairs();
-	ATTPlayer* GetPlayerBySeatNumber(int32 SeatNumber);
 
-	TMap<int32, FString> PlayerToChairMap;
+	UPROPERTY(VisibleAnywhere, Category = "UI")
+	class UWidgetComponent* WidgetComp;
+	
+	//UPROPERTY(VisibleAnywhere, Category = "UI")
+    //class UMH_GameStartCountDown* CountDownUI;
+	
+	UFUNCTION()
+	void StartCountDownVisible(bool visible);
+	
+
 };
