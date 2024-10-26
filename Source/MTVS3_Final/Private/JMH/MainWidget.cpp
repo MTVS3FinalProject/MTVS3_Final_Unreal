@@ -61,6 +61,7 @@ void UMainWidget::SetTextCurrentTime(FString CurrentTime)
 
 void UMainWidget::OnClickedBackMain()
 {
+	// 로비로?
 	// 방에서 퇴장하고 싶다.
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if ( gi )
@@ -68,6 +69,11 @@ void UMainWidget::OnClickedBackMain()
 		gi->ExitSession();
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ExitSession"));
 	}
+}
+
+void UMainWidget::OnClickedExitMain()
+{
+	
 }
 
 void UMainWidget::SetMinimapImage(UTexture2D* img)
