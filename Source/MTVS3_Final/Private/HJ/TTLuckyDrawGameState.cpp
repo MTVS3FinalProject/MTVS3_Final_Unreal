@@ -27,12 +27,10 @@ void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
         {
             TTPlayer->SetRandomSeatNumber(CurrentSeatNumber++);
 
-            // 디버그 메시지
-            GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green ,
-                FString::Printf(TEXT("플레이어 %s에게 좌석 번호 %d가 할당되었습니다.") ,
-                    *TTPlayer->GetNickname() , TTPlayer->GetRandomSeatNumber()));
+        	// 디버그 메시지
+        	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Green ,
+				FString::Printf(TEXT("플레이어 %s에게 좌석 번호 %d가 할당되었습니다.") ,
+					*TTPlayer->GetNickname() , TTPlayer->GetRandomSeatNumber()));
         }
-
-        TTPlayer->SwitchCamera(false);
     }
 }

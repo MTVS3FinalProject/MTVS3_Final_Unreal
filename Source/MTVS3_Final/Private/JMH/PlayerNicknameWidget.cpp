@@ -10,12 +10,18 @@
 void UPlayerNicknameWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
 }
 
 void UPlayerNicknameWidget::UpdateNicknameUI(const FString& _Nickname)
 {
-	Tex_Nickname->SetText(FText::FromString(_Nickname));
+	if (Tex_Nickname)
+	{
+		Tex_Nickname->SetText(FText::FromString(_Nickname));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Tex_Nickname is nullptr in UpdateNicknameUI"));
+	}
 }
 
 

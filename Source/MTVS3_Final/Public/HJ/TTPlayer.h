@@ -20,8 +20,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	void UpdateNicknameUI();
-
 	FTimerHandle TimerHandle_Retry;
 
 public:
@@ -37,29 +35,30 @@ public:
 	UPROPERTY(Replicated , BlueprintReadOnly , Category = "TTSettings|State")
 	bool bIsSitting;
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetSitting(bool _bIsSitting);
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSitDown();
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastStandUp();
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetNickname(const FString& _Nickname);
 
 	UFUNCTION()
 	void OnRep_Nickname();
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetbIsHost(bool _bIsHost);
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
 
 	UFUNCTION()
 	void OnRep_RandomSeatNumber();
+
 #pragma endregion
 
 #pragma region 개인 설정
