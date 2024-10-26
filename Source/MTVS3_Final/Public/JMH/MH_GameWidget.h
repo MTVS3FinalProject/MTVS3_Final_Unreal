@@ -18,7 +18,7 @@ public:
 	
 	virtual void NativeConstruct() override;
 	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))//0:현재인원,타이머/1: 룰렛 / 2: 축하~
 	class UWidgetSwitcher* WS_GameWidgetSwitcher;
 
 	//위젯스위처설정/ 0:게임시작,1: 룰렛결과,
@@ -37,30 +37,30 @@ public:
 //InGame
 	//현재 인원
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_CurrentPlayer;
+	class UTextBlock* Text_CurrentPlayer;
 	UFUNCTION()
 	void SetTextCurrentPlayer(int32 CurrentPlayer);
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_CountDown;
+	class UTextBlock* Text_CountDown;
 	UFUNCTION()
 	void SetTextCountDown(FString CountDownTime);
 	
 	//룰렛1
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_roulette1;
+	class UTextBlock* Text_roulette1;
 	UFUNCTION()
 	void SetTextroulette1(FString roulette1);
 
 	//룰렛2
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_roulette2;
+	class UTextBlock* Text_roulette2;
 	UFUNCTION()
 	void SetTextroulette2(int32 roulette2);
 
 	//룰렛3
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_roulette3;
+	class UTextBlock* Text_roulette3;
 	UFUNCTION()
 	void SetTextroulette3(int32 roulette3);
 
@@ -74,6 +74,12 @@ public:
 	//룰렛 시작 애니메이션 함수
 	UFUNCTION()
 	void PlayRouletteAnim();
+	
+	//내 좌석 번호
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_MyNum;
+	UFUNCTION()
+	void SetTextMyNum(int32 MyNum);
 
 	//처음 어떻게 있을지 정해야함.
 	//결과 바뀔때 애니메이션 해야함.

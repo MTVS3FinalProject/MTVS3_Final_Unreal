@@ -103,6 +103,8 @@ public:
 	class UButton* Btn_Confirm_QRFailed;
 	UFUNCTION()
 	void OnClickedConfirm_QRUiFailedButton();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Back_QRFailed;
 
 	//결제진행
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
