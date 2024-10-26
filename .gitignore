@@ -485,3 +485,8 @@ Plugins/Developer/RiderLink/Source/RiderLogging/RiderLogging.Build.cs
 Plugins/Developer/RiderLink/Source/RiderShaderInfo/RiderShaderInfo.Build.cs
 Plugins/Developer/RiderLink/Source/RiderShaderInfo/RiderShaderInfo.cpp
 Plugins/Developer/RiderLink/Source/RiderShaderInfo/RiderShaderInfo.h
+Config/DefaultEditor.ini
+Config/DefaultEditorPerProjectUserSettings.ini
+Config/DefaultEngine.ini
+Config/DefaultGame.ini
+Config/DefaultInput.ini

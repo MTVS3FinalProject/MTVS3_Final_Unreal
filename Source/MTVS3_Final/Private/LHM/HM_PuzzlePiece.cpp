@@ -29,6 +29,7 @@ void AHM_PuzzlePiece::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	bReplicates = true;
 }
 
 // Called every frame

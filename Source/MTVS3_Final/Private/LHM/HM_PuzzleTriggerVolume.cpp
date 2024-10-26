@@ -36,7 +36,7 @@ void AHM_PuzzleTriggerVolume::OnOverlapBegin(UPrimitiveComponent* OverlappedComp
     AHM_PuzzlePlayer* Player = Cast<AHM_PuzzlePlayer>(OtherActor);
     if ( Player )
     {
-        Player->SetIsInTriggerZone(true);
+        //Player->SetIsInTriggerZone(true);
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, 
             FString::Printf(TEXT("Entered Launch Zone")));
     }
@@ -48,7 +48,7 @@ void AHM_PuzzleTriggerVolume::OnOverlapEnd(UPrimitiveComponent* OverlappedCompon
     AHM_PuzzlePlayer* Player = Cast<AHM_PuzzlePlayer>(OtherActor);
     if (Player)
     {
-        Player->SetIsInTriggerZone(false);
+        //Player->SetIsInTriggerZone(false);
         GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
             FString::Printf(TEXT("Left Launch Zone")));
     }

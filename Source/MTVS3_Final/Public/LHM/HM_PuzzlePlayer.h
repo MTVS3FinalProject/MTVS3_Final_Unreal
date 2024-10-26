@@ -36,9 +36,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UCameraComponent* FPSCameraComp;
 
-	// UPROPERTY(EditInstanceOnly , Category = "TTSettings|State")
-	// bool bIsThirdPerson = true;
-	// void SwitchCamera(bool _bIsThirdPerson);
+	UPROPERTY(EditInstanceOnly , Category = "TTSettings|State")
+	bool bIsThirdPerson = true;
+	void SwitchCamera(bool _bIsThirdPerson);
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
 	float WalkSpeed = 500.0f;
@@ -75,31 +75,61 @@ public:
 	void OnMyActionRunStart(const FInputActionValue& Value);
 	void OnMyActionRunComplete(const FInputActionValue& Value);
 
+	// UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	// class UInputAction* IA_Pickup;
+	// UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	// class UInputAction* IA_Launch;
+	// void OnMyActionPickupPiece(const FInputActionValue& Value);
+	// void OnMyActionLaunchPickedUpPiece(const FInputActionValue& Value);
+
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Pickup;
-	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
-	class UInputAction* IA_Launch;
 	void OnMyActionPickupPiece(const FInputActionValue& Value);
-	void OnMyActionLaunchPickedUpPiece(const FInputActionValue& Value);
+
+	void MyTakePiece();
+	void MyReleasePiece();
+	
 #pragma endregion
 
+	
+	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
+	bool bHasPiece = false;
+	
+	// 태어날 때 모든 피스 조각 목록을 기억하고 싶다.
+	UPROPERTY()
+	TArray<AHM_PuzzlePiece*> PieceList;
 
-private:
-	class AHM_PuzzlePiece* PickedUpPiece;
-	class UPhysicsHandleComponent* PhysicsHandle;
-	bool bIsHoldingPiece = false;
-	bool bIsInTriggerZone = false;
+	// 잡은 피스 조각의 참조
+	UPROPERTY(Replicated)
+	class AHM_PuzzlePiece* PickupPieceActor;
 
+	// 피스 조각을 잡았을 때 위치
+	UPROPERTY(EditDefaultsOnly, Category = Piece)
+	class USceneComponent* HandComp;
+
+	// 피스 조각과의 거리 제한
+	UPROPERTY(EditDefaultsOnly, Category = Piece)
+	float PickupDistance = 500;
+
+	// 피스 조각 잡기와 놓기 기능
+	void AttachPiece(AHM_PuzzlePiece* pieceActor);
+	void DetachPiece(AHM_PuzzlePiece* pieceActor);
+
+	// --------------- Multiplayer 요소들 ---------------
 public:
-	// 트리거 존 상태 설정 함수들
-	void PickupPiece();
-	void DropPiece();
-	void LaunchPickedUpPiece();
-	
-	void LaunchPiece();
-	void TryPickupPiece();
-	
-	bool HasPickedUpPiece() const { return PickedUpPiece != nullptr; }
-	void SetIsInTriggerZone(bool bInZone) { bIsInTriggerZone = bInZone; }
-	bool IsInTriggerZone() const { return bIsInTriggerZone; }
+	// 피스 잡기 RPC
+	UFUNCTION(Server, Reliable)
+	void ServerRPCTakePiece();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCTakePiece(AHM_PuzzlePiece* pieceActor);
+
+	// 피스 놓기 RPC
+	UFUNCTION(Server, Reliable)
+	void ServerRPCReleasePiece();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCReleasePiece(AHM_PuzzlePiece* pieceActor);
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
