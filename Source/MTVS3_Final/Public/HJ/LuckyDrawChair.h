@@ -28,4 +28,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* MeshComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
+	float SeatOffset = 30.0;
+	FTransform GetSittingTransform();
 };

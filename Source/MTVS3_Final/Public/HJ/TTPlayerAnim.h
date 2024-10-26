@@ -26,9 +26,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UAnimMontage* StandUpMontage;
-
+	
 	void PlaySitDownMontage();
 
 	void PlayStandUpMontage();
 
+	void PlaySittingMontage();
 };
