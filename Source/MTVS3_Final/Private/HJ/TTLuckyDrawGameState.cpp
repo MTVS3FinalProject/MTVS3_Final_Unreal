@@ -7,6 +7,8 @@
 //#include "LHM/TTPlayerController.h"
 #include <HJ/TTPlayer.h>
 #include "EngineUtils.h"
+#include "HJ/LuckyDrawManager.h"
+#include "Kismet/GameplayStatics.h"
 
 void ATTLuckyDrawGameState::BeginPlay()
 {
@@ -32,7 +34,24 @@ void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
                 FString::Printf(TEXT("플레이어 %s에게 좌석 번호 %d가 할당되었습니다.") ,
                     *TTPlayer->GetNickname() , TTPlayer->GetRandomSeatNumber()));
         }
+    }
+}
 
-        TTPlayer->SwitchCamera(false);
+void ATTLuckyDrawGameState::StartLuckyDraw()
+{
+    ALuckyDrawManager* Manager = Cast<ALuckyDrawManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawManager::StaticClass()));
+    if (Manager)
+    {
+        Manager->MovePlayersToChairs();
+        UE_LOG(LogTemp, Log, TEXT("Lucky Draw Started: Players moved to their designated chairs."));
+    }
+
+    for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+    {
+        ATTPlayer* TTPlayer = *It;
+        if ( TTPlayer && !TTPlayer->GetbIsHost())
+        {
+            TTPlayer->MulticastLuckyDrawStart();
+        }
     }
 }

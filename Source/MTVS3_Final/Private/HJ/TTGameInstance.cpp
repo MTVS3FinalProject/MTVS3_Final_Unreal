@@ -70,6 +70,13 @@ void UTTGameInstance::FindOrCreateSession(const FString& SessionNamePrefix , int
 // 세션 검색 완료 시 호출되는 함수
 void UTTGameInstance::OnFindOrCreateSessionComplete(bool bWasSuccessful)
 {
+	// SessionSearch가 유효한지 확인
+	if (!SessionSearch.IsValid())
+	{
+		UE_LOG(LogTemp, Error, TEXT("SessionSearch is not valid."));
+		return;
+	}
+	
 	// UI에 검색 완료 알림
 	if ( OnFindSignatureCompleteDelegate.IsBound() )
 	{

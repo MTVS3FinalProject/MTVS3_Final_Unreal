@@ -4,15 +4,37 @@
 #include "LHM/HM_PuzzlePlayer.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "LHM/HM_PuzzlePiece.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AHM_PuzzlePlayer::AHM_PuzzlePlayer()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
+	SpringArmComp->SetupAttachment(RootComponent);
+	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 50));
+	SpringArmComp->TargetArmLength = 430;
+	SpringArmComp->bUsePawnControlRotation = true;
+
+	TPSCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	TPSCameraComp->SetupAttachment(SpringArmComp);
+	TPSCameraComp->bUsePawnControlRotation = false;
+
+	FPSCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
+	FPSCameraComp->SetupAttachment(RootComponent);
+	FPSCameraComp->SetRelativeLocation(FVector(-100 , 0 , 80));
+	FPSCameraComp->bUsePawnControlRotation = true;
 	
+	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
+	HandComp->SetupAttachment(GetMesh(), TEXT("PiecePosition"));
+	HandComp->SetRelativeLocationAndRotation(FVector(0, 60, 130), FRotator(0));
 }
 
 // Called when the game starts or when spawned
@@ -20,7 +42,8 @@ void AHM_PuzzlePlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if ( !IsLocallyControlled() ) return;
+
+	if (!IsLocallyControlled()) return;
 
 	auto* pc = Cast<APlayerController>(Controller);
 	if ( pc )
@@ -35,6 +58,23 @@ void AHM_PuzzlePlayer::BeginPlay()
 		pc->bShowMouseCursor = true; // 마우스 커서 표시
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+
+	// 태어날 때 모든 피스 목록을 기억하고 싶다.
+	FName tag = TEXT("Piece");
+
+	// 임시 AActor 배열에 피스 조각 수집
+	TArray<AActor*> TempPieceList;
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), AHM_PuzzlePiece::StaticClass(), tag, TempPieceList);
+
+	for(AActor* actor : TempPieceList)
+	{
+		AHM_PuzzlePiece* piece = Cast<AHM_PuzzlePiece>(actor);
+		if(piece)
+		{
+			PieceList.Add(piece);
+		}
+	}
+	bReplicates = true;
 }
 
 // Called every frame
@@ -42,19 +82,36 @@ void AHM_PuzzlePlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FTransform ttt = FTransform(GetControlRotation());
-	Direction = ttt.TransformVector(Direction);
-
-	AddMovementInput(Direction , 1);
-	Direction = FVector::ZeroVector;
-
-
-	if ( bIsHoldingPiece && PickedUpPiece )
+	if(!bHasPiece)
 	{
-		// 플레이어 앞에 퍼즐 조각을 위치시킴 (예: 손의 위치 앞쪽에 고정)
-		FVector NewLocation = GetActorLocation() + GetActorForwardVector() * 100.0f; // 플레이어 앞쪽 100 유닛
-		PickedUpPiece->SetActorLocation(NewLocation);
+		FTransform ttt = FTransform(GetControlRotation());
+		Direction = ttt.TransformVector(Direction);
+
+		AddMovementInput(Direction , 1);
+		Direction = FVector::ZeroVector;
 	}
+	else if(bHasPiece)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC && PC->IsLocalController())
+		{
+			FRotator ControlRotation = PC->GetControlRotation();
+
+			if (!bIsThirdPerson) // If in first-person mode
+			{
+				// Set the actor's rotation to match the camera's rotation
+				SetActorRotation(ControlRotation);
+			}
+
+			// Calculate movement direction based on camera rotation
+			Direction = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y) * Direction.Y +
+						FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X) * Direction.X;
+
+			AddMovementInput(Direction);
+			Direction = FVector::ZeroVector;
+		}
+	}
+
 }
 
 // Called to bind functionality to input
@@ -74,7 +131,53 @@ void AHM_PuzzlePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		input->BindAction(IA_Run , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionRunStart);
 		input->BindAction(IA_Run , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionRunComplete);
 		input->BindAction(IA_Pickup , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionPickupPiece);
-		input->BindAction(IA_Launch , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionLaunchPickedUpPiece);
+		//input->BindAction(IA_Launch , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionLaunchPickedUpPiece);
+	}
+}
+
+void AHM_PuzzlePlayer::SwitchCamera(bool _bIsThirdPerson)
+{
+	bIsThirdPerson = _bIsThirdPerson;
+	
+	if ( bIsThirdPerson ) // 3인칭 모드
+	{
+		GetMesh()->SetOwnerNoSee(false);
+		FPSCameraComp->SetActive(false);
+		TPSCameraComp->SetActive(true);
+
+		// 플레이어의 회전 방향과 카메라 정렬
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if ( PC && PC->IsLocalController() )
+		{
+			PC->SetViewTargetWithBlend(this);  // 부드러운 시점 전환
+		}
+	}
+	else // 1인칭 모드
+	{
+		FPSCameraComp->SetActive(true);
+		TPSCameraComp->SetActive(false);
+
+		// 플레이어의 회전 방향과 카메라 정렬
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if ( PC && PC->IsLocalController() )
+		{
+			// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
+			GetMesh()->SetOwnerNoSee(true);
+			if(!bHasPiece)
+			{
+				// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
+				FRotator ControlRotation = GetActorRotation();
+				PC->SetControlRotation(ControlRotation);
+				PC->SetViewTargetWithBlend(this);  // 부드러운 시점 전환
+			}
+			else if(bHasPiece)
+			{
+				FRotator ControlRotation = PC->GetControlRotation();
+				PC->SetControlRotation(ControlRotation);
+				SetActorRotation(ControlRotation);
+				PC->SetViewTargetWithBlend(this);
+			}
+		}
 	}
 }
 
@@ -84,6 +187,8 @@ void AHM_PuzzlePlayer::OnMyActionMove(const FInputActionValue& Value)
 	Direction.X = v.X;
 	Direction.Y = v.Y;
 	Direction.Normalize();
+
+	
 }
 
 void AHM_PuzzlePlayer::OnMyActionEnableLookStart(const FInputActionValue& Value)
@@ -128,70 +233,128 @@ void AHM_PuzzlePlayer::OnMyActionRunComplete(const FInputActionValue& Value)
 
 void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
-	PickupPiece();
-}
-
-void AHM_PuzzlePlayer::OnMyActionLaunchPickedUpPiece(const FInputActionValue& Value)
-{
-	LaunchPickedUpPiece();
-}
-
-void AHM_PuzzlePlayer::PickupPiece()
-{
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	GetController()->GetPlayerViewPoint(CameraLocation , CameraRotation);
-
-	FVector TraceStart = CameraLocation;
-	FVector TraceEnd = TraceStart + (CameraRotation.Vector() * 1000.0f);
-
-	FHitResult HitResult;
-	FCollisionQueryParams TraceParams(FName(TEXT("BlockPickupTrace")) , true , this);
-	TraceParams.bTraceComplex = true;
-	TraceParams.bReturnPhysicalMaterial = false;
-
-	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult , TraceStart , TraceEnd , ECC_Visibility , TraceParams);
-
-	// 디버그 라인 그리기
-	FColor LineColor = bHit ? FColor::Green : FColor::Red; // 히트 여부에 따라 색상 변경
-	DrawDebugLine(GetWorld() , TraceStart , TraceEnd , LineColor , false , 1.0f , 0 , 1.0f);
-
-	if ( bHit )
+	UE_LOG(LogTemp, Warning, TEXT("Pickup Action Triggered"));
+	if ( bHasPiece )
 	{
-		AHM_PuzzlePiece* Piece = Cast<AHM_PuzzlePiece>(HitResult.GetActor());
-		if ( Piece )
+		MyReleasePiece();
+		SwitchCamera(true);
+	}
+	else
+	{
+		MyTakePiece();
+		SwitchCamera(false);
+	}
+}
+
+void AHM_PuzzlePlayer::MyTakePiece()
+{
+	ServerRPCTakePiece();
+}
+
+void AHM_PuzzlePlayer::MyReleasePiece()
+{
+	// 피스를 잡고 있지 않으면 피스를 놓을 수 없다.
+	if ( false == bHasPiece || false == IsLocallyControlled() )
+		return;
+	
+	ServerRPCReleasePiece();
+}
+
+void AHM_PuzzlePlayer::AttachPiece(AHM_PuzzlePiece* pieceActor)
+{
+	PickupPieceActor = pieceActor;
+	if(PickupPieceActor && PickupPieceActor->GetPiece())
+	{
+		auto* mesh = PickupPieceActor->GetPiece();
+		if(mesh)
 		{
-			UE_LOG(LogTemp , Log , TEXT("Picked Up Block: %s") , *Piece->GetName());
-
-			// 퍼즐 조각을 플레이어가 "들고" 있는 상태로 만듭니다.
-			PickedUpPiece = Piece;
-
-			// 물리 상호작용 비활성화
-			Piece->GetPiece()->SetSimulatePhysics(false);
-
-			// 조각을 따라오게 함
-			bIsHoldingPiece = true;
+			mesh->SetSimulatePhysics(false); // 물리 비활성화
+			mesh->SetEnableGravity(false);  // 중력 비활성화
+			mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 비활성화
+			mesh->AttachToComponent(HandComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		}
 	}
 }
 
-void AHM_PuzzlePlayer::LaunchPickedUpPiece()
+void AHM_PuzzlePlayer::DetachPiece(AHM_PuzzlePiece* pieceActor)
 {
-	if ( PickedUpPiece )
+	if (pieceActor && pieceActor->GetPiece())
 	{
-		// 블럭의 물리 상호작용을 다시 활성화
-		PickedUpPiece->GetPiece()->SetSimulatePhysics(true);
-
-		// 블럭의 앞방향 (Forward Vector)으로 날림
-		FVector LaunchDirection = GetActorForwardVector(); // 플레이어의 앞방향
-		FVector Impulse = LaunchDirection * 1000.0f; // 임펄스 크기
-
-		PickedUpPiece->GetPiece()->AddImpulse(Impulse , NAME_None , true);
-
-		// 블럭을 놓았으므로 참조 해제
-		PickedUpPiece = nullptr;
-
-		// 플레이어가 블럭을 들고 있지 않음을 표시
-		bIsHoldingPiece = false;
+		auto* mesh = pieceActor->GetPiece();
+		check(mesh);
+		if(mesh)
+		{
+			mesh->SetSimulatePhysics(true);  // 물리 활성화
+			mesh->SetEnableGravity(true);  // 중력 활성화
+			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);  // 충돌 활성화
+			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		}
 	}
+}
+
+void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ServerRPCTakePiece called"));
+	// 피스를 줍지 않은 상태 -> 잡고싶다.
+	// 피스 목록을 검사하고 싶다.
+	for(AHM_PuzzlePiece* piece : PieceList)
+	{
+		// 나와 피스의 거리가 PickupDistance 이하라면
+		// 그 중에 소유자가 없는 피스라면
+		float tempDist = GetDistanceTo(piece);
+		if(tempDist > PickupDistance) continue;
+		if( nullptr != piece->GetOwner() ) continue;
+
+		// 주운 피스의 소유자를 나 자신으로 -> 액터의 오너는 플레이어 컨트롤러
+		piece->SetOwner(this);
+
+		// 피스를 기억하고싶다. (PickupPieceActor)
+		PickupPieceActor = piece;
+		bHasPiece = true;
+		UE_LOG(LogTemp, Warning, TEXT("Piece picked up on server"));
+		MulticastRPCTakePiece(piece);
+		break;
+	}
+}
+
+void AHM_PuzzlePlayer::MulticastRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceActor)
+{
+	// 피스 액터를 HandComp에 붙이고 싶다.
+	AttachPiece(pieceActor);
+}
+
+void AHM_PuzzlePlayer::ServerRPCReleasePiece_Implementation()
+{
+	// 피스를 이미 주운 상태 -> 놓고싶다.
+	if(bHasPiece)
+	{
+		bHasPiece = false;
+	}
+
+	// 피스의 오너를 취소하고싶다.
+	if(PickupPieceActor)
+	{
+		MulticastRPCReleasePiece(PickupPieceActor);
+
+		PickupPieceActor->SetOwner(nullptr);
+		// 피스를 잊고싶다.
+		PickupPieceActor = nullptr;
+	}
+}
+
+void AHM_PuzzlePlayer::MulticastRPCReleasePiece_Implementation(AHM_PuzzlePiece* pieceActor)
+{
+	if (pieceActor)
+	{
+		DetachPiece(pieceActor); // 피스 분리
+	}
+}
+
+void AHM_PuzzlePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// 복제하려는 변수 추가 예시
+	DOREPLIFETIME(AHM_PuzzlePlayer, bHasPiece);
+	DOREPLIFETIME(AHM_PuzzlePlayer, PickupPieceActor);
 }

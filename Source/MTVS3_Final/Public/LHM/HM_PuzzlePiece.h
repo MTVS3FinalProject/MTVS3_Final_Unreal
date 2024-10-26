@@ -22,9 +22,6 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
-    UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* BoxComp;;
 
     UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Piece;
