@@ -34,3 +34,8 @@ void UTTPlayerAnim::PlayStandUpMontage()
 		Montage_Play(StandUpMontage);
 	}
 }
+
+void UTTPlayerAnim::PlaySittingMontage()
+{
+	Montage_Play(SitDownMontage);
+}

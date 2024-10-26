@@ -30,8 +30,8 @@ public:
 	void StartCountdown();
 	UFUNCTION()
 	void UpdateCountdown();
-	UFUNCTION()
-	void StartCountDownVisible(bool visible);
+	//UFUNCTION()
+	//void StartCountDownVisible(bool visible);
 
 	UPROPERTY()
 	FTimerHandle CountdownTimerHandle;

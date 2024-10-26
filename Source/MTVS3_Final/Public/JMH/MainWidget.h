@@ -44,11 +44,17 @@ public:
 	UFUNCTION()
 	void SetTextCurrentTime(FString CurrentTime);
 
-	//나가기
+	//로비로 나가기
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_BackMain;
 	UFUNCTION()
 	void OnClickedBackMain();
+	
+	//게임 나가기
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_ExitMain;
+	UFUNCTION()
+	void OnClickedExitMain();
 
 //==========추가
 

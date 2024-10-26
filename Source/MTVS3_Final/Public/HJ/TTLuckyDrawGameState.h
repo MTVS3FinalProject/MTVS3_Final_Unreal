@@ -19,6 +19,7 @@ protected:
 
 public:
 	void AssignSeatNumber(APlayerState* PlayerState);
+	void StartLuckyDraw();
 
 	int32 CurrentSeatNumber = 1;
 };

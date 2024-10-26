@@ -14,7 +14,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Components/WidgetComponent.h"
 #include "EngineUtils.h"   // TActorIterator 정의 포함
-#include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "JMH/MH_TicketingWidget.h"
 #include "JMH/MainWidget.h"
@@ -24,8 +23,10 @@
 #include "HJ/TTGameInstance.h"
 #include <HJ/TTPlayerState.h>
 #include <HJ/HJ_Actor.h>
+#include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/PlayerNicknameWidget.h"
 
+class ALuckyDrawManager;
 // Sets default values
 ATTPlayer::ATTPlayer()
 {
@@ -111,7 +112,7 @@ void ATTPlayer::BeginPlay()
 		// TTHallMap의 시작은 Plaza(광장)
 		if ( GI->GetPlaceState() == EPlaceState::Plaza )
 		{
-			SwitchCamera(true);
+			SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
 			InitMainUI();
 
@@ -138,7 +139,7 @@ void ATTPlayer::BeginPlay()
 		else if ( GI->GetPlaceState() == EPlaceState::LuckyDrawRoom )
 		{
 			SetRandomSeatNumber(GetRandomSeatNumber());
-			SwitchCamera(false);
+			SwitchCamera(!bIsThirdPerson);
 		}
 
 		// 서브레벨 로드/언로드 시 넣을 코드
@@ -228,13 +229,17 @@ void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
 
 void ATTPlayer::OnRep_Nickname()
 {
-	if ( NicknameUI ) NicknameUI->UpdateNicknameUI(Nickname);
+	if ( NicknameUI )
+	{
+		UE_LOG(LogTemp , Warning , TEXT("OnRep_Nickname: %s") , *Nickname);
+		NicknameUI->UpdateNicknameUI(Nickname);
+	}
 }
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
 	bIsHost = _bIsHost;
-	if ( IsLocallyControlled() ) ServerSetbIsHost(bIsHost);
+	ServerSetbIsHost(bIsHost);
 }
 
 void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
@@ -262,14 +267,16 @@ void ATTPlayer::SetRandomSeatNumber(const int32& _RandomSeatNumber)
 		// C++ 클래스로 캐스팅하여 접근
 		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
 		NicknameUI->UpdateNicknameUI(FString::FromInt(RandomSeatNumber));
+		UE_LOG(LogTemp , Warning , TEXT("SetRandomSeatNumber: %d") , RandomSeatNumber);
 	}
 
-	if ( IsLocallyControlled() ) ServerSetRandomSeatNumber(RandomSeatNumber);
+	ServerSetRandomSeatNumber(RandomSeatNumber);
 }
 
 void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSeatNumber)
 {
 	RandomSeatNumber = _RandomSeatNumber;
+	UE_LOG(LogTemp , Warning , TEXT("ServerSetRandomSeatNumber_Implementation: %d") , RandomSeatNumber);
 	OnRep_RandomSeatNumber();
 }
 
@@ -280,6 +287,26 @@ void ATTPlayer::OnRep_RandomSeatNumber()
 		UE_LOG(LogTemp , Warning , TEXT("OnRep_RandomSeatNumber: %d") , RandomSeatNumber);
 		NicknameUI->UpdateNicknameUI(FString::FromInt(RandomSeatNumber));
 	}
+}
+
+void ATTPlayer::ServerLuckyDrawStart_Implementation()
+{
+	ATTLuckyDrawGameState* GameState = GetWorld()->GetGameState<ATTLuckyDrawGameState>();
+	if (GameState)
+	{
+		GameState->StartLuckyDraw();
+	}
+}
+
+void ATTPlayer::MulticastLuckyDrawStart_Implementation()
+{
+	SwitchCamera(!bIsThirdPerson);
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if ( Anim )
+	{
+		Anim->PlaySittingMontage();
+	}
+	GetCharacterMovement()->DisableMovement();  // 이동 비활성화
 }
 
 void ATTPlayer::PrintStateLog()
@@ -296,8 +323,9 @@ void ATTPlayer::PrintStateLog()
 		FString LuckyDrawStateStr = UEnum::GetValueAsString(GI->GetLuckyDrawState());
 		const FString ConStr = GetNetConnection() != nullptr ? TEXT("Client") : TEXT("Server");
 		FString BIsHostStr = GetbIsHost() ? TEXT("Manager") : TEXT("Fan");
+		FString RandomSeatNumberString = FString::FromInt(RandomSeatNumber);
 
-		FString logStr = FString::Printf(TEXT("%s\n%s\n%s, %s") , *PlaceStateStr , *LuckyDrawStateStr , *ConStr , *BIsHostStr);
+		FString logStr = FString::Printf(TEXT("%s\n%s\n%s, %s\n%s") , *PlaceStateStr , *LuckyDrawStateStr , *ConStr , *BIsHostStr, *RandomSeatNumberString);
 		DrawDebugString(GetWorld() , GetActorLocation() + FVector::UpVector * 100 , logStr , nullptr , FColor::Cyan , 0 , true , 1);
 	}
 }
@@ -583,7 +611,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Enable Cheat2 in TTLuckyDrawMap"));
-
+		ServerLuckyDrawStart();
 		break;
 	}
 }
