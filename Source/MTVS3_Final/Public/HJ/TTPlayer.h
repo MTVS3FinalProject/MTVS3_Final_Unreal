@@ -60,6 +60,12 @@ public:
 
 	UFUNCTION()
 	void OnRep_RandomSeatNumber();
+
+	UFUNCTION(Server, Reliable)
+	void ServerLuckyDrawStart();
+
+	UFUNCTION(NetMulticast , Unreliable)
+	void MulticastLuckyDrawStart();
 #pragma endregion
 
 #pragma region 개인 설정
