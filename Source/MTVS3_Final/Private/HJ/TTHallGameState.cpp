@@ -20,6 +20,7 @@ void ATTHallGameState::BeginPlay()
 		if ( TTPlayer )
 		{
 			TTPlayer->InitMainUI();
+			TTPlayer->ServerSetNickname(GI->GetNickname());
 		}
 	}
 }
