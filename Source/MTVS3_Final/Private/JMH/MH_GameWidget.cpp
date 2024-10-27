@@ -4,6 +4,8 @@
 #include "JMH/MH_GameWidget.h"
 
 #include "Components/Button.h"
+#include "Components/CanvasPanel.h"
+#include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 
@@ -16,6 +18,10 @@ void UMH_GameWidget::SetWidgetSwitcher(int32 num)
 {
 	//서버에서 불러와서 입력
 	WS_GameWidgetSwitcher->SetActiveWidgetIndex(num);
+	if(num==1)
+	{
+		PlayRouletteAnim04();
+	}
 	ShowWidget();
 }
 
@@ -89,6 +95,11 @@ void UMH_GameWidget::SetTextroulette3(int32 roulette3)
 	}
 }
 
+void UMH_GameWidget::PlayRouletteAnim04()
+{
+	PlayAnimation(Roulette04Anim);
+}
+
 //룰렛 플레이 시작
 void UMH_GameWidget::PlayRouletteAnim()
 {
@@ -100,5 +111,19 @@ void UMH_GameWidget::PlayRouletteAnim()
 void UMH_GameWidget::SetTextMyNum(int32 MyNum)
 {
 	Text_MyNum->SetText(FText::FromString(FString::FromInt(MyNum)));
+}
+
+void UMH_GameWidget::SetOnlyVisibleMyNum(bool bIsVisible)
+{
+	if(bIsVisible)
+	{
+		Can_01->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		Can_01->SetVisibility(ESlateVisibility::Hidden);
+	}
+
+	
 }
 

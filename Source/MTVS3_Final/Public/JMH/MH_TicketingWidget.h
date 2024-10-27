@@ -190,7 +190,7 @@ public:
 	class UButton* Btn_CancelRegisteredSeat;
 	UFUNCTION()
 	void OnClickedCancelRegisteredSeat();
-
+/*
 	// 내가 접수한 좌석 조회
 	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
 	class UButton* Btn_MyRegisterSeat;
@@ -207,6 +207,6 @@ public:
 	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
 	class UButton* Btn_GameResult;
 	UFUNCTION()
-	void OnClickedGameResult();
+	void OnClickedGameResult();*/
 
 };

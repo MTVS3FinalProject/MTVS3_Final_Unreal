@@ -21,6 +21,10 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))//0:현재인원,타이머/1: 룰렛 / 2: 축하~
 	class UWidgetSwitcher* WS_GameWidgetSwitcher;
 
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_01;
+
+
 	//위젯스위처설정/ 0:게임시작,1: 룰렛결과,
 	UFUNCTION()
 	void SetWidgetSwitcher(int32 num);
@@ -71,6 +75,11 @@ public:
 	UWidgetAnimation* Roulette02Anim;
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* Roulette03Anim;
+	//룰렛 내려오는 애니메이션
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* Roulette04Anim;
+	UFUNCTION()
+	void PlayRouletteAnim04();
 	//룰렛 시작 애니메이션 함수
 	UFUNCTION()
 	void PlayRouletteAnim();
@@ -80,6 +89,9 @@ public:
 	class UTextBlock* Text_MyNum;
 	UFUNCTION()
 	void SetTextMyNum(int32 MyNum);
+	UFUNCTION()
+	void SetOnlyVisibleMyNum(bool bIsVisible);
+	
 
 	//처음 어떻게 있을지 정해야함.
 	//결과 바뀔때 애니메이션 해야함.
