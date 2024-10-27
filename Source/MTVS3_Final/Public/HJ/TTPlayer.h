@@ -46,16 +46,13 @@ public:
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastStandUp();
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetNickname(const FString& _Nickname);
 
 	UFUNCTION()
 	void OnRep_Nickname();
 
-	UFUNCTION(Server , Unreliable)
-	void ServerSetbIsHost(bool _bIsHost);
-
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
 
 	UFUNCTION()
@@ -66,6 +63,12 @@ public:
 
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastLuckyDrawStart();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastMovePlayerToChair(const FTransform& TargetTransform);
+
+	UFUNCTION(Client, Reliable)
+	void ClientEndRounds();
 #pragma endregion
 
 #pragma region 개인 설정
@@ -233,6 +236,7 @@ public:
 	class UMH_GameWidget* GameUI;
 	
 	void InitGameUI();
+	void SetTextMyNum();
 #pragma endregion
 
 private:

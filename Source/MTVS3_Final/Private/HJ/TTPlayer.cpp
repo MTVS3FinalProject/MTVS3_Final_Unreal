@@ -88,7 +88,7 @@ void ATTPlayer::BeginPlay()
 
 			// C++ 클래스로 캐스팅하여 접근
 			NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-			NicknameUI->ChangeColorNicknameUI();
+			NicknameUI->ChangeColorNicknameUI(FColor::Green);
 		}
 
 		auto* PC = Cast<APlayerController>(Controller);
@@ -115,7 +115,7 @@ void ATTPlayer::BeginPlay()
 		{
 			SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
-			InitMainUI();
+			// InitMainUI();
 
 			switch ( GI->GetLuckyDrawState() )
 			{
@@ -239,13 +239,10 @@ void ATTPlayer::OnRep_Nickname()
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
-	bIsHost = _bIsHost;
-	ServerSetbIsHost(bIsHost);
-}
-
-void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
-{
-	bIsHost = _bIsHost;
+	if (HasAuthority())
+	{
+		bIsHost = _bIsHost;
+	}
 }
 
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
@@ -309,6 +306,19 @@ void ATTPlayer::MulticastLuckyDrawStart_Implementation()
 		Anim->PlaySittingMontage();
 	}
 	GetCharacterMovement()->DisableMovement();  // 이동 비활성화
+}
+
+void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& TargetTransform)
+{
+	SetActorTransform(TargetTransform);
+}
+
+void ATTPlayer::ClientEndRounds_Implementation()
+{
+	if (GameUI)
+	{
+		GameUI->SetWidgetSwitcher(2);  // 우승자 UI 업데이트
+	}
 }
 
 void ATTPlayer::PrintStateLog()
@@ -623,10 +633,20 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if ( !GI ) return;
 
-	UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3"));
-	bIsCheat3Active = !bIsCheat3Active;
-	GI->SetbIsHost(bIsCheat3Active);
-	SetbIsHost(bIsCheat3Active);
+	switch ( GI->GetPlaceState() )
+	{
+	case EPlaceState::Plaza:
+	case EPlaceState::ConcertHall:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
+		bIsCheat3Active = !bIsCheat3Active;
+		GI->SetbIsHost(bIsCheat3Active);
+		SetbIsHost(bIsCheat3Active);
+		break;
+	case EPlaceState::LuckyDrawRoom:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTLuckyDrawMap"));
+		break;
+	}
+	
 }
 
 void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
@@ -673,23 +693,19 @@ void ATTPlayer::InitMainUI()
 
 void ATTPlayer::InitGameUI()
 {
-	if (!GameUIFactory)
-	{
-		UE_LOG(LogTemp, Error, TEXT("GameUIFactory is not set! Cannot create GameUI."));
-		return;
-	}
+	FTimerHandle SetTextMyNumTimerHandle;
+	GetWorldTimerManager().SetTimer(SetTextMyNumTimerHandle, this, &ATTPlayer::SetTextMyNum, 2.0f, false);
+}
 
+void ATTPlayer::SetTextMyNum()
+{
 	GameUI = Cast<UMH_GameWidget>(CreateWidget(GetWorld(), GameUIFactory));
 	if (GameUI)
 	{
-		GameUI->AddToViewport(10);
-		GameUI->SetWidgetSwitcher(2);
+		GameUI->AddToViewport(1);
+		GameUI->SetWidgetSwitcher(1);
 		GameUI->SetOnlyVisibleMyNum(false);
-		UE_LOG(LogTemp, Error, TEXT("GameUIFactory good"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to create GameUI from GameUIFactory."));
+		GameUI->SetTextMyNum(GetRandomSeatNumber());
 	}
 }
 
