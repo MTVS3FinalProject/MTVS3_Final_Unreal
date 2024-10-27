@@ -45,7 +45,7 @@ void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
                     *TTPlayer->GetNickname() , TTPlayer->GetRandomSeatNumber()));
 
             NewSeatNumber = TTPlayer->GetRandomSeatNumber();
-
+            
             if (GameUI)
             {
                 GameUI->SetTextCurrentPlayer(NewSeatNumber);
@@ -95,10 +95,10 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
     }
     
     FTimerHandle RouletteTimerHandle;
-    GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::PlayRouletteAnimation, 6.0f, false);
+    GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::StartPlayRoulette, 6.0f, false);
 }
 
-void ATTLuckyDrawGameState::PlayRouletteAnimation()
+void ATTLuckyDrawGameState::StartPlayRoulette()
 {
     TArray<AActor*> FoundActors;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMH_CountDownActor::StaticClass(), FoundActors);
@@ -112,12 +112,10 @@ void ATTLuckyDrawGameState::PlayRouletteAnimation()
             CountDownActor->MulticastStartCountDownVisible(false);
         }
     }
-    
-    if (GameUI)
-    {
-        GameUI->PlayRouletteAnim();
-        MulticastPlayRouletteAnimation();
-    }
+
+    ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
+    if (!GameMode) return;
+    StartRounds(GameMode->Round);
 }
 
 void ATTLuckyDrawGameState::MulticastPlayRouletteAnimation_Implementation()
@@ -151,4 +149,80 @@ void ATTLuckyDrawGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 void ATTLuckyDrawGameState::MulticastStartLuckyDraw_Implementation()
 {
     GameUI->SetWidgetSwitcher(1);
+}
+
+void ATTLuckyDrawGameState::StartRounds(int32 InTotalRounds)
+{
+    TotalRounds = InTotalRounds;
+    CurrentRound = 0;
+    StartNextRound();  // 첫 번째 라운드 시작
+}
+
+void ATTLuckyDrawGameState::StartNextRound()
+{
+    if (CurrentRound >= TotalRounds)
+    {
+        FTimerHandle RouletteTimerHandle;
+        GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::MulticastEndRounds, 10.0f, false);
+        return;
+    }
+
+    /*ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
+    if (!GameMode) return;
+
+    // 각 라운드에 맞는 룰렛 정보를 가져옴
+    const FRouletteInfo& Info = GameMode->GetRouletteInfoForRound(CurrentRound);
+
+    // GameUI에 룰렛 정보를 반영
+    if (GameUI)
+    {
+        GameUI->SetTextroulette1(FString::FromInt(Info.Player));
+        GameUI->SetTextroulette2(static_cast<int32>(Info.Rule));
+        GameUI->SetTextroulette3(static_cast<int32>(Info.Result));
+    }*/
+    
+
+    // 첫 라운드는 즉시 시작, 이후 라운드는 7초 딜레이
+    float Delay = (CurrentRound == 0) ? 0.5f : 10.0f;
+    GetWorldTimerManager().SetTimer(RoundTimerHandle, this, &ATTLuckyDrawGameState::PlayRoulette, Delay, false);
+}
+
+void ATTLuckyDrawGameState::PlayRoulette()
+{
+    ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
+    if (!GameMode) return;
+
+    // 각 라운드에 맞는 룰렛 정보를 가져옴
+    const FRouletteInfo& Info = GameMode->GetRouletteInfoForRound(CurrentRound);
+
+    // 서버에서 클라이언트로 룰렛 정보 동기화
+    MulticastUpdateRouletteUI(Info.Player, static_cast<int32>(Info.Rule), static_cast<int32>(Info.Result));
+    
+    CurrentRound++;
+
+    if (GameUI)
+    {
+        MulticastPlayRouletteAnimation();
+    }
+    
+    // 다음 라운드 시작
+    StartNextRound();
+}
+
+void ATTLuckyDrawGameState::MulticastUpdateRouletteUI_Implementation(int32 Player, int32 Rule, int32 Result)
+{
+    if (GameUI)
+    {
+        GameUI->SetTextroulette1(FString::FromInt(Player));
+        GameUI->SetTextroulette2(Rule);
+        GameUI->SetTextroulette3(Result);
+    }
+}
+
+void ATTLuckyDrawGameState::MulticastEndRounds_Implementation()
+{
+    if (GameUI)
+    {
+        GameUI->SetWidgetSwitcher(2);
+    }
 }

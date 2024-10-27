@@ -10,6 +10,7 @@
  *
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRequestMovePlayersToChairs);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRoundEndDelegate);
 
 UCLASS()
 class MTVS3_FINAL_API ATTLuckyDrawGameState : public AGameState
@@ -50,12 +51,27 @@ public:
 	void MulticastUpdatePlayerNumUI(int32 PlayerNum);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+	void StartRounds(int32 InTotalRounds);
+	void StartNextRound();
+
+	void PlayRoulette();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastUpdateRouletteUI(int32 Player , int32 Rule , int32 Result);
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastStartLuckyDraw();
 
-	void PlayRouletteAnimation();
-	
+	void StartPlayRoulette();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastEndRounds();
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastPlayRouletteAnimation();
+
+private:
+	int32 TotalRounds;
+	int32 CurrentRound;
+	FTimerHandle RoundTimerHandle;
 };
