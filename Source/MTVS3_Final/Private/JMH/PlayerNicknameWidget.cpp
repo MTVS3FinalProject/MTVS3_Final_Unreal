@@ -22,7 +22,7 @@ void UPlayerNicknameWidget::UpdateNicknameUI(const FString& _Nickname)
 void UPlayerNicknameWidget::ChangeColorNicknameUI()
 {
 	// 기본 색상 설정
-	FColor RoleColor = FColor::Yellow;
+	FColor RoleColor = FColor::Green;
 
 	// 닉네임 색상 설정
 	Tex_Nickname->SetColorAndOpacity(FSlateColor(RoleColor));
