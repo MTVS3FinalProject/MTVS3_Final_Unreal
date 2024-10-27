@@ -72,22 +72,23 @@ void ALuckyDrawManager::ConvertSeatAssignments()
 
 	UE_LOG(LogLuckyDraw, Log, TEXT("ConvertSeatAssignments: Converting ShuffledSeats to PlayerToChairMap..."));
 
-	// 10행 3열 구조를 기반으로 좌석 상태를 변환
-	for (int32 Row = 0; Row < ShuffledSeats.Num(); ++Row)
+	// 행 우선 순회 방식으로 10행 3열 구조로 ChairTagNumber를 부여
+	int32 ChairTagNumber = 1;  // 태그 번호를 위한 변수
+
+	for (int32 Row = 0; Row < ShuffledSeats.Num(); ++Row)  // 행 순회
 	{
 		FString RowLog;  // 각 행의 로그를 저장할 문자열
 
-		for (int32 Col = 0; Col < ShuffledSeats[Row].Num(); ++Col)
+		for (int32 Col = 0; Col < ShuffledSeats[Row].Num(); ++Col)  // 열 순회
 		{
 			int32 SeatPlayerNumber = ShuffledSeats[Row][Col].PlayerNumber;
 			if (SeatPlayerNumber != -1)
 			{
-				// 10행 3열 구조에 맞는 ChairTagNumber 계산
-				int32 ChairTagNumber = (Row * 3) + Col + 1;
+				// 의자 태그를 순차적으로 생성
 				FString ChairTag = FString::Printf(TEXT("Chair_%d"), ChairTagNumber);
 				PlayerToChairMap.Add(SeatPlayerNumber, ChairTag);
 
-				// 배정된 좌석은 ChairTagNumber로 표시
+				// 배정된 좌석의 ChairTagNumber를 RowLog에 추가
 				RowLog += FString::Printf(TEXT("%d\t"), ChairTagNumber);
 			}
 			else
@@ -95,12 +96,14 @@ void ALuckyDrawManager::ConvertSeatAssignments()
 				// 빈 좌석은 "X"로 표시
 				RowLog += TEXT("X\t");
 			}
+			ChairTagNumber++;  // 의자 태그 번호를 순차 증가
 		}
 		// 각 행의 상태를 Warning 로그로 출력
 		UE_LOG(LogLuckyDraw, Warning, TEXT("%s"), *RowLog);
 	}
 
 	UE_LOG(LogLuckyDraw, Log, TEXT("ConvertSeatAssignments: Completed."));
+	MovePlayersToChairs();
 }
 
 void ALuckyDrawManager::MovePlayersToChairs()
@@ -111,15 +114,18 @@ void ALuckyDrawManager::MovePlayersToChairs()
 	TArray<UChildActorComponent*> ChairComponents;
 	GetComponents(ChairComponents);
 
+	// 각 플레이어를 순회하며 지정된 의자 위치로 이동
 	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 	{
 		ATTPlayer* Player = *It;
 		if (!Player || Player->GetbIsHost()) continue;
 
+		// 플레이어의 SeatNumber로 PlayerToChairMap에서 TargetTag를 찾음
 		int32 SeatNumber = Player->GetRandomSeatNumber();
 		FString* TargetTag = PlayerToChairMap.Find(SeatNumber);
 		if (!TargetTag) continue;
 
+		// ChairComponents에서 TargetTag와 일치하는 의자를 찾아 이동
 		for (UChildActorComponent* ChairComponent : ChairComponents)
 		{
 			if (ChairComponent && ChairComponent->ComponentTags.Contains(FName(**TargetTag)))
