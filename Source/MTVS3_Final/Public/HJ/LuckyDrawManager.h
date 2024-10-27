@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TTPlayer.h"
 #include "GameFramework/Actor.h"
 #include "LuckyDrawManager.generated.h"
 
@@ -22,5 +23,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	void ConvertSeatAssignments();
 	void MovePlayersToChairs();
+	ATTPlayer* GetPlayerBySeatNumber(int32 SeatNumber);
+
+	TMap<int32, FString> PlayerToChairMap;
 };

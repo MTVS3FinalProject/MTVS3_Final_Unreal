@@ -1,9 +1,7 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "HJ/TTLuckyDrawGameMode.h"
+﻿#include "HJ/TTLuckyDrawGameMode.h"
 #include "random"
 #include "HJ/TTLuckyDrawGameState.h"
+#include "JMH/MH_GameWidget.h"
 
 // LogLuckyDraw 카테고리 정의
 DEFINE_LOG_CATEGORY(LogLuckyDraw);
@@ -24,6 +22,7 @@ void ATTLuckyDrawGameMode::PostLogin(APlayerController* NewPlayer)
 	if ( LocalGameState )
 	{
 		LocalGameState->AssignSeatNumber(NewPlayer->PlayerState);
+		LocalGameState->MulticastUpdatePlayerNumUI(LocalGameState->NewSeatNumber);
 	}
 }
 
@@ -31,6 +30,17 @@ void ATTLuckyDrawGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	ATTLuckyDrawGameState* GS = GetGameState<ATTLuckyDrawGameState>();
+	if (GS)
+	{
+		// 델리게이트 바인딩
+		GS->OnRequestMovePlayersToChairs.AddDynamic(GS, &ATTLuckyDrawGameState::MovePlayersToChairs);
+	}
+}
+
+void ATTLuckyDrawGameMode::StartLuckyDraw(int32 PlayerNum)
+{
+	RouletteTestNumPlayers = PlayerNum;
 	// 인원 수를 출력
 	if ( GEngine )
 	{
@@ -55,6 +65,11 @@ void ATTLuckyDrawGameMode::BeginPlay()
 
 	// 첫 라운드 시작
 	StartRound();
+}
+
+const TArray<TArray<FSeat>>& ATTLuckyDrawGameMode::GetShuffledSeats() const
+{
+	return SavedSeats;
 }
 
 // 라운드를 시작하는 함수
@@ -91,6 +106,8 @@ void ATTLuckyDrawGameMode::StartRound()
 		}
 		// 종료
 		UE_LOG(LogLuckyDraw , Log , TEXT("___________"));
+		ATTLuckyDrawGameState* GS = GetGameState<ATTLuckyDrawGameState>();
+		if (GS) GS->OnRequestMovePlayersToChairs.Broadcast();
 		return;
 	}
 
@@ -477,6 +494,8 @@ void ATTLuckyDrawGameMode::ShuffleSeats()
 			Index++;
 		}
 	}
+	
+	SavedSeats = Seats;
 
 	PrintSeats();
 }

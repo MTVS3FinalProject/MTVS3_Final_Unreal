@@ -7,6 +7,8 @@
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/InputActionValue.h"
 #include "HM_PuzzlePlayer.generated.h"
 
+class AHM_PuzzlePiece;
+
 UCLASS()
 class MTVS3_FINAL_API AHM_PuzzlePlayer : public ACharacter
 {
@@ -75,41 +77,41 @@ public:
 	void OnMyActionRunStart(const FInputActionValue& Value);
 	void OnMyActionRunComplete(const FInputActionValue& Value);
 
-	// UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
-	// class UInputAction* IA_Pickup;
-	// UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
-	// class UInputAction* IA_Launch;
-	// void OnMyActionPickupPiece(const FInputActionValue& Value);
-	// void OnMyActionLaunchPickedUpPiece(const FInputActionValue& Value);
-
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Pickup;
 	void OnMyActionPickupPiece(const FInputActionValue& Value);
-
+	
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	class UInputAction* IA_Launch;
+	void OnMyActionLaunchPieceStart(const FInputActionValue& Value);
+	void OnMyActionLaunchPieceComplete(const FInputActionValue& Value);
+	
 	void MyTakePiece();
 	void MyReleasePiece();
 	
 #pragma endregion
 
 	
-	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
-	bool bHasPiece = false;
-	
+
+private:
 	// 태어날 때 모든 피스 조각 목록을 기억하고 싶다.
 	UPROPERTY()
 	TArray<AHM_PuzzlePiece*> PieceList;
 
+public:
 	// 잡은 피스 조각의 참조
 	UPROPERTY(Replicated)
 	class AHM_PuzzlePiece* PickupPieceActor;
 
+	void SpawnPuzzlePieces();
+	
 	// 피스 조각을 잡았을 때 위치
 	UPROPERTY(EditDefaultsOnly, Category = Piece)
 	class USceneComponent* HandComp;
 
 	// 피스 조각과의 거리 제한
 	UPROPERTY(EditDefaultsOnly, Category = Piece)
-	float PickupDistance = 500;
+	float PickupDistance = 300;
 
 	// 피스 조각 잡기와 놓기 기능
 	void AttachPiece(AHM_PuzzlePiece* pieceActor);
@@ -117,6 +119,9 @@ public:
 
 	// --------------- Multiplayer 요소들 ---------------
 public:
+	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
+	bool bHasPiece = false;
+	
 	// 피스 잡기 RPC
 	UFUNCTION(Server, Reliable)
 	void ServerRPCTakePiece();
