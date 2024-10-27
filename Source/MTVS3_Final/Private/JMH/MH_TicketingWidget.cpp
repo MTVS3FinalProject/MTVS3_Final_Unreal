@@ -37,9 +37,9 @@ void UMH_TicketingWidget::NativeConstruct()
 
 	//// HttpActor2 공연장 입장 통신 테스트용
 	Btn_CancelRegisteredSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelRegisteredSeat);
-	Btn_MyRegisterSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedMyRegisterSeat);
-	Btn_NoticeGameStart->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedNoticeGameStart);
-	Btn_GameResult->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedGameResult);
+	//Btn_MyRegisterSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedMyRegisterSeat);
+	//Btn_NoticeGameStart->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedNoticeGameStart);
+	//Btn_GameResult->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedGameResult);
 }
 
 void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
@@ -298,7 +298,7 @@ void UMH_TicketingWidget::OnClickedCancelRegisteredSeat()
 		}
 	}
 }
-
+/*
 void UMH_TicketingWidget::OnClickedMyRegisterSeat()
 {
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
@@ -353,5 +353,5 @@ void UMH_TicketingWidget::OnClickedGameResult()
 			HttpActor2->ReqPostGameResult(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
 		}
 	}
-}
+}*/
 
