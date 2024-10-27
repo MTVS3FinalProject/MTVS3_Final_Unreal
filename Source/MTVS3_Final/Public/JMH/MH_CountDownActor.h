@@ -28,9 +28,8 @@ public:
 	
 	//UPROPERTY(VisibleAnywhere, Category = "UI")
     //class UMH_GameStartCountDown* CountDownUI;
-	
-	UFUNCTION()
-	void StartCountDownVisible(bool visible);
-	
+
+	UFUNCTION(NetMulticast, UnReliable)
+	void MulticastStartCountDownVisible(bool visible);
 
 };

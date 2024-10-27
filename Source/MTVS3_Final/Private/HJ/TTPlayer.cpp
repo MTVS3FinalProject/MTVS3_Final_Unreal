@@ -24,6 +24,7 @@
 #include <HJ/TTPlayerState.h>
 #include <HJ/HJ_Actor.h>
 #include "HJ/TTLuckyDrawGameState.h"
+#include "JMH/MH_GameWidget.h"
 #include "JMH/PlayerNicknameWidget.h"
 
 class ALuckyDrawManager;
@@ -300,6 +301,7 @@ void ATTPlayer::ServerLuckyDrawStart_Implementation()
 
 void ATTPlayer::MulticastLuckyDrawStart_Implementation()
 {
+	// InitGameUI();
 	SwitchCamera(!bIsThirdPerson);
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if ( Anim )
@@ -666,6 +668,28 @@ void ATTPlayer::InitMainUI()
 	{
 		HttpActor2->SetMainUI(MainUI);
 		HttpActor2->SetTicketingUI(TicketingUI);
+	}
+}
+
+void ATTPlayer::InitGameUI()
+{
+	if (!GameUIFactory)
+	{
+		UE_LOG(LogTemp, Error, TEXT("GameUIFactory is not set! Cannot create GameUI."));
+		return;
+	}
+
+	GameUI = Cast<UMH_GameWidget>(CreateWidget(GetWorld(), GameUIFactory));
+	if (GameUI)
+	{
+		GameUI->AddToViewport(10);
+		GameUI->SetWidgetSwitcher(2);
+		GameUI->SetOnlyVisibleMyNum(false);
+		UE_LOG(LogTemp, Error, TEXT("GameUIFactory good"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to create GameUI from GameUIFactory."));
 	}
 }
 

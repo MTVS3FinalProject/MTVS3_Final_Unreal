@@ -74,6 +74,11 @@ public:
 
     virtual void BeginPlay() override;
 
+    void StartLuckyDraw(int32 PlayerNum);
+
+    const TArray<TArray<FSeat>>& GetShuffledSeats() const;
+    TArray<TArray<FSeat>> SavedSeats;
+    
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
     bool bIsRouletteTestMode;
 
@@ -87,11 +92,8 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
     float EliminationEffectDuration = 0.1f;
 
-private:
-
+    // 총 라운드 수
     int Round = 0;
-
-    FTimerHandle RouletteTimer;
 
     // 각 라운드의 룰렛 정보를 저장하는 배열
     TArray<FRouletteInfo> RouletteInfosPerRound;
@@ -101,6 +103,12 @@ private:
 
     // 각 라운드에서 탈락한 플레이어를 저장하는 배열
     TArray<int32> RoundEliminatedPlayers;
+
+    const FRouletteInfo& GetRouletteInfoForRound(int32 RoundIndex) const;
+    
+private:
+
+    FTimerHandle RouletteTimer;
 
     // 룰렛 관련 함수
     void StartRound();

@@ -12,22 +12,25 @@ void UMH_GameStartCountDown::NativeConstruct()
 	
 	CountdownValue = 5;
 	//StartCountdown();
+	//Text_CountDown->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UMH_GameStartCountDown::StartCountdown()
 {
+	//Text_CountDown->SetVisibility(ESlateVisibility::Visible);
 	GetWorld()->GetTimerManager().SetTimer(CountdownTimerHandle, this, &UMH_GameStartCountDown::UpdateCountdown, 1.0f, true);
 }
 
 void UMH_GameStartCountDown::UpdateCountdown()
 {
+	//Text_CountDown->SetVisibility(ESlateVisibility::Visible);
+	CountdownValue--;
 	if (Text_CountDown)
 	{
 		Text_CountDown->SetText(FText::FromString(FString::FromInt(CountdownValue)));
 		PlayAnimation(CountDownAnim);
 	}
 	
-	CountdownValue--;
 	
 	if (CountdownValue < 0)
 	{

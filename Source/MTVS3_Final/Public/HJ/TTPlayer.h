@@ -226,6 +226,13 @@ public:
 	class UPlayerNicknameWidget* NicknameUI;
 
 	void InitMainUI();
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UMH_GameWidget> GameUIFactory;
+	UPROPERTY()
+	class UMH_GameWidget* GameUI;
+	
+	void InitGameUI();
 #pragma endregion
 
 private:

@@ -20,7 +20,7 @@ AMH_CountDownActor::AMH_CountDownActor()
 void AMH_CountDownActor::BeginPlay()
 {
 	Super::BeginPlay();
-	StartCountDownVisible(true);
+	SetActorHiddenInGame(true);
 }
 
 // Called every frame
@@ -29,8 +29,9 @@ void AMH_CountDownActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AMH_CountDownActor::StartCountDownVisible(bool visible)
+void AMH_CountDownActor::MulticastStartCountDownVisible_Implementation(bool visible)
 {
+	SetActorHiddenInGame(false);
 	UUserWidget* WidgetCompUI = Cast<UUserWidget>(WidgetComp->GetWidget());
 	UMH_GameStartCountDown* CountDownUI = Cast<UMH_GameStartCountDown>(WidgetCompUI);
 	if (WidgetCompUI)
