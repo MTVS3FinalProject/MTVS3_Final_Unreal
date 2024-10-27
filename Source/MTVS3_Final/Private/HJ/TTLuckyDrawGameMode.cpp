@@ -72,6 +72,15 @@ const TArray<TArray<FSeat>>& ATTLuckyDrawGameMode::GetShuffledSeats() const
 	return SavedSeats;
 }
 
+const FRouletteInfo& ATTLuckyDrawGameMode::GetRouletteInfoForRound(int32 RoundIndex) const
+{
+	const FRouletteInfo& Info = RouletteInfosPerRound[RoundIndex];
+	UE_LOG(LogLuckyDraw, Log, TEXT("현재 라운드: %d, Player: %d, Rule: %d, Result: %d"), 
+		RoundIndex, Info.Player, static_cast<int32>(Info.Rule), static_cast<int32>(Info.Result));
+	// 요청된 라운드의 룰렛 정보를 반환. 범위를 초과하는 경우 마지막 값을 반환
+	return RouletteInfosPerRound.IsValidIndex(RoundIndex) ? RouletteInfosPerRound[RoundIndex] : RouletteInfosPerRound.Last();
+}
+
 // 라운드를 시작하는 함수
 void ATTLuckyDrawGameMode::StartRound()
 {
