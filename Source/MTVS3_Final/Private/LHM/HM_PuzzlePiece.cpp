@@ -21,7 +21,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
     {
         Piece->SetStaticMesh(MeshAsset.Object);
     }
-
+	
     Piece->SetSimulatePhysics(true);
     Piece->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
     Piece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -58,28 +58,3 @@ void AHM_PuzzlePiece::OnRep_PieceTransform()
 		GetPiece()->SetWorldTransform(CurrentTransform);
 	}
 }
-
-// void AHM_PuzzlePiece::Server_SetPieceLocation_Implementation(const FVector& NewLocation)
-// {
-// 	// 새로운 위치를 설정하고 동기화
-// 	CurrentTransform.SetLocation(NewLocation);
-// 	OnRep_PieceTransform(); // 동기화 함수 호출
-// }
-//
-// // 퍼즐 조각을 놓을 때 이 함수를 호출
-// void AHM_PuzzlePiece::PlacePiece(const FVector& NewLocation)
-// {
-// 	if (HasAuthority()) // 서버에서 직접 호출된 경우
-// 	{
-// 		CurrentTransform.SetLocation(NewLocation);
-// 		OnRep_PieceTransform();
-// 	}
-// 	else // 클라이언트에서 호출된 경우
-// 	{
-// 		Server_SetPieceLocation(NewLocation); // 서버에 요청
-// 	}
-// }
-
-
-
-

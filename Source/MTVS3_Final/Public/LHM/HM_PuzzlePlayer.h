@@ -102,8 +102,6 @@ public:
 	// 잡은 피스 조각의 참조
 	UPROPERTY(Replicated)
 	class AHM_PuzzlePiece* PickupPieceActor;
-
-	void SpawnPuzzlePieces();
 	
 	// 피스 조각을 잡았을 때 위치
 	UPROPERTY(EditDefaultsOnly, Category = Piece)
@@ -135,6 +133,14 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCReleasePiece(AHM_PuzzlePiece* pieceActor);
+
+	// 캐릭터 회전값 RPC
+	UFUNCTION(Server, Reliable)
+	void ServerRPCUpdateRotation(const FRotator& NewRotation);
+
+	// 피스의 회전값 RPC
+	//UFUNCTION(Server, Reliable)
+	//void ServerRPCUpdatePieceRotation(const FRotator& NewRotation);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

@@ -45,10 +45,4 @@ public:
 	UPROPERTY(Replicated)
 	bool bSimulatingPhysics;
 
-	// // 클라이언트가 조각을 놓을 때 호출할 RPC 함수
-	// UFUNCTION(Server, Reliable)
-	// void Server_SetPieceLocation(const FVector& NewLocation);
-	//
-	// void PlacePiece(const FVector& NewLocation);
-	// //void Server_SetPieceLocation_Implementation(const FVector& NewLocation);
 };
