@@ -74,6 +74,11 @@ public:
 
     virtual void BeginPlay() override;
 
+    void StartLuckyDraw(int32 PlayerNum);
+
+    const TArray<TArray<FSeat>>& GetShuffledSeats() const;
+    TArray<TArray<FSeat>> SavedSeats;
+    
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
     bool bIsRouletteTestMode;
 
