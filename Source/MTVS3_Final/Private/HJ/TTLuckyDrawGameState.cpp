@@ -6,6 +6,7 @@
 #include "EngineUtils.h"
 #include "HJ/LuckyDrawManager.h"
 #include "HJ/TTLuckyDrawGameMode.h"
+#include "JMH/MH_CountDownActor.h"
 #include "JMH/MH_GameWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -79,12 +80,39 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
         MulticastStartLuckyDraw();
     }
 
+    // 카운트 다운 시작
+    TArray<AActor*> FoundActors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMH_CountDownActor::StaticClass(), FoundActors);
+    if (FoundActors.Num() > 0)
+    {
+        // 첫 번째 찾은 액터를 AMH_CountDownActor로 캐스팅
+        AMH_CountDownActor* CountDownActor = Cast<AMH_CountDownActor>(FoundActors[0]);
+        if (CountDownActor)
+        {
+            // CountDownActor의 함수를 호출
+            CountDownActor->MulticastStartCountDownVisible(true);
+        }
+    }
+    
     FTimerHandle RouletteTimerHandle;
-    GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::PlayRouletteAnimation, 5.0f, false);
+    GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::PlayRouletteAnimation, 6.0f, false);
 }
 
 void ATTLuckyDrawGameState::PlayRouletteAnimation()
 {
+    TArray<AActor*> FoundActors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMH_CountDownActor::StaticClass(), FoundActors);
+    if (FoundActors.Num() > 0)
+    {
+        // 첫 번째 찾은 액터를 AMH_CountDownActor로 캐스팅
+        AMH_CountDownActor* CountDownActor = Cast<AMH_CountDownActor>(FoundActors[0]);
+        if (CountDownActor)
+        {
+            // CountDownActor의 함수를 호출
+            CountDownActor->MulticastStartCountDownVisible(false);
+        }
+    }
+    
     if (GameUI)
     {
         GameUI->PlayRouletteAnim();
