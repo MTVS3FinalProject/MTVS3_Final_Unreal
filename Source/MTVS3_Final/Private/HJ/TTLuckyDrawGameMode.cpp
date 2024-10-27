@@ -1,6 +1,7 @@
 ﻿#include "HJ/TTLuckyDrawGameMode.h"
 #include "random"
 #include "HJ/TTLuckyDrawGameState.h"
+#include "HJ/TTPlayer.h"
 #include "JMH/MH_GameWidget.h"
 
 // LogLuckyDraw 카테고리 정의

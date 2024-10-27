@@ -57,6 +57,9 @@ public:
 	void PlayRoulette();
 
 	UFUNCTION(NetMulticast, Reliable)
+	void MulticastHideGameUI();
+	
+	UFUNCTION(NetMulticast, Reliable)
 	void MulticastUpdateRouletteUI(int32 Player , int32 Rule , int32 Result);
 
 	UFUNCTION(NetMulticast, Reliable)

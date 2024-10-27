@@ -77,7 +77,6 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
         {
             TTPlayer->MulticastLuckyDrawStart();
         }
-        MulticastStartLuckyDraw();
     }
 
     // 카운트 다운 시작
@@ -93,6 +92,7 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
             CountDownActor->MulticastStartCountDownVisible(true);
         }
     }
+    MulticastHideGameUI();
     
     FTimerHandle RouletteTimerHandle;
     GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::StartPlayRoulette, 6.0f, false);
@@ -100,6 +100,8 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
 
 void ATTLuckyDrawGameState::StartPlayRoulette()
 {
+    MulticastStartLuckyDraw();
+    
     TArray<AActor*> FoundActors;
     UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMH_CountDownActor::StaticClass(), FoundActors);
     if (FoundActors.Num() > 0)
@@ -148,6 +150,7 @@ void ATTLuckyDrawGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 void ATTLuckyDrawGameState::MulticastStartLuckyDraw_Implementation()
 {
+    GameUI->ShowWidget();
     GameUI->SetWidgetSwitcher(1);
 }
 
@@ -207,6 +210,11 @@ void ATTLuckyDrawGameState::PlayRoulette()
     
     // 다음 라운드 시작
     StartNextRound();
+}
+
+void ATTLuckyDrawGameState::MulticastHideGameUI_Implementation()
+{
+    GameUI->HideWidget();
 }
 
 void ATTLuckyDrawGameState::MulticastUpdateRouletteUI_Implementation(int32 Player, int32 Rule, int32 Result)
