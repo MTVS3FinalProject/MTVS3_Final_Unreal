@@ -281,6 +281,136 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 	}
 }
 
+void AHM_HttpActor2::TESTReqPostConcertEntry( FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/%s") , *_url, *GI->GetConcertName());
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// // 전달 데이터 (JSON)
+	// FString ContentString;
+	// TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	// Writer->WriteObjectStart();
+	// Writer->WriteValue(TEXT("concertName") , ConcertName);
+	// Writer->WriteObjectEnd();
+	// Writer->Close();
+	//
+	// // 본문 데이터 설정
+	// Request->SetContentAsString(ContentString);
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::TESTOnResPostConcertEntry);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor2::TESTOnResPostConcertEntry(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		// 캐스팅은 여기서 한 번만 실행
+		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// 필요한 정보 추출
+					FString ConcertName = ResponseObject->GetStringField(TEXT("concertName"));
+					int32 RemainingTickets = ResponseObject->GetIntegerField(TEXT("remainingTickets"));
+
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("ConcertName : %s") , *ConcertName));
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("remainingTickets : %d"), RemainingTickets));
+
+					// RemainingTickets을 GameInstance에 저장
+					GI->SetRemainingTicketCount(RemainingTickets);
+					
+					// 접수 가능한 좌석 목록
+					TArray<TSharedPtr<FJsonValue>> AvailableSeatsArray = ResponseObject->GetArrayField(TEXT("availableSeats"));
+					TArray<FSeatIdDTO> AvailableSeats;
+
+					for ( const TSharedPtr<FJsonValue>& SeatValue : AvailableSeatsArray )
+					{
+						TSharedPtr<FJsonObject> SeatObject = SeatValue->AsObject();
+						FString AvailableSeatId = SeatObject->GetStringField(TEXT("seatId"));
+						FString AvailableSeatDrawingTime = SeatObject->GetStringField(TEXT("drawingTime"));
+
+						UE_LOG(LogTemp , Log , TEXT("Available Seat ID: %s") , *AvailableSeatId);
+						UE_LOG(LogTemp , Log , TEXT("Available Seat Drawing Time: %s") , *AvailableSeatDrawingTime);
+
+						FSeatIdDTO SeatDTO;
+						SeatDTO.SetSeatId(AvailableSeatId);
+						SeatDTO.SetDrawingTime(AvailableSeatDrawingTime);
+						AvailableSeats.Add(SeatDTO);
+					}
+
+					// FConcertReservation에 좌석 추가
+					SetAvailableSeats(AvailableSeats);
+
+					// 접수 완료된 좌석 목록
+					TArray<TSharedPtr<FJsonValue>> ReceptionSeatsArray = ResponseObject->GetArrayField(TEXT("receptionSeats"));
+					TArray<FSeatIdDTO> ReceptionSeats;
+
+					for ( const TSharedPtr<FJsonValue>& SeatValue : ReceptionSeatsArray )
+					{
+						TSharedPtr<FJsonObject> SeatObject = SeatValue->AsObject();
+						FString ReceptionSeatId = SeatObject->GetStringField(TEXT("seatId"));
+						//FString ReceptionSeatDrawingTime = SeatObject->GetStringField(TEXT("drawingTime"));
+
+						UE_LOG(LogTemp , Log , TEXT("Reception Seat ID: %s") , *ReceptionSeatId);
+						//UE_LOG(LogTemp , Log , TEXT("Reception Drawing Time: %s") , *ReceptionSeatDrawingTime);
+
+						FSeatIdDTO SeatDTO;
+						SeatDTO.SetSeatId(ReceptionSeatId);
+						//SeatDTO.SetDrawingTime(ReceptionSeatDrawingTime);
+						ReceptionSeats.Add(SeatDTO);
+					}
+
+					// FConcertReservation에 좌석 추가
+					SetReceptionSeats(ReceptionSeats);
+
+					// 공연장으로 입장. 캐릭터 스폰 함수 호출
+					//if ( TTPlayer )
+					//{
+					//	TTPlayer->
+					//}
+					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("뉴진스 콘서트 입장~~~")));
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to get concert entry: %s"), *Response->GetContentAsString());
+		}
+	}
+}
+
 //=========================================================================================================================================
 
 // 좌석 조회 요청
@@ -1251,10 +1381,6 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 		}
 	}
 }
-
-
-
-
 
 
 // ======================== 개발자 키(2) Cheat Seat 좌석 게임 결과 요청 ========================

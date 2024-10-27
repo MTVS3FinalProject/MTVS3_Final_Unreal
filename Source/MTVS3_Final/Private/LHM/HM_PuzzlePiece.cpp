@@ -14,14 +14,15 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 
     Piece = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Piece"));
 
-    //Piece->SetupAttachment(RootComponent);
+    Piece->SetupAttachment(RootComponent);
 
     static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
     if ( MeshAsset.Succeeded() )
     {
         Piece->SetStaticMesh(MeshAsset.Object);
     }
-	
+	Piece->SetRelativeLocation(FVector(0, 90, 0));
+	Piece->SetRelativeScale3D(FVector(0.2, 0.2, 0.2));
     Piece->SetSimulatePhysics(true);
     Piece->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
     Piece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
