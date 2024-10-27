@@ -118,10 +118,14 @@ void UMH_GameWidget::SetOnlyVisibleMyNum(bool bIsVisible)
 	if(bIsVisible)
 	{
 		Can_01->SetVisibility(ESlateVisibility::Visible);
+		Can_02->SetVisibility(ESlateVisibility::Hidden);
+		
 	}
 	else
 	{
 		Can_01->SetVisibility(ESlateVisibility::Hidden);
+		Can_02->SetVisibility(ESlateVisibility::Visible);
+		
 	}
 
 	

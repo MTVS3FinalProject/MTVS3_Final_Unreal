@@ -24,7 +24,9 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_01;
 
-
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_02;
+	
 	//위젯스위처설정/ 0:게임시작,1: 룰렛결과,
 	UFUNCTION()
 	void SetWidgetSwitcher(int32 num);
