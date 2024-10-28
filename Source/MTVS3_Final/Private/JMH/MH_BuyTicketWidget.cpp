@@ -43,7 +43,7 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if ( gi )
 	{
-		Text_ConcertName->SetText(FText::FromString(gi->GetConcertName()));
+		Text_ConcertName_001->SetText(FText::FromString(gi->GetConcertName()));
 	}
 }
 

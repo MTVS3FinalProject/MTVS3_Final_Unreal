@@ -192,7 +192,7 @@ public:
 	void SetTextUserName(FString UserName);
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_ConcertName;
+	class UTextBlock* Text_ConcertName_001;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Tex_UserPhoneNum;
