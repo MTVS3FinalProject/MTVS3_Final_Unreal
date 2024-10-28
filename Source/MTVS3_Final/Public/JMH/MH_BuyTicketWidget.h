@@ -50,7 +50,7 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_TicketPrice1;
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_TicketPrice1_1;
+	class UTextBlock* Text_TicketPrice4;
 	UFUNCTION()
 	void SetTextTicketPrice(int32 TicketPrice);
 
