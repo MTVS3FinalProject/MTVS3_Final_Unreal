@@ -169,7 +169,7 @@ void ATTLuckyDrawGameState::EliminatePlayers()
                 {
                     Player->ClientLuckyDrawLose();
                     // 탈락자는 빨간색으로 바꾸기
-                    Player->MulticastSetColorTextRender(FColor::Red);
+                    Player->MulticastSetColorTextRender(FColor(255, 0, 235));
                 }
             }
         }
@@ -282,7 +282,7 @@ void ATTLuckyDrawGameState::EndRounds()
         if (TTPlayer && TTPlayer->GetRandomSeatNumber() == WinningSeatNumber)
         {
             TTPlayer->ClientLuckyDrawWin();  // 우승자에게만 종료 호출
-            TTPlayer->MulticastSetColorTextRender(FColor::Blue);
+            TTPlayer->MulticastSetColorTextRender(FColor(0, 220, 255));
             break;
         }
     }
