@@ -33,7 +33,7 @@ FTransform ALuckyDrawChair::GetSittingTransform()
 {
 	// 의자 중심 위치 가져오기
 	FVector Location = BoxComp->GetComponentLocation();
-	Location.Z = 512.000069;
+	Location.Z += 52;
 
 	// 의자 앞 방향을 기준으로 한 회전값 가져오기
 	FRotator Rotation = BoxComp->GetComponentRotation();
