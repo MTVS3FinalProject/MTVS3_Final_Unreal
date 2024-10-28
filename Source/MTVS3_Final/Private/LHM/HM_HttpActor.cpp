@@ -115,16 +115,31 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 				UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
 			}
 		}
-		else if ( Response->GetResponseCode() == 400 ) // 이메일 중복 코드
+		else if ( Response->GetResponseCode() == 400 ) // 실패 코드
 		{
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+			{
+				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField("error");
+				FString ErrorMessage = ErrorObject->GetStringField("message");
+				int32 ErrorStatus = ErrorObject->GetIntegerField("status");
+
+				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
+				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to parse JSON response."));
+			}
 			UE_LOG(LogTemp , Warning , TEXT("Failed to verify IdentityQR, response code: %d") , Response->GetResponseCode());
-			//StartUI->OnLoginFail(?); // 이메일 중복. (로그인 실패 처리)
+			//StartUI->(?); // (회원가입 실패 처리)
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
-		//StartUI->OnLoginFail(?); // 그 외 네트워크 연결 확인. (회원가입 실패 처리)
+		//StartUI->(?); // 그 외 네트워크 연결 확인. (회원가입 실패 처리)
 	}
 }
 
@@ -194,9 +209,25 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 				}
 			}
 		}
-		else
+		else if ( Response->GetResponseCode() == 400 ) // 실패 코드
 		{
-			UE_LOG(LogTemp , Warning , TEXT("Failed to verify identity, response code: %d") , Response->GetResponseCode());
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+			{
+				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField("error");
+				FString ErrorMessage = ErrorObject->GetStringField("message");
+				int32 ErrorStatus = ErrorObject->GetIntegerField("status");
+
+				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
+				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to parse JSON response."));
+			}
+			UE_LOG(LogTemp , Warning , TEXT("Failed to verify IdentityQR, response code: %d") , Response->GetResponseCode());
+			//StartUI->(?); // 신원인증 확인 실패
 		}
 	}
 	else
@@ -263,11 +294,26 @@ void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr R
 			}
 			UE_LOG(LogTemp , Log , TEXT("Sign-up success"));
 		}
-		else if(Response->GetResponseCode() == 400) // 닉네임 중복 응답 코드 (400)
+		else if ( Response->GetResponseCode() == 400 ) // 패스워드 유효성체크 실패 코드
 		{
-			// 실패 처리 ( 닉네임 중복 )
-			//StartUI->OnLoginFail(?); // 닉네임 중복. (회원가입 실패 처리)
-			UE_LOG(LogTemp , Warning , TEXT("Sign-up failed, response code: %d") , Response->GetResponseCode());
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+			{
+				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField("error");
+				FString ErrorMessage = ErrorObject->GetStringField("message");
+				int32 ErrorStatus = ErrorObject->GetIntegerField("status");
+
+				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
+				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to parse JSON response."));
+			}
+			
+			UE_LOG(LogTemp , Warning , TEXT("Failed to verify IdentityQR, response code: %d") , Response->GetResponseCode());
+			//StartUI->OnLoginFail(?); // 이메일 중복. (로그인 실패 처리)
 		}
 	}
 	else

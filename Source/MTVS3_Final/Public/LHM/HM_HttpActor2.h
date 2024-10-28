@@ -85,13 +85,17 @@ struct FConcertDTO
 
 public:
     FConcertDTO()
-        : m_ConcertName(TEXT("Concert01")) // 테스트용 나중에 받아올거임
+	    : m_ConcertId(0)
+        , m_ConcertName(TEXT(""))
         , m_ConcertYear(0)
         , m_ConcertMonth(0)
         , m_ConcertDay(0)
         , m_ConcertTime(TEXT(""))
     {}
-
+	
+	int32 GetConcertId() const { return m_ConcertId; }
+	void SetConcertId(const int32 ConcertId) { m_ConcertId = ConcertId; }
+	
     const FString& GetConcertName() const { return m_ConcertName; }
     void SetConcertName(const FString& ConcertName) { m_ConcertName = ConcertName; }
 
@@ -108,6 +112,9 @@ public:
     void SetConcertTime(const FString& ConcertTime) { m_ConcertTime = ConcertTime; }
 
 private:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	int32 m_ConcertId;
+	
     UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
     FString m_ConcertName;
 
@@ -230,14 +237,16 @@ private:
 
 public:
     // FConcert 관련 메서드
+    int32 GetConcertId() const { return m_Concert.GetConcertId(); }
     const FString& GetConcertName() const { return m_Concert.GetConcertName(); }
     int32 GetConcertYear() const { return m_Concert.GetConcertYear(); }
     int32 GetConcertMonth() const { return m_Concert.GetConcertMonth(); }
     int32 GetConcertDay() const { return m_Concert.GetConcertDay(); }
     const FString& GetConcertTime() const { return m_Concert.GetConcertTime(); }
 
-    void SetConcertInfo(const FString& Name , int32 Year , int32 Month , int32 Day , const FString& Time)
+    void SetConcertInfo(int32 Id , const FString& Name , int32 Year , int32 Month , int32 Day , const FString& Time)
     {
+        m_Concert.SetConcertId(Id);
         m_Concert.SetConcertName(Name);
         m_Concert.SetConcertYear(Year);
         m_Concert.SetConcertMonth(Month);
