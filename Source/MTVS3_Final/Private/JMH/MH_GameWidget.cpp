@@ -98,6 +98,7 @@ void UMH_GameWidget::SetTextroulette3(int32 roulette3)
 void UMH_GameWidget::PlayRouletteAnim04()
 {
 	PlayAnimation(Roulette04Anim);
+	Can_02->SetVisibility(ESlateVisibility::Hidden);
 }
 
 //룰렛 플레이 시작
