@@ -830,6 +830,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 						// 접수 취소 성공했을 때
 						TicketingUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
 						TicketingUI->SetCompletedVisible(false);
+						TicketingUI->SetWidgetSwitcher(0);
 					}
 				}
 			}
