@@ -36,7 +36,7 @@ void UMH_TicketingWidget::NativeConstruct()
 
 
 	//// HttpActor2 공연장 입장 통신 테스트용
-	Btn_CancelRegisteredSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelRegisteredSeat);
+	//Btn_CancelRegisteredSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelRegisteredSeat);
 	//Btn_MyRegisterSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedMyRegisterSeat);
 	//Btn_NoticeGameStart->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedNoticeGameStart);
 	//Btn_GameResult->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedGameResult);
@@ -277,6 +277,7 @@ void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 
 }
 
+/*
 void UMH_TicketingWidget::OnClickedCancelRegisteredSeat()
 {
 	//서버-> 접수취소
@@ -298,7 +299,6 @@ void UMH_TicketingWidget::OnClickedCancelRegisteredSeat()
 		}
 	}
 }
-/*
 void UMH_TicketingWidget::OnClickedMyRegisterSeat()
 {
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());

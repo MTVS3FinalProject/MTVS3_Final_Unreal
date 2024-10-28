@@ -31,12 +31,20 @@ void UMainWidget::NativeConstruct()
 	Btn_SelectConcertBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_Concert01->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert01);
 
+	if(BuyTicketWidget)
+	{
+			BuyTicketWidget->OnClickedBuyTickerBack.AddDynamic(this, &UMainWidget::OnTicketWidgetClose);
+	}
 
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
 {
 	WS_MainWidgetSwitcher->SetActiveWidgetIndex(num);
+	if(num==2)
+	{
+		PlayAnimation(TicketImgAnim01);
+	}
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
@@ -147,4 +155,9 @@ void UMainWidget::OnClickedConcert01()
 	//현민
 	//서버에서 콘서트 정보 받아오기
 	//로비로이동
+}
+
+void UMainWidget::OnTicketWidgetClose()
+{
+	SetWidgetSwitcher(0);
 }

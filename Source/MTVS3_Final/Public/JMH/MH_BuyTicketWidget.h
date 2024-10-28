@@ -10,12 +10,25 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedBuyTickerBack);
+
 UCLASS()
 class MTVS3_FINAL_API UMH_BuyTicketWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
 public:
+
+	FOnClickedBuyTickerBack OnClickedBuyTickerBack;
+
+	// 닫기 버튼 클릭 이벤트 설정
+	UFUNCTION()
+	void CloseButtonPressed()
+	{
+		// 델리게이트 호출
+		OnClickedBuyTickerBack.Broadcast();
+	}
 	
 	virtual void NativeConstruct() override;
 
@@ -203,4 +216,9 @@ public:
 	class UButton*  Btn_Back05;
 	UFUNCTION()
 	void OnClickedBtn_Back05Button();
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_BuyTickerBack;
+
+	
 };

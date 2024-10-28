@@ -128,7 +128,12 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_SelectConcertBack;
 
-	
+	UFUNCTION()
+	void OnTicketWidgetClose();
+
+	//UI 애니메이션
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* TicketImgAnim01;
 	
 	//티켓예매 알람
 	//티켓팅 시간대

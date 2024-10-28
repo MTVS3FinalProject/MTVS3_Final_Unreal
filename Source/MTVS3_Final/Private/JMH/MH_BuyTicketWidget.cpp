@@ -15,6 +15,7 @@
 
 class AHM_HttpActor;
 
+
 void UMH_BuyTicketWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -34,6 +35,11 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	//Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::티켓저장버튼);
 	Btn_Back04->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBtn_Back04Button);
 	Btn_Back05->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBtn_Back05Button);
+
+	if(Btn_BuyTickerBack)
+	{
+		Btn_BuyTickerBack->OnClicked.AddDynamic(this,&UMH_BuyTicketWidget::CloseButtonPressed);
+	}
 }
 
 void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num)//0:티켓예매정보,1:QR,2:QR성공,3:QR실패,4:배송지,5:결제진행,7:코인충전

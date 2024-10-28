@@ -185,12 +185,12 @@ public:
 	// HttpActor2 공연장 입장 통신 테스트용
 
 	
+/*
 	// 내가 접수한 좌석 조회
 	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
 	class UButton* Btn_CancelRegisteredSeat;
 	UFUNCTION()
 	void OnClickedCancelRegisteredSeat();
-/*
 	// 내가 접수한 좌석 조회
 	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
 	class UButton* Btn_MyRegisterSeat;

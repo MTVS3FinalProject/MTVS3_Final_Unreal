@@ -65,8 +65,8 @@ void UMH_WorldMap::UpdateWorldMap()
 		FVector PlayerLocation = Player->GetActorLocation();
 
 		// 월드의 최소 및 최대 좌표 설정 (예시 범위, 필요 시 조정)
-		FVector2D WorldMinBounds = FVector2D(-4500.f, -4500.f);  // 월드 좌표 최소값
-		FVector2D WorldMaxBounds = FVector2D(4500.f, 4500.f);    // 월드 좌표 최대값
+		FVector2D WorldMinBounds = FVector2D(-17700.f, -17700.f);  // 월드 좌표 최소값
+		FVector2D WorldMaxBounds = FVector2D(17700.f, 17700.f);    // 월드 좌표 최대값
 		FVector2D MapSize = FVector2D(900.f, 900.f);             // 맵 크기
 
 		// 플레이어 포인터 위치 업데이트
