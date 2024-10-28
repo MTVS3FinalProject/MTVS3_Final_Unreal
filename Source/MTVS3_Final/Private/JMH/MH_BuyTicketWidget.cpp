@@ -56,7 +56,7 @@ void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num)//0:티켓예매정보,1:Q
 void UMH_BuyTicketWidget::SetTextTicketPrice(int32 TicketPrice)
 {
 	Text_TicketPrice1->SetText(FText::AsNumber(TicketPrice));
-	Text_TicketPrice1_1->SetText(FText::AsNumber(TicketPrice));
+	//Text_TicketPrice1_1->SetText(FText::AsNumber(TicketPrice));
 	Text_TicketPrice2->SetText(FText::AsNumber(TicketPrice));
 	Text_TicketPrice2_2->SetText(FText::AsNumber(TicketPrice));
 	Text_TicketPrice3->SetText(FText::AsNumber(TicketPrice));
