@@ -13,5 +13,7 @@ UCLASS()
 class MTVS3_FINAL_API UHM_AimingWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
+
+	//void SetVisible(bool bVisible)
 };
