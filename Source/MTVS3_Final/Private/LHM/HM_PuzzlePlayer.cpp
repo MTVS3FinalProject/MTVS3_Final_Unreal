@@ -301,15 +301,24 @@ void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Pickup Action Triggered"));
 
-	if (bHasPiece)
+	if (bIsRightClickPressed && bHasPiece)
+	{
+		MyLaunchPiece();
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+			FString::Printf(TEXT("MyLaunchPiece")));
+		if(AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
+	}
+	else if(bHasPiece)
 	{
 		MyReleasePiece();
-		UE_LOG(LogTemp, Warning, TEXT("MyReleasePiece"));
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+			FString::Printf(TEXT("MyReleasePiece")));
 	}
 	else
 	{
 		MyTakePiece();
-		UE_LOG(LogTemp, Warning, TEXT("MyTakePiece"));
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+			FString::Printf(TEXT("MyTakePiece")));
 	}
 }
 
@@ -321,26 +330,19 @@ void AHM_PuzzlePlayer::OnMyActionLaunchPieceStart(const FInputActionValue& Value
 		{
 			AimingUI->SetVisibility(ESlateVisibility::Visible);
 		}
-	}
-	else
-	{
-		return;
+		bIsRightClickPressed = true;
 	}
 }
 
 void AHM_PuzzlePlayer::OnMyActionLaunchPieceComplete(const FInputActionValue& Value)
 {
-	if (bHasPiece)
+	if ( bHasPiece )
 	{
 		if (AimingUI)
 		{
 			AimingUI->SetVisibility(ESlateVisibility::Hidden);
-			MyLaunchPiece();
 		}
-	}
-	else
-	{
-		return;
+		bIsRightClickPressed = false;
 	}
 }
 
@@ -449,6 +451,7 @@ void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
 		check(mesh);
 		if(mesh)
 		{
+			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 			// 발사 속도를 적용하여 포물선 궤적 생성
 			mesh->SetSimulatePhysics(true); // 물리 적용
 			mesh->SetEnableGravity(true);  // 중력 활성화
@@ -461,9 +464,9 @@ void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
 
 			// 위치와 속도 설정
 			FVector LaunchDirection = GetActorForwardVector(); // 캐릭터의 전방향
-			float LaunchSpeed = 1000.0f; // 발사 속도 조정
+			//FVector LaunchDirection = FPSCameraComp->GetComponentLocation().ForwardVector;
+			float LaunchSpeed = 2000.0f; // 발사 속도 조정
 			FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
-			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 			mesh->AddImpulse(LaunchVelocity, NAME_None, true);
 		}
 		// 현재 Transform을 저장하고 복제

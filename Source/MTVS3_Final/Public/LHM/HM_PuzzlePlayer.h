@@ -128,6 +128,9 @@ public:
 public:
 	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
 	bool bHasPiece = false;
+
+	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
+	bool bIsRightClickPressed = false;
 	
 	// 피스 잡기 RPC
 	UFUNCTION(Server, Reliable)
