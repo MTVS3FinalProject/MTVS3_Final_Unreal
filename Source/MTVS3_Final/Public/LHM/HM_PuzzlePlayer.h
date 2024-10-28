@@ -139,8 +139,8 @@ public:
 	void ServerRPCUpdateRotation(const FRotator& NewRotation);
 
 	// 피스의 회전값 RPC
-	//UFUNCTION(Server, Reliable)
-	//void ServerRPCUpdatePieceRotation(const FRotator& NewRotation);
+	UFUNCTION(Server, Reliable)
+	void ServerRPCUpdatePieceRotation(const FRotator& NewRotation);
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

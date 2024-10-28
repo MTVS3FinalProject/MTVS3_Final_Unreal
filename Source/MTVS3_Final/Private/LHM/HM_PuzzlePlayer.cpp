@@ -35,8 +35,12 @@ AHM_PuzzlePlayer::AHM_PuzzlePlayer()
 	FPSCameraComp->bUsePawnControlRotation = true;
 	
 	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
-	HandComp->SetupAttachment(GetMesh(), TEXT("PiecePosition"));
-	HandComp->SetRelativeLocation(FVector(-50, 50, 0));
+	//HandComp->SetupAttachment(GetMesh(), TEXT("PiecePosition"));
+	//HandComp->SetRelativeLocationAndRotation(FVector(-50, 0, 0), FRotator(0,90,-90));
+	HandComp->SetupAttachment(FPSCameraComp);
+	HandComp->SetRelativeLocation(FVector(120 , 0 , -40)); //(X=120.000000,Y=0.000000,Z=-40.000000)
+	// (X=100.000000,Y=0.000000,Z=0.000000)
+	// (Pitch=0.000000,Yaw=90.000000,Roll=-90.000000)
 }
 
 // Called when the game starts or when spawned
@@ -46,12 +50,12 @@ void AHM_PuzzlePlayer::BeginPlay()
 	
 	if(GetLocalRole() == ROLE_Authority)
 	{
-		for(int32 i = 1; i <= 9; i++)
-		{
+		//for(int32 i = 1; i <= 9; i++)
+		//{
 			//태어날 때 모든 피스 목록을 기억하고 싶다.
-			FName tag = FName(*FString::Printf(TEXT("Piece%d"), i));
+		//	FName tag = FName(*FString::Printf(TEXT("Piece%d"), i));
 
-			//FName tag = TEXT("Piece");
+			FName tag = TEXT("Piece");
 			// 임시 AActor 배열에 피스 조각 수집
 			TArray<AActor*> TempPieceList;
 			UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld() , AHM_PuzzlePiece::StaticClass() , tag ,
@@ -63,14 +67,14 @@ void AHM_PuzzlePlayer::BeginPlay()
 				if (piece)
 				{
 					// AHM_PuzzlePiece에 있는 모든 컴포넌트 가져오기
-					TArray<UActorComponent*> components = piece->GetComponentsByTag(UPrimitiveComponent::StaticClass(), tag);
-					if(components.Num() > 0)
-					{
+					//TArray<UActorComponent*> components = piece->GetComponentsByTag(UPrimitiveComponent::StaticClass(), tag);
+					//if(components.Num() > 0)
+					//{
 						PieceList.Add(piece);
-					}
+					//}
 				}
 			}
-		}
+		//}
 	}
 
 	if(IsLocallyControlled())
@@ -203,8 +207,8 @@ void AHM_PuzzlePlayer::SwitchCamera(bool _bIsThirdPerson)
 		// 마우스 감도 설정
 		if (APlayerCameraManager* CameraMgr = PC->PlayerCameraManager)
 		{
-			CameraMgr->ViewPitchMin = -80.0f;
-			CameraMgr->ViewPitchMax = 80.0f;
+			CameraMgr->ViewPitchMin = -50.0f;
+			CameraMgr->ViewPitchMax = 50.0f;
 		}
 	}
 }
@@ -248,16 +252,18 @@ void AHM_PuzzlePlayer::OnMyActionLook(const FInputActionValue& Value)
 				FRotator ControlRotation = PC->GetControlRotation();
 				FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
 				SetActorRotation(NewRotation);
-                
+
 				// 서버에 회전 값 전달
 				ServerRPCUpdateRotation(NewRotation);
 
-				// if(UStaticMeshComponent* PieceMesh = PickupPieceActor->GetPiece())
-				// {
-				// 	FRotator PieceRotation = FRotator(ControlRotation.Pitch, 0.0f, 0.0f);
-				// 	PieceMesh->SetRelativeRotation(PieceRotation);
-				// 	ServerRPCUpdatePieceRotation(PieceRotation);
-				// }
+				if(UStaticMeshComponent* PieceMesh = PickupPieceActor->GetPiece())
+				{
+					//FRotator PieceRotation = FRotator(ControlRotation.Pitch, 0, 0.0f);
+					//PieceMesh->SetRelativeRotation(PieceRotation);
+					//FRotator HandCompRotation = FRotator(ControlRotation.Pitch, 0, 0);
+					//HandComp->SetRelativeRotation(HandCompRotation);
+					//ServerRPCUpdatePieceRotation(HandCompRotation);
+				}
 			}
 		}
 	}
@@ -353,8 +359,20 @@ void AHM_PuzzlePlayer::AttachPiece(AHM_PuzzlePiece* pieceActor)
 			mesh->SetSimulatePhysics(false); // 물리 비활성화
 			mesh->SetEnableGravity(false);  // 중력 비활성화
 			mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 비활성화
-			mesh->AttachToComponent(HandComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-			UE_LOG(LogTemp, Log, TEXT("MulticastRPCTakePiece AttachPiece") );
+
+			// Piece를 손에 부착할 때 카메라의 Pitch 값도 적용
+			//APlayerController* PC = Cast<APlayerController>(GetController());
+			if (PC && !bIsThirdPerson)
+			{
+				FRotator ControlRotation = PC->GetControlRotation(); //(Pitch=0.000000,Yaw=270.000000,Roll=-0.000000)
+				//FRotator PieceRotation = FRotator(ControlRotation.Pitch, 0, 0); //(Pitch=-0.000000,Yaw=90.000000,Roll=-90.000000)
+				FRotator HandCompRotation = FRotator(ControlRotation.Pitch, 0, 0);
+				mesh->AttachToComponent(HandComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+				mesh->SetRelativeLocation(FVector(100, 0, 0));
+				//mesh->SetRelativeRotation(PieceRotation);
+				//HandComp->SetRelativeRotation(HandCompRotation);
+				UE_LOG(LogTemp, Log, TEXT("MulticastRPCTakePiece AttachPiece") );
+			}
 		}
 	}
 }
@@ -460,13 +478,17 @@ void AHM_PuzzlePlayer::ServerRPCUpdateRotation_Implementation(const FRotator& Ne
 	SetActorRotation(NewRotation);
 }
 
-//void AHM_PuzzlePlayer::ServerRPCUpdatePieceRotation_Implementation(const FRotator& NewRotation)
-//{
-//	if(PickupPieceActor && PickupPieceActor->GetPiece())
-//	{
-//		PickupPieceActor->GetPiece()->SetRelativeRotation(NewRotation);
-//	}
-//}
+void AHM_PuzzlePlayer::ServerRPCUpdatePieceRotation_Implementation(const FRotator& NewRotation)
+{
+	// if(PickupPieceActor && PickupPieceActor->GetPiece())
+	// {
+	// 	PickupPieceActor->GetPiece()->SetRelativeRotation(NewRotation);
+	// }
+	 if(HandComp)
+	 {
+	 	HandComp->SetRelativeRotation(NewRotation);
+	 }
+}
 
 void AHM_PuzzlePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -475,5 +497,4 @@ void AHM_PuzzlePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	// 복제하려는 변수 추가 예시
 	DOREPLIFETIME(AHM_PuzzlePlayer, bHasPiece);
 	DOREPLIFETIME(AHM_PuzzlePlayer, PickupPieceActor);
-
 }

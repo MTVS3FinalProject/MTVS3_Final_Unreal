@@ -327,6 +327,14 @@ public:
 	// 공연장 입장 요청에 대한 응답
 	void OnResPostConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
+// GET 테스트용
+	
+	// 공연장 입장 요청
+	void TESTReqPostConcertEntry(FString AccessToken);
+
+	// 공연장 입장 요청에 대한 응답
+	void TESTOnResPostConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
 //===========================================================================================================
 
 	// 좌석 조회 요청
