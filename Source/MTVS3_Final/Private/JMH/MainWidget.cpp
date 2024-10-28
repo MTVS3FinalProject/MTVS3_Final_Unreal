@@ -113,14 +113,8 @@ void UMainWidget::OnClickedBuyTicket()
 
 void UMainWidget::SetTextSeatNum1(FString SeatNum1)
 {
-	//좌석 구역
-	Tex_SeatNum1->SetText(FText::FromString(SeatNum1));
-}
-
-void UMainWidget::SetTextSeatNum2(FString SeatNum2)
-{
 	//좌석 번호
-	Tex_SeatNum2->SetText(FText::FromString(SeatNum2));
+	Tex_SeatNum1->SetText(FText::FromString(SeatNum1));
 }
 
 void UMainWidget::OnClickedBack_Map()

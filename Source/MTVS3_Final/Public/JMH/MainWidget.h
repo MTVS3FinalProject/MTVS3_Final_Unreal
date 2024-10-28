@@ -95,10 +95,10 @@ public:
 	UFUNCTION()
 	void SetTextSeatNum1(FString SeatNum1);
 	//좌석번호
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Tex_SeatNum2;
-	UFUNCTION()
-	void SetTextSeatNum2(FString SeatNum2);
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UTextBlock* Tex_SeatNum2;
+	//UFUNCTION()
+	//void SetTextSeatNum2(FString SeatNum2);
 	
 	//나중에 구매
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))

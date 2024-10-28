@@ -144,8 +144,8 @@ public:
 
 
 	//게임입장
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Back2;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_Back2;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_GotoGameRoom;	
