@@ -40,6 +40,11 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	{
 		Btn_BuyTickerBack->OnClicked.AddDynamic(this,&UMH_BuyTicketWidget::CloseButtonPressed);
 	}
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if ( gi )
+	{
+		Text_ConcertName->SetText(FText::FromString(gi->GetConcertName()));
+	}
 }
 
 void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num)//0:티켓예매정보,1:QR,2:QR성공,3:QR실패,4:배송지,5:결제진행,7:코인충전
@@ -210,6 +215,7 @@ void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
 void UMH_BuyTicketWidget::SetTextSeatID2(FString SeatID2)
 {
 	Text_SeatID2->SetText(FText::FromString(SeatID2));
+	Tex_SeatID->SetText(FText::FromString(SeatID2));
 }
 
 void UMH_BuyTicketWidget::SetTextUserName(FString UserName)

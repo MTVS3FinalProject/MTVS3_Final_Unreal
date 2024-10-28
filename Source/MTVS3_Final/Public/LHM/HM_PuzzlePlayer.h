@@ -88,11 +88,15 @@ public:
 	
 	void MyTakePiece();
 	void MyReleasePiece();
-	//void MyPiece();
+	void MyLaunchPiece();
 	
-#pragma endregion
-
+#pragma endregion	
 	
+public:
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UHM_AimingWidget> AimingUIFactory;
+	UPROPERTY()
+	class UHM_AimingWidget* AimingUI;
 
 private:
 	// 태어날 때 모든 피스 조각 목록을 기억하고 싶다.
@@ -115,6 +119,7 @@ public:
 	// 피스 조각 잡기와 놓기 기능
 	void AttachPiece(AHM_PuzzlePiece* pieceActor);
 	void DetachPiece(AHM_PuzzlePiece* pieceActor);
+	void LaunchPiece(AHM_PuzzlePiece* pieceActor);
 
 	// 피스 날리기
 	//void 
@@ -137,6 +142,13 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCReleasePiece(AHM_PuzzlePiece* pieceActor);
+
+	// 피스 날리기
+	UFUNCTION(Server, Reliable)
+	void ServerRPCLaunchPiece();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCLaunchPiece(AHM_PuzzlePiece* pieceActor);
 
 	// 캐릭터 회전값 RPC
 	UFUNCTION(Server, Reliable)

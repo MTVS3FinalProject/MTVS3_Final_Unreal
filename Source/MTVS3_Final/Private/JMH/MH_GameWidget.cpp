@@ -12,6 +12,8 @@
 void UMH_GameWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	
 }
 
 void UMH_GameWidget::SetWidgetSwitcher(int32 num)
@@ -97,6 +99,7 @@ void UMH_GameWidget::SetTextroulette3(int32 roulette3)
 
 void UMH_GameWidget::PlayRouletteAnim04()
 {
+	Can_03->SetVisibility(ESlateVisibility::Visible);
 	PlayAnimation(Roulette04Anim);
 	Can_02->SetVisibility(ESlateVisibility::Hidden);
 }
@@ -119,16 +122,23 @@ void UMH_GameWidget::SetOnlyVisibleMyNum(bool bIsVisible)
 	if(bIsVisible)
 	{
 		Can_03->SetVisibility(ESlateVisibility::Visible);
+		Can_04->SetVisibility(ESlateVisibility::Visible);
 		Can_02->SetVisibility(ESlateVisibility::Hidden);
-		
 	}
 	else
 	{
 		Can_03->SetVisibility(ESlateVisibility::Hidden);
+		Can_04->SetVisibility(ESlateVisibility::Hidden);
 		Can_02->SetVisibility(ESlateVisibility::Visible);
-		
 	}
 
 	
+}
+//CurrentUser만 보여지게 
+void UMH_GameWidget::SetCurrentPlayerVisible()
+{
+	Can_03->SetVisibility(ESlateVisibility::Hidden);
+	Can_02->SetVisibility(ESlateVisibility::Hidden);
+	Can_04->SetVisibility(ESlateVisibility::Visible);
 }
 

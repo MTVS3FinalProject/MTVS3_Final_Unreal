@@ -10,6 +10,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "LHM/HM_AimingWidget.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "Net/UnrealNetwork.h"
 
@@ -95,6 +96,13 @@ void AHM_PuzzlePlayer::BeginPlay()
 	}
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 	bReplicates = true;
+	
+	AimingUI = Cast<UHM_AimingWidget>(CreateWidget(GetWorld() , AimingUIFactory));
+	if ( AimingUI )
+	{
+		AimingUI->AddToViewport();
+		AimingUI->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 // Called every frame
@@ -309,13 +317,31 @@ void AHM_PuzzlePlayer::OnMyActionLaunchPieceStart(const FInputActionValue& Value
 {
 	if (bHasPiece)
 	{
-		
+		if (AimingUI)
+		{
+			AimingUI->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	else
+	{
+		return;
 	}
 }
 
 void AHM_PuzzlePlayer::OnMyActionLaunchPieceComplete(const FInputActionValue& Value)
 {
-	
+	if (bHasPiece)
+	{
+		if (AimingUI)
+		{
+			AimingUI->SetVisibility(ESlateVisibility::Hidden);
+			MyLaunchPiece();
+		}
+	}
+	else
+	{
+		return;
+	}
 }
 
 void AHM_PuzzlePlayer::MyTakePiece()
@@ -330,6 +356,15 @@ void AHM_PuzzlePlayer::MyReleasePiece()
 		return;
 	
 	ServerRPCReleasePiece();
+}
+
+void AHM_PuzzlePlayer::MyLaunchPiece()
+{
+	if ( false == bHasPiece || false == IsLocallyControlled() )
+		return;
+	
+	ServerRPCLaunchPiece();
+	
 }
 
 void AHM_PuzzlePlayer::AttachPiece(AHM_PuzzlePiece* pieceActor)
@@ -405,6 +440,40 @@ void AHM_PuzzlePlayer::DetachPiece(AHM_PuzzlePiece* pieceActor)
 	}
 }
 
+void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
+{
+	SwitchCamera(true);
+	if (pieceActor && pieceActor->GetPiece())
+	{
+		auto* mesh = pieceActor->GetPiece();
+		check(mesh);
+		if(mesh)
+		{
+			// 충돌 채널 설정
+			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+			mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+			
+			FVector LaunchDirection = GetActorForwardVector(); // 캐릭터의 전방향
+			float LaunchSpeed = 1000.0f; // 발사 속도 조정
+			FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
+
+			// 발사 속도를 적용하여 포물선 궤적 생성
+			mesh->SetSimulatePhysics(true); // 물리 적용
+			mesh->SetEnableGravity(true);  // 중력 활성화
+			pieceActor->bSimulatingPhysics = true;
+			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);  // 충돌 활성화
+			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+			mesh->AddImpulse(LaunchVelocity, NAME_None, true);
+		}
+		// 현재 Transform을 저장하고 복제
+		if(HasAuthority())
+		{
+			pieceActor->CurrentTransform = mesh->GetComponentTransform();
+		}
+	}
+}
+
 void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation()
 {
 	if(GetLocalRole() != ROLE_Authority) return; // 서버에서만 실행
@@ -469,6 +538,31 @@ void AHM_PuzzlePlayer::MulticastRPCReleasePiece_Implementation(AHM_PuzzlePiece* 
 	if (pieceActor)
 	{
 		DetachPiece(pieceActor); // 피스 분리
+	}
+}
+
+void AHM_PuzzlePlayer::ServerRPCLaunchPiece_Implementation()
+{
+	if(bHasPiece)
+	{
+		bHasPiece = false;
+	}
+	
+	if(PickupPieceActor)
+	{
+		MulticastRPCLaunchPiece(PickupPieceActor);
+
+		PickupPieceActor->SetOwner(nullptr);
+		// 피스를 잊고싶다.
+		PickupPieceActor = nullptr;
+	}
+}
+
+void AHM_PuzzlePlayer::MulticastRPCLaunchPiece_Implementation(AHM_PuzzlePiece* pieceActor)
+{
+	if (pieceActor)
+	{
+		LaunchPiece(pieceActor);
 	}
 }
 
