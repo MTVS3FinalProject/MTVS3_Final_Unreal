@@ -24,7 +24,7 @@ public:
 
 	//위젯스위처설정 
 	UFUNCTION()
-	void SetWidgetSwitcher(int32 num);//0:미니맵,1:승리(결제연결),2:패배, 3:BuyTicket, 4:BuyCoin, 5:SelectConcert
+	void SetWidgetSwitcher(int32 num);//0:미니맵,1:승리(결제연결),2:패배, 3:BuyTicket, 4:BuyCoin, 5:SelectConcert, 6:ExitWindow
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_Main;
@@ -52,9 +52,17 @@ public:
 	
 	//게임 나가기
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_ExitMainWin;
+	UFUNCTION()
+	void OnClickedExitMainWin();
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_ExitMain;
 	UFUNCTION()
-	void OnClickedExitMain();
+	void OnClickedExit();
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_BackMainWin;
 
 //==========추가
 

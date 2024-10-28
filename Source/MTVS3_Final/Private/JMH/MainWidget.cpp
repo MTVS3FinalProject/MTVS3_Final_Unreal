@@ -30,7 +30,10 @@ void UMainWidget::NativeConstruct()
 	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
 	Btn_SelectConcertBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_Concert01->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert01);
-
+	Btn_ExitMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExitMainWin);
+	Btn_ExitMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExit);
+	Btn_BackMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
+	
 	if(BuyTicketWidget)
 	{
 			BuyTicketWidget->OnClickedBuyTickerBack.AddDynamic(this, &UMainWidget::OnTicketWidgetClose);
@@ -79,9 +82,22 @@ void UMainWidget::OnClickedBackMain()
 	}
 }
 
-void UMainWidget::OnClickedExitMain()
+void UMainWidget::OnClickedExitMainWin()
 {
-	
+	//게임 종료 하시겠습니까?
+	SetWidgetSwitcher(6);
+}
+
+void UMainWidget::OnClickedExit()
+{
+	//게임 종료
+	UWorld* World = GetWorld();
+	APlayerController* PlayerController = World ? World->GetFirstPlayerController() : nullptr;
+    
+	if (PlayerController)
+	{
+		UKismetSystemLibrary::QuitGame(World, PlayerController, EQuitPreference::Quit, true);
+	}
 }
 
 void UMainWidget::SetMinimapImage(UTexture2D* img)
