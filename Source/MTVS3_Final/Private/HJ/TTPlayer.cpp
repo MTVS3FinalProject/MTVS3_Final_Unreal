@@ -88,7 +88,7 @@ void ATTPlayer::BeginPlay()
 
 			// C++ 클래스로 캐스팅하여 접근
 			NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-			NicknameUI->ChangeColorNicknameUI();
+			NicknameUI->ChangeColorNicknameUI(FColor::Green);
 		}
 
 		auto* PC = Cast<APlayerController>(Controller);
@@ -115,7 +115,7 @@ void ATTPlayer::BeginPlay()
 		{
 			SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
-			InitMainUI();
+			// InitMainUI();
 
 			switch ( GI->GetLuckyDrawState() )
 			{
@@ -150,6 +150,12 @@ void ATTPlayer::BeginPlay()
 		//	}
 		//}
 	}
+}
+
+void ATTPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	
 }
 
 // Called every frame
@@ -219,33 +225,41 @@ void ATTPlayer::SetNickname(const FString& _Nickname)
 		NicknameUI->UpdateNicknameUI(Nickname);
 	}
 
-	if (IsLocallyControlled()) ServerSetNickname(Nickname);
+	if (IsLocallyControlled())
+	{
+		// ServerSetNickname(_Nickname);
+		
+		FTimerHandle ServerSetNicknameTimerHandle;
+		GetWorldTimerManager().SetTimer(ServerSetNicknameTimerHandle, [this, _Nickname]()
+		{
+			ServerSetNickname(_Nickname);
+		}, 0.5f, false);
+	}
 }
 
 void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
 {
 	Nickname = _Nickname;
-	OnRep_Nickname();
+	UE_LOG(LogTemp , Warning , TEXT("ServerSetNickname: %s") , *GetNickname());
+	FTimerHandle SetNicknameTimerHandle;
+	GetWorldTimerManager().SetTimer(SetNicknameTimerHandle, this, &ATTPlayer::MulticastSetNickname, 1.5f, false);
 }
 
-void ATTPlayer::OnRep_Nickname()
+void ATTPlayer::MulticastSetNickname_Implementation()
 {
 	if ( NicknameUI )
 	{
-		UE_LOG(LogTemp , Warning , TEXT("OnRep_Nickname: %s") , *Nickname);
-		NicknameUI->UpdateNicknameUI(Nickname);
+		UE_LOG(LogTemp , Warning , TEXT("MulticastSetNickname: %s") , *GetNickname());
+		NicknameUI->UpdateNicknameUI(GetNickname());
 	}
 }
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
-	bIsHost = _bIsHost;
-	ServerSetbIsHost(bIsHost);
-}
-
-void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
-{
-	bIsHost = _bIsHost;
+	if (HasAuthority())
+	{
+		bIsHost = _bIsHost;
+	}
 }
 
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
@@ -267,33 +281,44 @@ void ATTPlayer::SetRandomSeatNumber(const int32& _RandomSeatNumber)
 
 		// C++ 클래스로 캐스팅하여 접근
 		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-		NicknameUI->UpdateNicknameUI(FString::FromInt(RandomSeatNumber));
-		UE_LOG(LogTemp , Warning , TEXT("SetRandomSeatNumber: %d") , RandomSeatNumber);
+		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
+		UE_LOG(LogTemp , Warning , TEXT("SetRandomSeatNumber: %d") , GetRandomSeatNumber());
 	}
-
+	
 	ServerSetRandomSeatNumber(RandomSeatNumber);
 }
 
 void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSeatNumber)
 {
 	RandomSeatNumber = _RandomSeatNumber;
-	UE_LOG(LogTemp , Warning , TEXT("ServerSetRandomSeatNumber_Implementation: %d") , RandomSeatNumber);
-	OnRep_RandomSeatNumber();
+	UE_LOG(LogTemp , Warning , TEXT("ServerSetRandomSeatNumber_Implementation: %d") , GetRandomSeatNumber());
+
+	FTimerHandle SetRandomSeatNumberTimerHandle;
+	GetWorldTimerManager().SetTimer(SetRandomSeatNumberTimerHandle, this, &ATTPlayer::MulticastSetRandomSeatNumber, 1.5f, false);
 }
 
-void ATTPlayer::OnRep_RandomSeatNumber()
+// void ATTPlayer::OnRep_RandomSeatNumber()
+// {
+// 	if (NicknameUI)
+// 	{
+// 		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
+// 		UE_LOG(LogTemp, Warning, TEXT("OnRep_RandomSeatNumber: %d"), GetRandomSeatNumber());
+// 	}
+// }
+
+void ATTPlayer::MulticastSetRandomSeatNumber_Implementation()
 {
-	if ( NicknameUI )
+	if (NicknameUI)
 	{
-		UE_LOG(LogTemp , Warning , TEXT("OnRep_RandomSeatNumber: %d") , RandomSeatNumber);
-		NicknameUI->UpdateNicknameUI(FString::FromInt(RandomSeatNumber));
+		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
+		UE_LOG(LogTemp, Warning, TEXT("Multicast RandomSeatNumber: %d"), GetRandomSeatNumber());
 	}
 }
 
 void ATTPlayer::ServerLuckyDrawStart_Implementation()
 {
 	ATTLuckyDrawGameState* GameState = GetWorld()->GetGameState<ATTLuckyDrawGameState>();
-	if (GameState)
+	if (GameState && GameState->bIsStartRound != true)
 	{
 		GameState->StartLuckyDraw();
 	}
@@ -309,6 +334,21 @@ void ATTPlayer::MulticastLuckyDrawStart_Implementation()
 		Anim->PlaySittingMontage();
 	}
 	GetCharacterMovement()->DisableMovement();  // 이동 비활성화
+}
+
+void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& TargetTransform)
+{
+	SetActorTransform(TargetTransform);
+}
+
+void ATTPlayer::ClientEndRounds_Implementation()
+{
+	if (GameUI)
+	{
+		GameUI->SetWidgetSwitcher(2);  // 우승자 UI 업데이트
+	}
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if(GI) GI->SetLuckyDrawState(ELuckyDrawState::Winner);
 }
 
 void ATTPlayer::PrintStateLog()
@@ -553,7 +593,7 @@ void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if ( !GI ) return;
+	if ( !GI && !HasAuthority() ) return;
 	switch ( GI->GetPlaceState() )
 	{
 	case EPlaceState::Plaza:
@@ -623,10 +663,20 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if ( !GI ) return;
 
-	UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3"));
-	bIsCheat3Active = !bIsCheat3Active;
-	GI->SetbIsHost(bIsCheat3Active);
-	SetbIsHost(bIsCheat3Active);
+	switch ( GI->GetPlaceState() )
+	{
+	case EPlaceState::Plaza:
+	case EPlaceState::ConcertHall:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
+		bIsCheat3Active = !bIsCheat3Active;
+		GI->SetbIsHost(bIsCheat3Active);
+		SetbIsHost(bIsCheat3Active);
+		break;
+	case EPlaceState::LuckyDrawRoom:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTLuckyDrawMap"));
+		break;
+	}
+	
 }
 
 void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
@@ -673,23 +723,19 @@ void ATTPlayer::InitMainUI()
 
 void ATTPlayer::InitGameUI()
 {
-	if (!GameUIFactory)
-	{
-		UE_LOG(LogTemp, Error, TEXT("GameUIFactory is not set! Cannot create GameUI."));
-		return;
-	}
+	FTimerHandle SetTextMyNumTimerHandle;
+	GetWorldTimerManager().SetTimer(SetTextMyNumTimerHandle, this, &ATTPlayer::SetTextMyNum, 4.0f, false);
+}
 
+void ATTPlayer::SetTextMyNum()
+{
 	GameUI = Cast<UMH_GameWidget>(CreateWidget(GetWorld(), GameUIFactory));
 	if (GameUI)
 	{
-		GameUI->AddToViewport(10);
-		GameUI->SetWidgetSwitcher(2);
+		GameUI->AddToViewport(1);
+		GameUI->SetWidgetSwitcher(1);
 		GameUI->SetOnlyVisibleMyNum(false);
-		UE_LOG(LogTemp, Error, TEXT("GameUIFactory good"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to create GameUI from GameUIFactory."));
+		GameUI->SetTextMyNum(GetRandomSeatNumber());
 	}
 }
 

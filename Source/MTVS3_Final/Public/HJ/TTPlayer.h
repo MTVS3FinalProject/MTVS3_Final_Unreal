@@ -20,6 +20,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void PossessedBy(AController* NewController) override;
+
 	void UpdateNicknameUI();
 
 	FTimerHandle TimerHandle_Retry;
@@ -46,26 +48,32 @@ public:
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastStandUp();
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetNickname(const FString& _Nickname);
 
-	UFUNCTION()
-	void OnRep_Nickname();
+	UFUNCTION(NetMulticast , Unreliable)
+	void MulticastSetNickname();
 
-	UFUNCTION(Server , Unreliable)
-	void ServerSetbIsHost(bool _bIsHost);
-
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
 
-	UFUNCTION()
-	void OnRep_RandomSeatNumber();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetRandomSeatNumber();
 
 	UFUNCTION(Server, Reliable)
 	void ServerLuckyDrawStart();
 
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastLuckyDrawStart();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastMovePlayerToChair(const FTransform& TargetTransform);
+
+	UFUNCTION(Client, Reliable)
+	void ClientEndRounds();
+
+	// UFUNCTION()
+	// void OnRep_RandomSeatNumber();
 #pragma endregion
 
 #pragma region 개인 설정
@@ -86,7 +94,7 @@ public:
 #pragma endregion
 
 #pragma region 플레이어 정보
-	UPROPERTY(ReplicatedUsing = OnRep_Nickname , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(Replicated , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString Nickname;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetNickname(const FString& _Nickname);
@@ -106,7 +114,7 @@ public:
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 	// 랜덤으로 배치된 좌석 번호
-	UPROPERTY(ReplicatedUsing = OnRep_RandomSeatNumber , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(Replicated/*Using=OnRep_RandomSeatNumber*/ , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	int32 RandomSeatNumber = -1;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
@@ -233,6 +241,7 @@ public:
 	class UMH_GameWidget* GameUI;
 	
 	void InitGameUI();
+	void SetTextMyNum();
 #pragma endregion
 
 private:

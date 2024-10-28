@@ -164,7 +164,8 @@ void UMainWidget::OnClickedConcert01()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			HttpActor2->ReqPostConcertEntry(GI->GetConcertName() , GI->GetAccessToken());
+			//HttpActor2->ReqPostConcertEntry(GI->GetConcertName() , GI->GetAccessToken());
+			HttpActor2->TESTReqPostConcertEntry( GI->GetAccessToken());
 		}
 	}
 

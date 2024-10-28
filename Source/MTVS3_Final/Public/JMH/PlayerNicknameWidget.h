@@ -23,5 +23,5 @@ public:
 	class UTextBlock* Tex_Nickname;
 
 	void UpdateNicknameUI(const FString& _Nickname);
-	void ChangeColorNicknameUI();
+	void ChangeColorNicknameUI(const FColor& RoleColor);
 };

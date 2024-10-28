@@ -2,7 +2,10 @@
 
 
 #include "HJ/TTHallGameState.h"
+
+#include "EngineUtils.h"
 #include "HJ/TTGameInstance.h"
+#include "HJ/TTPlayer.h"
 
 void ATTHallGameState::BeginPlay()
 {
@@ -10,4 +13,15 @@ void ATTHallGameState::BeginPlay()
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if ( GI ) GI->SetPlaceState(EPlaceState::Plaza);
+
+	for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+	{
+		ATTPlayer* TTPlayer = *It;
+		if ( TTPlayer && TTPlayer->IsLocallyControlled() )
+		{
+			TTPlayer->InitMainUI();
+			TTPlayer->ServerSetNickname(GI->GetNickname());
+			TTPlayer->SwitchCamera(TTPlayer->bIsThirdPerson);
+		}
+	}
 }

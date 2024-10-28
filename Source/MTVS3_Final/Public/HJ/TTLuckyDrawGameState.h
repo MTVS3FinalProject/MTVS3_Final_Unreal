@@ -43,18 +43,25 @@ public:
 
 	UPROPERTY(ReplicatedUsing=OnRep_NewSeatNumber)
 	int32 NewSeatNumber = -1;
+	
+	void StartRounds(int32 InTotalRounds);
+	void StartNextRound();
+
+	void PlayRoulette();
+	
+	void StartPlayRoulette();
+
+	void EndRounds();
+	bool bIsStartRound = false;
+
+#pragma region 멀티플레이
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UFUNCTION()
 	void OnRep_NewSeatNumber();
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastUpdatePlayerNumUI(int32 PlayerNum);
-
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	void StartRounds(int32 InTotalRounds);
-	void StartNextRound();
-
-	void PlayRoulette();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastHideGameUI();
@@ -65,13 +72,13 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastStartLuckyDraw();
 
-	void StartPlayRoulette();
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayRouletteAnimation();
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastEndRounds();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastPlayRouletteAnimation();
+	
+#pragma endregion
 
 private:
 	int32 TotalRounds;

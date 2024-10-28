@@ -26,6 +26,15 @@ void ATTLuckyDrawGameState::BeginPlay()
         GameUI->AddToViewport();
         GameUI->SetWidgetSwitcher(0);
     }
+
+    for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+    {
+        ATTPlayer* TTPlayer = *It;
+        if ( TTPlayer && !TTPlayer->GetbIsHost() && TTPlayer->IsLocallyControlled() )
+        {
+            TTPlayer->InitGameUI();
+        }
+    }
 }
 
 void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
@@ -63,6 +72,8 @@ void ATTLuckyDrawGameState::StartLuckyDraw()
 
 void ATTLuckyDrawGameState::MovePlayersToChairs()
 {
+    bIsStartRound = true;
+    
     ALuckyDrawManager* Manager = Cast<ALuckyDrawManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawManager::StaticClass()));
     if (Manager)
     {
@@ -166,7 +177,7 @@ void ATTLuckyDrawGameState::StartNextRound()
     if (CurrentRound >= TotalRounds)
     {
         FTimerHandle RouletteTimerHandle;
-        GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::MulticastEndRounds, 10.0f, false);
+        GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::EndRounds, 10.0f, false);
         return;
     }
 
@@ -227,10 +238,32 @@ void ATTLuckyDrawGameState::MulticastUpdateRouletteUI_Implementation(int32 Playe
     }
 }
 
+void ATTLuckyDrawGameState::EndRounds()
+{    
+    ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
+    if (!GameMode || GameMode->RemainingPlayers.Num() == 0) return;
+
+    MulticastEndRounds();
+    
+    // 우승자 플레이어의 좌석 번호
+    int32 WinningSeatNumber = GameMode->RemainingPlayers[0];
+
+    // 우승자 찾기
+    for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+    {
+        ATTPlayer* TTPlayer = *It;
+        if (TTPlayer && TTPlayer->GetRandomSeatNumber() == WinningSeatNumber)
+        {
+            TTPlayer->ClientEndRounds();  // 우승자에게만 종료 호출
+            break;
+        }
+    }
+}
+
 void ATTLuckyDrawGameState::MulticastEndRounds_Implementation()
 {
     if (GameUI)
     {
-        GameUI->SetWidgetSwitcher(2);
+        GameUI->HideWidget();
     }
 }

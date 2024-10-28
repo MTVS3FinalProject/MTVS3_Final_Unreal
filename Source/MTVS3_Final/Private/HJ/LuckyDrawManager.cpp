@@ -134,7 +134,8 @@ void ALuckyDrawManager::MovePlayersToChairs()
 				if (TargetChair)
 				{
 					FTransform TargetTransform = TargetChair->GetSittingTransform();
-					Player->SetActorTransform(TargetTransform);
+					// Player->SetActorTransform(TargetTransform);
+					Player->MulticastMovePlayerToChair(TargetTransform);
 					UE_LOG(LogLuckyDraw, Log, TEXT("Player %s moved to %s"), *Player->GetNickname(), **TargetTag);
 				}
 				break;
