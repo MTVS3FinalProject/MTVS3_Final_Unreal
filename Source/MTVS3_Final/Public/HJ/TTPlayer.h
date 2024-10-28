@@ -70,7 +70,10 @@ public:
 	void MulticastMovePlayerToChair(const FTransform& TargetTransform);
 
 	UFUNCTION(Client, Reliable)
-	void ClientEndRounds();
+	void ClientLuckyDrawLose();
+	
+	UFUNCTION(Client, Reliable)
+	void ClientLuckyDrawWin();
 
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();

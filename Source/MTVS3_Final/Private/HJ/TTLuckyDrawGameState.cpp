@@ -174,6 +174,24 @@ void ATTLuckyDrawGameState::StartRounds(int32 InTotalRounds)
 
 void ATTLuckyDrawGameState::StartNextRound()
 {
+    ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
+    if (!GameMode) return;
+    if (CurrentRound > 0 && GameMode->EliminatedPlayersPerRound.Num() >= CurrentRound)
+    {
+        int32 LastRoundIndex = CurrentRound - 1;
+        for (int32 PlayerID : GameMode->EliminatedPlayersPerRound[LastRoundIndex])
+        {
+            for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+            {
+                ATTPlayer* Player = *It;
+                if (Player && Player->GetRandomSeatNumber() == PlayerID)
+                {
+                    Player->ClientLuckyDrawLose();
+                }
+            }
+        }
+    }
+    
     if (CurrentRound >= TotalRounds)
     {
         FTimerHandle RouletteTimerHandle;
@@ -212,13 +230,12 @@ void ATTLuckyDrawGameState::PlayRoulette()
     // 서버에서 클라이언트로 룰렛 정보 동기화
     MulticastUpdateRouletteUI(Info.Player, static_cast<int32>(Info.Rule), static_cast<int32>(Info.Result));
     
-    CurrentRound++;
-
     if (GameUI)
     {
         MulticastPlayRouletteAnimation();
     }
     
+    CurrentRound++;
     // 다음 라운드 시작
     StartNextRound();
 }
@@ -254,7 +271,7 @@ void ATTLuckyDrawGameState::EndRounds()
         ATTPlayer* TTPlayer = *It;
         if (TTPlayer && TTPlayer->GetRandomSeatNumber() == WinningSeatNumber)
         {
-            TTPlayer->ClientEndRounds();  // 우승자에게만 종료 호출
+            TTPlayer->ClientLuckyDrawWin();  // 우승자에게만 종료 호출
             break;
         }
     }

@@ -121,13 +121,13 @@ void ATTPlayer::BeginPlay()
 			{
 			case ELuckyDrawState::Winner:
 				// 추첨 당첨 UI 표시
-				MainUI->SetWidgetSwitcher(1);
+				if (MainUI) MainUI->SetWidgetSwitcher(1);
 				// HTTP 요청
 				HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
 			case ELuckyDrawState::Loser:
 				// 추첨 탈락 UI 표시
-				MainUI->SetWidgetSwitcher(2);
+				if (MainUI) MainUI->SetWidgetSwitcher(2);
 				break;
 			case ELuckyDrawState::Neutral:
 				if ( bShowDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
@@ -341,7 +341,17 @@ void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& Targ
 	SetActorTransform(TargetTransform);
 }
 
-void ATTPlayer::ClientEndRounds_Implementation()
+void ATTPlayer::ClientLuckyDrawLose_Implementation()
+{
+	if (GameUI)
+	{
+		GameUI->HideWidget();
+	}
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if(GI) GI->SetLuckyDrawState(ELuckyDrawState::Loser);
+}
+
+void ATTPlayer::ClientLuckyDrawWin_Implementation()
 {
 	if (GameUI)
 	{
