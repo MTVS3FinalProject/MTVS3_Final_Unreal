@@ -79,6 +79,9 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastEndRounds();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastShowOnlyNumPlayers();
 	
 #pragma endregion
 

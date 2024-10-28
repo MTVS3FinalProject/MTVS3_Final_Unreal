@@ -20,10 +20,6 @@ void UMH_GameWidget::SetWidgetSwitcher(int32 num)
 {
 	//서버에서 불러와서 입력
 	WS_GameWidgetSwitcher->SetActiveWidgetIndex(num);
-	if(num==1)
-	{
-		PlayRouletteAnim04();
-	}
 	ShowWidget();
 }
 

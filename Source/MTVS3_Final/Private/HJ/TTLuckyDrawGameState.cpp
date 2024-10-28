@@ -104,7 +104,7 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
             CountDownActor->MulticastStartCountDownVisible(true);
         }
     }
-    MulticastHideGameUI();
+    MulticastShowOnlyNumPlayers();
     
     FTimerHandle RouletteTimerHandle;
     GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::StartPlayRoulette, 6.0f, false);
@@ -148,6 +148,15 @@ void ATTLuckyDrawGameState::OnRep_NewSeatNumber()
     }
 }
 
+void ATTLuckyDrawGameState::MulticastShowOnlyNumPlayers_Implementation()
+{
+    if (GameUI)
+    {
+        GameUI->SetWidgetSwitcher(1);
+        GameUI->SetCurrentPlayerVisible();
+    }
+}
+
 void ATTLuckyDrawGameState::MulticastUpdatePlayerNumUI_Implementation(int32 PlayerNum)
 {
     PlayerNum = NewSeatNumber;
@@ -186,7 +195,7 @@ void ATTLuckyDrawGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 void ATTLuckyDrawGameState::MulticastStartLuckyDraw_Implementation()
 {
     GameUI->ShowWidget();
-    GameUI->SetWidgetSwitcher(1);
+    GameUI->PlayRouletteAnim04();
 }
 
 void ATTLuckyDrawGameState::StartRounds(int32 InTotalRounds)

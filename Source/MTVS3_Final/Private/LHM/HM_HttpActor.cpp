@@ -74,7 +74,7 @@ void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email, FText Password)
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
 	Writer->WriteValue(TEXT("email") , Email.ToString());
-	Writer->WriteValue(TEXT("passWord") , Password.ToString());
+	Writer->WriteValue(TEXT("password") , Password.ToString());
 	Writer->WriteObjectEnd();
 	Writer->Close();
 

@@ -449,20 +449,20 @@ void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
 		check(mesh);
 		if(mesh)
 		{
-			// 충돌 채널 설정
-			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
-			mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-			
-			FVector LaunchDirection = GetActorForwardVector(); // 캐릭터의 전방향
-			float LaunchSpeed = 1000.0f; // 발사 속도 조정
-			FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
-
 			// 발사 속도를 적용하여 포물선 궤적 생성
 			mesh->SetSimulatePhysics(true); // 물리 적용
 			mesh->SetEnableGravity(true);  // 중력 활성화
 			pieceActor->bSimulatingPhysics = true;
-			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);  // 충돌 활성화
+
+			// 충돌 활성화
+			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+			mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+
+			// 위치와 속도 설정
+			FVector LaunchDirection = GetActorForwardVector(); // 캐릭터의 전방향
+			float LaunchSpeed = 1000.0f; // 발사 속도 조정
+			FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
 			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 			mesh->AddImpulse(LaunchVelocity, NAME_None, true);
 		}
@@ -570,18 +570,6 @@ void AHM_PuzzlePlayer::ServerRPCUpdateRotation_Implementation(const FRotator& Ne
 {
 	// 서버에서 캐릭터 회전 적용
 	SetActorRotation(NewRotation);
-}
-
-void AHM_PuzzlePlayer::ServerRPCUpdatePieceRotation_Implementation(const FRotator& NewRotation)
-{
-	// if(PickupPieceActor && PickupPieceActor->GetPiece())
-	// {
-	// 	PickupPieceActor->GetPiece()->SetRelativeRotation(NewRotation);
-	// }
-	 if(HandComp)
-	 {
-	 	HandComp->SetRelativeRotation(NewRotation);
-	 }
 }
 
 void AHM_PuzzlePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
