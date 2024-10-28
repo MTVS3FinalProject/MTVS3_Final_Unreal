@@ -30,6 +30,9 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_03;
 	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_04;
+	
 	//위젯스위처설정/ 0:게임시작,1: 룰렛결과,
 	UFUNCTION()
 	void SetWidgetSwitcher(int32 num);
@@ -97,7 +100,8 @@ public:
 	UFUNCTION()
 	void SetOnlyVisibleMyNum(bool bIsVisible);
 	
-
+	UFUNCTION()
+	void SetCurrentPlayerVisible();
 	//처음 어떻게 있을지 정해야함.
 	//결과 바뀔때 애니메이션 해야함.
 	
