@@ -35,7 +35,7 @@ void ALuckyDrawManager::BeginPlay()
 		// X 값이 작을수록 앞열로 배치, 같은 X 값에서는 Y 값이 클수록 아래쪽 배치
 		if (FMath::Abs(LocationA.Y - LocationB.Y) > KINDA_SMALL_NUMBER)
 		{
-			return LocationA.Y < LocationB.Y; // Y 값이 작은 것이 윗 행
+			return LocationA.Y > LocationB.Y; // Y 값이 큰 것이 윗 행(스크린에 보이는 기준으로 설정)
 		}
 		return LocationA.X < LocationB.X;     // 같은 Y 값이면 X 값으로 비교
 	});
