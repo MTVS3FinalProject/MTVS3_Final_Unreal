@@ -103,6 +103,11 @@ void AHM_PuzzlePlayer::BeginPlay()
 		AimingUI->AddToViewport();
 		AimingUI->SetVisibility(ESlateVisibility::Hidden);
 	}
+
+	if (FPSCameraComp)
+	{
+		DefaultFOV = FPSCameraComp->FieldOfView;
+	}
 }
 
 // Called every frame
@@ -169,8 +174,8 @@ void AHM_PuzzlePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		input->BindAction(IA_Run , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionRunStart);
 		input->BindAction(IA_Run , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionRunComplete);
 		input->BindAction(IA_Pickup , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionPickupPiece);
-		input->BindAction(IA_Launch , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionLaunchPieceStart);
-		input->BindAction(IA_Launch , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionLaunchPieceComplete);
+		input->BindAction(IA_Launch , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionZoomInPiece);
+		input->BindAction(IA_Launch , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionZoomOutPiece);
 	}
 		// 마우스 회전 입력 바인딩 추가
 		PlayerInputComponent->BindAxis("Look Up", this, &AHM_PuzzlePlayer::AddControllerPitchInput);
@@ -301,46 +306,52 @@ void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Pickup Action Triggered"));
 
-	if (bHasPiece)
+	if (bIsZoomingIn && bHasPiece)
+	{
+		MyLaunchPiece();
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+			FString::Printf(TEXT("MyLaunchPiece")));
+		if(AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
+		bHasPiece = false; 
+		bIsZoomingIn = false;
+	}
+	else if(bHasPiece)
 	{
 		MyReleasePiece();
-		UE_LOG(LogTemp, Warning, TEXT("MyReleasePiece"));
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+			FString::Printf(TEXT("MyReleasePiece")));
+		bHasPiece = false;
 	}
-	else
+	else if(!bIsZoomingIn && !bHasPiece)
 	{
 		MyTakePiece();
-		UE_LOG(LogTemp, Warning, TEXT("MyTakePiece"));
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+			FString::Printf(TEXT("MyTakePiece")));
+		bHasPiece = true;
 	}
 }
 
-void AHM_PuzzlePlayer::OnMyActionLaunchPieceStart(const FInputActionValue& Value)
+void AHM_PuzzlePlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 {
-	if (bHasPiece)
+	if ( bHasPiece && !bIsZoomingIn )
 	{
 		if (AimingUI)
 		{
 			AimingUI->SetVisibility(ESlateVisibility::Visible);
 		}
-	}
-	else
-	{
-		return;
+		ZoomIn();
 	}
 }
 
-void AHM_PuzzlePlayer::OnMyActionLaunchPieceComplete(const FInputActionValue& Value)
+void AHM_PuzzlePlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 {
-	if (bHasPiece)
+	if ( bHasPiece && bIsZoomingIn )
 	{
 		if (AimingUI)
 		{
 			AimingUI->SetVisibility(ESlateVisibility::Hidden);
-			MyLaunchPiece();
 		}
-	}
-	else
-	{
-		return;
+		ZoomOut();
 	}
 }
 
@@ -403,7 +414,7 @@ void AHM_PuzzlePlayer::AttachPiece(AHM_PuzzlePiece* pieceActor)
 				//FRotator PieceRotation = FRotator(ControlRotation.Pitch, 0, 0); //(Pitch=-0.000000,Yaw=90.000000,Roll=-90.000000)
 				FRotator HandCompRotation = FRotator(ControlRotation.Pitch, 0, 0);
 				mesh->AttachToComponent(HandComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-				mesh->SetRelativeLocation(FVector(100, 0, 0));
+				mesh->SetRelativeLocation(FVector(100, 0, -30));
 				//mesh->SetRelativeRotation(PieceRotation);
 				//HandComp->SetRelativeRotation(HandCompRotation);
 				UE_LOG(LogTemp, Log, TEXT("MulticastRPCTakePiece AttachPiece") );
@@ -449,6 +460,7 @@ void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
 		check(mesh);
 		if(mesh)
 		{
+			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 			// 발사 속도를 적용하여 포물선 궤적 생성
 			mesh->SetSimulatePhysics(true); // 물리 적용
 			mesh->SetEnableGravity(true);  // 중력 활성화
@@ -461,9 +473,9 @@ void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
 
 			// 위치와 속도 설정
 			FVector LaunchDirection = GetActorForwardVector(); // 캐릭터의 전방향
-			float LaunchSpeed = 1000.0f; // 발사 속도 조정
+			//FVector LaunchDirection = FPSCameraComp->GetComponentLocation().ForwardVector;
+			float LaunchSpeed = 2000.0f; // 발사 속도 조정
 			FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
-			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 			mesh->AddImpulse(LaunchVelocity, NAME_None, true);
 		}
 		// 현재 Transform을 저장하고 복제
@@ -471,6 +483,46 @@ void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
 		{
 			pieceActor->CurrentTransform = mesh->GetComponentTransform();
 		}
+	}
+}
+
+void AHM_PuzzlePlayer::ZoomIn()
+{
+	if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	{
+		bIsZoomingIn = true;
+		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
+		{
+			float NewFOV = FMath::FInterpTo(FPSCameraComp->FieldOfView, ZoomedFOV, GetWorld()->GetDeltaSeconds(), ZoomDuration);
+			FPSCameraComp->SetFieldOfView(NewFOV);
+
+			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, ZoomedFOV, 0.1f))
+			{
+				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+				bIsZoomingIn = true; // 줌 인 상태로 고정
+			}
+		}, 0.01f, true);
+		UE_LOG(LogTemp, Log, TEXT("ZoomIn Started"));
+	}
+}
+
+void AHM_PuzzlePlayer::ZoomOut()
+{
+	if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	{
+		bIsZoomingIn = false;
+		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
+		{
+			float NewFOV = FMath::FInterpTo(FPSCameraComp->FieldOfView, DefaultFOV, GetWorld()->GetDeltaSeconds(), ZoomDuration);
+			FPSCameraComp->SetFieldOfView(NewFOV);
+
+			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, DefaultFOV, 0.1f))
+			{
+				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+				bIsZoomingIn = false; // 줌 아웃 상태로 고정
+			}
+		}, 0.01f, true);
+		UE_LOG(LogTemp, Log, TEXT("ZoomOut Started"));
 	}
 }
 

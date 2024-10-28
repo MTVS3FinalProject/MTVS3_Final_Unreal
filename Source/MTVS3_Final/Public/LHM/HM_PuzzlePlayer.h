@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/InputActionValue.h"
+#include "Camera/CameraComponent.h"
 #include "HM_PuzzlePlayer.generated.h"
 
 class AHM_PuzzlePiece;
@@ -83,8 +84,8 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Launch;
-	void OnMyActionLaunchPieceStart(const FInputActionValue& Value);
-	void OnMyActionLaunchPieceComplete(const FInputActionValue& Value);
+	void OnMyActionZoomInPiece(const FInputActionValue& Value);
+	void OnMyActionZoomOutPiece(const FInputActionValue& Value);
 	
 	void MyTakePiece();
 	void MyReleasePiece();
@@ -116,18 +117,28 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Piece)
 	float PickupDistance = 300;
 
-	// 피스 조각 잡기와 놓기 기능
+	// 피스 조각 잡기와 놓기 던지기 기능
 	void AttachPiece(AHM_PuzzlePiece* pieceActor);
 	void DetachPiece(AHM_PuzzlePiece* pieceActor);
 	void LaunchPiece(AHM_PuzzlePiece* pieceActor);
 
-	// 피스 날리기
-	//void 
+	// 피스 잡은 상태에서 줌인
+	float DefaultFOV; // 기본 시야각
+	float ZoomedFOV = 60.0f;  // 줌인 목표 시야각
+	float ZoomDuration = 10.f; // 보간 속도
+	FTimerHandle ZoomTimerHandle;   // 줌 타이머 핸들
+	
+	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
+	bool bIsZoomingIn = false;
+	
+	void ZoomIn();
+	void ZoomOut();
 
 	// --------------- Multiplayer 요소들 ---------------
 public:
 	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
 	bool bHasPiece = false;
+
 	
 	// 피스 잡기 RPC
 	UFUNCTION(Server, Reliable)
@@ -143,7 +154,7 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCReleasePiece(AHM_PuzzlePiece* pieceActor);
 
-	// 피스 날리기
+	// 피스 던지기 RPC
 	UFUNCTION(Server, Reliable)
 	void ServerRPCLaunchPiece();
 
