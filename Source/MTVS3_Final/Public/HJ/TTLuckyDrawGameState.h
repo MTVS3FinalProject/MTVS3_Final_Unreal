@@ -54,6 +54,8 @@ public:
 	void EndRounds();
 	bool bIsStartRound = false;
 
+	void EliminatePlayers();
+
 #pragma region 멀티플레이
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

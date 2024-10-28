@@ -2,6 +2,9 @@
 
 
 #include "HJ/TTPlayer.h"
+
+#include <string>
+
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -23,6 +26,8 @@
 #include "HJ/TTGameInstance.h"
 #include <HJ/TTPlayerState.h>
 #include <HJ/HJ_Actor.h>
+
+#include "Components/TextRenderComponent.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_GameWidget.h"
 #include "JMH/PlayerNicknameWidget.h"
@@ -53,6 +58,10 @@ ATTPlayer::ATTPlayer()
 	// 머리 본(Bone)에 부착
 	NicknameUIComp->SetupAttachment(GetMesh() , TEXT("head"));  // "head" 본에 부착
 
+	TextRenderComp = CreateDefaultSubobject<UTextRenderComponent>(TEXT("RandomSeatNumberComp"));
+	TextRenderComp->SetupAttachment(GetMesh() , TEXT("head"));
+	TextRenderComp->SetVisibility(false);
+	
 	// 머리 위로 약간 올리기 위한 위치 조정
 	NicknameUIComp->SetRelativeLocationAndRotation(FVector(30.0f , 0 , 0) , FRotator(0 , 90.0f , -90.0f));  // 머리 위로 30 단위 상승
 	/*NicknameUIComp->SetupAttachment(RootComponent);
@@ -81,7 +90,8 @@ void ATTPlayer::BeginPlay()
 	else
 	{
 		SetbIsHost(GI->GetbIsHost());
-
+		MulticastSetVisibilityTextRender(false);
+		
 		if ( NicknameUIFactory )
 		{
 			NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
@@ -121,13 +131,13 @@ void ATTPlayer::BeginPlay()
 			{
 			case ELuckyDrawState::Winner:
 				// 추첨 당첨 UI 표시
-				MainUI->SetWidgetSwitcher(1);
+				if (MainUI) MainUI->SetWidgetSwitcher(1);
 				// HTTP 요청
 				HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
 			case ELuckyDrawState::Loser:
 				// 추첨 탈락 UI 표시
-				MainUI->SetWidgetSwitcher(2);
+				if (MainUI) MainUI->SetWidgetSwitcher(2);
 				break;
 			case ELuckyDrawState::Neutral:
 				if ( bShowDebug && GEngine && GetWorld()->GetNetMode() == NM_Client )
@@ -275,13 +285,14 @@ void ATTPlayer::SetRandomSeatNumber(const int32& _RandomSeatNumber)
 {
 	RandomSeatNumber = _RandomSeatNumber;
 
-	if ( NicknameUIFactory )
+	if ( NicknameUIFactory)
 	{
 		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
 
 		// C++ 클래스로 캐스팅하여 접근
 		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
 		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
+		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
 		UE_LOG(LogTemp , Warning , TEXT("SetRandomSeatNumber: %d") , GetRandomSeatNumber());
 	}
 	
@@ -294,6 +305,7 @@ void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSea
 	UE_LOG(LogTemp , Warning , TEXT("ServerSetRandomSeatNumber_Implementation: %d") , GetRandomSeatNumber());
 
 	FTimerHandle SetRandomSeatNumberTimerHandle;
+	// 1.5
 	GetWorldTimerManager().SetTimer(SetRandomSeatNumberTimerHandle, this, &ATTPlayer::MulticastSetRandomSeatNumber, 1.5f, false);
 }
 
@@ -308,6 +320,7 @@ void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSea
 
 void ATTPlayer::MulticastSetRandomSeatNumber_Implementation()
 {
+	TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
 	if (NicknameUI)
 	{
 		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
@@ -341,7 +354,17 @@ void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& Targ
 	SetActorTransform(TargetTransform);
 }
 
-void ATTPlayer::ClientEndRounds_Implementation()
+void ATTPlayer::ClientLuckyDrawLose_Implementation()
+{
+	if (GameUI)
+	{
+		GameUI->HideWidget();
+	}
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if(GI) GI->SetLuckyDrawState(ELuckyDrawState::Loser);
+}
+
+void ATTPlayer::ClientLuckyDrawWin_Implementation()
 {
 	if (GameUI)
 	{
@@ -349,6 +372,16 @@ void ATTPlayer::ClientEndRounds_Implementation()
 	}
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if(GI) GI->SetLuckyDrawState(ELuckyDrawState::Winner);
+}
+
+void ATTPlayer::MulticastSetVisibilityTextRender_Implementation(bool bIsVisible)
+{
+	TextRenderComp->SetVisibility(bIsVisible);
+}
+
+void ATTPlayer::MulticastSetColorTextRender_Implementation(FColor NewColor)
+{
+	TextRenderComp->SetTextRenderColor(NewColor);
 }
 
 void ATTPlayer::PrintStateLog()
