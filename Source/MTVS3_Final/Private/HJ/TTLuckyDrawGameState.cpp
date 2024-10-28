@@ -87,6 +87,7 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
         if ( TTPlayer && !TTPlayer->GetbIsHost())
         {
             TTPlayer->MulticastLuckyDrawStart();
+            TTPlayer->MulticastSetVisibilityTextRender(true);
         }
     }
 
@@ -152,6 +153,29 @@ void ATTLuckyDrawGameState::MulticastUpdatePlayerNumUI_Implementation(int32 Play
     PlayerNum = NewSeatNumber;
 }
 
+void ATTLuckyDrawGameState::EliminatePlayers()
+{
+    ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
+    if (!GameMode) return;
+    if (CurrentRound > 0 && GameMode->EliminatedPlayersPerRound.Num() >= CurrentRound)
+    {
+        int32 LastRoundIndex = CurrentRound - 1;
+        for (int32 PlayerID : GameMode->EliminatedPlayersPerRound[LastRoundIndex])
+        {
+            for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+            {
+                ATTPlayer* Player = *It;
+                if (Player && Player->GetRandomSeatNumber() == PlayerID)
+                {
+                    Player->ClientLuckyDrawLose();
+                    // 탈락자는 빨간색으로 바꾸기
+                    Player->MulticastSetColorTextRender(FColor::Red);
+                }
+            }
+        }
+    }
+}
+
 void ATTLuckyDrawGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -174,28 +198,13 @@ void ATTLuckyDrawGameState::StartRounds(int32 InTotalRounds)
 
 void ATTLuckyDrawGameState::StartNextRound()
 {
-    ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
-    if (!GameMode) return;
-    if (CurrentRound > 0 && GameMode->EliminatedPlayersPerRound.Num() >= CurrentRound)
-    {
-        int32 LastRoundIndex = CurrentRound - 1;
-        for (int32 PlayerID : GameMode->EliminatedPlayersPerRound[LastRoundIndex])
-        {
-            for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-            {
-                ATTPlayer* Player = *It;
-                if (Player && Player->GetRandomSeatNumber() == PlayerID)
-                {
-                    Player->ClientLuckyDrawLose();
-                }
-            }
-        }
-    }
+    FTimerHandle LuckyDrawLoseTimerHandle;
+    GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle, this, &ATTLuckyDrawGameState::EliminatePlayers, 4.5f, false);
     
     if (CurrentRound >= TotalRounds)
     {
         FTimerHandle RouletteTimerHandle;
-        GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::EndRounds, 10.0f, false);
+        GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, &ATTLuckyDrawGameState::EndRounds, 8.0f, false);
         return;
     }
 
@@ -269,9 +278,11 @@ void ATTLuckyDrawGameState::EndRounds()
     for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
     {
         ATTPlayer* TTPlayer = *It;
+        // TTPlayer->MulticastSetVisibilityTextRender(false);
         if (TTPlayer && TTPlayer->GetRandomSeatNumber() == WinningSeatNumber)
         {
             TTPlayer->ClientLuckyDrawWin();  // 우승자에게만 종료 호출
+            TTPlayer->MulticastSetColorTextRender(FColor::Blue);
             break;
         }
     }

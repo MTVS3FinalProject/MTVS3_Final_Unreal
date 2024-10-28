@@ -75,6 +75,12 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientLuckyDrawWin();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetVisibilityTextRender(bool bIsVisible);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetColorTextRender(FColor NewColor);
+
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
 #pragma endregion
@@ -236,6 +242,9 @@ public:
 	TSubclassOf<class UPlayerNicknameWidget> NicknameUIFactory;
 	class UPlayerNicknameWidget* NicknameUI;
 
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	class UTextRenderComponent* TextRenderComp;
+	
 	void InitMainUI();
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
