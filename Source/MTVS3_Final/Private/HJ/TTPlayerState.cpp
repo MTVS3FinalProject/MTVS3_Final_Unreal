@@ -16,7 +16,7 @@ void ATTPlayerState::BeginPlay()
 	//if ( GI ) SetNickname(GI->GetNickname());
 }
 
-void ATTPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps)
+void ATTPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 

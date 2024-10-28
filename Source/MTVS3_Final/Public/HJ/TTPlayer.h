@@ -70,7 +70,16 @@ public:
 	void MulticastMovePlayerToChair(const FTransform& TargetTransform);
 
 	UFUNCTION(Client, Reliable)
-	void ClientEndRounds();
+	void ClientLuckyDrawLose();
+	
+	UFUNCTION(Client, Reliable)
+	void ClientLuckyDrawWin();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetVisibilityTextRender(bool bIsVisible);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetColorTextRender(FColor NewColor);
 
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
@@ -233,6 +242,9 @@ public:
 	TSubclassOf<class UPlayerNicknameWidget> NicknameUIFactory;
 	class UPlayerNicknameWidget* NicknameUI;
 
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	class UTextRenderComponent* TextRenderComp;
+	
 	void InitMainUI();
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
