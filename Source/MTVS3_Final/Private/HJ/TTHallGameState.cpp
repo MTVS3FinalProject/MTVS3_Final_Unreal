@@ -17,10 +17,11 @@ void ATTHallGameState::BeginPlay()
 	for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
 	{
 		ATTPlayer* TTPlayer = *It;
-		if ( TTPlayer )
+		if ( TTPlayer && TTPlayer->IsLocallyControlled() )
 		{
 			TTPlayer->InitMainUI();
 			TTPlayer->ServerSetNickname(GI->GetNickname());
+			TTPlayer->SwitchCamera(TTPlayer->bIsThirdPerson);
 		}
 	}
 }

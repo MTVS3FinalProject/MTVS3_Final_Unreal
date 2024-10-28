@@ -5,13 +5,13 @@
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
 #include "Online/OnlineSessionNames.h"
-#include "HJ/TTPlayerState.h"
+#include "OnlineSubsystemUtils.h"
 
 void UTTGameInstance::Init()
 {
 	Super::Init();
 
-	if ( auto* subSystem = IOnlineSubsystem::Get() )
+	if ( auto* subSystem = Online::GetSubsystem(GetWorld()) )
 	{
 		SessionInterface = subSystem->GetSessionInterface();
 
@@ -54,7 +54,14 @@ void UTTGameInstance::FindOrCreateSession(const FString& SessionNamePrefix , int
 	SessionSearch = MakeShareable(new FOnlineSessionSearch);
 	SessionSearch->QuerySettings.Set(SEARCH_PRESENCE , true , EOnlineComparisonOp::Equals);
 
-	SessionSearch->bIsLanQuery = true;
+	if (Online::GetSubsystem(GetWorld())->GetSubsystemName() == "NULL") // OnlineSubsystem 이 NULL 로 세팅되면 (NULL : 로컬 연결 설정)
+	{
+		SessionSearch->bIsLanQuery = true; // true 시 : 같은 네트워크에 있는 사람을 찾음 (로컬 연결일 때)
+	}
+	else
+	{
+		SessionSearch->bIsLanQuery = false; // false 시 : 다른 네트워크와 연결 가능하도록 함. (Steam, XBox 등 공식플랫폼 연결 설정)
+	}
 	SessionSearch->MaxSearchResults = 100;
 
 	// 세션 검색 시작
@@ -187,7 +194,15 @@ void UTTGameInstance::CreateMySession(int32 playerCount , const FString& Session
 
 	FOnlineSessionSettings Settings;
 	Settings.bIsDedicated = false;
-	Settings.bIsLANMatch = true;
+	if (Online::GetSubsystem(GetWorld())->GetSubsystemName() == "NULL") // OnlineSubsystem 이 NULL 로 세팅되면 (NULL : 로컬 연결 설정)
+	{
+		Settings.bIsLANMatch = true; // true 시 : 같은 네트워크에 있는 사람을 찾음 (로컬 연결일 때)
+	}
+	else
+	{
+		Settings.bIsLANMatch = false; // false 시 : 다른 네트워크와 연결 가능하도록 함. (Steam, XBox 등 공식플랫폼 연결 설정)
+	}
+
 	Settings.bShouldAdvertise = true;
 	Settings.bUsesPresence = true;
 	Settings.bAllowJoinViaPresence = true;
@@ -307,13 +322,11 @@ void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSu
 
 void UTTGameInstance::SetPlaceState(EPlaceState NextPlaceState)
 {
-	EPlaceState PrevPlaceState = PlaceState;
 	PlaceState = NextPlaceState;
 }
 
 void UTTGameInstance::SetLuckyDrawState(ELuckyDrawState NextLuckyDrawState)
 {
-	ELuckyDrawState PrevLuckyDrawState = LuckyDrawState;
 	LuckyDrawState = NextLuckyDrawState;
 }
 

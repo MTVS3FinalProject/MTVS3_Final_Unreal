@@ -30,7 +30,7 @@ void ATTLuckyDrawGameState::BeginPlay()
     for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
     {
         ATTPlayer* TTPlayer = *It;
-        if ( TTPlayer && !TTPlayer->GetbIsHost() )
+        if ( TTPlayer && !TTPlayer->GetbIsHost() && TTPlayer->IsLocallyControlled() )
         {
             TTPlayer->InitGameUI();
         }
@@ -72,6 +72,8 @@ void ATTLuckyDrawGameState::StartLuckyDraw()
 
 void ATTLuckyDrawGameState::MovePlayersToChairs()
 {
+    bIsStartRound = true;
+    
     ALuckyDrawManager* Manager = Cast<ALuckyDrawManager>(UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawManager::StaticClass()));
     if (Manager)
     {
@@ -237,7 +239,7 @@ void ATTLuckyDrawGameState::MulticastUpdateRouletteUI_Implementation(int32 Playe
 }
 
 void ATTLuckyDrawGameState::EndRounds()
-{
+{    
     ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
     if (!GameMode || GameMode->RemainingPlayers.Num() == 0) return;
 

@@ -152,6 +152,12 @@ void ATTPlayer::BeginPlay()
 	}
 }
 
+void ATTPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	
+}
+
 // Called every frame
 void ATTPlayer::Tick(float DeltaTime)
 {
@@ -219,13 +225,22 @@ void ATTPlayer::SetNickname(const FString& _Nickname)
 		NicknameUI->UpdateNicknameUI(Nickname);
 	}
 
-	if (IsLocallyControlled()) ServerSetNickname(Nickname);
+	if (IsLocallyControlled())
+	{
+		// ServerSetNickname(_Nickname);
+		
+		FTimerHandle ServerSetNicknameTimerHandle;
+		GetWorldTimerManager().SetTimer(ServerSetNicknameTimerHandle, [this, _Nickname]()
+		{
+			ServerSetNickname(_Nickname);
+		}, 0.5f, false);
+	}
 }
 
 void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
 {
 	Nickname = _Nickname;
-
+	UE_LOG(LogTemp , Warning , TEXT("ServerSetNickname: %s") , *GetNickname());
 	FTimerHandle SetNicknameTimerHandle;
 	GetWorldTimerManager().SetTimer(SetNicknameTimerHandle, this, &ATTPlayer::MulticastSetNickname, 1.5f, false);
 }
@@ -303,7 +318,7 @@ void ATTPlayer::MulticastSetRandomSeatNumber_Implementation()
 void ATTPlayer::ServerLuckyDrawStart_Implementation()
 {
 	ATTLuckyDrawGameState* GameState = GetWorld()->GetGameState<ATTLuckyDrawGameState>();
-	if (GameState)
+	if (GameState && GameState->bIsStartRound != true)
 	{
 		GameState->StartLuckyDraw();
 	}
@@ -578,7 +593,7 @@ void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if ( !GI ) return;
+	if ( !GI && !HasAuthority() ) return;
 	switch ( GI->GetPlaceState() )
 	{
 	case EPlaceState::Plaza:
