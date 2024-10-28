@@ -22,8 +22,14 @@ void UMH_StartWidget::NativeConstruct()
 	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignInButton);
 	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
 	Btn_test_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::Test_CreateSesstion); //테스트 세션생성 버튼
-	Btn_Exit_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
+	Btn_Exit_LoginWin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitWinButton);
 	Btn_ForgotPassword_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
+// 종료
+	Btn_Exit_LoginWin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
+	Btn_ExitLogin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
+	Btn_BackLogin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
+	
+	
 	//Signup
 	Btn_Confirm_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirmSignupButton);
 	Btn_Back_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
@@ -99,10 +105,24 @@ void UMH_StartWidget::OnClickedSignUpButton()
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(1);
 }
 
+void UMH_StartWidget::OnClickedExitWinButton()
+{
+	//게임 종료 창 띄우기
+	WS_StartWidgetSwitcher->SetActiveWidgetIndex(5);
+}
+
 void UMH_StartWidget::OnClickedExitButton()
 {
 	//게임 종료
+	UWorld* World = GetWorld();
+	APlayerController* PlayerController = World ? World->GetFirstPlayerController() : nullptr;
+    
+	if (PlayerController)
+	{
+		UKismetSystemLibrary::QuitGame(World, PlayerController, EQuitPreference::Quit, true);
+	}
 }
+
 
 void UMH_StartWidget::OnClickedForgotPasswordButton()
 {

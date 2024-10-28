@@ -20,7 +20,7 @@ public:
 	
 	//Start
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UWidgetSwitcher* WS_StartWidgetSwitcher;
+	class UWidgetSwitcher* WS_StartWidgetSwitcher;//0:로그인, 1:회원가입,2:아바타선택,3:QR1,4:QR2,5:종료
 	
 	//Login
 
@@ -50,10 +50,17 @@ public:
 	void OnClickedSignUpButton();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Exit_Login;
-
+	class UButton*  Btn_Exit_LoginWin;
+	UFUNCTION()
+	void OnClickedExitWinButton();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_ExitLogin;
 	UFUNCTION()
 	void OnClickedExitButton();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_BackLogin;
+
+
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_ForgotPassword_Login;
