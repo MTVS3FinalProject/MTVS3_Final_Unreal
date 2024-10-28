@@ -23,7 +23,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-    UPROPERTY(EditDefaultsOnly)
+    UPROPERTY(EditDefaultsOnly);
 	class UStaticMeshComponent* Piece;
 
 	// 스태틱 메시 컴포넌트 반환 함수 추가
