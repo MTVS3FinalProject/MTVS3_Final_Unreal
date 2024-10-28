@@ -575,10 +575,10 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
-	// Chair의 태그를 가져와서 매개변수로 넘김
-	FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 	if ( Chair && HttpActor2 )
 	{
+		// Chair의 태그를 가져와서 매개변수로 넘김
+		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 		// MainUI 숨기기
 		MainUI->SetVisibleCanvas(false);
 		// 좌석 경쟁 UI 표시(테스트용)
@@ -610,15 +610,18 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 {
 	bIsMapActive = !bIsMapActive;
+	if (!IsLocallyControlled()) return;
 
 	if ( bIsMapActive )
 	{
 		WorldMapUI->SetVisibleSwitcher(true);
+		GetCharacterMovement()->DisableMovement();
 		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Enable Map"));
 	}
 	else
 	{
 		WorldMapUI->SetVisibleSwitcher(false);
+		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);  // 이동 모드 복원
 		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Disable Map"));
 	}
 }
@@ -821,7 +824,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	{
 		Chair->bIsOccupied = true;
 		FTransform SittingTransform = Chair->GetSittingTransform();
-		SetActorTransform(SittingTransform);
+		this->SetActorTransform(SittingTransform);
 		GetCharacterMovement()->DisableMovement();  // 이동 비활성화
 		Anim->PlaySitDownMontage();
 	}
