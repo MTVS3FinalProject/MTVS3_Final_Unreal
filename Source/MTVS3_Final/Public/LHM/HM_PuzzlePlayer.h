@@ -88,6 +88,7 @@ public:
 	
 	void MyTakePiece();
 	void MyReleasePiece();
+	//void MyPiece();
 	
 #pragma endregion
 
@@ -114,6 +115,9 @@ public:
 	// 피스 조각 잡기와 놓기 기능
 	void AttachPiece(AHM_PuzzlePiece* pieceActor);
 	void DetachPiece(AHM_PuzzlePiece* pieceActor);
+
+	// 피스 날리기
+	//void 
 
 	// --------------- Multiplayer 요소들 ---------------
 public:

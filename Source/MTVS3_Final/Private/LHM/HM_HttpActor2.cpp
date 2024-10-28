@@ -62,7 +62,7 @@ void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concert") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/test") , *_url); // 테스트용
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -108,22 +108,23 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 					for ( const TSharedPtr<FJsonValue>& ConcertValue : ConcertList )
 					{
 						TSharedPtr<FJsonObject> ConcertObject = ConcertValue->AsObject();
+						int32 ConcertId = ConcertObject->GetIntegerField(TEXT("concertId"));
 						FString ConcertName = ConcertObject->GetStringField(TEXT("concertName"));
 						int32 Year = ConcertObject->GetIntegerField(TEXT("year"));
 						int32 Month = ConcertObject->GetIntegerField(TEXT("month"));
 						int32 Day = ConcertObject->GetIntegerField(TEXT("day"));
 						FString Time = ConcertObject->GetStringField(TEXT("time"));
 
-						UE_LOG(LogTemp , Log , TEXT("Concert : %s | %d-%d-%d-%s") , *ConcertName, Year, Month, Day, *Time);
+						UE_LOG(LogTemp , Log , TEXT("Concert : %d | %s | %d-%d-%d-%s") , ConcertId, *ConcertName, Year, Month, Day, *Time);
 
-						//FConcertDTO ConcertDTO;
-						////SetConcertInfo(ConcertName,Year,Month,Day,Time);
-						//ConcertDTO.SetConcertName(ConcertName);
-						//ConcertDTO.SetConcertYear(Year);
-						//ConcertDTO.SetConcertMonth(Month);
-						//ConcertDTO.SetConcertDay(Day);
-						//ConcertDTO.SetConcertTime(Time);
-						//ConcertNameList.Add(ConcertDTO);
+						FConcertDTO ConcertDTO;
+						SetConcertInfo(ConcertId, ConcertName,Year,Month,Day,Time);
+						ConcertDTO.SetConcertId(ConcertId);
+						ConcertDTO.SetConcertName(ConcertName);
+						ConcertDTO.SetConcertYear(Year);
+						ConcertDTO.SetConcertMonth(Month);
+						ConcertDTO.SetConcertDay(Day);
+						ConcertDTO.SetConcertTime(Time);
 
 						if ( TTPlayer && GI )
 						{
@@ -290,7 +291,8 @@ void AHM_HttpActor2::TESTReqPostConcertEntry( FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	FString FormattedUrl = FString::Printf(TEXT("%s/concert/%s") , *_url, *GI->GetConcertName());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/%d") , *_url, GetConcertId());
+
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
