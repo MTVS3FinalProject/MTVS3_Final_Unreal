@@ -21,7 +21,7 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	Btn_Confirm01->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm01Button);
-	Btn_Confirm_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm01Button);
+	//Btn_Confirm_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm01Button);
 	Btn_Confirm02->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm02Button);
 	Btn_Confirm_QRUi1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUi1Button);
 	Btn_Confirm_QRSuccess->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUi2SuccessButton);
@@ -34,19 +34,20 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedSaveTicketButton);
 	//뒤로가기
 	Btn_Back01->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack01Button);
-	//Btn_Back02->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack02Button);
+	Btn_Back02->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack01Button);
+	Btn_Back03->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack03Button);
+	Btn_Back04->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack04Button);
+	Btn_Back05->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack05Button);
+	Btn_Back06->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack06Button);
+	//Btn_Back07->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack07Button);
 
-	/*//수정전
-	//Btn_Back03->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack03Button);
-	//Btn_BuyTicket2->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBuyTicket2Button);
-	//Btn_CompleteBuyTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedCompleteBuyTicketButton);
-	//Btn_Back01->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack01Button);
-	//Btn_Back02->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack02Button);
-	//Btn_Back_QRUi1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack_QRUi1Button);*/
+	
 
 	if (Btn_BuyTickerBack)
 	{
 		Btn_BuyTickerBack->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
+	Btn_Back_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
+	Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
 	}
 
 	//현민 결제 통신할 때 티켓예매정보확인UI SetText안돼서 함수 따로만들어서 통신에서 호출함 
@@ -64,7 +65,7 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	}
 }
 
-void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num) //0:티켓예매정보,1:QR,2:QR성공,3:QR실패,4:배송지,5:결제진행,7:코인충전
+void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num) //수정 후 위젯 스위처 1029 // 0: QR 인증 . 1:인증성공  . 2:인증실패 . 3:좌석확인 . 4:가격확인 . 5: 예매자정보입력 . 6: 배송지입력 . 7:결제수단선택, 8: 결제완료. 9: 코인충전
 {
 	//서버에서 불러와서 입력
 	WS_BuyTicketSwitcher->SetActiveWidgetIndex(num);
@@ -254,16 +255,30 @@ void UMH_BuyTicketWidget::OnClickedBack01Button()
 	SetWidgetSwitcher(0);
 }
 
-/*
-void UMH_BuyTicketWidget::OnClickedBack02Button()
-{
-	
-}
-
 void UMH_BuyTicketWidget::OnClickedBack03Button()
 {
-	
-}*/
+	//4번으로
+	SetWidgetSwitcher(4);
+}
+
+void UMH_BuyTicketWidget::OnClickedBack04Button()
+{
+	//4번으로
+	SetWidgetSwitcher(5);
+}
+
+void UMH_BuyTicketWidget::OnClickedBack05Button()
+{
+	//5번으로
+	SetWidgetSwitcher(5);
+}
+
+void UMH_BuyTicketWidget::OnClickedBack06Button()
+{
+	//6번으로
+	SetWidgetSwitcher(6);
+}
+
 //현민 지워야함
 void UMH_BuyTicketWidget::SetTextSeatID(FString SeatID)
 {
@@ -303,15 +318,6 @@ void UMH_BuyTicketWidget::OnClickedAddCoinButton()
 	//9 : 충전 위젯으로
 	SetWidgetSwitcher(9);
 }
-
-/*
-void UMH_BuyTicketWidget::OnClickedBack03Button()
-{
-	//결제 진행 
-	//뒤로가기 누르면 다시 배송지로
-	//4: 배송지 입력으로 이동
-	SetWidgetSwitcher(4);
-}*/
 
 // HTTP : 좌석 결제 요청
 void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()

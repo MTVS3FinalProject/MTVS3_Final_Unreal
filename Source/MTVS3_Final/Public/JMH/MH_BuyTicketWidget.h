@@ -30,8 +30,7 @@ public:
 	}
 
 	virtual void NativeConstruct() override;
-
-	//수정 전 위젯 스위처		// 0: 예매정보확인, 계속진행 . 1:QR 인증 . 2:인증성공 . 3:인증실패 . 4:배송지입력 . 5: 결제진행 . 6: 결제완료 . 7:코인충전
+	
 	//수정 후 위젯 스위처 1029 // 0: QR 인증 . 1:인증성공  . 2:인증실패 . 3:좌석확인 . 4:가격확인 . 5: 예매자정보입력 . 6: 배송지입력 . 7:결제수단선택, 8: 결제완료. 9: 코인충전
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UWidgetSwitcher* WS_BuyTicketSwitcher;
@@ -166,25 +165,7 @@ public:
 	class UButton* Btn_Confirm02;
 	UFUNCTION()
 	void OnClickedConfirm02Button();
-	//결제 수단
-	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	//class UButton* Btn_BuyTicket2;
-	//UFUNCTION()
-	//void OnClickedBuyTicket2Button();
-
-
-	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	//class UButton* Btn_CompleteBuyTicket;
-	//UFUNCTION()
-	//void OnClickedCompleteBuyTicketButton();
 	
-	//뒤로가기
-	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	//class UButton* Btn_Back_QRUi1;
-	//UFUNCTION()
-	//void OnClickedBack_QRUi1Button();
-
-
 	//2 QR 신원인증확인
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_QR;
@@ -230,19 +211,25 @@ public:
 	class UButton* Btn_Back01;
 	UFUNCTION()
 	void OnClickedBack01Button();
-
-	//코인 충전창에서 뒤로가기
-	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	//class UButton* Btn_Back02;
-	//UFUNCTION()
-	//void OnClickedBack02Button();
-
-	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	//class UButton* Btn_Back03;
-	//UFUNCTION()
-	//void OnClickedBack03Button();
-
-
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Back02;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Back03;
+	UFUNCTION()
+	void OnClickedBack03Button();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Back04;
+	UFUNCTION()
+	void OnClickedBack04Button();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Back05;
+	UFUNCTION()
+	void OnClickedBack05Button();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Back06;
+	UFUNCTION()
+	void OnClickedBack06Button();
+	
 	
 	//결제진행
 	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))

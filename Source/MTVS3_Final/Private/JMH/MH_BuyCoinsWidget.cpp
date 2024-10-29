@@ -107,6 +107,11 @@ void UMH_BuyCoinsWidget::OnButtonClicked(UButton* ClickedButton)
 	}
 }
 
+void UMH_BuyCoinsWidget::OnClickedBackButton()
+{
+	
+}
+
 //void UMH_BuyCoinsWidget::OnClickedBackButton()
 //{
 	//SetVisibility(ESlateVisibility::Hidden);
