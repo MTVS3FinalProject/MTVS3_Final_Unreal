@@ -68,13 +68,13 @@ public:
 
 	//BuyTicketWidget 서버가 호출 가능하게
 	UPROPERTY(meta = (BindWidget))
-	UMH_BuyTicketWidget* BuyTicketWidget01;
+	UMH_BuyTicketWidget* BuyTicketWidget;
 	
 	// BuyWidget 컴포넌트에 대한 참조 반환 함수
 	UFUNCTION(BlueprintCallable, Category="UI")
 	UMH_BuyTicketWidget* GetBuyTicketWidget() const
 	{
-		return BuyTicketWidget01;
+		return BuyTicketWidget;
 	}
 	
 	//0:Minimap

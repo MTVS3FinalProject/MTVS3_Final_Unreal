@@ -623,7 +623,7 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 					if( TTPlayer && GI && MainUI )
 					{
 						GI->UseRemainingTicket(1);
-						MainUI->BuyTicketWidget01->SetTextTicketPrice(SeatPrice);
+						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 					}
 
 					if ( GI && TicketingUI )
@@ -1012,7 +1012,7 @@ void AHM_HttpActor2::OnResPostGameResult(FHttpRequestPtr Request , FHttpResponse
 		// 추첨이 끝났을 때 당첨자에게만 예매창 UI 띄우는 함수에 연결
 		if ( MainUI->GetBuyTicketWidget() )
 		{
-			MainUI->BuyTicketWidget01->SetWidgetSwitcher(0);
+			MainUI->BuyTicketWidget->SetWidgetSwitcher(0);
 		}
 	}
 	else
@@ -1087,8 +1087,8 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 						// 결제 시 회원 인증 QR UI로 넘어가는 함수 호출하기
 						if ( MainUI->GetBuyTicketWidget() )
 						{
-							MainUI->BuyTicketWidget01->SetQRImg(Texture);
-							MainUI->BuyTicketWidget01->SetWidgetSwitcher(1);
+							MainUI->BuyTicketWidget->SetQRImg(Texture);
+							MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
 
 							UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
 						}
@@ -1157,7 +1157,7 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 		{
 			if ( MainUI->GetBuyTicketWidget() )
 			{
-				MainUI->BuyTicketWidget01->SetWidgetSwitcher(2);
+				MainUI->BuyTicketWidget->SetWidgetSwitcher(2);
 				UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
 			}
 		}
@@ -1165,7 +1165,7 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 		{
 			if ( MainUI->GetBuyTicketWidget() )
 			{
-				MainUI->BuyTicketWidget01->SetWidgetSwitcher(3);
+				MainUI->BuyTicketWidget->SetWidgetSwitcher(3);
 				UE_LOG(LogTemp , Log , TEXT("Member authentication failed!"));
 			}
 		}
@@ -1260,13 +1260,13 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					// 결제 진행하는 위젯스위쳐 Set
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						MainUI->BuyTicketWidget01->SetTextSeatID(SeatInfo);
-						MainUI->BuyTicketWidget01->SetTextTicketNum(SeatNum);
-						MainUI->BuyTicketWidget01->SetTextTicketPrice(SeatPrice);
-						MainUI->BuyTicketWidget01->SetTextNeedCoin(NeededCoin);
+						MainUI->BuyTicketWidget->SetTextSeatID(SeatInfo);
+						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
+						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
+						MainUI->BuyTicketWidget->SetTextNeedCoin(NeededCoin);
 						int32 TotalCoin = SeatNum*SeatPrice;
-						MainUI->BuyTicketWidget01->SetTextTotalCoin(TotalCoin);
-						MainUI->BuyTicketWidget01->SetWidgetSwitcher(5);
+						MainUI->BuyTicketWidget->SetTextTotalCoin(TotalCoin);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(5);
 					}
 				}
 			}
@@ -1371,12 +1371,12 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					SetUserAddress1(UserAddress);*/
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						MainUI->BuyTicketWidget01->SetTextSeatID2(SeatInfo);
-						MainUI->BuyTicketWidget01->SetTextTicketNum(SeatNum);
-						MainUI->BuyTicketWidget01->SetTextUserName(UserName);
-						MainUI->BuyTicketWidget01->SetTextUserPhoneNum(UserPhoneNum);
-						MainUI->BuyTicketWidget01->SetTextUserAddress(UserAddress);
-						MainUI->BuyTicketWidget01->SetWidgetSwitcher(6);
+						MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
+						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
+						MainUI->BuyTicketWidget->SetTextUserName(UserName);
+						MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
+						MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(6);
 					}
 				}
 			}

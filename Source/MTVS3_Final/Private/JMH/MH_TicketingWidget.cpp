@@ -4,7 +4,6 @@
 #include "JMH/MH_TicketingWidget.h"
 
 #include "Components/Button.h"
-#include "Components/Overlay.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
@@ -48,51 +47,61 @@ void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
 	WS_RegisterSwitcher->SetActiveWidgetIndex(num);
 }
 
-void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible, int index)
+void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 {
-	switch(index)
+	switch (index)
 	{
 	case 0:
-		if ( bVisible )
+		if (bVisible)
 		{
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
-			if ( !bIsVisible&& Can_RegisterAnim_On )
+			if (!bIsVisible && Can_RegisterAnim_On)
 			{
 				bIsVisible = true;
 				WS_RegisterSwitcher->SetActiveWidgetIndex(0);
 				PlayAnimation(Can_RegisterAnim_On);
+				PlayAnimation(Over_Settings_On);
 			}
 		}
 
-		else if ( !bVisible )
+		else if (!bVisible)
 		{
-			if ( bIsVisible && Can_RegisterAnim_Off )
+			if (bIsVisible && Can_RegisterAnim_Off)
 			{
-				bIsVisible=false;
+				bIsVisible = false;
 				PlayAnimation(Can_RegisterAnim_Off);
+				//타이머 써서 비지블 Hidden처리
+				FTimerHandle RouletteTimerHandle;
+				PlayAnimation(Over_Settings_Off);
+				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle, this, &UMH_TicketingWidget::HiddenCanvas, 1.1f, false);
 			}
-			//WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
 		}
 		break;
 	default:
-		if ( bVisible )
+		if (bVisible)
 		{
 			bIsVisible = true;
 			WS_RegisterSwitcher->SetActiveWidgetIndex(1);
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
 		}
-		else if ( !bVisible )
+		else if (!bVisible)
 		{
-			bIsVisible=false;
+			bIsVisible = false;
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
 		}
 		break;
 	}
-	
+}
+
+
+void UMH_TicketingWidget::HiddenCanvas()
+{
+	//좌석 접수 UI 히든
+	WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UMH_TicketingWidget::SetConcertInfo(FString ConcertName , int32 ConcertDateY , int32 ConcertDateM ,
-										 int32 ConcertDateD , FString ConcertTime)
+                                         int32 ConcertDateD , FString ConcertTime)
 {
 	//접수화면 콘서트 정보 불러오기
 	Text_ConcertName->SetText(FText::FromString(ConcertName));

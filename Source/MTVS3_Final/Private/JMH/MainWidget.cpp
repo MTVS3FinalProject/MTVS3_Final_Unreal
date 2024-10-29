@@ -32,9 +32,9 @@ void UMainWidget::NativeConstruct()
 	Btn_ExitMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExit);
 	Btn_BackMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	
-	if(BuyTicketWidget01)
+	if(BuyTicketWidget)
 	{
-			BuyTicketWidget01->OnClickedBuyTickerBack.AddDynamic(this, &UMainWidget::OnTicketWidgetClose);
+			BuyTicketWidget->OnClickedBuyTickerBack.AddDynamic(this, &UMainWidget::OnTicketWidgetClose);
 	}
 
 }
