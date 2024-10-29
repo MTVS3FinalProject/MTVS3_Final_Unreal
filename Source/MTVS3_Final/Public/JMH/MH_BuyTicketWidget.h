@@ -60,11 +60,22 @@ public:
 	class UTextBlock* Text_ConcertName_001;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_ConcertName_002;
-	//서버_콘서트 정보_날짜
+	//서버_콘서트 정보_날짜 //현민 날짜 어디서 셋해주는지 모르겟
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_ConcertDate;
+	class UTextBlock* Text_ConcertDate01Y;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_ConcertDate02;
+	class UTextBlock* Text_ConcertDate01M;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_ConcertDate01D;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_ConcertDate02Y;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_ConcertDate02M;
+		UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_ConcertDate02D;
+	
+	UFUNCTION()
+	void SetConcertInfo_BuyTicket(FString ConcertName, int32 ConcertDateY, int32 ConcertDateM, int32 ConcertDateD, FString ConcertTime );
 	//서버_콘서트 정보_시간
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_ConcertTime;
@@ -75,6 +86,8 @@ public:
 	class UTextBlock* Text_SeatFloor;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_SeatFloor02;
+	UFUNCTION()
+	void SetTextSeatID(int32 SeatFloor,FString SeatID);
 
 	//서버_티켓 가격
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -87,7 +100,22 @@ public:
 	//서버_예매자 이름
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_UserName;
-	//코인
+
+	//서버_티켓매수
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_TicketNum;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_TicketNum2;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_TicketNum3;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_TicketNum4;
+	//서버_코인
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_TotalCoin;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_TotalCoin_1;
+	
 	//현재 코인
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_CurrentCoin;
@@ -136,15 +164,16 @@ public:
 	UFUNCTION()
 	void OnClickedConfirm02Button();
 	//결제 수단
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_BuyTicket2;
-	UFUNCTION()
-	void OnClickedBuyTicket2Button();
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UButton* Btn_BuyTicket2;
+	//UFUNCTION()
+	//void OnClickedBuyTicket2Button();
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_CompleteBuyTicket;
-	UFUNCTION()
-	void OnClickedCompleteBuyTicketButton();
+
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UButton* Btn_CompleteBuyTicket;
+	//UFUNCTION()
+	//void OnClickedCompleteBuyTicketButton();
 	
 	//뒤로가기
 	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -193,28 +222,40 @@ public:
 	UFUNCTION()
 	void OnClickedBack_QRFailedButton();
 
+// 뒤로가기 버튼들
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Back01;
+	UFUNCTION()
+	void OnClickedBack01Button();
+
+	//코인 충전창에서 뒤로가기
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UButton* Btn_Back02;
+	//UFUNCTION()
+	//void OnClickedBack02Button();
+
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UButton* Btn_Back03;
+	//UFUNCTION()
+	//void OnClickedBack03Button();
+
+
+	
 	//결제진행
 	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	//class UTextBlock* Tex_SeatID;
-	UFUNCTION()
+	//UFUNCTION()
 	void SetTextSeatID(FString SeatID);
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_TicketNum;
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_TicketNum2;
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UTextBlock* Text_NeedCoin;
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_NeedCoin;
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_TotalCoin;
-
-	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
-	class UTextBlock* Text_TicketPrice2;
-	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
-	class UTextBlock* Text_TicketPrice2_2;
+	//UPROPERTY(VisibleAnywhere , meta = (BindWidget))
+	//class UTextBlock* Text_TicketPrice2;
+	//UPROPERTY(VisibleAnywhere , meta = (BindWidget))
+	//class UTextBlock* Text_TicketPrice2_2;
 
 	UFUNCTION()
 	void SetTextNeedCoin(int32 NeedCoin);
@@ -231,11 +272,6 @@ public:
 	void OnClickedAddCoinButton();
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_Back03;
-	UFUNCTION()
-	void OnClickedBack03Button();
-
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_BuyTicketCoin;
 	UFUNCTION()
 	void OnClickedBuyTicketCoinButton();
@@ -246,33 +282,34 @@ public:
 	//4 : 티켓정보확인 _가격
 
 	//결제완료
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_SeatID2;
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UTextBlock* Text_SeatID2;
+	//여기
 	UFUNCTION()
 	void SetTextSeatID2(FString SeatID2);
 
 	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	//class UTextBlock* Text_TicketNum3;
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_TicketNum4;
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UTextBlock* Text_TicketNum4;
 
 	//UPROPERTY(VisibleAnywhere , meta = (BindWidget))
 	//class UTextBlock* Text_TicketPrice3;
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_TotalCoin_1;
 
 	UFUNCTION()
 	void SetTextUserName(FString UserName);
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Tex_UserPhoneNum;
+	//현민 : 폰번호 다시불러와 쓸일이 없음.. 여기선
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UTextBlock* Tex_UserPhoneNum;
 	UFUNCTION()
 	void SetTextUserPhoneNum(FString UserPhoneNum);
-
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Tex_Address;
+	
+	//현민 : 주소 다시불러와 쓸일이 없음.. 여기선
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UTextBlock* Tex_Address;
 	UFUNCTION()
 	void SetTextUserAddress(FString Address);
 
@@ -280,17 +317,6 @@ public:
 	class UButton* Btn_SaveTicket;
 	UFUNCTION()
 	void OnClickedSaveTicketButton();
-
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_Back04;
-	UFUNCTION()
-	void OnClickedBtn_Back04Button();
-
-	//코인 충전창에서 뒤로가기
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_Back05;
-	UFUNCTION()
-	void OnClickedBtn_Back05Button();
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_BuyTickerBack;

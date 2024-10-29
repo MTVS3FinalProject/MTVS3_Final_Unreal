@@ -28,43 +28,74 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	Btn_Back_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUiFailedButton);
 	Btn_AddCoin->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedAddCoinButton);
 	Btn_BuyTicketCoin->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton);
-	Btn_Back03->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack03Button);
-	Btn_Back04->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBtn_Back04Button);
-	Btn_Back05->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBtn_Back05Button);
-	Btn_BuyTicket2->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBuyTicket2Button);
 	Btn_Confirm02_1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm02_1Button);
 	Btn_Confirm01_1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm01_1Button);
-	Btn_CompleteBuyTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedCompleteBuyTicketButton);
 	Btn_Confirm_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUiFailedButton);
+	Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedSaveTicketButton);
+	//뒤로가기
+	Btn_Back01->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack01Button);
+	//Btn_Back02->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack02Button);
+
+	/*//수정전
+	//Btn_Back03->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack03Button);
+	//Btn_BuyTicket2->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBuyTicket2Button);
+	//Btn_CompleteBuyTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedCompleteBuyTicketButton);
 	//Btn_Back01->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack01Button);
 	//Btn_Back02->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack02Button);
-	//Btn_Back_QRUi1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack_QRUi1Button);
-	//Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::티켓저장버튼);
+	//Btn_Back_QRUi1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack_QRUi1Button);*/
 
-	if(Btn_BuyTickerBack)
+	if (Btn_BuyTickerBack)
 	{
-		Btn_BuyTickerBack->OnClicked.AddDynamic(this,&UMH_BuyTicketWidget::CloseButtonPressed);
+		Btn_BuyTickerBack->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
 	}
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
 		Text_ConcertName_001->SetText(FText::FromString(gi->GetConcertName()));
+		Text_ConcertName_002->SetText(FText::FromString(gi->GetConcertName()));
+		Text_CurrentCoin->SetText(FText::FromString(FString::FromInt(gi->GetCoin())));
 	}
 }
 
-void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num)//0:티켓예매정보,1:QR,2:QR성공,3:QR실패,4:배송지,5:결제진행,7:코인충전
+void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num) //0:티켓예매정보,1:QR,2:QR성공,3:QR실패,4:배송지,5:결제진행,7:코인충전
 {
 	//서버에서 불러와서 입력
 	WS_BuyTicketSwitcher->SetActiveWidgetIndex(num);
 }
 
+void UMH_BuyTicketWidget::SetConcertInfo_BuyTicket(FString ConcertName , int32 ConcertDateY , int32 ConcertDateM ,
+                                                   int32 ConcertDateD , FString ConcertTime)
+{
+	//콘서트 날짜 나눠서 받아오기..
+	Text_ConcertDate01Y->SetText(FText::FromString(FString::FromInt(ConcertDateY)));
+	Text_ConcertDate01M->SetText(FText::FromString(FString::FromInt(ConcertDateM)));
+	Text_ConcertDate01D->SetText(FText::FromString(FString::FromInt(ConcertDateD)));
+	Text_ConcertDate02Y->SetText(FText::FromString(FString::FromInt(ConcertDateY)));
+	Text_ConcertDate02M->SetText(FText::FromString(FString::FromInt(ConcertDateM)));
+	Text_ConcertDate02D->SetText(FText::FromString(FString::FromInt(ConcertDateD)));
+	Text_ConcertTime->SetText(FText::FromString(ConcertTime));
+	Text_ConcertTime02->SetText(FText::FromString(ConcertTime));
+	//Text_ConcertDate->SetText(FText::FromString(ConcertName));
+	//Text_ConcertDate02->SetText(FText::FromString(ConcertName));
+}
+
+void UMH_BuyTicketWidget::SetTextSeatID(int32 SeatFloor, FString SeatID)
+{
+	//좌석 층
+	Text_SeatFloor->SetText(FText::AsNumber(SeatFloor));
+	Text_SeatFloor02->SetText(FText::AsNumber(SeatFloor));
+	//좌석 번호
+	Text_SeatID01->SetText(FText::FromString(SeatID));
+	Text_SeatID02->SetText(FText::FromString(SeatID));
+	Text_SeatID03->SetText(FText::FromString(SeatID));
+
+}
+
 void UMH_BuyTicketWidget::SetTextTicketPrice(int32 TicketPrice)
 {
 	Text_TicketPrice01->SetText(FText::AsNumber(TicketPrice));
-	//Text_TicketPrice1_1->SetText(FText::AsNumber(TicketPrice));
-	Text_TicketPrice2->SetText(FText::AsNumber(TicketPrice));
-	Text_TicketPrice2_2->SetText(FText::AsNumber(TicketPrice));
-	//Text_TicketPrice3->SetText(FText::AsNumber(TicketPrice));
+	Text_TicketPrice02->SetText(FText::AsNumber(TicketPrice));
+	Text_TicketPrice03->SetText(FText::AsNumber(TicketPrice));
 }
 
 //3: 좌석 확인 계속하기 버튼
@@ -80,6 +111,7 @@ void UMH_BuyTicketWidget::OnClickedConfirm01_1Button()
 	//5 : 예매자 정보 입력으로
 	SetWidgetSwitcher(5);
 }
+
 //6: 배송지 입력
 void UMH_BuyTicketWidget::OnClickedConfirm02_1Button()
 {
@@ -92,7 +124,6 @@ void UMH_BuyTicketWidget::OnClickedRecentAddress()
 {
 	//현민
 	//최근 배송지 불러와서 셋해주기?
-	
 }
 
 // HTTP : 회원 인증 QR 요청(메인으로 이사가야함)
@@ -123,13 +154,15 @@ void UMH_BuyTicketWidget::SetQRImg(UTexture2D* newTexture)
 void UMH_BuyTicketWidget::OnClickedConfirm02Button()
 {
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if ( HttpActor2 )
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if (HttpActor2)
 		{
-			HttpActor2->ReqPostReservationinfo(EText_Name->GetText() , EText_PhoneNum->GetText(), EText_Address1->GetText(), EText_Address2->GetText(), gi->GetAccessToken());
+			HttpActor2->ReqPostReservationinfo(EText_Name->GetText() , EText_PhoneNum->GetText() ,
+			                                   EText_Address1->GetText() , EText_Address2->GetText() ,
+			                                   gi->GetAccessToken());
 		}
 	}
 
@@ -140,36 +173,37 @@ void UMH_BuyTicketWidget::OnClickedConfirm02Button()
 }
 
 //7: 결제 수단 결제하기 버튼
-void UMH_BuyTicketWidget::OnClickedBuyTicket2Button()
-{
-	//8: 결제완료 창으로
-	SetWidgetSwitcher(8);
-}
+//void UMH_BuyTicketWidget::OnClickedBuyTicket2Button()
+//{
+//8: 결제완료 창으로
+//	SetWidgetSwitcher(8);
+//}
 
 //8:결제 완료
-void UMH_BuyTicketWidget::OnClickedCompleteBuyTicketButton()
-{
-	//9: 예매 완료 
-	//매희 : 메인에서 델리게이트 바인드, 메인 UI 위젯스위처 0번으로
-	
-}
+//void UMH_BuyTicketWidget::OnClickedCompleteBuyTicketButton()
+//{
+//9: 예매 완료 
+//매희 : 메인에서 델리게이트 바인드, 메인 UI 위젯스위처 0번으로
+
+//}
 
 // HTTP : 결제시 회원 인증 사진 업로드 확인
 void UMH_BuyTicketWidget::OnClickedConfirm_QRUi1Button()
 {
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if ( HttpActor2 )
+		if (HttpActor2)
 		{
 			HttpActor2->ReqGetPostConfirmMemberPhoto(HttpActor2->GetUserCode() , gi->GetAccessToken());
-			UE_LOG(LogTemp , Log , TEXT("HttpActor2->GetUserCode() : %s"), *HttpActor2->GetUserCode());
+			UE_LOG(LogTemp , Log , TEXT("HttpActor2->GetUserCode() : %s") , *HttpActor2->GetUserCode());
 		}
 	}
 	//현민 : 인증 완료버튼 -> 성공 : SetWidgetSwitcher(1); /실패 : SetWidgetSwitcher(2);이동
 }
+
 /*
 void UMH_BuyTicketWidget::OnClickedBack_QRUi1Button()
 {	//QR UI
@@ -198,10 +232,26 @@ void UMH_BuyTicketWidget::OnClickedConfirm_QRUiFailedButton()
 
 void UMH_BuyTicketWidget::OnClickedBack_QRFailedButton()
 {
-
 	//매희 :Main 이랑 델리게이트 0번 스위처로 옮겨주기
 }
 
+void UMH_BuyTicketWidget::OnClickedBack01Button()
+{
+	//0번으로
+	SetWidgetSwitcher(0);
+}
+
+/*
+void UMH_BuyTicketWidget::OnClickedBack02Button()
+{
+	
+}
+
+void UMH_BuyTicketWidget::OnClickedBack03Button()
+{
+	
+}*/
+//현민 지워야함
 void UMH_BuyTicketWidget::SetTextSeatID(FString SeatID)
 {
 	//서버에서? 유저가 접수한 좌석정보
@@ -219,16 +269,17 @@ void UMH_BuyTicketWidget::SetTextTotalCoin(int32 TotalCoin)
 	Text_TotalCoin_1->SetText(FText::AsNumber(TotalCoin));
 }
 
+//현민 필요없어진듯
 void UMH_BuyTicketWidget::SetTextNeedCoin(int32 NeedCoin)
 {
-	Text_NeedCoin->SetText(FText::AsNumber(NeedCoin));
+	//Text_NeedCoin->SetText(FText::AsNumber(NeedCoin));
 }
 
 void UMH_BuyTicketWidget::SetTextTicketNum(int32 TicketNum)
 {
 	Text_TicketNum->SetText(FText::AsNumber(TicketNum));
 	Text_TicketNum2->SetText(FText::AsNumber(TicketNum));
-	//Text_TicketNum3->SetText(FText::AsNumber(TicketNum));
+	Text_TicketNum3->SetText(FText::AsNumber(TicketNum));
 	Text_TicketNum4->SetText(FText::AsNumber(TicketNum));
 }
 
@@ -236,18 +287,18 @@ void UMH_BuyTicketWidget::OnClickedAddCoinButton()
 {
 	//결제 진행 위젯에서
 	//충전 버튼 누르면
-	//7 : 충전 위젯으로
-	SetWidgetSwitcher(7);
-	
+	//9 : 충전 위젯으로
+	SetWidgetSwitcher(9);
 }
 
+/*
 void UMH_BuyTicketWidget::OnClickedBack03Button()
 {
 	//결제 진행 
 	//뒤로가기 누르면 다시 배송지로
 	//4: 배송지 입력으로 이동
 	SetWidgetSwitcher(4);
-}
+}*/
 
 // HTTP : 좌석 결제 요청
 void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
@@ -255,24 +306,24 @@ void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
 	//코인 결제
 	//유저 코인이 결제 가능한 정도라면 결제완료창으로 //현민
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if ( HttpActor2 )
+		if (HttpActor2)
 		{
-			HttpActor2->ReqPostPaymentSeat(gi->GetConcertName(), HttpActor2->GetMySeatId() , gi->GetAccessToken());
+			HttpActor2->ReqPostPaymentSeat(gi->GetConcertName() , HttpActor2->GetMySeatId() , gi->GetAccessToken());
 			UE_LOG(LogTemp , Log , TEXT("HttpActor2->GetMySeatId(): %s") , *HttpActor2->GetMySeatId());
 		}
+		//현민 결제 성공하면 SetWidgetSwitcher(8);로 /
 	}
 	//아니라면
 	//충전해야한다고 경고창
 }
-
+//현민 지워야함
 void UMH_BuyTicketWidget::SetTextSeatID2(FString SeatID2)
 {
-	Text_SeatID2->SetText(FText::FromString(SeatID2));
-	//Text_SeatID->SetText(FText::FromString(SeatID2));
+
 }
 
 void UMH_BuyTicketWidget::SetTextUserName(FString UserName)
@@ -280,14 +331,15 @@ void UMH_BuyTicketWidget::SetTextUserName(FString UserName)
 	Text_UserName->SetText(FText::FromString(UserName));
 }
 
+//현민 : 폰번호 다시불러와 쓸일이 없음.. 여기선
 void UMH_BuyTicketWidget::SetTextUserPhoneNum(FString UserPhoneNum)
 {
-	Tex_UserPhoneNum->SetText(FText::FromString(UserPhoneNum));
+	//Tex_UserPhoneNum->SetText(FText::FromString(UserPhoneNum));
 }
-
+//현민 : 주소 다시불러와 쓸일이 없음.. 여기선
 void UMH_BuyTicketWidget::SetTextUserAddress(FString UserAddress)
 {
-	Tex_Address->SetText(FText::FromString(UserAddress));
+	//Tex_Address->SetText(FText::FromString(UserAddress));
 }
 
 void UMH_BuyTicketWidget::OnClickedSaveTicketButton()
@@ -295,18 +347,6 @@ void UMH_BuyTicketWidget::OnClickedSaveTicketButton()
 	//서버에 티켓정보 저장
 	// 서버에 저장 현민
 	// 저장되었다는알림
-}
-
-void UMH_BuyTicketWidget::OnClickedBtn_Back04Button()
-{
-	//결제가 취소되었습니다 알림
-	//위젯종료
-}
-
-void UMH_BuyTicketWidget::OnClickedBtn_Back05Button()
-{
-	//티켓 결제에서 
-	//코인 결제창에서 뒤로가기 누르면
-	//5 :결제진행창으로
-	SetWidgetSwitcher(5);
+	//9: 예매 완료 
+	//매희 : 메인에서 델리게이트 바인드, 메인 UI 위젯스위처 0번으로
 }

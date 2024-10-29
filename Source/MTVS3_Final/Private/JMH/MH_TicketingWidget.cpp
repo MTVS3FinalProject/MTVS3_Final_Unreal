@@ -97,8 +97,8 @@ void UMH_TicketingWidget::SetConcertInfo(FString ConcertName , int32 ConcertDate
 	//접수화면 콘서트 정보 불러오기
 	Text_ConcertName->SetText(FText::FromString(ConcertName));
 	Text_ConcertDateY->SetText(FText::FromString(FString::FromInt(ConcertDateY)));
-    Text_ConcertDateM->SetText(FText::AsNumber(ConcertDateM));
-    Text_ConcertDateD->SetText(FText::AsNumber(ConcertDateD));
+    Text_ConcertDateM->SetText(FText::FromString(FString::FromInt(ConcertDateM)));
+    Text_ConcertDateD->SetText(FText::FromString(FString::FromInt(ConcertDateD)));
 	Text_ConcertTime->SetText(FText::FromString(ConcertTime));
 	//가격도 추가?->가격은 좌석마다 다름
 }

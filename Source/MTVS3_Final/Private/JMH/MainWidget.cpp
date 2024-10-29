@@ -34,9 +34,9 @@ void UMainWidget::NativeConstruct()
 	Btn_ExitMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExit);
 	Btn_BackMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	
-	if(BuyTicketWidget)
+	if(BuyTicketWidget01)
 	{
-			BuyTicketWidget->OnClickedBuyTickerBack.AddDynamic(this, &UMainWidget::OnTicketWidgetClose);
+			BuyTicketWidget01->OnClickedBuyTickerBack.AddDynamic(this, &UMainWidget::OnTicketWidgetClose);
 	}
 
 }
@@ -159,8 +159,8 @@ void UMainWidget::OnClickedConcert01()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if ( HttpActor2 )
 		{
-			//HttpActor2->ReqPostConcertEntry(GI->GetConcertName() , GI->GetAccessToken());
-			HttpActor2->TESTReqPostConcertEntry( GI->GetAccessToken());
+			HttpActor2->ReqPostConcertEntry(GI->GetConcertName() , GI->GetAccessToken());
+			//HttpActor2->TESTReqPostConcertEntry( GI->GetAccessToken());
 		}
 	}
 
