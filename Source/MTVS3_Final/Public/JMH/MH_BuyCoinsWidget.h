@@ -29,10 +29,6 @@ public:
 	
 	//충전 금액 결정 버튼
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton*  Btn_Coin_1000;
-	UFUNCTION()
-	void OnClickedCoin_1000Button();
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Coin_5000;
 	UFUNCTION()
 	void OnClickedCoin_5000Button();
@@ -48,6 +44,21 @@ public:
 	class UButton*  Btn_Coin_100000;
 	UFUNCTION()
 	void OnClickedCoin_100000Button();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_CustomCoin;
+	UPROPERTY()
+	int32 CustomCoinAmount;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_CustomCoinAmount;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UEditableText* EText_CustomCoinAmount;
+	UFUNCTION()
+	void SetCustomCoinAmount();
+
+	
+	UFUNCTION()
+	void OnClickedCoin_freeButton();
 	//충전하기
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_BuyCoin;

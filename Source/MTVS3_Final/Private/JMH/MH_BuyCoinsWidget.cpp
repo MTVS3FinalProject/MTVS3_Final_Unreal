@@ -5,26 +5,28 @@
 
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
+#include "Components/EditableText.h"
+#include "Components/TextBlock.h"
 #include "HJ/TTGameInstance.h"
 
 void UMH_BuyCoinsWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	Btn_Coin_1000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_1000Button);
 	Btn_Coin_5000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_5000Button);
 	Btn_Coin_10000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_10000Button);
 	Btn_Coin_50000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_50000Button);
 	Btn_Coin_100000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_100000Button);
+	Btn_CustomCoin->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_freeButton);
 	Btn_BuyCoin->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedBuyCoinButton);
 
 	//SetVisibleCanvas(false);
 
-	ButtonArray.Add(Btn_Coin_1000);
 	ButtonArray.Add(Btn_Coin_5000);
 	ButtonArray.Add(Btn_Coin_10000);
 	ButtonArray.Add(Btn_Coin_50000);
 	ButtonArray.Add(Btn_Coin_100000);
+	ButtonArray.Add(Btn_CustomCoin);
 }
 
 void UMH_BuyCoinsWidget::SetVisibleCanvas(bool bVisible)
@@ -38,12 +40,6 @@ void UMH_BuyCoinsWidget::SetVisibleCanvas(bool bVisible)
 	{
 		Can_Main->SetVisibility(ESlateVisibility::Hidden);
 	}
-}
-
-void UMH_BuyCoinsWidget::OnClickedCoin_1000Button()
-{
-	AddCoinAmount = 1000;
-	OnButtonClicked(Btn_Coin_1000);
 }
 
 void UMH_BuyCoinsWidget::OnClickedCoin_5000Button()
@@ -64,10 +60,23 @@ void UMH_BuyCoinsWidget::OnClickedCoin_50000Button()
 	OnButtonClicked(Btn_Coin_50000);
 }
 
+
 void UMH_BuyCoinsWidget::OnClickedCoin_100000Button()
 {
 	AddCoinAmount = 100000;
 	OnButtonClicked(Btn_Coin_100000);
+}
+
+void UMH_BuyCoinsWidget::SetCustomCoinAmount()
+{
+	//
+	Text_CustomCoinAmount->SetText(EText_CustomCoinAmount->GetText());
+}
+
+void UMH_BuyCoinsWidget::OnClickedCoin_freeButton()
+{
+	AddCoinAmount = 100000;
+	OnButtonClicked(Btn_CustomCoin);
 }
 //충전하기
 void UMH_BuyCoinsWidget::OnClickedBuyCoinButton()

@@ -107,7 +107,8 @@ void UMainWidget::SetMinimapImage(UTexture2D* img)
 
 void UMainWidget::OnClickedBuyTicket()
 {
-	//예매진행 버튼-> ButTicket으로 
+	//예매진행 버튼-> ButTicket으로
+	//현민 MainUI-> ButTicket에서 Img_QR_1에 QR 생성해줘야함..
 	SetWidgetSwitcher(3);
 }
 
