@@ -142,7 +142,7 @@ public:
 	
 	// 피스 잡기 RPC
 	UFUNCTION(Server, Reliable)
-	void ServerRPCTakePiece();
+	void ServerRPCTakePiece(AHM_PuzzlePiece* pieceActor);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastRPCTakePiece(AHM_PuzzlePiece* pieceActor);
