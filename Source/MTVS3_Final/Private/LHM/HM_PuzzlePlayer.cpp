@@ -267,15 +267,6 @@ void AHM_PuzzlePlayer::OnMyActionLook(const FInputActionValue& Value)
 
 				// 서버에 회전 값 전달
 				ServerRPCUpdateRotation(NewRotation);
-
-				if(UStaticMeshComponent* PieceMesh = PickupPieceActor->GetPiece())
-				{
-					//FRotator PieceRotation = FRotator(ControlRotation.Pitch, 0, 0.0f);
-					//PieceMesh->SetRelativeRotation(PieceRotation);
-					//FRotator HandCompRotation = FRotator(ControlRotation.Pitch, 0, 0);
-					//HandComp->SetRelativeRotation(HandCompRotation);
-					//ServerRPCUpdatePieceRotation(HandCompRotation);
-				}
 			}
 		}
 	}
@@ -363,34 +354,50 @@ void AHM_PuzzlePlayer::MyTakePiece()
 	FVector2D MousePosition;
 	if (PC->GetMousePosition(MousePosition.X, MousePosition.Y))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("클라이언트 겟마우스포지션 라인트레이스 실행"));
 		// 마우스 위치를 월드 위치(Start)와 방향(Direction)으로 변환
 		FVector Start, Dir;
 		PC->DeprojectScreenPositionToWorld(MousePosition.X, MousePosition.Y, Start, Dir);
 
 		// 트레이스의 끝 위치 설정: Start 위치에서 Direction 방향으로 지정한 거리만큼 이동
-		float TraceDistance = 1000.0f; // 예시 거리 (1,000 유닛)
+		float TraceDistance = 1000.0f;
 		FVector End = Start + (Dir * TraceDistance);
 
-		// 라인 트레이스 설정
 		FHitResult HitResult;
 		FCollisionQueryParams TraceParams(FName(TEXT("MouseTrace")), true, this);
 		TraceParams.bReturnPhysicalMaterial = false;
-		TraceParams.AddIgnoredActor(this); // 플레이어 자신을 무시
+		TraceParams.AddIgnoredActor(this);
 
 		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult , Start , End , ECC_Visibility , TraceParams);
 
-		// 라인 트레이스 디버그 라인
 		DrawDebugLine(GetWorld() , Start , End , FColor::Blue , false , 5.f , 0 , 1.f);
 
 		// 맞은 액터가 "Piece" 태그를 가진 AHM_PuzzlePiece인지 확인
 		if (bHit && HitResult.GetActor())
 		{
 			AHM_PuzzlePiece* HitPiece = Cast<AHM_PuzzlePiece>(HitResult.GetActor());
-			if (HitPiece && HitResult.Component->ComponentHasTag("Piece") && HitPiece->GetOwner() == nullptr)
+			if(HitPiece && HitPiece->GetOwner() == nullptr)
 			{
-				ServerRPCTakePiece(HitPiece);
+				bool bHasValidTag = false;
+				for(auto* PieceComp : HitPiece->GetAllPieces())
+				{
+					if (!PieceComp) continue;
+					for (int32 i = 1; i <= 9; ++i)
+					{
+						FString TagName = FString::Printf(TEXT("Piece%d") , i);
+						if (PieceComp->ComponentHasTag(FName(*TagName)))
+						{
+							GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Orange ,
+							                                 FString::Printf(TEXT("Found piece with tag: %s") , *TagName));
+							bHasValidTag = true;
+							break;
+						}
+					}
+					if(bHasValidTag) break;
+				}
+				// 유효한 태그가 있으면 피스 잡기 호출
+				if (bHasValidTag) ServerRPCTakePiece(HitPiece);
 			}
+			
 		}
 	}
 }
@@ -430,34 +437,30 @@ void AHM_PuzzlePlayer::AttachPiece(AHM_PuzzlePiece* pieceActor)
 	if (PC && PC->IsLocalController())
 	{
 		FRotator ControlRotation = PC->GetControlRotation();
-        
 		// 캐릭터의 회전을 카메라 회전과 동기화
 		SetActorRotation(FRotator(0.0f, ControlRotation.Yaw, 0.0f));
-        
-		// 시점 전환을 부드럽게
 		PC->SetViewTargetWithBlend(this);
-
 	}
 	
-	if(PickupPieceActor && PickupPieceActor->GetPiece())
+	if(PickupPieceActor)
 	{
-		auto* mesh = PickupPieceActor->GetPiece();
-		if(mesh)
+		const TArray<UStaticMeshComponent*>& Pieces = PickupPieceActor->GetAllPieces();
+		for(auto* mesh : Pieces)
 		{
-			mesh->SetSimulatePhysics(false); // 물리 비활성화
-			mesh->SetEnableGravity(false);  // 중력 비활성화
-			mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 비활성화
-
-			if (PC && !bIsThirdPerson)
+			if (mesh)
 			{
-				FRotator ControlRotation = PC->GetControlRotation(); //(Pitch=0.000000,Yaw=270.000000,Roll=-0.000000)
-				//FRotator PieceRotation = FRotator(ControlRotation.Pitch, 0, 0); //(Pitch=-0.000000,Yaw=90.000000,Roll=-90.000000)
-				FRotator HandCompRotation = FRotator(ControlRotation.Pitch, 0, 0);
-				mesh->AttachToComponent(HandComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-				mesh->SetRelativeLocation(FVector(100, 0, -30));
-				//mesh->SetRelativeRotation(PieceRotation);
-				//HandComp->SetRelativeRotation(HandCompRotation);
-				UE_LOG(LogTemp, Log, TEXT("MulticastRPCTakePiece AttachPiece") );
+				mesh->SetSimulatePhysics(false); // 물리 비활성화
+				mesh->SetEnableGravity(false); // 중력 비활성화
+				mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 충돌 비활성화
+
+				if (PC && !bIsThirdPerson)
+				{
+					FRotator ControlRotation = PC->GetControlRotation();
+					FRotator HandCompRotation = FRotator(ControlRotation.Pitch , 0 , 0);
+					mesh->AttachToComponent(HandComp , FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+					mesh->SetRelativeLocation(FVector(100 , 0 , -30));
+					UE_LOG(LogTemp , Log , TEXT("MulticastRPCTakePiece AttachPiece"));
+				}
 			}
 		}
 	}
@@ -466,27 +469,26 @@ void AHM_PuzzlePlayer::AttachPiece(AHM_PuzzlePiece* pieceActor)
 void AHM_PuzzlePlayer::DetachPiece(AHM_PuzzlePiece* pieceActor)
 {
 	SwitchCamera(true);
-	if (pieceActor && pieceActor->GetPiece())
+	if (pieceActor)
 	{
-		auto* mesh = pieceActor->GetPiece();
-		check(mesh);
-		if(mesh)
+		const TArray<UStaticMeshComponent*>& Pieces = pieceActor->GetAllPieces();
+		for(auto* mesh : Pieces)
 		{
-			// 서버에서만 물리 시뮬레이션을 활성화
-			//if (HasAuthority())
-			//{
-				mesh->SetSimulatePhysics(true);  // 물리 활성화
-				mesh->SetEnableGravity(true);  // 중력 활성화
-				pieceActor->bSimulatingPhysics = true;
-			//}
-			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);  // 충돌 활성화
-			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-
-			// 현재 Transform을 저장하고 복제
-			if(HasAuthority())
+			check(mesh);
+			if (mesh)
 			{
-				pieceActor->CurrentTransform = mesh->GetComponentTransform();
+				mesh->SetSimulatePhysics(true); // 물리 활성화
+				mesh->SetEnableGravity(true); // 중력 활성화
+				pieceActor->bSimulatingPhysics = true;
+				mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // 충돌 활성화
+				mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 			}
+		}
+		// 현재 Transform을 저장하고 복제
+		if (HasAuthority() && !Pieces.IsEmpty())
+		{
+			//pieceActor->CurrentTransform = mesh->GetComponentTransform();
+			pieceActor->CurrentTransform = Pieces.Last()->GetComponentTransform();
 		}
 	}
 }
@@ -494,40 +496,34 @@ void AHM_PuzzlePlayer::DetachPiece(AHM_PuzzlePiece* pieceActor)
 void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
 {
 	SwitchCamera(true);
-	if (pieceActor && pieceActor->GetPiece())
+	if (pieceActor)
 	{
-		auto* mesh = pieceActor->GetPiece();
-		check(mesh);
-		if(mesh)
+		const TArray<UStaticMeshComponent*>& Pieces = pieceActor->GetAllPieces();
+		for(auto* mesh : Pieces)
 		{
-			// 충돌 활성화
-			mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-			mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
-			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			
-			// 발사 속도를 적용하여 포물선 궤적 생성
-			pieceActor->bSimulatingPhysics = true;
-			mesh->SetSimulatePhysics(true); // 물리 적용
-			mesh->SetEnableGravity(true);  // 중력 활성화
-			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+			check(mesh);
+			if (mesh)
+			{
+				mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+				mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+				mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-			//위치와 속도 설정
-			FVector LaunchDirection = GetActorForwardVector(); // 캐릭터의 전방향
-			//FVector FPSCompLocation = FPSCameraComp->GetComponentLocation().ForwardVector;
-			float LaunchSpeed = 2000.0f; // 발사 속도 조정
-			FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
-			mesh->AddImpulse(LaunchVelocity, NAME_None, true);
-			
-			// FVector CameraLocation = FPSCameraComp->GetComponentLocation();
-			// FVector LaunchDirection = (CameraLocation - mesh->GetComponentLocation()).GetSafeNormal();
-			// float LaunchSpeed = 2000.0f;
-			// FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
-			// mesh->AddImpulse(LaunchVelocity, NAME_None, true);
+				// 발사 속도를 적용하여 포물선 궤적 생성
+				pieceActor->bSimulatingPhysics = true;
+				mesh->SetSimulatePhysics(true); // 물리 적용
+				mesh->SetEnableGravity(true); // 중력 활성화
+				mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+				FVector FPSCompDirection = FPSCameraComp->GetForwardVector(); // 카메라의 전방향
+				float LaunchSpeed = 2000.0f; // 발사 속도 조정
+				FVector LaunchVelocity = FPSCompDirection * LaunchSpeed;
+				mesh->AddImpulse(LaunchVelocity , NAME_None , true);
+			}
 		}
 		// 현재 Transform을 저장하고 복제
 		if(HasAuthority())
 		{
-			pieceActor->CurrentTransform = mesh->GetComponentTransform();
+			pieceActor->CurrentTransform = Pieces.Last()->GetComponentTransform();
 		}
 	}
 }
