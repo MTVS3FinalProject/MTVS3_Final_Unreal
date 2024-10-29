@@ -92,7 +92,7 @@ public:
 
 	void FindOrCreateSession(const FString& SessionNamePrefix , int32 MaxPlayers);
 	void OnFindOrCreateSessionComplete(bool bWasSuccessful);
-	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
+	void AttemptJoinSession(const FOnlineSessionSearchResult& SessionResult);
 	void OnMyJoinSessionComplete(FName SessionName , EOnJoinSessionCompleteResult::Type Result);
 	void CreateMySession(int32 playerCount , const FString& SessionName);
 	void OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful);

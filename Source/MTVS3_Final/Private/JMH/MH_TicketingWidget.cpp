@@ -29,7 +29,7 @@ void UMH_TicketingWidget::NativeConstruct()
 	//위젯 꺼져있는게 기본값
 	//SetVisibleSwitcher(false);
 	WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
-	
+
 
 	//콘서트정보 담아오기
 	//SetConcertInfo();
@@ -48,57 +48,67 @@ void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
 	WS_RegisterSwitcher->SetActiveWidgetIndex(num);
 }
 
-void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible, int index)
+void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 {
-	switch(index)
+	switch (index)
 	{
 	case 0:
-		if ( bVisible )
+		if (bVisible)
 		{
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
-			if ( !bIsVisible&& Can_RegisterAnim_On )
+			if (!bIsVisible && Can_RegisterAnim_On)
 			{
 				bIsVisible = true;
 				WS_RegisterSwitcher->SetActiveWidgetIndex(0);
 				PlayAnimation(Can_RegisterAnim_On);
+				PlayAnimation(Over_Settings_On);
 			}
 		}
 
-		else if ( !bVisible )
+		else if (!bVisible)
 		{
-			if ( bIsVisible && Can_RegisterAnim_Off )
+			if (bIsVisible && Can_RegisterAnim_Off)
 			{
-				bIsVisible=false;
+				bIsVisible = false;
 				PlayAnimation(Can_RegisterAnim_Off);
+				//타이머 써서 비지블 Hidden처리
+				FTimerHandle HiddenCanvasTimerHandle;
+				PlayAnimation(Over_Settings_Off);
+				GetWorld()->GetTimerManager().SetTimer(HiddenCanvasTimerHandle, this, &UMH_TicketingWidget::HiddenCanvas, 1.1f, false);
 			}
-			//WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
 		}
 		break;
 	default:
-		if ( bVisible )
+		if (bVisible)
 		{
 			bIsVisible = true;
 			WS_RegisterSwitcher->SetActiveWidgetIndex(1);
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
 		}
-		else if ( !bVisible )
+		else if (!bVisible)
 		{
-			bIsVisible=false;
+			bIsVisible = false;
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
 		}
 		break;
 	}
+}
+
+void UMH_TicketingWidget::HiddenCanvas()
+{
+	//좌석 접수 UI 히든
+	WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
 	
 }
 
 void UMH_TicketingWidget::SetConcertInfo(FString ConcertName , int32 ConcertDateY , int32 ConcertDateM ,
-										 int32 ConcertDateD , FString ConcertTime)
+                                         int32 ConcertDateD , FString ConcertTime)
 {
 	//접수화면 콘서트 정보 불러오기
 	Text_ConcertName->SetText(FText::FromString(ConcertName));
 	Text_ConcertDateY->SetText(FText::FromString(FString::FromInt(ConcertDateY)));
-    Text_ConcertDateM->SetText(FText::AsNumber(ConcertDateM));
-    Text_ConcertDateD->SetText(FText::AsNumber(ConcertDateD));
+	Text_ConcertDateM->SetText(FText::AsNumber(ConcertDateM));
+	Text_ConcertDateD->SetText(FText::AsNumber(ConcertDateD));
 	Text_ConcertTime->SetText(FText::FromString(ConcertTime));
 	//가격도 추가?->가격은 좌석마다 다름
 }
@@ -136,14 +146,14 @@ void UMH_TicketingWidget::SetTextRemainingTicket(int32 RemainingTicket)
 void UMH_TicketingWidget::SetCompletedVisible(bool bVisible)
 {
 	//텍스트, 접수신청 버튼같이 꺼주기
-	if ( bVisible )
+	if (bVisible)
 	{
 		Ver_Completed->SetVisibility(ESlateVisibility::Visible);
 		Btn_Cancel_Ticketting1->SetVisibility(ESlateVisibility::Visible);
 		Btn_Confirm_Ticketting->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	else if ( !bVisible )
+	else if (!bVisible)
 	{
 		Ver_Completed->SetVisibility(ESlateVisibility::Hidden);
 		Btn_Cancel_Ticketting1->SetVisibility(ESlateVisibility::Hidden);
@@ -154,21 +164,21 @@ void UMH_TicketingWidget::SetCompletedVisible(bool bVisible)
 void UMH_TicketingWidget::OnClickedBackButton()
 {
 	//뒤로가기 (위젯 숨기기 애님 플레이)
-	SetVisibleSwitcher(false, 0);
+	SetVisibleSwitcher(false , 0);
 }
 
 void UMH_TicketingWidget::OnClickedConfirmButton()
 {
 	//접수 클릭 버튼
-	
+
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		AMH_Chair* Chair = Cast<AMH_Chair>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
-		if ( HttpActor2 && Chair )
+		if (HttpActor2 && Chair)
 		{
 			// Chair의 태그를 가져와서 매개변수로 넘김
 			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
@@ -188,13 +198,13 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 {
 	//서버-> 접수취소
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		AMH_Chair* Chair = Cast<AMH_Chair>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
-		if ( HttpActor2 && Chair )
+			UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
+		if (HttpActor2 && Chair)
 		{
 			// Chair의 태그를 가져와서 매개변수로 넘김
 			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
@@ -249,7 +259,7 @@ void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToLuckyDraw"));
 	// 게임 인스턴스를 가져와서
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
 		gi->SwitchSession(EPlaceState::LuckyDrawRoom);
 	}
@@ -263,7 +273,6 @@ void UMH_TicketingWidget::OnClickedPlayerVisibleButton()
 void UMH_TicketingWidget::SetPlayerVisible(bool bVisible)
 {
 	//좌석 카메라에서 플레이어 보이게, 안보이게
-
 }
 
 void UMH_TicketingWidget::OnClickedSoundButton()
@@ -274,7 +283,6 @@ void UMH_TicketingWidget::OnClickedSoundButton()
 void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 {
 	//소리 들리게, 안들리게.
-
 }
 
 /*
@@ -354,4 +362,3 @@ void UMH_TicketingWidget::OnClickedGameResult()
 		}
 	}
 }*/
-
