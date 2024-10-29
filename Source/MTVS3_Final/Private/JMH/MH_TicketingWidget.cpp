@@ -72,9 +72,9 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 				bIsVisible = false;
 				PlayAnimation(Can_RegisterAnim_Off);
 				//타이머 써서 비지블 Hidden처리
-				FTimerHandle RouletteTimerHandle;
+				FTimerHandle HiddenCanvasTimerHandle;
 				PlayAnimation(Over_Settings_Off);
-				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle, this, &UMH_TicketingWidget::HiddenCanvas, 1.1f, false);
+				GetWorld()->GetTimerManager().SetTimer(HiddenCanvasTimerHandle, this, &UMH_TicketingWidget::HiddenCanvas, 1.1f, false);
 			}
 		}
 		break;
