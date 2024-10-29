@@ -79,11 +79,11 @@ public:
 	void OnMyActionRunComplete(const FInputActionValue& Value);
 
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
-	class UInputAction* IA_Pickup;
+	class UInputAction* IA_Piece;
 	void OnMyActionPickupPiece(const FInputActionValue& Value);
 	
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
-	class UInputAction* IA_Launch;
+	class UInputAction* IA_Zoom;
 	void OnMyActionZoomInPiece(const FInputActionValue& Value);
 	void OnMyActionZoomOutPiece(const FInputActionValue& Value);
 	

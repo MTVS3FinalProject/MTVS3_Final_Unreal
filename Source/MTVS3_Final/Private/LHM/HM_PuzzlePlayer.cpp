@@ -171,9 +171,9 @@ void AHM_PuzzlePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		input->BindAction(IA_Jump , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionJumpComplete);
 		input->BindAction(IA_Run , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionRunStart);
 		input->BindAction(IA_Run , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionRunComplete);
-		input->BindAction(IA_Pickup , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionPickupPiece);
-		input->BindAction(IA_Launch , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionZoomInPiece);
-		input->BindAction(IA_Launch , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionZoomOutPiece);
+		input->BindAction(IA_Piece , ETriggerEvent::Started , this , &AHM_PuzzlePlayer::OnMyActionPickupPiece);
+		input->BindAction(IA_Zoom , ETriggerEvent::Triggered , this , &AHM_PuzzlePlayer::OnMyActionZoomInPiece);
+		input->BindAction(IA_Zoom , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionZoomOutPiece);
 	}
 		// 마우스 회전 입력 바인딩 추가
 		PlayerInputComponent->BindAxis("Look Up", this, &AHM_PuzzlePlayer::AddControllerPitchInput);
@@ -230,8 +230,6 @@ void AHM_PuzzlePlayer::OnMyActionMove(const FInputActionValue& Value)
 	Direction.X = v.X;
 	Direction.Y = v.Y;
 	Direction.Normalize();
-
-	
 }
 
 void AHM_PuzzlePlayer::OnMyActionEnableLookStart(const FInputActionValue& Value)
@@ -249,7 +247,7 @@ void AHM_PuzzlePlayer::OnMyActionLook(const FInputActionValue& Value)
 	FVector2D v = Value.Get<FVector2D>();
 	
 	// 1인칭 모드이거나 마우스 좌클릭(bIsEnableLook)일 때 시점 이동 가능
-	if (!bIsThirdPerson || bIsEnableLook)
+	if (!bIsThirdPerson || bIsEnableLook )
 	{
 		AddControllerPitchInput(-v.Y);
 		AddControllerYawInput(v.X);
@@ -308,7 +306,7 @@ void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 	{
 		MyLaunchPiece();
 		if(AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
-		//bHasPiece = false; 
+		bHasPiece = false; 
 		bIsZoomingIn = false;
 	}
 	else if(bHasPiece)
@@ -325,7 +323,7 @@ void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 
 void AHM_PuzzlePlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 {
-	if ( bHasPiece && !bIsZoomingIn )
+	if ( bHasPiece && !bIsZoomingIn && !bIsThirdPerson )
 	{
 		if (AimingUI)
 		{
@@ -337,7 +335,7 @@ void AHM_PuzzlePlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 
 void AHM_PuzzlePlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 {
-	if ( bHasPiece && bIsZoomingIn )
+	if ( bHasPiece && bIsZoomingIn && !bIsThirdPerson )
 	{
 		if (AimingUI)
 		{
@@ -349,6 +347,7 @@ void AHM_PuzzlePlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 
 void AHM_PuzzlePlayer::MyTakePiece()
 {
+	ZoomOut();
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
 				FString::Printf(TEXT("MyTakePiece")));
 
@@ -645,6 +644,8 @@ void AHM_PuzzlePlayer::ServerRPCLaunchPiece_Implementation()
 		// 피스를 잊고싶다.
 		PickupPieceActor = nullptr;
 	}
+
+	bIsZoomingIn = false;
 }
 
 void AHM_PuzzlePlayer::MulticastRPCLaunchPiece_Implementation(AHM_PuzzlePiece* pieceActor)
