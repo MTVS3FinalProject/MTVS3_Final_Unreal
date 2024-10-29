@@ -109,7 +109,7 @@ void UTTGameInstance::OnFindOrCreateSessionComplete(bool bWasSuccessful)
 				// 세션 이름 접두사로 필터링
 				if ( SessionName.StartsWith(SessionType) )
 				{
-					JoinSession(Result);
+					AttemptJoinSession(Result);
 					return;
 				}
 			}
@@ -124,7 +124,7 @@ void UTTGameInstance::OnFindOrCreateSessionComplete(bool bWasSuccessful)
 }
 
 // 세션에 참가하는 함수
-void UTTGameInstance::JoinSession(const FOnlineSessionSearchResult& SessionResult)
+void UTTGameInstance::AttemptJoinSession(const FOnlineSessionSearchResult& SessionResult)
 {
 	if ( SessionInterface.IsValid() )
 	{
