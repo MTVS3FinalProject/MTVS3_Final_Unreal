@@ -3,7 +3,6 @@
 
 #include "JMH/MainWidget.h"
 
-#include "AssetTypeCategories.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
@@ -11,7 +10,6 @@
 #include "HJ/TTGameInstance.h"
 #include "LHM/HM_HttpActor2.h"
 #include "Kismet/GameplayStatics.h"
-#include <HJ/TTPlayer.h>
 #include <HJ/TTPlayerState.h>
 
 #include "Components/Image.h"

@@ -2,7 +2,6 @@
 
 
 #include "HJ/TTHallGameState.h"
-
 #include "EngineUtils.h"
 #include "HJ/TTGameInstance.h"
 #include "HJ/TTPlayer.h"
