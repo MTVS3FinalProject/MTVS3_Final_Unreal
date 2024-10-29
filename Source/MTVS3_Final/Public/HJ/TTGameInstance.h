@@ -105,7 +105,7 @@ public:
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;;
 
 	UFUNCTION(Server , Reliable)
-	void ServerRPCExitSesson();
+	void ServerRPCExitSession();
 
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastRPCExitSession();

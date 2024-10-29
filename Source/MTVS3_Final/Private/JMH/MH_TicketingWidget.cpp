@@ -2,9 +2,7 @@
 
 
 #include "JMH/MH_TicketingWidget.h"
-
 #include "Components/Button.h"
-#include "Components/Overlay.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"

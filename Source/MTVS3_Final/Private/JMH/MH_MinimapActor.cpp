@@ -2,14 +2,12 @@
 
 
 #include "JMH/MH_MinimapActor.h"
-
 #include "PaperSprite.h"
 #include "PaperSpriteComponent.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "JMH/MainWidget.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values

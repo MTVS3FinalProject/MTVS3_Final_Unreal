@@ -4,11 +4,8 @@
 #include "LHM/TTPlayerController.h"
 #include "Engine/World.h"
 #include "chrono"
-#include "Kismet/GameplayStatics.h"
 #include "JMH/MH_TicketingWidget.h"
 #include "JMH/MainWidget.h"
-#include <HJ/TTPlayerState.h>
-#include "HJ/TTGameInstance.h"
 
 void ATTPlayerController::BeginPlay()
 {

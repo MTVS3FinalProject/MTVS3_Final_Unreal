@@ -2,7 +2,6 @@
 
 
 #include "JMH/MH_BuyCoinsWidget.h"
-
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "HJ/TTGameInstance.h"
