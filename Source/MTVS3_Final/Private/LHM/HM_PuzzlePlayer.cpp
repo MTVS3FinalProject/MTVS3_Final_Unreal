@@ -328,6 +328,7 @@ void AHM_PuzzlePlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 {
 	if ( bHasPiece && !bIsZoomingIn && !bIsThirdPerson )
 	{
+		bIsZoomingIn = true;
 		if (AimingUI)
 		{
 			AimingUI->SetVisibility(ESlateVisibility::Visible);
@@ -340,6 +341,7 @@ void AHM_PuzzlePlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 {
 	if ( bHasPiece && bIsZoomingIn && !bIsThirdPerson )
 	{
+		bIsZoomingIn = false;
 		if (AimingUI)
 		{
 			AimingUI->SetVisibility(ESlateVisibility::Hidden);
@@ -532,8 +534,12 @@ void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
 
 void AHM_PuzzlePlayer::ZoomIn()
 {
-	if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	//if(FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	if (FPSCameraComp)
 	{
+		// 기존 타이머가 있다면 종료
+		GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+		
 		bIsZoomingIn = true;
 		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
 		{
@@ -543,7 +549,7 @@ void AHM_PuzzlePlayer::ZoomIn()
 			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, ZoomedFOV, 0.1f))
 			{
 				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
-				bIsZoomingIn = true; // 줌 인 상태로 고정
+				//bIsZoomingIn = true; // 줌 인 상태로 고정
 			}
 		}, 0.01f, true);
 		UE_LOG(LogTemp, Log, TEXT("ZoomIn Started"));
@@ -552,8 +558,12 @@ void AHM_PuzzlePlayer::ZoomIn()
 
 void AHM_PuzzlePlayer::ZoomOut()
 {
-	if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	//if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	if(FPSCameraComp)
 	{
+		// 기존 타이머가 있다면 종료
+		GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+		
 		bIsZoomingIn = false;
 		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
 		{
@@ -563,7 +573,7 @@ void AHM_PuzzlePlayer::ZoomOut()
 			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, DefaultFOV, 0.1f))
 			{
 				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
-				bIsZoomingIn = false; // 줌 아웃 상태로 고정
+				//bIsZoomingIn = false; // 줌 아웃 상태로 고정
 			}
 		}, 0.01f, true);
 		UE_LOG(LogTemp, Log, TEXT("ZoomOut Started"));
