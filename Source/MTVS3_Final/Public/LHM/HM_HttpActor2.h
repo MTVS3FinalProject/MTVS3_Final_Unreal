@@ -412,5 +412,7 @@ public:
 
     // 개발자 키(2) Cheat Seat 좌석 게임 결과 요청
     void ReqPostCheatGameResult(FString ConcertName , FString AccessToken);
-
+	// 개발자 키(2-1) 좌석 결제 요청/응답
+	void ReqPostCheatPaymentSeat(FString ConcertName, FString AccessToken);
+	void OnResPostCheatPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 };
