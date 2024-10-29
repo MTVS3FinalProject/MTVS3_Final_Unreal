@@ -24,7 +24,12 @@ public:
 	class UWidgetSwitcher* WS_RegisterSwitcher;
 	UFUNCTION(BlueprintCallable)
 	void SetVisibleSwitcher(bool bVisible, int index);
-
+	UFUNCTION(BlueprintCallable)
+	void HiddenCanvas();
+	
+	UPROPERTY()
+	FTimerHandle TimerHandle;
+	
 	//예매 접수
 	//공연정보
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -177,6 +182,12 @@ public:
 
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* Can_RegisterAnim_On;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* Over_Settings_On;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* Over_Settings_Off;
 
 	UPROPERTY()
 	bool bIsVisible;
