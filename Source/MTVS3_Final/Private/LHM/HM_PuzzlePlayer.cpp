@@ -460,23 +460,29 @@ void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
 		check(mesh);
 		if(mesh)
 		{
-			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+			// 충돌 활성화
+			mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+			mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			
 			// 발사 속도를 적용하여 포물선 궤적 생성
+			pieceActor->bSimulatingPhysics = true;
 			mesh->SetSimulatePhysics(true); // 물리 적용
 			mesh->SetEnableGravity(true);  // 중력 활성화
-			pieceActor->bSimulatingPhysics = true;
+			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
-			// 충돌 활성화
-			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
-			mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-
-			// 위치와 속도 설정
+			//위치와 속도 설정
 			FVector LaunchDirection = GetActorForwardVector(); // 캐릭터의 전방향
-			//FVector LaunchDirection = FPSCameraComp->GetComponentLocation().ForwardVector;
+			//FVector FPSCompLocation = FPSCameraComp->GetComponentLocation().ForwardVector;
 			float LaunchSpeed = 2000.0f; // 발사 속도 조정
 			FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
 			mesh->AddImpulse(LaunchVelocity, NAME_None, true);
+
+			// FVector CameraLocation = FPSCameraComp->GetComponentLocation();
+			// FVector LaunchDirection = (CameraLocation - mesh->GetComponentLocation()).GetSafeNormal();
+			// float LaunchSpeed = 2000.0f;
+			// FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
+			// mesh->AddImpulse(LaunchVelocity, NAME_None, true);
 		}
 		// 현재 Transform을 저장하고 복제
 		if(HasAuthority())
