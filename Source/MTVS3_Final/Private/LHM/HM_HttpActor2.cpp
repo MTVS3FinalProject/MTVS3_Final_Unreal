@@ -132,14 +132,10 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 							GI->SetConcertName(ConcertName);
 						}
 						
-						// 공연장 입장 UI에 Set Text (아직안만듬)
-						/*if ( MainUI )
+						if ( MainUI->GetBuyTicketWidget() )
 						{
-							MainUI->Set
-							MainUI->SetTextYear(Month);
-							MainUI->SetTextYear(Day);
-							MainUI->SetTextYear(Time);
-						}*/
+							MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(ConcertName,Year,Month,Day,Time);
+						}
 					}
 				}
 			}
@@ -283,6 +279,9 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 	}
 }
 
+//=========================================================================================================================================
+
+// 리팩토링 테스트용
 void AHM_HttpActor2::TESTReqPostConcertEntry( FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -319,6 +318,7 @@ void AHM_HttpActor2::TESTReqPostConcertEntry( FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// 리팩토링 테스트용
 void AHM_HttpActor2::TESTOnResPostConcertEntry(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -489,7 +489,15 @@ void AHM_HttpActor2::OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , 
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Seat Info: %s") , *SeatInfo));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Competition Rate: %d") , CompetitionRate));
 
+					SetSeatInfo(SeatInfo);
+					SetSeatFloor(Floor);
 					MainUI->SetTextSeatNum1(SeatInfo);
+
+					if(MainUI->GetBuyTicketWidget())
+					{
+						MainUI->BuyTicketWidget->SetTextSeatID(Floor, SeatInfo);
+						MainUI->BuyTicketWidget->SetTextConcertName(GetConcertName());
+					}
 					
 					// Ticketing UI에 SetText
 					if ( TicketingUI )
@@ -1088,7 +1096,7 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 						if ( MainUI->GetBuyTicketWidget() )
 						{
 							MainUI->BuyTicketWidget->SetQRImg(Texture);
-							MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
+							MainUI->SetWidgetSwitcher(3);
 
 							UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
 						}
@@ -1157,7 +1165,9 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 		{
 			if ( MainUI->GetBuyTicketWidget() )
 			{
-				MainUI->BuyTicketWidget->SetWidgetSwitcher(2);
+				MainUI->BuyTicketWidget->SetTextSeatID(GetSeatFloor(), GetSeatInfo());
+				MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(GetConcertName(),GetConcertYear(),GetConcertMonth(),GetConcertDay(),GetConcertTime());
+				MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
 				UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
 			}
 		}
@@ -1165,7 +1175,7 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 		{
 			if ( MainUI->GetBuyTicketWidget() )
 			{
-				MainUI->BuyTicketWidget->SetWidgetSwitcher(3);
+				MainUI->BuyTicketWidget->SetWidgetSwitcher(2);
 				UE_LOG(LogTemp , Log , TEXT("Member authentication failed!"));
 			}
 		}
@@ -1260,13 +1270,11 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					// 결제 진행하는 위젯스위쳐 Set
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						MainUI->BuyTicketWidget->SetTextSeatID(SeatInfo);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
-						MainUI->BuyTicketWidget->SetTextNeedCoin(NeededCoin);
 						int32 TotalCoin = SeatNum*SeatPrice;
 						MainUI->BuyTicketWidget->SetTextTotalCoin(TotalCoin);
-						MainUI->BuyTicketWidget->SetWidgetSwitcher(5);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(7);
 					}
 				}
 			}
@@ -1371,12 +1379,12 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					SetUserAddress1(UserAddress);*/
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
+						//MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextUserName(UserName);
-						MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
-						MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
-						MainUI->BuyTicketWidget->SetWidgetSwitcher(6);
+						//MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
+						//MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(8);
 					}
 				}
 			}
@@ -1453,7 +1461,7 @@ void AHM_HttpActor2::ReqPostCheatPaymentSeat(FString ConcertName, FString Access
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostPaymentSeat);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostCheatPaymentSeat);
 
 	// 요청 전송
 	Request->ProcessRequest();
@@ -1506,18 +1514,18 @@ void AHM_HttpActor2::OnResPostCheatPaymentSeat(FHttpRequestPtr Request, FHttpRes
 						GI->SetCoin(UserCoin);
 					}
 					
-					/*SetSeatInfo(SeatInfo);
-					SetSeatPrice(SeatPrice);
-					SetUserName(UserName);
-					SetUserAddress1(UserAddress);*/
+					// SetSeatInfo(SeatInfo);
+					// SetSeatPrice(SeatPrice);
+					// SetUserName(UserName);
+					// SetUserAddress1(UserAddress);
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
+						//MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextUserName(UserName);
-						MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
-						MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
-						MainUI->BuyTicketWidget->SetWidgetSwitcher(6);
+						//MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
+						//MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(8);
 					}
 				}
 			}

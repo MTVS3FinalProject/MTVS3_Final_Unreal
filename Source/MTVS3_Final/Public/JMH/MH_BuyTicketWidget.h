@@ -60,6 +60,9 @@ public:
 	class UTextBlock* Text_ConcertName_001;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_ConcertName_002;
+	UFUNCTION()
+	void SetTextConcertName(FString ConcertName);
+	
 	//서버_콘서트 정보_날짜 //현민 날짜 어디서 셋해주는지 모르겟
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_ConcertDate01Y;
@@ -285,8 +288,8 @@ public:
 	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	//class UTextBlock* Text_SeatID2;
 	//여기
-	UFUNCTION()
-	void SetTextSeatID2(FString SeatID2);
+	//UFUNCTION()
+	//void SetTextSeatID2(FString SeatID2);
 
 	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	//class UTextBlock* Text_TicketNum3;
