@@ -62,7 +62,8 @@ void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concert/test") , *_url); // 테스트용
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert") , *_url);
+	//FString FormattedUrl = FString::Printf(TEXT("%s/concert/test") , *_url); // 테스트용
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -108,7 +109,7 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 					for ( const TSharedPtr<FJsonValue>& ConcertValue : ConcertList )
 					{
 						TSharedPtr<FJsonObject> ConcertObject = ConcertValue->AsObject();
-						int32 ConcertId = ConcertObject->GetIntegerField(TEXT("concertId"));
+						int32 ConcertId = ConcertObject->GetIntegerField(TEXT("concertId")); // test용
 						FString ConcertName = ConcertObject->GetStringField(TEXT("concertName"));
 						int32 Year = ConcertObject->GetIntegerField(TEXT("year"));
 						int32 Month = ConcertObject->GetIntegerField(TEXT("month"));
@@ -1421,5 +1422,110 @@ void AHM_HttpActor2::ReqPostCheatGameResult(FString ConcertName , FString Access
 	Request->ProcessRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("Cheat Seat 좌석 게임 결과 요청"));
+}
+
+void AHM_HttpActor2::ReqPostCheatPaymentSeat(FString ConcertName, FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/seat/reservation-cheat") , *_url); // API테이블 확인하기
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("POST"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 전달 데이터 (JSON)
+	FString ContentString;
+	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	Writer->WriteObjectStart();
+	Writer->WriteValue(TEXT("concertName") , ConcertName);
+	Writer->WriteObjectEnd();
+	Writer->Close();
+
+	// 요청 본문에 JSON 데이터를 설정
+	Request->SetContentAsString(ContentString);
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostPaymentSeat);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor2::OnResPostCheatPaymentSeat(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// 필요한 정보 추출
+					FString SeatId = ResponseObject->GetStringField(TEXT("seatId"));
+					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo"));
+					int32 SeatNum = ResponseObject->GetIntegerField(TEXT("seatNum"));
+					int32 SeatPrice = ResponseObject->GetIntegerField(TEXT("seatPrice"));
+					int32 UserCoin = ResponseObject->GetIntegerField(TEXT("userCoin"));
+					FString UserName = ResponseObject->GetStringField(TEXT("userName"));
+					FString UserPhoneNum = ResponseObject->GetStringField(TEXT("userPhoneNumber"));
+					FString UserAddress = ResponseObject->GetStringField(TEXT("userAddress"));
+
+					UE_LOG(LogTemp , Log , TEXT("SeatId : %s") , *SeatId);
+					UE_LOG(LogTemp , Log , TEXT("SeatInfo : %s") , *SeatInfo);
+					UE_LOG(LogTemp , Log , TEXT("SeatNum : %d") , SeatNum);
+					UE_LOG(LogTemp , Log , TEXT("SeatPrice : %d") , SeatPrice);
+					UE_LOG(LogTemp , Log , TEXT("UserCoin : %d") , UserCoin);
+					UE_LOG(LogTemp , Log , TEXT("UserName : %s") , *UserName);
+					UE_LOG(LogTemp , Log , TEXT("UserPhoneNum : %s") , *UserPhoneNum);
+					UE_LOG(LogTemp , Log , TEXT("UserAddress : %s") , *UserAddress);
+
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+					if ( TTPlayer && GI )
+					{
+						GI->SetCoin(UserCoin);
+					}
+					
+					/*SetSeatInfo(SeatInfo);
+					SetSeatPrice(SeatPrice);
+					SetUserName(UserName);
+					SetUserAddress1(UserAddress);*/
+					if ( MainUI->GetBuyTicketWidget() )
+					{
+						MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
+						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
+						MainUI->BuyTicketWidget->SetTextUserName(UserName);
+						MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
+						MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(6);
+					}
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Error , TEXT("Failed to Post Payment Seat: %s") , *Response->GetContentAsString());
+		}
+	}
 }
 

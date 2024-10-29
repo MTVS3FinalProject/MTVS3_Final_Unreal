@@ -121,9 +121,9 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 			{
-				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField("error");
-				FString ErrorMessage = ErrorObject->GetStringField("message");
-				int32 ErrorStatus = ErrorObject->GetIntegerField("status");
+				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField(TEXT("error"));
+				FString ErrorMessage = ErrorObject->GetStringField(TEXT("message"));
+				int32 ErrorStatus = ErrorObject->GetIntegerField(TEXT("status"));
 
 				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
@@ -215,9 +215,9 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 			{
-				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField("error");
-				FString ErrorMessage = ErrorObject->GetStringField("message");
-				int32 ErrorStatus = ErrorObject->GetIntegerField("status");
+				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField(TEXT("error"));
+				FString ErrorMessage = ErrorObject->GetStringField(TEXT("message"));
+				int32 ErrorStatus = ErrorObject->GetIntegerField(TEXT("status"));
 
 				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
@@ -300,9 +300,9 @@ void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr R
 			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
 			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 			{
-				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField("error");
-				FString ErrorMessage = ErrorObject->GetStringField("message");
-				int32 ErrorStatus = ErrorObject->GetIntegerField("status");
+				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField(TEXT("error"));
+				FString ErrorMessage = ErrorObject->GetStringField(TEXT("message"));
+				int32 ErrorStatus = ErrorObject->GetIntegerField(TEXT("status"));
 
 				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
