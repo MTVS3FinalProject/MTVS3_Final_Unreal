@@ -81,6 +81,12 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetColorTextRender(FColor NewColor);
 
+	UFUNCTION(Server , Unreliable)
+	void ServerChangeWalkSpeed(bool bIsRunning);
+
+	UFUNCTION(NetMulticast , Unreliable)
+	void MulticastChangeWalkSpeed(bool bIsRunning);
+
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
 #pragma endregion
@@ -93,7 +99,7 @@ public:
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
 	float WalkSpeed = 500.0f;
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
-	float RunSpeed = 800.0f;
+	float RunSpeed = 1000.0f;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
 	float MaxSittingDuration = 15.0f;
