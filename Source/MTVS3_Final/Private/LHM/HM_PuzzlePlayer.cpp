@@ -569,7 +569,7 @@ void AHM_PuzzlePlayer::ZoomOut()
 				//bIsZoomingIn = false; // 줌 아웃 상태로 고정
 			}
 		}, 0.01f, true);
-		UE_LOG(LogTemp, Log, TEXT("ZoomOut Started"));
+		UE_LOG(LogTemp, Log, TEXT("ZoomOut Completed"));
 	}
 }
 

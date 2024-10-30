@@ -41,8 +41,8 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 		if(Piece)
 		{
 			FVector RandomLocation = FVector(
-				FMath::RandRange(1000.f, 1500.f),
-				FMath::RandRange(1500.f, 2000.f),
+				FMath::RandRange(700.f, 1800.f),
+				FMath::RandRange(1200.f, 2300.f),
 				FMath::RandRange(350.f, 350.f)
 				//(X=1350.000000,Y=1820.000000,Z=340.000000)
 			);
