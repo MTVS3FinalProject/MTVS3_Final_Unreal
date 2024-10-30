@@ -188,7 +188,7 @@ void UMH_BuyCoinsWidget::OnClickedBuyCoinButton()
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
-		gi->AddCoin(AddCoinAmount); //코인 충전
+		//gi->AddCoin(AddCoinAmount); //코인 충전
 	}
 }
 
