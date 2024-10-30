@@ -19,34 +19,27 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
  	Super::BeginPlay();
  	
  	bReplicates = true;
-	
+
+	FVector PiecesLocation = GetActorLocation();
 	// 각 피스의 초기 위치 설정
 	for(auto* Piece : Pieces)
 	{
 		if(Piece)
 		{
-			FVector RandomLocation = FVector(
-				FMath::RandRange(200.f, 2200.f),
-				FMath::RandRange(1000.f, 2500.f),
+			FVector RandomOffset = FVector(
+				FMath::RandRange(-1000.f, 1000.f),
+				FMath::RandRange(-1000.f, 1000.f),
 				FMath::RandRange(350.f, 350.f)
-				//(X=1350.000000,Y=1820.000000,Z=340.000000)
 			);
-			//Piece->SetRelativeLocation(RandomLocation);
-			FTransform NewTransform = FTransform(RandomLocation);
-			Piece->SetWorldTransform(NewTransform);
-			CurrentTransform = NewTransform;
+			
+			// 기준 위치 + 랜덤 오프셋을 월드 위치로 설정
+			FVector NewLocation = PiecesLocation + RandomOffset;
+			Piece->SetWorldLocation(NewLocation);
+
+			// 필요 시, 변환값을 저장합니다.
+			CurrentTransform = Piece->GetComponentTransform();
 		}
 	}
-	// for (int i = 0; i < Pieces.Num(); i++)
-	// {
-	// 	if (Pieces[i])
-	// 	{
-	// 		FVector PieceLocation = FVector(200.f + (i * 100.f), 1000.f, 350.f);
-	// 		FTransform NewTransform = FTransform(PieceLocation);
-	// 		Pieces[i]->SetWorldTransform(NewTransform);
-	// 		CurrentTransform = NewTransform;
-	// 	}
-	// }
  }
  
  // Called every frame
@@ -85,6 +78,18 @@ class AHM_PuzzlePlayer* AHM_PuzzlePiece::GetComponentOwner(UStaticMeshComponent*
 		return ComponentOwners[Component];
 	}
 	return nullptr;
+}
+
+void AHM_PuzzlePiece::ApplyBounceEffect()
+{
+	for(auto* Piece : Pieces)
+	{
+		if(Piece)
+		{
+			FVector Dir = FVector::BackwardVector * 500.0f;
+			Piece->AddImpulse(Dir, NAME_None, true);
+		}
+	}
 }
 
 void AHM_PuzzlePiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
