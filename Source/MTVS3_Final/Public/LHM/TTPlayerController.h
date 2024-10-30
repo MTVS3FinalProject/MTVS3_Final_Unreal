@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "InputActionValue.h"
 #include "GameFramework/PlayerController.h"
 #include "TTPlayerController.generated.h"
 
@@ -24,18 +25,49 @@ public:
     virtual void Tick(float DeltaTime) override;
 
 #pragma region UI
+	void InitMainUI();
 
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UMainWidget> MainUIFactory;
+	UPROPERTY()
+	class UMainWidget* MainUI;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
 	UPROPERTY()
 	class UMH_TicketingWidget* TicketingUI;
 
-    void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UMH_WorldMap> WorldMapUIFactory;
+	UPROPERTY()
+	class UMH_WorldMap* WorldMapUI;
 
-    UPROPERTY()
-    class UMainWidget* MainUI;
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UMH_GameWidget> GameUIFactory;
+	UPROPERTY()
+	class UMH_GameWidget* GameUI;
+	
+	void InitGameUI();
+	void SetTextMyNum();
 
-    void SetMainUI(UMainWidget* InMainUI);
+	UFUNCTION(Client , Reliable)
+	void ClientLuckyDrawLose();
+
+	UFUNCTION(Client , Reliable)
+	void ClientLuckyDrawWin();
+	
+	// UPROPERTY()
+	// class UMH_TicketingWidget* TicketingUI;
+ //    void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
+ //
+ //    UPROPERTY()
+ //    class UMainWidget* MainUI;
+ //    void SetMainUI(UMainWidget* InMainUI);
 #pragma endregion
 
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	class UInputMappingContext* IMC_TTPlayer;
+	
     // 서버와 클라이언트의 시간 동기화
     UFUNCTION(Server, Reliable)
     void ServerGetCurrentTime();

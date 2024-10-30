@@ -5,6 +5,7 @@
 #include "EngineUtils.h"
 #include "HJ/TTGameInstance.h"
 #include "HJ/TTPlayer.h"
+#include "LHM/TTPlayerController.h"
 
 void ATTHallGameState::BeginPlay()
 {
@@ -18,8 +19,9 @@ void ATTHallGameState::BeginPlay()
 		ATTPlayer* TTPlayer = *It;
 		if ( TTPlayer && TTPlayer->IsLocallyControlled() )
 		{
-			TTPlayer->InitMainUI();
-			TTPlayer->ServerSetNickname(GI->GetNickname());
+			// ATTPlayerController* TTPC = TTPlayer->GetController<ATTPlayerController>();
+			// TTPC->InitMainUI();
+			// TTPlayer->ServerSetNickname(GI->GetNickname());
 			TTPlayer->SwitchCamera(TTPlayer->bIsThirdPerson);
 		}
 	}

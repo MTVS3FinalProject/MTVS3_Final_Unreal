@@ -7,6 +7,7 @@
 #include "JMH/MH_CountDownActor.h"
 #include "JMH/MH_GameWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "LHM/TTPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
 void ATTLuckyDrawGameState::BeginPlay()
@@ -25,14 +26,15 @@ void ATTLuckyDrawGameState::BeginPlay()
         GameUI->SetWidgetSwitcher(0);
     }
 
-    for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
-    {
-        ATTPlayer* TTPlayer = *It;
-        if ( TTPlayer && !TTPlayer->GetbIsHost() && TTPlayer->IsLocallyControlled() )
-        {
-            TTPlayer->InitGameUI();
-        }
-    }
+    // for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+    // {
+    //     ATTPlayer* TTPlayer = *It;
+    //     if ( TTPlayer && !TTPlayer->GetbIsHost() && TTPlayer->IsLocallyControlled() )
+    //     {
+    //         ATTPlayerController* TTPC = TTPlayer->GetController<ATTPlayerController>();
+    //         TTPC->InitGameUI();
+    //     }
+    // }
 }
 
 void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
@@ -174,7 +176,12 @@ void ATTLuckyDrawGameState::EliminatePlayers()
                 ATTPlayer* Player = *It;
                 if (Player && Player->GetRandomSeatNumber() == PlayerID)
                 {
-                    Player->ClientLuckyDrawLose();
+                    ATTPlayerController* PC = Cast<ATTPlayerController>(Player->GetController());
+                    if (PC)
+                    {
+                        PC->ClientLuckyDrawLose();
+                    }
+                    
                     // 탈락자는 빨간색으로 바꾸기
                     Player->MulticastSetColorTextRender(FColor(255, 0, 235));
                 }
@@ -284,12 +291,16 @@ void ATTLuckyDrawGameState::EndRounds()
     // 우승자 찾기
     for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
     {
-        ATTPlayer* TTPlayer = *It;
+        ATTPlayer* Player = *It;
         // TTPlayer->MulticastSetVisibilityTextRender(false);
-        if (TTPlayer && TTPlayer->GetRandomSeatNumber() == WinningSeatNumber)
+        if (Player && Player->GetRandomSeatNumber() == WinningSeatNumber)
         {
-            TTPlayer->ClientLuckyDrawWin();  // 우승자에게만 종료 호출
-            TTPlayer->MulticastSetColorTextRender(FColor(0, 220, 255));
+            ATTPlayerController* PC = Cast<ATTPlayerController>(Player->GetController());
+            if (PC)
+            {
+                PC->ClientLuckyDrawWin();
+            }
+            Player->MulticastSetColorTextRender(FColor(0, 220, 255));
             break;
         }
     }

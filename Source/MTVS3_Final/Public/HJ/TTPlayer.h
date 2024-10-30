@@ -57,28 +57,28 @@ public:
 	UFUNCTION(Server , Reliable)
 	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetRandomSeatNumber();
 
-	UFUNCTION(Server, Reliable)
+	UFUNCTION(Server , Reliable)
 	void ServerLuckyDrawStart();
 
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastLuckyDrawStart();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastMovePlayerToChair(const FTransform& TargetTransform);
 
-	UFUNCTION(Client, Reliable)
-	void ClientLuckyDrawLose();
-	
-	UFUNCTION(Client, Reliable)
-	void ClientLuckyDrawWin();
+	// UFUNCTION(Client , Reliable)
+	// void ClientLuckyDrawLose();
+	//
+	// UFUNCTION(Client , Reliable)
+	// void ClientLuckyDrawWin();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetVisibilityTextRender(bool bIsVisible);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetColorTextRender(FColor NewColor);
 
 	// UFUNCTION()
@@ -123,7 +123,8 @@ public:
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 	// 랜덤으로 배치된 좌석 번호
-	UPROPERTY(Replicated/*Using=OnRep_RandomSeatNumber*/ , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(Replicated/*Using=OnRep_RandomSeatNumber*/ , BlueprintReadWrite , VisibleAnywhere ,
+		Category = "TTSettings|UserInfo")
 	int32 RandomSeatNumber = -1;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
@@ -144,9 +145,6 @@ public:
 	void SwitchCamera(bool _bIsThirdPerson);
 
 #pragma region 입력
-	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
-	class UInputMappingContext* IMC_TTPlayer;
-
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Move;
 	void OnMyActionMove(const FInputActionValue& Value);
@@ -221,20 +219,20 @@ public:
 #pragma endregion
 
 #pragma region UI
-	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
-	TSubclassOf<class UMainWidget> MainUIFactory;
-	UPROPERTY()
-	class UMainWidget* MainUI;
-
-	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
-	TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
-	UPROPERTY()
-	class UMH_TicketingWidget* TicketingUI;
-
-	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
-	TSubclassOf<class UMH_WorldMap> WorldMapUIFactory;
-	UPROPERTY()
-	class UMH_WorldMap* WorldMapUI;
+	// UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	// TSubclassOf<class UMainWidget> MainUIFactory;
+	// UPROPERTY()
+	// class UMainWidget* MainUI;
+	//
+	// UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	// TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
+	// UPROPERTY()
+	// class UMH_TicketingWidget* TicketingUI;
+	//
+	// UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	// TSubclassOf<class UMH_WorldMap> WorldMapUIFactory;
+	// UPROPERTY()
+	// class UMH_WorldMap* WorldMapUI;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	class UWidgetComponent* NicknameUIComp;
@@ -244,20 +242,21 @@ public:
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	class UTextRenderComponent* TextRenderComp;
-	
-	void InitMainUI();
 
-	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
-	TSubclassOf<class UMH_GameWidget> GameUIFactory;
 	UPROPERTY()
-	class UMH_GameWidget* GameUI;
-	
-	void InitGameUI();
-	void SetTextMyNum();
+	class UMH_TicketingWidget* TicketingUI;
+
+	UPROPERTY()
+	class UMainWidget* MainUI;
+
+	UPROPERTY()
+	class UMH_WorldMap* WorldMapUI;
+
+	void SetUI();
 #pragma endregion
 
 private:
-	FTimerHandle StandUpTimerHandle;  // 타이머 핸들
-	
+	FTimerHandle StandUpTimerHandle; // 타이머 핸들
+
 	void ForceStandUp();
 };
