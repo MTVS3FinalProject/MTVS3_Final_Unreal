@@ -257,7 +257,7 @@ void UTTGameInstance::OnMyCreateSessionComplete(FName SessionName , bool bWasSuc
 
 void UTTGameInstance::ExitSession()
 {
-	ServerRPCExitSesson();
+	ServerRPCExitSession();
 }
 
 void UTTGameInstance::SwitchSession(EPlaceState Destination)
@@ -278,7 +278,7 @@ void UTTGameInstance::SwitchSession(EPlaceState Destination)
 	ExitSession(); // 현재 세션 나가기
 }
 
-void UTTGameInstance::ServerRPCExitSesson_Implementation()
+void UTTGameInstance::ServerRPCExitSession_Implementation()
 {
 	MulticastRPCExitSession();
 }

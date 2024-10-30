@@ -2,7 +2,6 @@
 
 
 #include "JMH/MH_Interaction.h"
-
 #include "Components/WidgetSwitcher.h"
 
 void UMH_Interaction::NativeConstruct()

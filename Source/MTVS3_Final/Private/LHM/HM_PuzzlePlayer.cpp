@@ -2,9 +2,6 @@
 
 
 #include "LHM/HM_PuzzlePlayer.h"
-
-#include "KismetTraceUtils.h"
-#include "MovieSceneTracksComponentTypes.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"

@@ -3,18 +3,14 @@
 
 #include "LHM/HM_HttpActor2.h"
 #include "JMH/MH_TicketingWidget.h"
-#include "Kismet/GameplayStatics.h"
 #include "HttpModule.h"
-#include "LHM/TTPlayerController.h"
 #include "Interfaces/IHttpResponse.h"
 #include "HJ/TTPlayer.h"
 #include "HJ/TTGameInstance.h"
-#include "GenericPlatform/GenericPlatformHttp.h"
 #include "ImageUtils.h"
 #include "JMH/MH_BuyTicketWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "JMH/MainWidget.h"
-#include "Components/Button.h"
 
 // Sets default values
 AHM_HttpActor2::AHM_HttpActor2()

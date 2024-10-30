@@ -2,11 +2,9 @@
 
 
 #include "JMH/MH_BuyTicketWidget.h"
-
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
-#include "LHM/HM_HttpActor.h"
 #include "HJ/TTGameInstance.h"
 #include "LHM/HM_HttpActor2.h"
 #include "Components/Image.h"
