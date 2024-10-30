@@ -19,7 +19,10 @@ void UMH_BuyCoinsWidget::NativeConstruct()
 	Btn_Coin_100000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_100000Button);
 	Btn_CustomCoin->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_freeButton);
 	Btn_BuyCoin->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedBuyCoinButton);
-
+	
+	//Main 닫기버튼 바인드
+	Btn_Back06_2->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::CloseButtonPressed);
+	
 	//SetVisibleCanvas(false);
 
 	ButtonArray.Add(Btn_Coin_5000);

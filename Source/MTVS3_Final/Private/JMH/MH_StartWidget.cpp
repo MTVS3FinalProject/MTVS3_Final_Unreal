@@ -22,11 +22,11 @@ void UMH_StartWidget::NativeConstruct()
 	Btn_GoToLobby_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignInButton);
 	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
 	Btn_test_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::Test_CreateSesstion); //테스트 세션생성 버튼
-	Btn_Exit_LoginWin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitWinButton);
 	Btn_ForgotPassword_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
 // 종료
-	Btn_Exit_LoginWin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
-	Btn_ExitLogin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
+	Btn_Exit_LoginWin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitWinButton);
+	//Btn_Exit_LoginWin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
+	Btn_ExitLogin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
 	Btn_BackLogin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
 	
 	

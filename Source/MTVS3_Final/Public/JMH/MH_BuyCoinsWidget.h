@@ -9,12 +9,23 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedBuyCoinBack);
+
 UCLASS()
 class MTVS3_FINAL_API UMH_BuyCoinsWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
+	FOnClickedBuyCoinBack OnClickedBuyCoinBack;
+	
+	// 닫기 버튼 클릭 이벤트 설정
+	UFUNCTION()
+	void CloseButtonPressed()
+	{
+		// 델리게이트 호출
+		OnClickedBuyCoinBack.Broadcast();
+	}
 	
 	virtual void NativeConstruct() override;
 	//충전 결정 변수
