@@ -16,9 +16,12 @@ void UMH_BuyCoinsWidget::NativeConstruct()
 	Btn_Coin_10000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_10000Button);
 	Btn_Coin_50000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_50000Button);
 	Btn_Coin_100000->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_100000Button);
-	Btn_CustomCoin->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_freeButton);
+	Btn_CustomCoin->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedCoin_Custom);
 	Btn_BuyCoin->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::OnClickedBuyCoinButton);
-
+	
+	//Main 닫기버튼 바인드
+	Btn_Back06_2->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::CloseButtonPressed);
+	
 	//SetVisibleCanvas(false);
 
 	ButtonArray.Add(Btn_Coin_5000);
@@ -72,7 +75,7 @@ void UMH_BuyCoinsWidget::SetCustomCoinAmount()
 	Text_CustomCoinAmount->SetText(EText_CustomCoinAmount->GetText());
 }
 
-void UMH_BuyCoinsWidget::OnClickedCoin_freeButton()
+void UMH_BuyCoinsWidget::OnClickedCoin_Custom()
 {
 	AddCoinAmount = 100000;
 	OnButtonClicked(Btn_CustomCoin);
