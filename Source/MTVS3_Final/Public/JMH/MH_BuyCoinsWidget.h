@@ -69,7 +69,7 @@ public:
 
 	
 	UFUNCTION()
-	void OnClickedCoin_freeButton();
+	void OnClickedCoin_Custom();
 	//충전하기
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_BuyCoin;
