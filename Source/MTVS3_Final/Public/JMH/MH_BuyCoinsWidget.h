@@ -32,6 +32,15 @@ public:
 	UPROPERTY()
 	int32 AddCoinAmount = 0;
 
+	//현재 코인
+
+	//현재코인 텍스트
+	//추가 코인
+	//충전 후 코인 = AddCoinAmount+추가 코인
+	
+	//총 결제 금액 AddCoinAmount
+	
+
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_Main;
 	
@@ -42,19 +51,19 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Coin_5000;
 	UFUNCTION()
-	void OnClickedCoin_5000Button();
+	void OnClickedCoin_5000();
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Coin_10000;
 	UFUNCTION()
-	void OnClickedCoin_10000Button();
+	void OnClickedCoin_10000();
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Coin_50000;
 	UFUNCTION()
-	void OnClickedCoin_50000Button();
+	void OnClickedCoin_50000();
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Coin_100000;
 	UFUNCTION()
-	void OnClickedCoin_100000Button();
+	void OnClickedCoin_100000();
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_CustomCoin;
 	UPROPERTY()
