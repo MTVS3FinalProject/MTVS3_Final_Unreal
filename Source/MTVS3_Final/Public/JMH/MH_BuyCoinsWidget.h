@@ -71,8 +71,8 @@ public:
 	UFUNCTION()
 	void OnButtonClicked(UButton* ClickedButton);
 	//뒤로가기
-	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	//class UButton*  Btn_Back;
-	//UFUNCTION()
-	//void OnClickedBackButton();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_Back06_2;
+	UFUNCTION()
+	void OnClickedBackButton();
 };

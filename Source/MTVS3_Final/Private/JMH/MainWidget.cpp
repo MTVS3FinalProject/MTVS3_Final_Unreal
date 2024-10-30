@@ -105,8 +105,14 @@ void UMainWidget::SetMinimapImage(UTexture2D* img)
 void UMainWidget::OnClickedBuyTicket()
 {
 	//예매진행 버튼-> ButTicket으로
-	//현민 MainUI-> ButTicket에서 Img_QR_1에 QR 생성해줘야함..
-	SetWidgetSwitcher(3);
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if ( GI && HttpActor2 )
+	{
+		HttpActor2->ReqGetMemberAuthQR(GI->GetAccessToken());
+	}
+	//SetWidgetSwitcher(3); 통신 성공시 호출
 }
 
 void UMainWidget::SetTextSeatNum1(FString SeatNum1)

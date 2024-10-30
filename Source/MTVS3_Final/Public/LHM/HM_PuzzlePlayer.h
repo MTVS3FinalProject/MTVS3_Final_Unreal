@@ -101,7 +101,7 @@ public:
 
 private:
 	// 태어날 때 모든 피스 조각 목록을 기억하고 싶다.
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TArray<AHM_PuzzlePiece*> PieceList;
 
 public:
