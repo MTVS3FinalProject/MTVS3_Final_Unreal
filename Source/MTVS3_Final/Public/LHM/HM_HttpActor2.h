@@ -273,7 +273,7 @@ public:
 	void SetSeatFloor(int32 SeatFloor) { m_ConcertReservation.SetSeatFloor(SeatFloor); }
 	
     const FString& GetSeatInfo() const { return m_ConcertReservation.GetSeatInfo(); }
-    void SetSeatInfo(const FString& SeatInfo) { m_ConcertReservation.SetSeatId(SeatInfo); }
+    void SetSeatInfo(const FString& SeatInfo) { m_ConcertReservation.SetSeatInfo(SeatInfo); }
 
     int32 GetSeatPrice() const { return m_ConcertReservation.GetSeatPrice(); }
     void SetSeatPrice(int32 SeatPrice) { m_ConcertReservation.SetSeatPrice(SeatPrice); }
