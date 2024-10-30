@@ -144,14 +144,14 @@ public:
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetCoin(const int32& _Coin);
-	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void AddCoin(int32 _Coin);
+	/*UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void AddCoin(int32 _Coin);*/
 	int32 GetCoin() const { return PlayerData.Coin; };
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetRemainingTicketCount(const int32& _RemainingTicketCount);
-	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void UseRemainingTicket(int32 UsedTicketCount);
+	/*UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void UseRemainingTicket(int32 UsedTicketCount);*/
 	int32 GetRemainingTicketCount() const { return PlayerData.RemainingTicketCount; };
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
