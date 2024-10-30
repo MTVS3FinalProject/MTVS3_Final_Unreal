@@ -314,7 +314,8 @@ void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
 			FString::Printf(TEXT("OnMyActionPickupPiece : MyReleasePiece")));
 	}
-	else if(!bIsZoomingIn && !bHasPiece)
+	//else if(!bIsZoomingIn && !bHasPiece) 허파디비진다....
+	else if(!bHasPiece)
 	{
 		MyTakePiece();
 		//bHasPiece = true;
@@ -647,7 +648,6 @@ void AHM_PuzzlePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	// 복제하려는 변수 추가 예시
 	DOREPLIFETIME(AHM_PuzzlePlayer, bHasPiece);
 	DOREPLIFETIME(AHM_PuzzlePlayer, bIsZoomingIn);
 	DOREPLIFETIME(AHM_PuzzlePlayer, PickupPieceActor);
