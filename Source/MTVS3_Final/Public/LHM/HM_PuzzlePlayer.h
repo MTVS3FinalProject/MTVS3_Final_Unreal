@@ -87,10 +87,6 @@ public:
 	void OnMyActionZoomInPiece(const FInputActionValue& Value);
 	void OnMyActionZoomOutPiece(const FInputActionValue& Value);
 	
-	void MyTakePiece();
-	void MyReleasePiece();
-	void MyLaunchPiece();
-	
 #pragma endregion	
 	
 public:
@@ -117,17 +113,28 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = Piece)
 	float PickupDistance = 300;
 
+	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
+	bool bHasPiece = false;
+	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
+	class UStaticMeshComponent* TargetPieceComp;
+	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
+	FTransform TargetPieceTransform;
+
 	// 피스 조각 잡기와 놓기 던지기 기능
-	void AttachPiece(AHM_PuzzlePiece* pieceActor);
-	void DetachPiece(AHM_PuzzlePiece* pieceActor);
-	void LaunchPiece(AHM_PuzzlePiece* pieceActor);
+	void AttachPiece(UStaticMeshComponent* PieceComp);
+	void DetachPiece(UStaticMeshComponent* PieceComp);
+	void LaunchPiece(UStaticMeshComponent* PieceComp);
+	
+	void MyTakePiece();
+	void MyReleasePiece();
+	void MyLaunchPiece();
 
 	// 피스 잡은 상태에서 줌인
 	float DefaultFOV; // 기본 시야각
 	float ZoomedFOV = 60.0f;  // 줌인 목표 시야각
 	float ZoomDuration = 10.f; // 보간 속도
 	FTimerHandle ZoomTimerHandle;   // 줌 타이머 핸들
-	
+
 	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
 	bool bIsZoomingIn = false;
 	
@@ -136,30 +143,27 @@ public:
 
 	// --------------- Multiplayer 요소들 ---------------
 public:
-	UPROPERTY(Replicated, EditDefaultsOnly , BlueprintReadWrite)
-	bool bHasPiece = false;
-
 	
 	// 피스 잡기 RPC
 	UFUNCTION(Server, Reliable)
-	void ServerRPCTakePiece(AHM_PuzzlePiece* pieceActor);
+	void ServerRPCTakePiece(AHM_PuzzlePiece* pieceActor, UStaticMeshComponent* PieceComp);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCTakePiece(AHM_PuzzlePiece* pieceActor);
+	void MulticastRPCTakePiece(UStaticMeshComponent* PieceComp);
 
 	// 피스 놓기 RPC
 	UFUNCTION(Server, Reliable)
 	void ServerRPCReleasePiece();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCReleasePiece(AHM_PuzzlePiece* pieceActor);
+	void MulticastRPCReleasePiece(UStaticMeshComponent* PieceComp);
 
 	// 피스 던지기 RPC
 	UFUNCTION(Server, Reliable)
 	void ServerRPCLaunchPiece();
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastRPCLaunchPiece(AHM_PuzzlePiece* pieceActor);
+	void MulticastRPCLaunchPiece(UStaticMeshComponent* PieceComp);
 
 	// 캐릭터 회전값 RPC
 	UFUNCTION(Server, Reliable)
