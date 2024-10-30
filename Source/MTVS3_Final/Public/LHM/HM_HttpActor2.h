@@ -140,6 +140,7 @@ struct FConcertReservation
 public:
     FConcertReservation()
         : m_SeatId(TEXT(""))
+        , m_SeatFloor(0)
         , m_SeatInfo(TEXT(""))
         , m_SeatPrice(0)
         , m_CompetitionRate(0)
@@ -154,6 +155,9 @@ public:
     const FString& GetSeatId() const { return m_SeatId; }
     void SetSeatId(const FString& SeatId) { m_SeatId = SeatId; }
 
+	int32 GetSeatFloor() { return m_SeatFloor; }
+	void SetSeatFloor(int32 SeatFloor) { m_SeatFloor = SeatFloor; }
+	
     const FString& GetSeatInfo() const { return m_SeatInfo; }
     void SetSeatInfo(const FString& SeatInfo) { m_SeatInfo = SeatInfo; }
 
@@ -191,6 +195,9 @@ private:
     UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
     FString m_SeatId;
     
+	UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
+	int32 m_SeatFloor;
+	
     UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
     FString m_SeatInfo;
 
@@ -262,6 +269,9 @@ public:
     const FString& GetSeatId() const { return m_ConcertReservation.GetSeatId(); }
     void SetSeatId(const FString& SeatId) { m_ConcertReservation.SetSeatId(SeatId); }
 
+	int32 GetSeatFloor() { return m_ConcertReservation.GetSeatFloor(); }
+	void SetSeatFloor(int32 SeatFloor) { m_ConcertReservation.SetSeatFloor(SeatFloor); }
+	
     const FString& GetSeatInfo() const { return m_ConcertReservation.GetSeatInfo(); }
     void SetSeatInfo(const FString& SeatInfo) { m_ConcertReservation.SetSeatId(SeatInfo); }
 

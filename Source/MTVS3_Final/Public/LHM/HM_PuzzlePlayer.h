@@ -79,11 +79,11 @@ public:
 	void OnMyActionRunComplete(const FInputActionValue& Value);
 
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
-	class UInputAction* IA_Pickup;
+	class UInputAction* IA_Piece;
 	void OnMyActionPickupPiece(const FInputActionValue& Value);
 	
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
-	class UInputAction* IA_Launch;
+	class UInputAction* IA_Zoom;
 	void OnMyActionZoomInPiece(const FInputActionValue& Value);
 	void OnMyActionZoomOutPiece(const FInputActionValue& Value);
 	
@@ -101,7 +101,7 @@ public:
 
 private:
 	// 태어날 때 모든 피스 조각 목록을 기억하고 싶다.
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TArray<AHM_PuzzlePiece*> PieceList;
 
 public:

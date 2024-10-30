@@ -24,10 +24,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
     UPROPERTY(EditDefaultsOnly);
-	class UStaticMeshComponent* Piece;
+	TArray<UStaticMeshComponent*> Pieces;
+	//class UStaticMeshComponent* Piece;
+	
+	// 스태틱 메시 컴포넌트 반환 함수 추가
+	const TArray<UStaticMeshComponent*>& GetAllPieces() const { return Pieces; }
 
 	// 스태틱 메시 컴포넌트 반환 함수 추가
-	UStaticMeshComponent* GetPiece() const { return Piece; }
+	//UStaticMeshComponent* GetPiece() const { return Piece; }
 
 	// --------------- Multiplayer 요소들 ---------------
 	
@@ -45,4 +49,5 @@ public:
 	UPROPERTY(Replicated)
 	bool bSimulatingPhysics;
 
+	void InitializePieces();
 };
