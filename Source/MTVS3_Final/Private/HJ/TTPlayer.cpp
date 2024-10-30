@@ -387,6 +387,23 @@ void ATTPlayer::MulticastSetColorTextRender_Implementation(FColor NewColor)
 	TextRenderComp->SetTextRenderColor(NewColor);
 }
 
+void ATTPlayer::ServerChangeWalkSpeed_Implementation(bool bIsRunning)
+{
+	MulticastChangeWalkSpeed(bIsRunning);
+}
+
+void ATTPlayer::MulticastChangeWalkSpeed_Implementation(bool bIsRunning)
+{
+	if (bIsRunning == true)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	}
+	else
+	{
+		GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	}
+}
+
 void ATTPlayer::PrintStateLog()
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -488,12 +505,12 @@ void ATTPlayer::OnMyActionJumpComplete(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionRunStart(const FInputActionValue& Value)
 {
-	GetCharacterMovement()->MaxWalkSpeed = RunSpeed;
+	ServerChangeWalkSpeed(true);
 }
 
 void ATTPlayer::OnMyActionRunComplete(const FInputActionValue& Value)
 {
-	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	ServerChangeWalkSpeed(false);
 }
 
 void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)

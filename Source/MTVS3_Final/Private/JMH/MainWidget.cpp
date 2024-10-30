@@ -2,7 +2,6 @@
 
 
 #include "JMH/MainWidget.h"
-
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
@@ -24,25 +23,29 @@ void UMainWidget::NativeConstruct()
 	Btn_BuyTicket->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyTicket);
 	Btn_BuyLater->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_FailBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
-	Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
 	Btn_SelectConcertBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_Concert01->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert01);
 	Btn_ExitMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExitMainWin);
 	Btn_ExitMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExit);
 	Btn_BackMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
-	
-	if(BuyTicketWidget)
-	{
-			BuyTicketWidget->OnClickedBuyTickerBack.AddDynamic(this, &UMainWidget::OnTicketWidgetClose);
-	}
+	//Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 
+	//닫기 버튼 다른 위젯 클래스와 연결 
+	if (BuyTicketWidget)
+	{
+		BuyTicketWidget->OnClickedBuyTickerBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
+	}
+	if (BuyCoinsWidget)
+	{
+		BuyCoinsWidget->OnClickedBuyCoinBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
+	}
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
 {
 	WS_MainWidgetSwitcher->SetActiveWidgetIndex(num);
-	if(num==2)
+	if (num == 2)
 	{
 		PlayAnimation(TicketImgAnim01);
 	}
@@ -50,12 +53,12 @@ void UMainWidget::SetWidgetSwitcher(int32 num)
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
 {
-	if ( bVisible )
+	if (bVisible)
 	{
 		Can_Main->SetVisibility(ESlateVisibility::Visible);
 	}
 
-	else if ( !bVisible )
+	else if (!bVisible)
 	{
 		Can_Main->SetVisibility(ESlateVisibility::Hidden);
 	}
@@ -65,7 +68,6 @@ void UMainWidget::SetTextCurrentTime(FString CurrentTime)
 {
 	//FString으로 변환해놓은 시간값 받아와서 표시
 	Tex_CurrentTime->SetText(FText::FromString(CurrentTime));
-
 }
 
 void UMainWidget::OnClickedBackMain()
@@ -73,7 +75,7 @@ void UMainWidget::OnClickedBackMain()
 	// 로비로?
 	// 방에서 퇴장하고 싶다.
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if ( gi )
+	if (gi)
 	{
 		gi->ExitSession();
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ExitSession"));
@@ -91,10 +93,10 @@ void UMainWidget::OnClickedExit()
 	//게임 종료
 	UWorld* World = GetWorld();
 	APlayerController* PlayerController = World ? World->GetFirstPlayerController() : nullptr;
-    
+
 	if (PlayerController)
 	{
-		UKismetSystemLibrary::QuitGame(World, PlayerController, EQuitPreference::Quit, true);
+		UKismetSystemLibrary::QuitGame(World , PlayerController , EQuitPreference::Quit , true);
 	}
 }
 
@@ -106,8 +108,14 @@ void UMainWidget::SetMinimapImage(UTexture2D* img)
 void UMainWidget::OnClickedBuyTicket()
 {
 	//예매진행 버튼-> ButTicket으로
-	//현민 MainUI-> ButTicket에서 Img_QR_1에 QR 생성해줘야함..
-	SetWidgetSwitcher(3);
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (GI && HttpActor2)
+	{
+		HttpActor2->ReqGetMemberAuthQR(GI->GetAccessToken());
+	}
+	//SetWidgetSwitcher(3); 통신 성공시 호출
 }
 
 void UMainWidget::SetTextSeatNum1(FString SeatNum1)
@@ -125,7 +133,7 @@ void UMainWidget::OnClickedBack_Map()
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if ( !GI || !Local || !PS ) return;
+	if (!GI || !Local || !PS) return;
 
 	GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 }
@@ -143,19 +151,18 @@ void UMainWidget::OnClickedBuyCoinsButton()
 
 void UMainWidget::OnClickedConcert01()
 {
-
 	// KHJ: EPlaceState::ConcertHall로 변경
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
-	if ( !GI || !Local) return;
+	if (!GI || !Local) return;
 
 	GI->SetPlaceState(EPlaceState::ConcertHall);
 
-	if ( GI )
+	if (GI)
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if ( HttpActor2 )
+		if (HttpActor2)
 		{
 			HttpActor2->ReqPostConcertEntry(GI->GetConcertName() , GI->GetAccessToken());
 			//HttpActor2->TESTReqPostConcertEntry( GI->GetAccessToken());

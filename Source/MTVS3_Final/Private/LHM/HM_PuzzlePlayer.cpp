@@ -2,9 +2,6 @@
 
 
 #include "LHM/HM_PuzzlePlayer.h"
-
-#include "KismetTraceUtils.h"
-#include "MovieSceneTracksComponentTypes.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
@@ -267,15 +264,6 @@ void AHM_PuzzlePlayer::OnMyActionLook(const FInputActionValue& Value)
 
 				// 서버에 회전 값 전달
 				ServerRPCUpdateRotation(NewRotation);
-
-				if(UStaticMeshComponent* PieceMesh = PickupPieceActor->GetPiece())
-				{
-					//FRotator PieceRotation = FRotator(ControlRotation.Pitch, 0, 0.0f);
-					//PieceMesh->SetRelativeRotation(PieceRotation);
-					//FRotator HandCompRotation = FRotator(ControlRotation.Pitch, 0, 0);
-					//HandComp->SetRelativeRotation(HandCompRotation);
-					//ServerRPCUpdatePieceRotation(HandCompRotation);
-				}
 			}
 		}
 	}
@@ -305,22 +293,34 @@ void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Pickup Action Triggered"));
 
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
+	   FString::Printf(TEXT("bIsZoomingIn: %s, bHasPiece: %s"), 
+	   bIsZoomingIn ? TEXT("True") : TEXT("False"), 
+	   bHasPiece ? TEXT("True") : TEXT("False")));
+
 	if (bIsZoomingIn && bHasPiece)
 	{
 		MyLaunchPiece();
 		if(AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
-		bHasPiece = false; 
-		bIsZoomingIn = false;
+		//bHasPiece = false; 
+		//bIsZoomingIn = false;
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
+			FString::Printf(TEXT("OnMyActionPickupPiece : MyLaunchPiece")));
 	}
 	else if(bHasPiece)
 	{
 		MyReleasePiece();
-		bHasPiece = false;
+		//bHasPiece = false;
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
+			FString::Printf(TEXT("OnMyActionPickupPiece : MyReleasePiece")));
 	}
-	else if(!bIsZoomingIn && !bHasPiece)
+	//else if(!bIsZoomingIn && !bHasPiece) 허파디비진다....
+	else if(!bHasPiece)
 	{
 		MyTakePiece();
-		bHasPiece = true;
+		//bHasPiece = true;
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
+			FString::Printf(TEXT("OnMyActionPickupPiece : MyTakePiece")));
 	}
 }
 
@@ -328,6 +328,7 @@ void AHM_PuzzlePlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 {
 	if ( bHasPiece && !bIsZoomingIn && !bIsThirdPerson )
 	{
+		bIsZoomingIn = true;
 		if (AimingUI)
 		{
 			AimingUI->SetVisibility(ESlateVisibility::Visible);
@@ -340,6 +341,7 @@ void AHM_PuzzlePlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 {
 	if ( bHasPiece && bIsZoomingIn && !bIsThirdPerson )
 	{
+		bIsZoomingIn = false;
 		if (AimingUI)
 		{
 			AimingUI->SetVisibility(ESlateVisibility::Hidden);
@@ -361,33 +363,51 @@ void AHM_PuzzlePlayer::MyTakePiece()
 	FVector2D MousePosition;
 	if (PC->GetMousePosition(MousePosition.X, MousePosition.Y))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("클라이언트 겟마우스포지션 라인트레이스 실행"));
 		// 마우스 위치를 월드 위치(Start)와 방향(Direction)으로 변환
 		FVector Start, Dir;
 		PC->DeprojectScreenPositionToWorld(MousePosition.X, MousePosition.Y, Start, Dir);
 
 		// 트레이스의 끝 위치 설정: Start 위치에서 Direction 방향으로 지정한 거리만큼 이동
-		float TraceDistance = 1000.0f; // 예시 거리 (1,000 유닛)
+		float TraceDistance = 1000.0f;
 		FVector End = Start + (Dir * TraceDistance);
 
-		// 라인 트레이스 설정
 		FHitResult HitResult;
 		FCollisionQueryParams TraceParams(FName(TEXT("MouseTrace")), true, this);
 		TraceParams.bReturnPhysicalMaterial = false;
-		TraceParams.AddIgnoredActor(this); // 플레이어 자신을 무시
+		TraceParams.AddIgnoredActor(this);
 
 		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult , Start , End , ECC_Visibility , TraceParams);
 
-		// 라인 트레이스 디버그 라인
 		DrawDebugLine(GetWorld() , Start , End , FColor::Blue , false , 5.f , 0 , 1.f);
 
 		// 맞은 액터가 "Piece" 태그를 가진 AHM_PuzzlePiece인지 확인
-		if (bHit && HitResult.GetActor())
+		if (bHit && HitResult.GetComponent())
 		{
 			AHM_PuzzlePiece* HitPiece = Cast<AHM_PuzzlePiece>(HitResult.GetActor());
-			if (HitPiece && HitResult.Component->ComponentHasTag("Piece") && HitPiece->GetOwner() == nullptr)
+			if(HitPiece)
 			{
-				ServerRPCTakePiece(HitPiece);
+				UStaticMeshComponent* HitComponent = Cast<UStaticMeshComponent>(HitResult.GetComponent());
+				if (HitComponent && HitPiece->GetAllPieces().Contains(HitComponent))
+				{
+					// 소유되지 않은 상태이며, 특정 태그가 있는지 확인
+					if (!HitPiece->IsComponentOwned(HitComponent))
+					{
+						for (int32 i = 1; i <= 9; ++i)
+						{
+							FString TagName = FString::Printf(TEXT("Piece%d"), i);
+							if (HitComponent->ComponentHasTag(FName(*TagName)))
+							{
+								GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
+																 FString::Printf(TEXT("Found piece with tag: %s"), *TagName));
+								TargetPieceComp = HitComponent;
+
+								// 서버로 소유 요청을 보냄
+								ServerRPCTakePiece(HitPiece, TargetPieceComp);
+								break;
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -418,122 +438,91 @@ void AHM_PuzzlePlayer::MyLaunchPiece()
 	}
 }
 
-void AHM_PuzzlePlayer::AttachPiece(AHM_PuzzlePiece* pieceActor)
+void AHM_PuzzlePlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 {
+	if (!PieceComp) return;
 	SwitchCamera(false);
-	PickupPieceActor = pieceActor;
-
+	
+	//PickupPieceActor = PieceComp;
 	// 클라이언트와 서버 모두에서 실행될 회전 로직
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC && PC->IsLocalController())
 	{
 		FRotator ControlRotation = PC->GetControlRotation();
-        
 		// 캐릭터의 회전을 카메라 회전과 동기화
 		SetActorRotation(FRotator(0.0f, ControlRotation.Yaw, 0.0f));
-        
-		// 시점 전환을 부드럽게
 		PC->SetViewTargetWithBlend(this);
-
 	}
 	
-	if(PickupPieceActor && PickupPieceActor->GetPiece())
+	if(PieceComp)
 	{
-		auto* mesh = PickupPieceActor->GetPiece();
-		if(mesh)
-		{
-			mesh->SetSimulatePhysics(false); // 물리 비활성화
-			mesh->SetEnableGravity(false);  // 중력 비활성화
-			mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);  // 충돌 비활성화
+		PieceComp->SetSimulatePhysics(false);
+		PieceComp->SetEnableGravity(false);
+		PieceComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-			if (PC && !bIsThirdPerson)
-			{
-				FRotator ControlRotation = PC->GetControlRotation(); //(Pitch=0.000000,Yaw=270.000000,Roll=-0.000000)
-				//FRotator PieceRotation = FRotator(ControlRotation.Pitch, 0, 0); //(Pitch=-0.000000,Yaw=90.000000,Roll=-90.000000)
-				FRotator HandCompRotation = FRotator(ControlRotation.Pitch, 0, 0);
-				mesh->AttachToComponent(HandComp, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-				mesh->SetRelativeLocation(FVector(100, 0, -30));
-				//mesh->SetRelativeRotation(PieceRotation);
-				//HandComp->SetRelativeRotation(HandCompRotation);
-				UE_LOG(LogTemp, Log, TEXT("MulticastRPCTakePiece AttachPiece") );
-			}
+		// if(IsLocallyControlled())
+		if (PC && !bIsThirdPerson)
+		{
+			PieceComp->AttachToComponent(HandComp , FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			PieceComp->SetRelativeLocation(FVector(100 , 0 , -30));
+			UE_LOG(LogTemp , Log , TEXT("MulticastRPCTakePiece AttachPiece"));
 		}
+	}
+	if (HasAuthority())
+	{
+		TargetPieceTransform = PieceComp->GetComponentTransform();
 	}
 }
 
-void AHM_PuzzlePlayer::DetachPiece(AHM_PuzzlePiece* pieceActor)
+void AHM_PuzzlePlayer::DetachPiece(UStaticMeshComponent* PieceComp)
 {
+	if (!PieceComp) return;
 	SwitchCamera(true);
-	if (pieceActor && pieceActor->GetPiece())
-	{
-		auto* mesh = pieceActor->GetPiece();
-		check(mesh);
-		if(mesh)
-		{
-			// 서버에서만 물리 시뮬레이션을 활성화
-			//if (HasAuthority())
-			//{
-				mesh->SetSimulatePhysics(true);  // 물리 활성화
-				mesh->SetEnableGravity(true);  // 중력 활성화
-				pieceActor->bSimulatingPhysics = true;
-			//}
-			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);  // 충돌 활성화
-			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	
+	PieceComp->SetSimulatePhysics(true);
+	PieceComp->SetEnableGravity(true);
+	PieceComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	PieceComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
-			// 현재 Transform을 저장하고 복제
-			if(HasAuthority())
-			{
-				pieceActor->CurrentTransform = mesh->GetComponentTransform();
-			}
-		}
+	if (HasAuthority())
+	{
+		TargetPieceTransform = PieceComp->GetComponentTransform();
 	}
+	TargetPieceComp = nullptr;
 }
 
-void AHM_PuzzlePlayer::LaunchPiece(AHM_PuzzlePiece* pieceActor)
+void AHM_PuzzlePlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 {
+	if (!PieceComp) return;
 	SwitchCamera(true);
-	if (pieceActor && pieceActor->GetPiece())
-	{
-		auto* mesh = pieceActor->GetPiece();
-		check(mesh);
-		if(mesh)
-		{
-			// 충돌 활성화
-			mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-			mesh->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
-			mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			
-			// 발사 속도를 적용하여 포물선 궤적 생성
-			pieceActor->bSimulatingPhysics = true;
-			mesh->SetSimulatePhysics(true); // 물리 적용
-			mesh->SetEnableGravity(true);  // 중력 활성화
-			mesh->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 
-			//위치와 속도 설정
-			FVector LaunchDirection = GetActorForwardVector(); // 캐릭터의 전방향
-			//FVector FPSCompLocation = FPSCameraComp->GetComponentLocation().ForwardVector;
-			float LaunchSpeed = 2000.0f; // 발사 속도 조정
-			FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
-			mesh->AddImpulse(LaunchVelocity, NAME_None, true);
-			
-			// FVector CameraLocation = FPSCameraComp->GetComponentLocation();
-			// FVector LaunchDirection = (CameraLocation - mesh->GetComponentLocation()).GetSafeNormal();
-			// float LaunchSpeed = 2000.0f;
-			// FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
-			// mesh->AddImpulse(LaunchVelocity, NAME_None, true);
-		}
-		// 현재 Transform을 저장하고 복제
-		if(HasAuthority())
-		{
-			pieceActor->CurrentTransform = mesh->GetComponentTransform();
-		}
+	//PieceComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	//PieceComp->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
+	PieceComp->SetSimulatePhysics(true);
+	PieceComp->SetEnableGravity(true);
+	PieceComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	PieceComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+	FVector LaunchDirection = FPSCameraComp->GetForwardVector();
+	float LaunchSpeed = 2000.0f;
+	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
+	PieceComp->AddImpulse(LaunchVelocity, NAME_None, true);
+
+	if (HasAuthority())
+	{
+		TargetPieceTransform = PieceComp->GetComponentTransform();
 	}
+	TargetPieceComp = nullptr;
 }
 
 void AHM_PuzzlePlayer::ZoomIn()
 {
-	if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	//if(FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	if (FPSCameraComp)
 	{
+		// 기존 타이머가 있다면 종료
+		GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+		
 		bIsZoomingIn = true;
 		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
 		{
@@ -543,7 +532,7 @@ void AHM_PuzzlePlayer::ZoomIn()
 			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, ZoomedFOV, 0.1f))
 			{
 				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
-				bIsZoomingIn = true; // 줌 인 상태로 고정
+				//bIsZoomingIn = true; // 줌 인 상태로 고정
 			}
 		}, 0.01f, true);
 		UE_LOG(LogTemp, Log, TEXT("ZoomIn Started"));
@@ -552,8 +541,12 @@ void AHM_PuzzlePlayer::ZoomIn()
 
 void AHM_PuzzlePlayer::ZoomOut()
 {
-	if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	//if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
+	if(FPSCameraComp)
 	{
+		// 기존 타이머가 있다면 종료
+		GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+		
 		bIsZoomingIn = false;
 		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
 		{
@@ -563,99 +556,85 @@ void AHM_PuzzlePlayer::ZoomOut()
 			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, DefaultFOV, 0.1f))
 			{
 				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
-				bIsZoomingIn = false; // 줌 아웃 상태로 고정
+				//bIsZoomingIn = false; // 줌 아웃 상태로 고정
 			}
 		}, 0.01f, true);
-		UE_LOG(LogTemp, Log, TEXT("ZoomOut Started"));
+		UE_LOG(LogTemp, Log, TEXT("ZoomOut Completed"));
 	}
 }
 
-void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceActor)
+void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceActor, UStaticMeshComponent* PieceComp)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ServerRPCTakePiece called on Server"));
 
-	if (!HasAuthority() || !pieceActor || pieceActor->GetOwner() != nullptr) return;
-
-	pieceActor->SetOwner(this);
+	//if (!HasAuthority() || !pieceActor || pieceActor->GetOwner() != nullptr) return;
+	if (!HasAuthority() || !pieceActor || !PieceComp || pieceActor->IsComponentOwned(PieceComp)) return;
+	
+	pieceActor->SetComponentOwner(PieceComp,this);
 	PickupPieceActor = pieceActor;
+	TargetPieceComp = PieceComp;
 	bHasPiece = true;
 
 	// 모든 클라이언트에 알림
-	MulticastRPCTakePiece(pieceActor);
-	
-	//if(GetLocalRole() != ROLE_Authority) return; // 서버에서만 실행
-	// if (HitPiece&& HitResult
-	// .
-	// Component->ComponentHasTag("Piece") && HitPiece->GetOwner() == nullptr
-	// )
-	// {
-	// 	HitPiece->SetOwner(this);
-	// 	PickupPieceActor = HitPiece;
-	// 	bHasPiece = true;
-	//
-	// 	// 모든 클라이언트에 알림
-	// 	MulticastRPCTakePiece(HitPiece);
-	// }
+	MulticastRPCTakePiece(PieceComp);
+		UE_LOG(LogTemp, Log, TEXT("ServerRPCTakePiece_Implementation") );
 }
 
-void AHM_PuzzlePlayer::MulticastRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceActor)
+void AHM_PuzzlePlayer::MulticastRPCTakePiece_Implementation(UStaticMeshComponent* PieceComp)
 {
 	// 피스 액터를 HandComp에 붙이고 싶다.
-	AttachPiece(pieceActor);
+	AttachPiece(PieceComp);
 	UE_LOG(LogTemp, Log, TEXT("MulticastRPCTakePiece") );
 }
 
 void AHM_PuzzlePlayer::ServerRPCReleasePiece_Implementation()
 {
-	// 피스를 이미 주운 상태 -> 놓고싶다.
-	if(bHasPiece)
+	if (bHasPiece && TargetPieceComp)
 	{
 		bHasPiece = false;
-	}
-
-	// 피스의 오너를 취소하고싶다.
-	if(PickupPieceActor)
-	{
-		MulticastRPCReleasePiece(PickupPieceActor);
-
-		PickupPieceActor->SetOwner(nullptr);
-		// 피스를 잊고싶다.
+		PickupPieceActor->ClearComponentOwner(TargetPieceComp);
+		MulticastRPCReleasePiece(TargetPieceComp);
 		PickupPieceActor = nullptr;
+		TargetPieceComp = nullptr;
+		UE_LOG(LogTemp, Log, TEXT("ServerRPCReleasePiece_Implementation") );
 	}
 }
 
-void AHM_PuzzlePlayer::MulticastRPCReleasePiece_Implementation(AHM_PuzzlePiece* pieceActor)
+void AHM_PuzzlePlayer::MulticastRPCReleasePiece_Implementation(UStaticMeshComponent* PieceComp)
 {
-	if (pieceActor)
+	if (PieceComp)
 	{
-		DetachPiece(pieceActor); // 피스 분리
+		DetachPiece(PieceComp); // 피스 분리
+		TargetPieceComp = nullptr;
+		UE_LOG(LogTemp, Log, TEXT("MulticastRPCReleasePiece_Implementation") );
 	}
 }
 
 void AHM_PuzzlePlayer::ServerRPCLaunchPiece_Implementation()
 {
-	if(bHasPiece)
+	if (bHasPiece && TargetPieceComp && PickupPieceActor)
 	{
 		bHasPiece = false;
-	}
-	
-	if(PickupPieceActor)
-	{
-		MulticastRPCLaunchPiece(PickupPieceActor);
-
-		PickupPieceActor->SetOwner(nullptr);
-		// 피스를 잊고싶다.
+		PickupPieceActor->ClearComponentOwner(TargetPieceComp);
+		MulticastRPCLaunchPiece(TargetPieceComp);
 		PickupPieceActor = nullptr;
+		TargetPieceComp = nullptr;
+		UE_LOG(LogTemp, Log, TEXT("ServerRPCLaunchPiece_Implementation") );
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+			FString::Printf(TEXT("ServerRPCLaunchPiece_Implementation")));
 	}
-
 	bIsZoomingIn = false;
 }
 
-void AHM_PuzzlePlayer::MulticastRPCLaunchPiece_Implementation(AHM_PuzzlePiece* pieceActor)
+void AHM_PuzzlePlayer::MulticastRPCLaunchPiece_Implementation(UStaticMeshComponent* PieceComp)
 {
-	if (pieceActor)
+	if (PieceComp)
 	{
-		LaunchPiece(pieceActor);
+		LaunchPiece(PieceComp);
+		TargetPieceComp = nullptr;
+		UE_LOG(LogTemp, Log, TEXT("MulticastRPCLaunchPiece_Implementation") );
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+			FString::Printf(TEXT("MulticastRPCLaunchPiece_Implementation")));
 	}
 }
 
@@ -669,7 +648,9 @@ void AHM_PuzzlePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	// 복제하려는 변수 추가 예시
 	DOREPLIFETIME(AHM_PuzzlePlayer, bHasPiece);
+	DOREPLIFETIME(AHM_PuzzlePlayer, bIsZoomingIn);
 	DOREPLIFETIME(AHM_PuzzlePlayer, PickupPieceActor);
+	DOREPLIFETIME(AHM_PuzzlePlayer, TargetPieceComp);
+	DOREPLIFETIME(AHM_PuzzlePlayer, TargetPieceTransform);
 }

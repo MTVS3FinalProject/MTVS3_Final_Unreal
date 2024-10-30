@@ -3,18 +3,14 @@
 
 #include "LHM/HM_HttpActor2.h"
 #include "JMH/MH_TicketingWidget.h"
-#include "Kismet/GameplayStatics.h"
 #include "HttpModule.h"
-#include "LHM/TTPlayerController.h"
 #include "Interfaces/IHttpResponse.h"
 #include "HJ/TTPlayer.h"
 #include "HJ/TTGameInstance.h"
-#include "GenericPlatform/GenericPlatformHttp.h"
 #include "ImageUtils.h"
 #include "JMH/MH_BuyTicketWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "JMH/MainWidget.h"
-#include "Components/Button.h"
 
 // Sets default values
 AHM_HttpActor2::AHM_HttpActor2()
@@ -132,14 +128,10 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 							GI->SetConcertName(ConcertName);
 						}
 						
-						// 공연장 입장 UI에 Set Text (아직안만듬)
-						/*if ( MainUI )
+						if ( MainUI->GetBuyTicketWidget() )
 						{
-							MainUI->Set
-							MainUI->SetTextYear(Month);
-							MainUI->SetTextYear(Day);
-							MainUI->SetTextYear(Time);
-						}*/
+							MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(ConcertName,Year,Month,Day,Time);
+						}
 					}
 				}
 			}
@@ -222,6 +214,8 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 
 					// RemainingTickets을 GameInstance에 저장
 					GI->SetRemainingTicketCount(RemainingTickets);
+					TicketingUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
+					MainUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
 					
 					// 접수 가능한 좌석 목록
 					TArray<TSharedPtr<FJsonValue>> AvailableSeatsArray = ResponseObject->GetArrayField(TEXT("availableSeats"));
@@ -283,6 +277,9 @@ void AHM_HttpActor2::OnResPostConcertEntry(FHttpRequestPtr Request , FHttpRespon
 	}
 }
 
+//=========================================================================================================================================
+
+// 리팩토링 테스트용
 void AHM_HttpActor2::TESTReqPostConcertEntry( FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -319,6 +316,7 @@ void AHM_HttpActor2::TESTReqPostConcertEntry( FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// 리팩토링 테스트용
 void AHM_HttpActor2::TESTOnResPostConcertEntry(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -489,7 +487,18 @@ void AHM_HttpActor2::OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , 
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Seat Info: %s") , *SeatInfo));
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Competition Rate: %d") , CompetitionRate));
 
+					SetSeatId(SeatId);
+					SetSeatInfo(SeatInfo);
+					SetSeatFloor(Floor);
+					SetCompetitionRate(CompetitionRate);
+					
 					MainUI->SetTextSeatNum1(SeatInfo);
+
+					if(MainUI->GetBuyTicketWidget())
+					{
+						MainUI->BuyTicketWidget->SetTextSeatID(Floor, SeatInfo);
+						MainUI->BuyTicketWidget->SetTextConcertName(GetConcertName());
+					}
 					
 					// Ticketing UI에 SetText
 					if ( TicketingUI )
@@ -622,7 +631,7 @@ void AHM_HttpActor2::OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpRespon
 
 					if( TTPlayer && GI && MainUI )
 					{
-						GI->UseRemainingTicket(1);
+						GI->SetRemainingTicketCount(RemainingTicket);
 						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 					}
 
@@ -825,7 +834,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 
 					if ( TTPlayer && GI && MainUI )
 					{
-						GI->UseRemainingTicket(-1);
+						GI->SetRemainingTicketCount(RemainingTicket);
 					}
 
 					if ( TicketingUI )
@@ -1088,7 +1097,7 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 						if ( MainUI->GetBuyTicketWidget() )
 						{
 							MainUI->BuyTicketWidget->SetQRImg(Texture);
-							MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
+							MainUI->SetWidgetSwitcher(3);
 
 							UE_LOG(LogTemp , Log , TEXT("Image received and processed successfully."));
 						}
@@ -1157,7 +1166,10 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 		{
 			if ( MainUI->GetBuyTicketWidget() )
 			{
-				MainUI->BuyTicketWidget->SetWidgetSwitcher(2);
+				MainUI->BuyTicketWidget->SetTextSeatID(GetSeatFloor(), GetSeatInfo());
+				UE_LOG(LogTemp , Log , TEXT("GetSeatFloor : %d / GetSeatInfo : %s"), GetSeatFloor() , *GetSeatInfo());
+				MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(GetConcertName(),GetConcertYear(),GetConcertMonth(),GetConcertDay(),GetConcertTime());
+				MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
 				UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
 			}
 		}
@@ -1165,7 +1177,7 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 		{
 			if ( MainUI->GetBuyTicketWidget() )
 			{
-				MainUI->BuyTicketWidget->SetWidgetSwitcher(3);
+				MainUI->BuyTicketWidget->SetWidgetSwitcher(2);
 				UE_LOG(LogTemp , Log , TEXT("Member authentication failed!"));
 			}
 		}
@@ -1253,20 +1265,17 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 						GI->SetCoin(UserCoin);
 					}
 
-					//SetSeatInfo(SeatInfo);
-					//SetSeatPrice(SeatPrice);
-					//SetNeedCoin(NeedCoin);
+					SetSeatInfo(SeatInfo);
+					SetSeatPrice(SeatPrice);
 					
 					// 결제 진행하는 위젯스위쳐 Set
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						MainUI->BuyTicketWidget->SetTextSeatID(SeatInfo);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
-						MainUI->BuyTicketWidget->SetTextNeedCoin(NeededCoin);
 						int32 TotalCoin = SeatNum*SeatPrice;
 						MainUI->BuyTicketWidget->SetTextTotalCoin(TotalCoin);
-						MainUI->BuyTicketWidget->SetWidgetSwitcher(5);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(7);
 					}
 				}
 			}
@@ -1365,18 +1374,18 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 						GI->SetCoin(UserCoin);
 					}
 					
-					/*SetSeatInfo(SeatInfo);
+					SetSeatId(SeatId);
+					SetSeatInfo(SeatInfo);
 					SetSeatPrice(SeatPrice);
-					SetUserName(UserName);
-					SetUserAddress1(UserAddress);*/
+					
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
+						//MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextUserName(UserName);
-						MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
-						MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
-						MainUI->BuyTicketWidget->SetWidgetSwitcher(6);
+						//MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
+						//MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(8);
 					}
 				}
 			}
@@ -1453,7 +1462,7 @@ void AHM_HttpActor2::ReqPostCheatPaymentSeat(FString ConcertName, FString Access
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostPaymentSeat);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostCheatPaymentSeat);
 
 	// 요청 전송
 	Request->ProcessRequest();
@@ -1506,18 +1515,18 @@ void AHM_HttpActor2::OnResPostCheatPaymentSeat(FHttpRequestPtr Request, FHttpRes
 						GI->SetCoin(UserCoin);
 					}
 					
-					/*SetSeatInfo(SeatInfo);
-					SetSeatPrice(SeatPrice);
-					SetUserName(UserName);
-					SetUserAddress1(UserAddress);*/
+					 SetSeatInfo(SeatInfo);
+					 //SetSeatPrice(SeatPrice);
+					 //SetUserName(UserName);
+					 //SetUserAddress1(UserAddress);
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
+						//MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextUserName(UserName);
-						MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
-						MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
-						MainUI->BuyTicketWidget->SetWidgetSwitcher(6);
+						//MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
+						//MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(8);
 					}
 				}
 			}
