@@ -131,8 +131,12 @@ void AHM_PuzzlePiece::InitializePieces()
 
 			// 물리 및 충돌 설정
 			NewPiece->SetSimulatePhysics(true);
-			NewPiece->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
+			//NewPiece->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 			NewPiece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			
+			NewPiece->SetCollisionProfileName(TEXT("PuzzlePiece"));
+			NewPiece->SetNotifyRigidBodyCollision(true);
+			NewPiece->SetGenerateOverlapEvents(true);
 			
 			// 태그 설정
 			NewPiece->ComponentTags.Add(PieceName);

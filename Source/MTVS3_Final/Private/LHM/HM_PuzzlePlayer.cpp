@@ -302,25 +302,15 @@ void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 	{
 		MyLaunchPiece();
 		if(AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
-		//bHasPiece = false; 
-		//bIsZoomingIn = false;
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
-			FString::Printf(TEXT("OnMyActionPickupPiece : MyLaunchPiece")));
 	}
 	else if(bHasPiece)
 	{
 		MyReleasePiece();
-		//bHasPiece = false;
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
-			FString::Printf(TEXT("OnMyActionPickupPiece : MyReleasePiece")));
 	}
-	//else if(!bIsZoomingIn && !bHasPiece) 허파디비진다....
+	//else if(!bIsZoomingIn && !bHasPiece)
 	else if(!bHasPiece)
 	{
 		MyTakePiece();
-		//bHasPiece = true;
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
-			FString::Printf(TEXT("OnMyActionPickupPiece : MyTakePiece")));
 	}
 }
 
@@ -465,7 +455,6 @@ void AHM_PuzzlePlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 		{
 			PieceComp->AttachToComponent(HandComp , FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 			PieceComp->SetRelativeLocation(FVector(100 , 0 , -30));
-			UE_LOG(LogTemp , Log , TEXT("MulticastRPCTakePiece AttachPiece"));
 		}
 	}
 	if (HasAuthority())
@@ -502,9 +491,13 @@ void AHM_PuzzlePlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 	PieceComp->SetEnableGravity(true);
 	PieceComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	PieceComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	
+	PieceComp->SetCollisionProfileName(TEXT("PuzzlePiece"));
+	PieceComp->SetNotifyRigidBodyCollision(true);
+	PieceComp->SetGenerateOverlapEvents(true);
 
 	FVector LaunchDirection = FPSCameraComp->GetForwardVector();
-	float LaunchSpeed = 2000.0f;
+	float LaunchSpeed = 3000.0f;
 	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
 	PieceComp->AddImpulse(LaunchVelocity, NAME_None, true);
 
@@ -565,9 +558,6 @@ void AHM_PuzzlePlayer::ZoomOut()
 
 void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceActor, UStaticMeshComponent* PieceComp)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ServerRPCTakePiece called on Server"));
-
-	//if (!HasAuthority() || !pieceActor || pieceActor->GetOwner() != nullptr) return;
 	if (!HasAuthority() || !pieceActor || !PieceComp || pieceActor->IsComponentOwned(PieceComp)) return;
 	
 	pieceActor->SetComponentOwner(PieceComp,this);
@@ -577,14 +567,12 @@ void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceA
 
 	// 모든 클라이언트에 알림
 	MulticastRPCTakePiece(PieceComp);
-		UE_LOG(LogTemp, Log, TEXT("ServerRPCTakePiece_Implementation") );
 }
 
 void AHM_PuzzlePlayer::MulticastRPCTakePiece_Implementation(UStaticMeshComponent* PieceComp)
 {
 	// 피스 액터를 HandComp에 붙이고 싶다.
 	AttachPiece(PieceComp);
-	UE_LOG(LogTemp, Log, TEXT("MulticastRPCTakePiece") );
 }
 
 void AHM_PuzzlePlayer::ServerRPCReleasePiece_Implementation()
@@ -596,7 +584,6 @@ void AHM_PuzzlePlayer::ServerRPCReleasePiece_Implementation()
 		MulticastRPCReleasePiece(TargetPieceComp);
 		PickupPieceActor = nullptr;
 		TargetPieceComp = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("ServerRPCReleasePiece_Implementation") );
 	}
 }
 
@@ -606,7 +593,6 @@ void AHM_PuzzlePlayer::MulticastRPCReleasePiece_Implementation(UStaticMeshCompon
 	{
 		DetachPiece(PieceComp); // 피스 분리
 		TargetPieceComp = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCReleasePiece_Implementation") );
 	}
 }
 
@@ -619,9 +605,6 @@ void AHM_PuzzlePlayer::ServerRPCLaunchPiece_Implementation()
 		MulticastRPCLaunchPiece(TargetPieceComp);
 		PickupPieceActor = nullptr;
 		TargetPieceComp = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("ServerRPCLaunchPiece_Implementation") );
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
-			FString::Printf(TEXT("ServerRPCLaunchPiece_Implementation")));
 	}
 	bIsZoomingIn = false;
 }
@@ -632,9 +615,6 @@ void AHM_PuzzlePlayer::MulticastRPCLaunchPiece_Implementation(UStaticMeshCompone
 	{
 		LaunchPiece(PieceComp);
 		TargetPieceComp = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCLaunchPiece_Implementation") );
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
-			FString::Printf(TEXT("MulticastRPCLaunchPiece_Implementation")));
 	}
 }
 
