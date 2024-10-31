@@ -43,6 +43,8 @@ void UMH_BuyTicketWidget::NativeConstruct()
 		Btn_BuyTickerBack->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
 	    Btn_Back_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
 	    Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
+	    Btn_BuyLater_1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
+	
 	
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
@@ -263,6 +265,11 @@ void UMH_BuyTicketWidget::OnClickedBack06Button()
 {
 	//6번으로
 	SetWidgetSwitcher(6);
+}
+
+void UMH_BuyTicketWidget::OnClickedBuyLaterButton()
+{
+	
 }
 
 //현민 지워야함
