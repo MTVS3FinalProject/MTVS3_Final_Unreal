@@ -2,9 +2,6 @@
 
 
 #include "LHM/HM_PuzzleBoard.h"
-
-#include "LandscapeGizmoActiveActor.h"
-#include "Blueprint/UserWidget.h"
 #include "LHM/HM_PuzzlePiece.h"
 
 // Sets default values
