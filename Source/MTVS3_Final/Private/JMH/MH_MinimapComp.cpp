@@ -2,7 +2,6 @@
 
 
 #include "JMH/MH_MinimapComp.h"
-
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/CanvasRenderTarget2D.h"
 #include "GameFramework/Character.h"

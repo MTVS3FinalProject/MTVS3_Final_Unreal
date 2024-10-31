@@ -2,7 +2,6 @@
 
 
 #include "JMH/MH_UserCoinWidget.h"
-
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "HJ/TTGameInstance.h"

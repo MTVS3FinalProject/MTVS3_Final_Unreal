@@ -2,8 +2,6 @@
 
 
 #include "JMH/MH_Chair.h"
-
-#include "AssetTypeCategories.h"
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"

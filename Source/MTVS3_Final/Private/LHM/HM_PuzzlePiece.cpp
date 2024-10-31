@@ -2,8 +2,6 @@
 
 
 #include "LHM/HM_PuzzlePiece.h"
-
-#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -13,21 +11,6 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
     PrimaryActorTick.bCanEverTick = true;
 
 	InitializePieces();
-    // Piece = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Piece"));
-    //
-    // Piece->SetupAttachment(RootComponent);
-    //
-    // static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
-	   //  TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
-    // if (MeshAsset.Succeeded())
-    // {
-	   //  Piece->SetStaticMesh(MeshAsset.Object);
-    // }
-    // Piece->SetRelativeLocation(FVector(0 , 90 , 0));
-    // Piece->SetRelativeScale3D(FVector(0.2 , 0.2 , 0.2));
-    // Piece->SetSimulatePhysics(true);
-    // Piece->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
-    // Piece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
  }
  
  // Called when the game starts or when spawned
@@ -36,22 +19,27 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
  	Super::BeginPlay();
  	
  	bReplicates = true;
-	
+
+	FVector PiecesLocation = GetActorLocation();
 	// 각 피스의 초기 위치 설정
 	for(auto* Piece : Pieces)
 	{
 		if(Piece)
 		{
-			FVector RandomLocation = FVector(
-				FMath::RandRange(1000.f, 1500.f),
-				FMath::RandRange(1500.f, 2000.f),
+			FVector RandomOffset = FVector(
+				FMath::RandRange(-1000.f, 1000.f),
+				FMath::RandRange(-1000.f, 1000.f),
 				FMath::RandRange(350.f, 350.f)
-				//(X=1350.000000,Y=1820.000000,Z=340.000000)
 			);
-			Piece->SetRelativeLocation(RandomLocation);
+			
+			// 기준 위치 + 랜덤 오프셋을 월드 위치로 설정
+			FVector NewLocation = PiecesLocation + RandomOffset;
+			Piece->SetWorldLocation(NewLocation);
+
+			// 필요 시, 변환값을 저장합니다.
+			CurrentTransform = Piece->GetComponentTransform();
 		}
 	}
- 
  }
  
  // Called every frame
@@ -60,8 +48,51 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
  	Super::Tick(DeltaTime);
  
  }
- 
- void AHM_PuzzlePiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+
+void AHM_PuzzlePiece::SetComponentOwner(UStaticMeshComponent* Component, class AHM_PuzzlePlayer* NewOwner)
+{
+	if (Component)
+	{
+		ComponentOwners.Add(Component, NewOwner);
+
+	}
+}
+
+void AHM_PuzzlePiece::ClearComponentOwner(UStaticMeshComponent* Component)
+{
+	if (Component)
+	{
+		ComponentOwners.Remove(Component);
+	}
+}
+
+bool AHM_PuzzlePiece::IsComponentOwned(UStaticMeshComponent* Component)
+{
+	return Component && ComponentOwners.Contains(Component);
+}
+
+class AHM_PuzzlePlayer* AHM_PuzzlePiece::GetComponentOwner(UStaticMeshComponent* Component)
+{
+	if (ComponentOwners.Contains(Component))
+	{
+		return ComponentOwners[Component];
+	}
+	return nullptr;
+}
+
+void AHM_PuzzlePiece::ApplyBounceEffect()
+{
+	for(auto* Piece : Pieces)
+	{
+		if(Piece)
+		{
+			FVector Dir = FVector::BackwardVector * 500.0f;
+			Piece->AddImpulse(Dir, NAME_None, true);
+		}
+	}
+}
+
+void AHM_PuzzlePiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
  {
  	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
  
@@ -78,11 +109,6 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 			Piece->SetWorldTransform(CurrentTransform);
 		}
 	}
-
-	// if (GetPiece() && !bSimulatingPhysics)
- 	// {
- 	// 	GetPiece()->SetWorldTransform(CurrentTransform);
- 	// }
  }
 
 void AHM_PuzzlePiece::InitializePieces()
@@ -107,7 +133,7 @@ void AHM_PuzzlePiece::InitializePieces()
 			NewPiece->SetSimulatePhysics(true);
 			NewPiece->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 			NewPiece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
+			
 			// 태그 설정
 			NewPiece->ComponentTags.Add(PieceName);
 

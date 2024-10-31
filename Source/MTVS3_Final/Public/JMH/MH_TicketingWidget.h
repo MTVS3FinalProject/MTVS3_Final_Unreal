@@ -131,8 +131,8 @@ public:
 	class UTextBlock* Text_SeatInfo;
 	
 	//접수한 좌석 구매 가격
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_TicketPrice2;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UTextBlock* Text_TicketPrice2;
 	
 	//접수마감시간 받아오기
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))

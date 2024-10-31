@@ -3,9 +3,6 @@
 
 #include "JMH/PlayerNicknameWidget.h"
 #include "Components/TextBlock.h"
-#include "HJ/TTGameInstance.h"
-#include "HJ/TTPlayerState.h"
-#include "Kismet/GameplayStatics.h"
 
 void UPlayerNicknameWidget::NativeConstruct()
 {

@@ -76,6 +76,9 @@ public:
 	{
 		return BuyTicketWidget;
 	}
+
+	UPROPERTY(meta = (BindWidget))
+	UMH_BuyCoinsWidget* BuyCoinsWidget;
 	
 	//0:Minimap
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -94,11 +97,6 @@ public:
 	class UTextBlock* Tex_SeatNum1;
 	UFUNCTION()
 	void SetTextSeatNum1(FString SeatNum1);
-	//좌석번호
-	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	//class UTextBlock* Tex_SeatNum2;
-	//UFUNCTION()
-	//void SetTextSeatNum2(FString SeatNum2);
 	
 	//나중에 구매
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -115,13 +113,10 @@ public:
 	class UTextBlock* Text_RemainingTickets;
 	UFUNCTION()
 	void SetTextRemainingTicket(int32 RemainingTicket);
-
-	//3: BuyTicket
-	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	//class UButton* Btn_BuyTickerBack;
+	
 	//4: BuyCoins
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_BuyCoinsBack2;
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton* Btn_BuyCoinsBack2;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_BuyCoins;

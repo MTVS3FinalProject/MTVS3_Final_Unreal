@@ -2,11 +2,9 @@
 
 
 #include "JMH/MH_BuyTicketWidget.h"
-
 #include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"
-#include "LHM/HM_HttpActor.h"
 #include "HJ/TTGameInstance.h"
 #include "LHM/HM_HttpActor2.h"
 #include "Components/Image.h"
@@ -41,23 +39,13 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	Btn_Back06->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack06Button);
 	//Btn_Back07->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack07Button);
 
-	
-
-	if (Btn_BuyTickerBack)
-	{
+	//Main 닫기 버튼 연결
 		Btn_BuyTickerBack->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
-	Btn_Back_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
-	Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
-	}
-
-	//현민 결제 통신할 때 티켓예매정보확인UI SetText안돼서 함수 따로만들어서 통신에서 호출함 
-	// auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	// if (gi)
-	// {
-	// 	Text_ConcertName_001->SetText(FText::FromString(gi->GetConcertName()));
-	// 	Text_ConcertName_002->SetText(FText::FromString(gi->GetConcertName()));
-	// 	Text_CurrentCoin->SetText(FText::FromString(FString::FromInt(gi->GetCoin())));
-	// }
+	    Btn_Back_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
+	    Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
+	    Btn_BuyLater_1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::CloseButtonPressed);
+	
+	
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
@@ -277,6 +265,11 @@ void UMH_BuyTicketWidget::OnClickedBack06Button()
 {
 	//6번으로
 	SetWidgetSwitcher(6);
+}
+
+void UMH_BuyTicketWidget::OnClickedBuyLaterButton()
+{
+	
 }
 
 //현민 지워야함

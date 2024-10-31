@@ -2,7 +2,6 @@
 
 
 #include "JMH/MH_TicketingWidget.h"
-
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
@@ -28,7 +27,7 @@ void UMH_TicketingWidget::NativeConstruct()
 	//위젯 꺼져있는게 기본값
 	//SetVisibleSwitcher(false);
 	WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
-	
+	SetCompletedVisible(false);
 
 	//콘서트정보 담아오기
 	//SetConcertInfo();
@@ -226,7 +225,7 @@ void UMH_TicketingWidget::SetTextTicketPrice(int32 TicketPrice)
 {
 	//int 가격 Ftext로 변환해서 티켓가격 입력하기
 	Text_TicketPrice->SetText(FText::AsNumber(TicketPrice));
-	Text_TicketPrice2->SetText(FText::AsNumber(TicketPrice));
+	//Text_TicketPrice2->SetText(FText::AsNumber(TicketPrice));
 }
 
 void UMH_TicketingWidget::SetSeatInfoMap(FString SeatID)

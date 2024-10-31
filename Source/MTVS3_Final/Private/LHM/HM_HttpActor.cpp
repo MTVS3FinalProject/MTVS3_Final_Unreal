@@ -7,11 +7,8 @@
 #include "GameFramework/PlayerController.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
-#include <chrono>
-#include "HJ/TTPlayer.h"
 #include "HJ/TTGameInstance.h"
 #include "ImageUtils.h"
-#include "Unix/UnixPlatformHttp.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()

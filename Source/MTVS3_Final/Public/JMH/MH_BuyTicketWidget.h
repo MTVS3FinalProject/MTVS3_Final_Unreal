@@ -229,6 +229,13 @@ public:
 	class UButton* Btn_Back06;
 	UFUNCTION()
 	void OnClickedBack06Button();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_BuyLater_1;
+	UFUNCTION()
+	void OnClickedBuyLaterButton();
+
+	
 	
 	
 	//결제진행
