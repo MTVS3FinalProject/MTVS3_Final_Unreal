@@ -37,7 +37,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 			Piece->SetWorldLocation(NewLocation);
 
 			// 필요 시, 변환값을 저장합니다.
-			CurrentTransform = Piece->GetComponentTransform();
+			//CurrentTransform = Piece->GetComponentTransform();
 		}
 	}
  }
@@ -78,18 +78,6 @@ class AHM_PuzzlePlayer* AHM_PuzzlePiece::GetComponentOwner(UStaticMeshComponent*
 		return ComponentOwners[Component];
 	}
 	return nullptr;
-}
-
-void AHM_PuzzlePiece::ApplyBounceEffect()
-{
-	for(auto* Piece : Pieces)
-	{
-		if(Piece)
-		{
-			FVector Dir = FVector::BackwardVector * 500.0f;
-			Piece->AddImpulse(Dir, NAME_None, true);
-		}
-	}
 }
 
 void AHM_PuzzlePiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

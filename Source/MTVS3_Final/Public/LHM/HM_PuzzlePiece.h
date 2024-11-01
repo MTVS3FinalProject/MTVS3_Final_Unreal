@@ -41,10 +41,6 @@ public:
 	
 	// 스태틱 메시 컴포넌트 반환 함수 추가
 	const TArray<UStaticMeshComponent*>& GetAllPieces() const { return Pieces; }
-
-	// 튕겨나가는 물리 효과 함수
-	UFUNCTION()
-	void ApplyBounceEffect();
 	
 	// --------------- Multiplayer 요소들 ---------------
 	

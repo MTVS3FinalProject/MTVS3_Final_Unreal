@@ -47,34 +47,23 @@ void AHM_PuzzlePlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if(GetLocalRole() == ROLE_Authority)
-	{
-		//for(int32 i = 1; i <= 9; i++)
-		//{
-			//태어날 때 모든 피스 목록을 기억하고 싶다.
-		//	FName tag = FName(*FString::Printf(TEXT("Piece%d"), i));
-
-			FName tag = TEXT("Piece");
-			// 임시 AActor 배열에 피스 조각 수집
-			TArray<AActor*> TempPieceList;
-			UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld() , AHM_PuzzlePiece::StaticClass() , tag ,
-			                                             TempPieceList);
-			
-			for (AActor* actor : TempPieceList)
-			{
-				AHM_PuzzlePiece* piece = Cast<AHM_PuzzlePiece>(actor);
-				if (piece)
-				{
-					// AHM_PuzzlePiece에 있는 모든 컴포넌트 가져오기
-					//TArray<UActorComponent*> components = piece->GetComponentsByTag(UPrimitiveComponent::StaticClass(), tag);
-					//if(components.Num() > 0)
-					//{
-						PieceList.Add(piece);
-					//}
-				}
-			}
-		//}
-	}
+	// if(GetLocalRole() == ROLE_Authority)
+	// {
+	// 		FName tag = TEXT("Piece");
+	// 		// 임시 AActor 배열에 피스 조각 수집
+	// 		TArray<AActor*> TempPieceList;
+	// 		UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld() , AHM_PuzzlePiece::StaticClass() , tag ,
+	// 		                                             TempPieceList);
+	// 		
+	// 		for (AActor* actor : TempPieceList)
+	// 		{
+	// 			AHM_PuzzlePiece* piece = Cast<AHM_PuzzlePiece>(actor);
+	// 			if (piece)
+	// 			{
+	// 					PieceList.Add(piece);
+	// 			}
+	// 		}
+	// }
 
 	if(IsLocallyControlled())
 	{
@@ -138,11 +127,13 @@ void AHM_PuzzlePlayer::Tick(float DeltaTime)
 
 				// 서버에 회전 값 전달
 				ServerRPCUpdateRotation(NewRotation);
-				
-				if (FPSCameraComp)
-				{
-					FPSCameraComp->SetWorldRotation(ControlRotation);
-				}
+				ServerRPCUpdateFPSCameraRotation(ControlRotation);
+
+				// if (FPSCameraComp)
+				// {
+				// 	ServerRPCUpdateFPSCameraRotation(ControlRotation);
+				// 	FPSCameraComp->SetWorldRotation(ControlRotation);
+				// }
 			}
 
 			// Calculate movement direction based on camera rotation
@@ -264,6 +255,7 @@ void AHM_PuzzlePlayer::OnMyActionLook(const FInputActionValue& Value)
 
 				// 서버에 회전 값 전달
 				ServerRPCUpdateRotation(NewRotation);
+				ServerRPCUpdateFPSCameraRotation(ControlRotation);
 			}
 		}
 	}
@@ -622,6 +614,14 @@ void AHM_PuzzlePlayer::ServerRPCUpdateRotation_Implementation(const FRotator& Ne
 {
 	// 서버에서 캐릭터 회전 적용
 	SetActorRotation(NewRotation);
+}
+
+void AHM_PuzzlePlayer::ServerRPCUpdateFPSCameraRotation_Implementation(const FRotator& FPSCameraNewRotation)
+{
+	if(FPSCameraComp)
+	{
+		FPSCameraComp->SetWorldRotation(FPSCameraNewRotation);
+	}
 }
 
 void AHM_PuzzlePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
