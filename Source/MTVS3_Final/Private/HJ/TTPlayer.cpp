@@ -357,7 +357,11 @@ void ATTPlayer::ClientLuckyDrawLose_Implementation()
 		GameUI->HideWidget();
 	}
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if(GI) GI->SetLuckyDrawState(ELuckyDrawState::Loser);
+	if(GI)
+	{
+		GI->SetLuckyDrawState(ELuckyDrawState::Loser);
+		GI->SwitchSession(EPlaceState::Plaza);
+	}
 }
 
 void ATTPlayer::ClientLuckyDrawWin_Implementation()
