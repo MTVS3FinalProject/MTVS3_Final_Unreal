@@ -1372,6 +1372,7 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					if ( TTPlayer && GI )
 					{
 						GI->SetCoin(UserCoin);
+						GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 					}
 					
 					SetSeatId(SeatId);
@@ -1380,11 +1381,8 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						//MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextUserName(UserName);
-						//MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
-						//MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(8);
 					}
 				}

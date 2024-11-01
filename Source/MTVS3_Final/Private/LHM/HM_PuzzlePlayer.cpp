@@ -489,7 +489,7 @@ void AHM_PuzzlePlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 	PieceComp->SetGenerateOverlapEvents(true);
 
 	FVector LaunchDirection = FPSCameraComp->GetForwardVector();
-	float LaunchSpeed = 3000.0f;
+	float LaunchSpeed = 4000.0f;
 	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
 	PieceComp->AddImpulse(LaunchVelocity, NAME_None, true);
 

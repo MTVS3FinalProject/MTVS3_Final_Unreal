@@ -36,7 +36,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 			FVector NewLocation = PiecesLocation + RandomOffset;
 			Piece->SetWorldLocation(NewLocation);
 
-			// 필요 시, 변환값을 저장합니다.
+			// 필요 시, 변환값을 저장
 			//CurrentTransform = Piece->GetComponentTransform();
 		}
 	}
