@@ -155,6 +155,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sequences")
 	TObjectPtr<class ULevelSequence> LDWinnerLevelSequence;
 
+	UPROPERTY(Transient)
+	class ULevelSequencePlayer* SequencePlayer;
+	
 #pragma region 입력
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputMappingContext* IMC_TTPlayer;

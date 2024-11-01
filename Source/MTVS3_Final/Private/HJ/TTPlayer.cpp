@@ -386,7 +386,7 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 
 		// 레벨 시퀀스 플레이어 생성
 		ALevelSequenceActor* SequenceActor;
-		ULevelSequencePlayer* SequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(
+		SequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(
 			GetWorld(),
 			LDWinnerLevelSequence,
 			Settings,
@@ -400,16 +400,21 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		}
 
 		FTimerHandle LDWinnerTimerHandle;
-		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle, this, &ATTPlayer::ClientLDWinnerExitSession, 3.0f, false);
+		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle, this, &ATTPlayer::ClientLDWinnerExitSession, 5.0f, false);
 	}
 }
 
 void ATTPlayer::ClientLDWinnerExitSession_Implementation()
 {
+	if (SequencePlayer)
+	{
+		SequencePlayer->Stop();
+	}
+	
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if(GI)
 	{
-		GI->SetLuckyDrawState(ELuckyDrawState::Winner);
+		GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 		GI->SwitchSession(EPlaceState::Plaza);
 	}
 }
