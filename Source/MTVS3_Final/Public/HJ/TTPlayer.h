@@ -90,6 +90,9 @@ public:
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastChangeWalkSpeed(bool bIsRunning);
 
+	UFUNCTION(Client, Reliable)
+	void ClientShowLuckyDrawInvitation(bool bIsVisible, int32 CompetitionRate);
+
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
 #pragma endregion
@@ -269,6 +272,9 @@ public:
 	
 	void InitGameUI();
 	void SetTextMyNum();
+
+	bool bIsDrawSessionInviteVisible = false;
+	void UpdateDrawSessionInviteVisibility(int32 CompetitionRate);
 #pragma endregion
 
 private:

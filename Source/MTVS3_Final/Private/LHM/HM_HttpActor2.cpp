@@ -13,6 +13,7 @@
 #include "ImageUtils.h"
 #include "JMH/MH_BuyTicketWidget.h"
 #include "GameFramework/PlayerState.h"
+#include "HJ/TTHallGameState.h"
 #include "HLSLTree/HLSLTreeTypes.h"
 #include "JMH/MainWidget.h"
 
@@ -945,6 +946,9 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 					UE_LOG(LogTemp , Log , TEXT("Competition Rate: %d") , CompetitionRate);
 
 					TicketingUI->SetTextCompetitionRate(CompetitionRate);
+
+					ATTHallGameState* HallGameState = GetWorld()->GetGameState<ATTHallGameState>();
+					if (HallGameState) HallGameState->SendLuckyDrawInvitation(NicknameList, CompetitionRate);
 				}
 			}
 		}
