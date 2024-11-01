@@ -13,7 +13,9 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
  {
   	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
-
+	
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	
 	InitializePieces();
  }
  
@@ -23,7 +25,8 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
  	Super::BeginPlay();
  	
  	bReplicates = true;
-
+	bAlwaysRelevant = true;
+	
 	InitializeRandomSetting();
  }
  
@@ -65,72 +68,57 @@ class AHM_PuzzlePlayer* AHM_PuzzlePiece::GetComponentOwner(UStaticMeshComponent*
 	return nullptr;
 }
 
-void AHM_PuzzlePiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
- {
- 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
- 
- 	DOREPLIFETIME(AHM_PuzzlePiece, CurrentTransform);
- 	DOREPLIFETIME(AHM_PuzzlePiece, bSimulatingPhysics);
- }
- 
- void AHM_PuzzlePiece::OnRep_PieceTransform()
- {
-	for (auto& Piece : Pieces)
-	{
-		UStaticMeshComponent* PieceComp = Piece.Key;
-		
-		if (PieceComp && !bSimulatingPhysics)
-		{
-			PieceComp->SetWorldTransform(CurrentTransform);
-		}
-	}
- }
-
 void AHM_PuzzlePiece::InitializePieces()
 {
-	UE_LOG(LogTemp, Log, TEXT("AHM_PuzzlePiece::InitializePieces"));
-	
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
-	if(!MeshAsset.Succeeded()) return;
-
-	// 점수 배열 설정하고 배열을 섞어서 랜덤으로 배치
-	TArray<int32> ScoreOptions = {50, 50, 30, 30, 30, 20, 20, 20, 20};
-	FMath::RandInit(FDateTime::Now().GetMillisecond());
-	Algo::RandomShuffle(ScoreOptions);
-	
-	for(int32 i = 0; i < 9; i++)
+	if (HasAuthority())  // 서버에서만 실행
 	{
-		// UStaticMeshComponent 생성 및 설정
-		FName PieceName = *FString::Printf(TEXT("Piece%d"), i + 1);
-		UStaticMeshComponent* NewPiece = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
-		if(NewPiece)
+		UE_LOG(LogTemp , Log , TEXT("AHM_PuzzlePiece::InitializePieces"));
+
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
+			TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
+		if (!MeshAsset.Succeeded()) return;
+
+		// 점수 배열 설정하고 배열을 섞어서 랜덤으로 배치
+		TArray<int32> ScoreOptions = {50 , 50 , 30 , 30 , 30 , 20 , 20 , 20 , 20};
+		FMath::RandInit(FDateTime::Now().GetMillisecond());
+		Algo::RandomShuffle(ScoreOptions);
+
+		ScoreArray = ScoreOptions;  // 클라이언트 동기화를 위한 ScoreArray 설정
+		
+		for (int32 i = 0; i < 9; i++)
 		{
-			NewPiece->SetupAttachment(RootComponent);
-			NewPiece->SetStaticMesh(MeshAsset.Object);
-			NewPiece->SetRelativeScale3D(FVector(0.5f , 0.5f , 0.5f));
+			// UStaticMeshComponent 생성 및 설정
+			FName PieceName = *FString::Printf(TEXT("Piece%d") , i + 1);
+			UStaticMeshComponent* NewPiece = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
+			if (NewPiece)
+			{
+				//NewPiece->SetupAttachment(RootComponent);
+				NewPiece->SetStaticMesh(MeshAsset.Object);
+				NewPiece->SetRelativeScale3D(FVector(0.5f , 0.5f , 0.5f));
 
-			// 물리 및 충돌 설정
-			NewPiece->SetSimulatePhysics(true);
-			NewPiece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			NewPiece->SetCollisionProfileName(TEXT("PuzzlePiece"));
-			NewPiece->SetNotifyRigidBodyCollision(true);
-			NewPiece->SetGenerateOverlapEvents(true);
-			
-			// 태그 설정
-			NewPiece->ComponentTags.Add(PieceName);
+				// 물리 및 충돌 설정
+				NewPiece->SetSimulatePhysics(true);
+				NewPiece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				NewPiece->SetCollisionProfileName(TEXT("PuzzlePiece"));
+				NewPiece->SetNotifyRigidBodyCollision(true);
+				NewPiece->SetGenerateOverlapEvents(true);
 
-			// 랜덤 점수 할당하고 Pieces 배열에 추가
-			int32 InitialScore = ScoreOptions[i];
-			Pieces.Add(NewPiece, InitialScore);
+				// 태그 설정
+				NewPiece->ComponentTags.Add(PieceName);
 
-			UE_LOG(LogTemp, Log, TEXT("Assigned score %d to Piece %s"), InitialScore, *PieceName.ToString());
+				// 랜덤 점수 할당하고 Pieces 배열에 추가
+				int32 InitialScore = ScoreOptions[i];
+				Pieces.Add(NewPiece , InitialScore);
+
+				UE_LOG(LogTemp , Log , TEXT("Assigned score %d to Piece %s") , InitialScore , *PieceName.ToString());
+			}
 		}
 	}
 }
 
 void AHM_PuzzlePiece::InitializeRandomSetting()
 {
-	// 각 피스의 초기 위치 설정, 피스 점수 랜덤 설정
+	// 각 피스의 초기 위치 설정
 	FVector PiecesLocation = GetActorLocation();
 	
 	for(auto& Piece : Pieces)
@@ -163,3 +151,40 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
 		}
 	}
 }
+
+void AHM_PuzzlePiece::OnRep_PieceTransform()
+{
+	for (auto& Piece : Pieces)
+	{
+		UStaticMeshComponent* PieceComp = Piece.Key;
+		
+		if (PieceComp && !bSimulatingPhysics)
+		{
+			PieceComp->SetWorldTransform(CurrentTransform);
+		}
+	}
+}
+
+void AHM_PuzzlePiece::OnRep_ScoreArray()
+{
+	// 클라이언트에서 ScoreArray를 사용하여 점수를 설정
+	int32 Index = 0;
+	for (auto& Piece : Pieces)
+	{
+		if (ScoreArray.IsValidIndex(Index))
+		{
+			Piece.Value = ScoreArray[Index];
+			Index++;
+		}
+	}
+}
+
+void AHM_PuzzlePiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+ 
+	DOREPLIFETIME(AHM_PuzzlePiece, CurrentTransform);
+	DOREPLIFETIME(AHM_PuzzlePiece, bSimulatingPhysics);
+	DOREPLIFETIME(AHM_PuzzlePiece, ScoreArray);
+}
+ 

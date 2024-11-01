@@ -51,23 +51,31 @@ public:
 		Pieces.GetKeys(Keys);
 		return Keys;
 	}
+
+	void InitializePieces();
+    void InitializeRandomSetting();
 	
 	// --------------- Multiplayer 요소들 ---------------
 	
-	// 물리 시뮬레이션 상태를 복제하기 위한 함수들
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-    
 	// 현재 Transform을 서버에서 클라이언트로 복제
 	UPROPERTY(ReplicatedUsing = OnRep_PieceTransform)
 	FTransform CurrentTransform;
 
-	UFUNCTION()
+	UFUNCTION() // Replication을 통해 클라이언트와 동기화하는 함수
 	void OnRep_PieceTransform();
 
 	// 물리 시뮬레이션 상태
 	UPROPERTY(Replicated)
 	bool bSimulatingPhysics;
 
-	void InitializePieces();
-    void InitializeRandomSetting();
+	// 점수 배열을 ReplicatedUsing으로 선언하여 클라이언트에 전달
+	UPROPERTY(ReplicatedUsing = OnRep_ScoreArray)
+	TArray<int32> ScoreArray;
+
+	UFUNCTION() // Replication을 통해 클라이언트와 동기화하는 함수
+	void OnRep_ScoreArray();
+	
+	// 복제하기 위한 함수들
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+    
 };

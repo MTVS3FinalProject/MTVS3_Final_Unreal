@@ -3,6 +3,9 @@
 
 #include "LHM/PuzzleManager.h"
 
+#include "Kismet/GameplayStatics.h"
+#include "LHM/HM_PuzzleWidget.h"
+
 // Sets default values
 APuzzleManager::APuzzleManager()
 {
@@ -15,7 +18,8 @@ APuzzleManager::APuzzleManager()
 void APuzzleManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	PuzzleUI = CastChecked<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
 }
 
 // Called every frame
@@ -51,6 +55,8 @@ int32 APuzzleManager::GetPieceScore(UStaticMeshComponent* Piece) const
 void APuzzleManager::AddScoreToPlayer(AActor* Player, int32 Score)
 {
 	if (!Player) return;
+
+	// 점수 추가 및 관리
 	int32* CurrentScore = PlayerScores.Find(Player);
 	if (CurrentScore)
 	{
@@ -61,8 +67,34 @@ void APuzzleManager::AddScoreToPlayer(AActor* Player, int32 Score)
 		PlayerScores.Add(Player, Score);
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *Player->GetName(), PlayerScores[Player]);
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
-				FString::Printf(TEXT("Player %s new score: %d"),*Player->GetName(), PlayerScores[Player]));
+	// PlayerScoresInfo 업데이트
+	bool bPlayerFound = false;
+	for(FPlayerScoreInfo& PlayerInfo : PlayerScoresInfo)
+	{
+		if(PlayerInfo.Player == Player)
+		{
+			PlayerInfo.Score = PlayerScores[Player];
+			bPlayerFound = true;
+			break;
+		}
+	}
+
+	if(!bPlayerFound)
+	{
+		FPlayerScoreInfo NewPlayerInfo;
+		NewPlayerInfo.Player = Player;
+		NewPlayerInfo.Score = PlayerScores[Player];
+		PlayerScoresInfo.Add(NewPlayerInfo);
+	}
+	
+	//UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *Player->GetName(), PlayerScores[Player]);
+	//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
+	//			FString::Printf(TEXT("Player %s new score: %d"),*Player->GetName(), PlayerScores[Player]));
+
+	// UI 업데이트
+	if (PuzzleUI)
+	{
+		PuzzleUI->UpdatePlayerScores(PlayerScoresInfo);
+	}
 }
 
