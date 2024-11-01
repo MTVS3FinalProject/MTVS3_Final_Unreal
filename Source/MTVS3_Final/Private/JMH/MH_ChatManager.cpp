@@ -3,6 +3,7 @@
 
 #include "JMH/MH_ChatManager.h"
 
+#include "JMH/MH_TTHUD.h"
 #include "LHM/TTPlayerController.h"
 
 // Sets default values
@@ -18,6 +19,8 @@ void AMH_ChatManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	TTHUD = Cast<AMH_TTHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	
 }
 
 // Called every frame
@@ -27,36 +30,40 @@ void AMH_ChatManager::Tick(float DeltaTime)
 
 }
 
-void AMH_ChatManager::ServerSendChatMessage_Implementation(const FString& Message)
+void AMH_ChatManager::ServerSendChatMessage_Implementation(const FString& ServerMessage)
 {
-	// 서버에서 받은 메시지를 모든 클라이언트에게 브로드캐스트
-	MultiReceiveChatMessage(Message);
+	// 서버에서 받은 메시지를 모든 클라이언트에게
+	MultiReceiveChatMessage(ServerMessage);
 }
 
-bool AMH_ChatManager::ServerSendChatMessage_Validate(const FString& Message)
+bool AMH_ChatManager::ServerSendChatMessage_Validate(const FString& ServerMessage)
 {
 	// 유효성 검사 로직 예시: 메시지가 비어 있지 않아야 함
 	return !Message.IsEmpty();
 }
 
-void AMH_ChatManager::MultiReceiveChatMessage_Implementation(const FChatMessage ChatMessage)
+void AMH_ChatManager::MultiReceiveChatMessage_Implementation(const FString& ChatMessage)
 {
-	
+	for(FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController*PC = It->Get();
+		if(PC)
+		{
+			AMH_TTHUD* TTHUD1 = Cast<AMH_TTHUD>(PC->GetHUD());
+			if(TTHUD1)
+			{
+				TTHUD1->AddChatMessage(ChatMessage);
+			}
+		}
+	}
 }
 
 void AMH_ChatManager::AddChatting()
 {
-	
+		
 }
 
-void AMH_ChatManager::AddChatMessage(const FString& Message)
+void AMH_ChatManager::AddChatMessage(const FString& Message1)
 {
-	
-}
-
-void AMH_ChatManager::ClientReceiveChatMessage_Implementation(const FChatMessage ChatMessage)
-{
-	//클라이언트가 채팅 메세지를 수신 ->출력
-
 	
 }

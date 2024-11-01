@@ -5,7 +5,6 @@
 
 #include "Components/EditableText.h"
 #include "GameFramework/PlayerState.h"
-#include "Interfaces/OnlinePresenceInterface.h"
 #include "JMH/MH_ChatManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/TTPlayerController.h"

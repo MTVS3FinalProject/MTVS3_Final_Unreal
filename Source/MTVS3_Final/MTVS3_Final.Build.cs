@@ -9,7 +9,7 @@ public class MTVS3_Final : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" , "HTTP", "Json" , "JsonUtilities", "OnlineSubsystem", "OnlineSubsystemSteam" ,"Paper2D"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" , "HTTP", "Json" , "JsonUtilities", "OnlineSubsystem", "OnlineSubsystemSteam" ,"Paper2D","SlateCore"});
 
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
