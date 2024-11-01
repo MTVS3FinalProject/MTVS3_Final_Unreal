@@ -37,13 +37,8 @@ void UTTGameInstance::Init()
 FString UTTGameInstance::GenerateUniqueSessionName(const FString& SessionNamePrefix)
 {
 	FDateTime Now = FDateTime::Now();
-	return FString::Printf(TEXT("%s_%d%d%d%d%d") ,
-		*SessionNamePrefix ,
-		Now.GetHour() ,
-		Now.GetMinute() ,
-		Now.GetSecond() ,
-		Now.GetMillisecond() ,
-		FMath::Rand());
+	return FString::Printf(TEXT("%s_%02d%02d%02d") ,
+		*SessionNamePrefix , Now.GetHour() , Now.GetMinute() , FMath::Rand() % 100);
 }
 
 // 세션 검색 또는 생성 시작
@@ -208,6 +203,7 @@ void UTTGameInstance::CreateMySession(int32 playerCount , const FString& Session
 	Settings.bAllowJoinViaPresence = true;
 	Settings.bAllowJoinInProgress = true;
 	Settings.NumPublicConnections = playerCount;
+	Settings.bUseLobbiesIfAvailable = true;
 
 	//// 세션 이름 저장
 	//Settings.Set(FName("SessionName") , MySessionName , EOnlineDataAdvertisementType::ViaOnlineService);
@@ -229,25 +225,35 @@ void UTTGameInstance::CreateMySession(int32 playerCount , const FString& Session
 // 세션 생성 완료 시 호출되는 함수
 void UTTGameInstance::OnMyCreateSessionComplete(FName SessionName , bool bWasSuccessful)
 {
-	if ( bWasSuccessful )
+	if (bWasSuccessful)
 	{
-		// 세션 이름에 따라 다른 맵으로 이동
-		if ( SessionType == TEXT("TTHallSession") )
+		FString TravelURL;
+		if (SessionType == TEXT("TTHallSession"))
 		{
-			GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTHallMap?listen")); // TTHallMap으로 이동
+			TravelURL = TEXT("/Game/Ticketaka/TTHallMap?listen");
 		}
-		else if ( SessionType == TEXT("TTLuckyDrawSession") )
+		else if (SessionType == TEXT("TTLuckyDrawSession"))
 		{
-			if ( bEnableServerTravel )
+			TravelURL = TEXT("/Game/Ticketaka/TTLuckyDrawMap?listen");
+		}
+
+		if (!TravelURL.IsEmpty())
+		{
+			// 서버 트래블 전에 모든 연결이 준비되었는지 확인
+			AGameModeBase* GM = GetWorld()->GetAuthGameMode();
+			if (GM)
 			{
-				// 클라이언트 같이 이동시키고 싶은 경우
-				GetWorld()->ServerTravel(TEXT("/Game/Ticketaka/TTLuckyDrawMap?listen"));
+				FString Options = TEXT("?listen");
+				GetWorld()->ServerTravel(TravelURL + Options, true);
 			}
 			else
 			{
-				// 홀 관리자 1, 추첨방 관리자 1 해서 각자 이동하고 싶은 경우
-				auto* pc = GetWorld()->GetFirstPlayerController();
-				pc->ClientTravel(TEXT("/Game/Ticketaka/TTLuckyDrawMap") , ETravelType::TRAVEL_Absolute); // TTLuckyDrawMap으로 이동
+				// 클라이언트의 경우
+				auto* PC = GetWorld()->GetFirstPlayerController();
+				if (PC)
+				{
+					PC->ClientTravel(TravelURL, ETravelType::TRAVEL_Absolute);
+				}
 			}
 		}
 	}
@@ -272,6 +278,7 @@ void UTTGameInstance::SwitchSession(EPlaceState Destination)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 		bSwitchToHallSession = true;
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
 		break;
 	}
 

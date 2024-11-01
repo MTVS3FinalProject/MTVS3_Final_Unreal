@@ -75,6 +75,9 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientLuckyDrawWin();
 
+	UFUNCTION(Client, Reliable)
+	void ClientLDWinnerExitSession();
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetVisibilityTextRender(bool bIsVisible);
 
@@ -148,6 +151,9 @@ public:
 	UPROPERTY(EditInstanceOnly , Category = "TTSettings|State")
 	bool bIsThirdPerson = true;
 	void SwitchCamera(bool _bIsThirdPerson);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sequences")
+	TObjectPtr<class ULevelSequence> LDWinnerLevelSequence;
 
 #pragma region 입력
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")

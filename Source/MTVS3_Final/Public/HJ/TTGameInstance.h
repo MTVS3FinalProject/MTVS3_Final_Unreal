@@ -79,10 +79,6 @@ public:
 	FFindSignature OnFindSignatureCompleteDelegate;
 	virtual void Init() override;
 
-	// 세션 이동 시 모든 클라이언트 함께 이동할지 여부
-	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
-	bool bEnableServerTravel = true;
-
 # pragma region 세션
 	FString GenerateUniqueSessionName(const FString& SessionNamePrefix);
 
