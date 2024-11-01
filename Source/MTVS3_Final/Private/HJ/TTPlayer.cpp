@@ -691,38 +691,41 @@ void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if ( !GI && !HasAuthority() ) return;
+	if ( !GI ) return;
 	switch ( GI->GetPlaceState() )
 	{
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTHallMap"));
-		bIsCheat1Active = !bIsCheat1Active;
-		if ( bIsCheat1Active )
+		if (HasAuthority())
 		{
-			UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1"));
+			bIsCheat1Active = !bIsCheat1Active;
+			if ( bIsCheat1Active )
+			{
+				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1"));
 
-			// MainUI 숨기기
-			MainUI->SetVisibleCanvas(false);
-			// 좌석 경쟁 UI 표시
-			TicketingUI->SetVisibleSwitcher(true , 1);
-			//TicketingUI->SetWidgetSwitcher(1);
-		}
-		else
-		{
-			UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Disable Cheat1"));
+				// MainUI 숨기기
+				MainUI->SetVisibleCanvas(false);
+				// 좌석 경쟁 UI 표시
+				TicketingUI->SetVisibleSwitcher(true , 1);
+				//TicketingUI->SetWidgetSwitcher(1);
+			}
+			else
+			{
+				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Disable Cheat1"));
 
-			// MainUI 표시
-			MainUI->SetVisibleCanvas(true);
-			// 좌석 경쟁 UI 숨기기
-			TicketingUI->SetVisibleSwitcher(false , 1);
+				// MainUI 표시
+				MainUI->SetVisibleCanvas(true);
+				// 좌석 경쟁 UI 숨기기
+				TicketingUI->SetVisibleSwitcher(false , 1);
+			}
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
-		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap"));
-		GI->SwitchSession(EPlaceState::Plaza);
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap(Nothing)"));
+		/*GI->SwitchSession(EPlaceState::Plaza);
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
-		bIsCheat1Active = !bIsCheat1Active;
+		bIsCheat1Active = !bIsCheat1Active;*/
 		break;
 	}
 }
