@@ -2,7 +2,10 @@
 
 
 #include "LHM/HM_PuzzleBoard.h"
+
+#include "Kismet/GameplayStatics.h"
 #include "LHM/HM_PuzzlePiece.h"
+#include "LHM/PuzzleManager.h"
 
 // Sets default values
 AHM_PuzzleBoard::AHM_PuzzleBoard()
@@ -112,15 +115,37 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 
 				if(ActualTag == ExpectedTag)
 				{
-					UE_LOG(LogTemp, Log, TEXT("Correct piece! Board[%d] matched with %s"), i, *ActualTag);
+					UE_LOG(LogTemp, Log, TEXT("Correct piece! Board[%d] matched with %s"), i+1, *ActualTag);
 					
 					// 서버를 통해 동기화된 가시성 설정
 					ServerSetBoardAreaVisibility(i, true);
+
+					APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
+					if(Manager)
+					{
+						// OtherComp를 UStaticMeshComponent로 캐스팅
+						UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(OtherComp);
+						if (MeshComp && PuzzlePiece->LastOwners.Contains(MeshComp))
+						{
+							AActor* LastOwner = PuzzlePiece->LastOwners[MeshComp];
+							if(LastOwner)
+							{
+								// 피스의 점수 가져오기
+								int32 PieceScore = Manager->GetPieceScore(MeshComp);
+								
+								GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
+				FString::Printf(TEXT("Hit Piece Score : %d"),PieceScore));
+                            
+								// 마지막 소유자에게 점수 부여
+								Manager->AddScoreToPlayer(LastOwner, PieceScore);
+							}
+						}
+					}
 					
 					const TArray<UStaticMeshComponent*>& PiecesArray = PuzzlePiece->GetAllPieces();
 					for(UStaticMeshComponent* Piece : PiecesArray)
 					{
-						if(Piece && Piece->ComponentTags.Num() > 0 && 
+						if(Piece && Piece->ComponentTags.Num() > 0 &&
 						   Piece->ComponentTags[0].ToString() == ActualTag)
 						{
 							Piece->DestroyComponent();

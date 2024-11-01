@@ -2,6 +2,10 @@
 
 
 #include "LHM/HM_PuzzlePiece.h"
+
+#include "Algo/RandomShuffle.h"
+#include "Kismet/GameplayStatics.h"
+#include "LHM/PuzzleManager.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -20,26 +24,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
  	
  	bReplicates = true;
 
-	FVector PiecesLocation = GetActorLocation();
-	// 각 피스의 초기 위치 설정
-	for(auto* Piece : Pieces)
-	{
-		if(Piece)
-		{
-			FVector RandomOffset = FVector(
-				FMath::RandRange(-1000.f, 1000.f),
-				FMath::RandRange(-1000.f, 1000.f),
-				FMath::RandRange(350.f, 350.f)
-			);
-			
-			// 기준 위치 + 랜덤 오프셋을 월드 위치로 설정
-			FVector NewLocation = PiecesLocation + RandomOffset;
-			Piece->SetWorldLocation(NewLocation);
-
-			// 필요 시, 변환값을 저장
-			//CurrentTransform = Piece->GetComponentTransform();
-		}
-	}
+	InitializeRandomSetting();
  }
  
  // Called every frame
@@ -90,11 +75,13 @@ void AHM_PuzzlePiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
  
  void AHM_PuzzlePiece::OnRep_PieceTransform()
  {
-	for (UStaticMeshComponent* Piece : Pieces)
+	for (auto& Piece : Pieces)
 	{
-		if (Piece && !bSimulatingPhysics)
+		UStaticMeshComponent* PieceComp = Piece.Key;
+		
+		if (PieceComp && !bSimulatingPhysics)
 		{
-			Piece->SetWorldTransform(CurrentTransform);
+			PieceComp->SetWorldTransform(CurrentTransform);
 		}
 	}
  }
@@ -102,10 +89,15 @@ void AHM_PuzzlePiece::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 void AHM_PuzzlePiece::InitializePieces()
 {
 	UE_LOG(LogTemp, Log, TEXT("AHM_PuzzlePiece::InitializePieces"));
-	// Static Mesh 로드
+	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
 	if(!MeshAsset.Succeeded()) return;
 
+	// 점수 배열 설정하고 배열을 섞어서 랜덤으로 배치
+	TArray<int32> ScoreOptions = {50, 50, 30, 30, 30, 20, 20, 20, 20};
+	FMath::RandInit(FDateTime::Now().GetMillisecond());
+	Algo::RandomShuffle(ScoreOptions);
+	
 	for(int32 i = 0; i < 9; i++)
 	{
 		// UStaticMeshComponent 생성 및 설정
@@ -119,9 +111,7 @@ void AHM_PuzzlePiece::InitializePieces()
 
 			// 물리 및 충돌 설정
 			NewPiece->SetSimulatePhysics(true);
-			//NewPiece->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 			NewPiece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-			
 			NewPiece->SetCollisionProfileName(TEXT("PuzzlePiece"));
 			NewPiece->SetNotifyRigidBodyCollision(true);
 			NewPiece->SetGenerateOverlapEvents(true);
@@ -129,8 +119,47 @@ void AHM_PuzzlePiece::InitializePieces()
 			// 태그 설정
 			NewPiece->ComponentTags.Add(PieceName);
 
-			// Pieces 배열에 추가
-			Pieces.Add(NewPiece);
+			// 랜덤 점수 할당하고 Pieces 배열에 추가
+			int32 InitialScore = ScoreOptions[i];
+			Pieces.Add(NewPiece, InitialScore);
+
+			UE_LOG(LogTemp, Log, TEXT("Assigned score %d to Piece %s"), InitialScore, *PieceName.ToString());
+		}
+	}
+}
+
+void AHM_PuzzlePiece::InitializeRandomSetting()
+{
+	// 각 피스의 초기 위치 설정, 피스 점수 랜덤 설정
+	FVector PiecesLocation = GetActorLocation();
+	
+	for(auto& Piece : Pieces)
+	{
+		UStaticMeshComponent* PieceComp = Piece.Key;
+		int32 Score = Piece.Value;
+		
+		APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
+		if(Manager)
+		{
+			Manager->AddPiece(PieceComp, Score);
+		}
+			
+		UE_LOG(LogTemp, Log, TEXT("Piece %s has score %d"), *PieceComp->GetName(), Score);
+		
+		if(PieceComp)
+		{
+			FVector RandomOffset = FVector(
+				FMath::RandRange(-1000.f, 1000.f),
+				FMath::RandRange(-1000.f, 1000.f),
+				FMath::RandRange(350.f, 350.f)
+			);
+			
+			// 기준 위치 + 랜덤 오프셋을 월드 위치로 설정
+			FVector NewLocation = PiecesLocation + RandomOffset;
+			PieceComp->SetWorldLocation(NewLocation);
+
+			// 필요 시, 변환값을 저장
+			//CurrentTransform = PieceComp->GetComponentTransform();
 		}
 	}
 }

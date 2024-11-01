@@ -7,7 +7,6 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "LHM/HM_AimingWidget.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "Net/UnrealNetwork.h"
@@ -34,36 +33,14 @@ AHM_PuzzlePlayer::AHM_PuzzlePlayer()
 	FPSCameraComp->bUsePawnControlRotation = true;
 	
 	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
-	//HandComp->SetupAttachment(GetMesh(), TEXT("PiecePosition"));
-	//HandComp->SetRelativeLocationAndRotation(FVector(-50, 0, 0), FRotator(0,90,-90));
 	HandComp->SetupAttachment(FPSCameraComp);
-	HandComp->SetRelativeLocation(FVector(120 , 0 , -40)); //(X=120.000000,Y=0.000000,Z=-40.000000)
-	// (X=100.000000,Y=0.000000,Z=0.000000)
-	// (Pitch=0.000000,Yaw=90.000000,Roll=-90.000000)
+	HandComp->SetRelativeLocation(FVector(120 , 0 , -40));
 }
 
 // Called when the game starts or when spawned
 void AHM_PuzzlePlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	// if(GetLocalRole() == ROLE_Authority)
-	// {
-	// 		FName tag = TEXT("Piece");
-	// 		// 임시 AActor 배열에 피스 조각 수집
-	// 		TArray<AActor*> TempPieceList;
-	// 		UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld() , AHM_PuzzlePiece::StaticClass() , tag ,
-	// 		                                             TempPieceList);
-	// 		
-	// 		for (AActor* actor : TempPieceList)
-	// 		{
-	// 			AHM_PuzzlePiece* piece = Cast<AHM_PuzzlePiece>(actor);
-	// 			if (piece)
-	// 			{
-	// 					PieceList.Add(piece);
-	// 			}
-	// 		}
-	// }
 
 	if(IsLocallyControlled())
 	{
@@ -128,12 +105,6 @@ void AHM_PuzzlePlayer::Tick(float DeltaTime)
 				// 서버에 회전 값 전달
 				ServerRPCUpdateRotation(NewRotation);
 				ServerRPCUpdateFPSCameraRotation(ControlRotation);
-
-				// if (FPSCameraComp)
-				// {
-				// 	ServerRPCUpdateFPSCameraRotation(ControlRotation);
-				// 	FPSCameraComp->SetWorldRotation(ControlRotation);
-				// }
 			}
 
 			// Calculate movement direction based on camera rotation
@@ -425,7 +396,6 @@ void AHM_PuzzlePlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 	if (!PieceComp) return;
 	SwitchCamera(false);
 	
-	//PickupPieceActor = PieceComp;
 	// 클라이언트와 서버 모두에서 실행될 회전 로직
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC && PC->IsLocalController())
@@ -477,8 +447,6 @@ void AHM_PuzzlePlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 	if (!PieceComp) return;
 	SwitchCamera(true);
 
-	//PieceComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	//PieceComp->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
 	PieceComp->SetSimulatePhysics(true);
 	PieceComp->SetEnableGravity(true);
 	PieceComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -502,7 +470,6 @@ void AHM_PuzzlePlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 
 void AHM_PuzzlePlayer::ZoomIn()
 {
-	//if(FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
 	if (FPSCameraComp)
 	{
 		// 기존 타이머가 있다면 종료
@@ -526,7 +493,6 @@ void AHM_PuzzlePlayer::ZoomIn()
 
 void AHM_PuzzlePlayer::ZoomOut()
 {
-	//if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
 	if(FPSCameraComp)
 	{
 		// 기존 타이머가 있다면 종료
@@ -563,7 +529,6 @@ void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceA
 
 void AHM_PuzzlePlayer::MulticastRPCTakePiece_Implementation(UStaticMeshComponent* PieceComp)
 {
-	// 피스 액터를 HandComp에 붙이고 싶다.
 	AttachPiece(PieceComp);
 }
 
@@ -592,6 +557,9 @@ void AHM_PuzzlePlayer::ServerRPCLaunchPiece_Implementation()
 {
 	if (bHasPiece && TargetPieceComp && PickupPieceActor)
 	{
+		// 피스의 마지막 소유자를 현재 소유자로 설정
+		PickupPieceActor->LastOwners.Add(TargetPieceComp, this);
+		
 		bHasPiece = false;
 		PickupPieceActor->ClearComponentOwner(TargetPieceComp);
 		MulticastRPCLaunchPiece(TargetPieceComp);

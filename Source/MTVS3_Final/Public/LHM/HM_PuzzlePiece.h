@@ -24,11 +24,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
     UPROPERTY(EditDefaultsOnly);
-	TArray<UStaticMeshComponent*> Pieces;
+	//TArray<UStaticMeshComponent*> Pieces;
+	TMap<UStaticMeshComponent*, int32> Pieces;
 
 	// 각 컴포넌트의 소유자를 저장하는 맵 추가
 	UPROPERTY(EditDefaultsOnly);
 	TMap<UStaticMeshComponent*, class AHM_PuzzlePlayer*> ComponentOwners;
+	
+	// 피스의 마지막 소유자 저장
+	UPROPERTY()
+	TMap<UStaticMeshComponent*, AActor*> LastOwners;
 	
 	// 특정 컴포넌트의 소유자를 설정하는 함수
 	void SetComponentOwner(UStaticMeshComponent* Component, class AHM_PuzzlePlayer* NewOwner);
@@ -40,7 +45,12 @@ public:
 	class AHM_PuzzlePlayer* GetComponentOwner(UStaticMeshComponent* Component);
 	
 	// 스태틱 메시 컴포넌트 반환 함수 추가
-	const TArray<UStaticMeshComponent*>& GetAllPieces() const { return Pieces; }
+	TArray<UStaticMeshComponent*> GetAllPieces() const
+	{
+		TArray<UStaticMeshComponent*> Keys;
+		Pieces.GetKeys(Keys);
+		return Keys;
+	}
 	
 	// --------------- Multiplayer 요소들 ---------------
 	
@@ -59,4 +69,5 @@ public:
 	bool bSimulatingPhysics;
 
 	void InitializePieces();
+    void InitializeRandomSetting();
 };
