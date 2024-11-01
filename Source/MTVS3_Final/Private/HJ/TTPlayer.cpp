@@ -23,6 +23,8 @@
 #include "HJ/TTGameInstance.h"
 #include <HJ/TTPlayerState.h>
 #include <HJ/HJ_Actor.h>
+#include "LevelSequenceActor.h"
+#include "LevelSequencePlayer.h"
 #include "Components/TextRenderComponent.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_GameWidget.h"
@@ -370,8 +372,46 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 	{
 		GameUI->SetWidgetSwitcher(2);  // 우승자 UI 업데이트
 	}
+
+	SetActorLocationAndRotation(FVector(-70.0f, -2640.0f, 628.0f), FRotator(0.0f, 90.0f, 0.0f));
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if (Anim) Anim->PlayDancingMontage();
+
+	if(LDWinnerLevelSequence)
+	{
+		// 레벨 시퀀스의 월드 위치 설정
+		FMovieSceneSequencePlaybackSettings Settings;
+		Settings.bAutoPlay = true;
+		Settings.LoopCount.Value = -1; // -1은 무한 반복, 특정 횟수 반복은 원하는 정수로 설정
+
+		// 레벨 시퀀스 플레이어 생성
+		ALevelSequenceActor* SequenceActor;
+		ULevelSequencePlayer* SequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(
+			GetWorld(),
+			LDWinnerLevelSequence,
+			Settings,
+			SequenceActor
+		);
+
+		if (SequencePlayer)
+		{
+			// 시퀀스 재생 시작
+			SequencePlayer->Play();
+		}
+
+		FTimerHandle LDWinnerTimerHandle;
+		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle, this, &ATTPlayer::ClientLDWinnerExitSession, 3.0f, false);
+	}
+}
+
+void ATTPlayer::ClientLDWinnerExitSession_Implementation()
+{
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if(GI) GI->SetLuckyDrawState(ELuckyDrawState::Winner);
+	if(GI)
+	{
+		GI->SetLuckyDrawState(ELuckyDrawState::Winner);
+		GI->SwitchSession(EPlaceState::Plaza);
+	}
 }
 
 void ATTPlayer::MulticastSetVisibilityTextRender_Implementation(bool bIsVisible)
