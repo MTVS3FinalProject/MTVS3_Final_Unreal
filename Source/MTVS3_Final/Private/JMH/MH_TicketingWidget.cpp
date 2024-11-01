@@ -27,6 +27,7 @@ void UMH_TicketingWidget::NativeConstruct()
 	//위젯 꺼져있는게 기본값
 	//SetVisibleSwitcher(false);
 	WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+	//현민 : 작업 완료후 지우기
 	SetCompletedVisible(false);
 
 	//콘서트정보 담아오기

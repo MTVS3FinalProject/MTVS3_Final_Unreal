@@ -13,5 +13,10 @@ UCLASS()
 class MTVS3_FINAL_API UMH_Message : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Text_Message;
+
+	void SetChatMessage(const FString& Message);
 };

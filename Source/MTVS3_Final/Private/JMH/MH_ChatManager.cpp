@@ -3,6 +3,8 @@
 
 #include "JMH/MH_ChatManager.h"
 
+#include "LHM/TTPlayerController.h"
+
 // Sets default values
 AMH_ChatManager::AMH_ChatManager()
 {
@@ -25,19 +27,36 @@ void AMH_ChatManager::Tick(float DeltaTime)
 
 }
 
-void AMH_ChatManager::ServerSendChatMessage_Implementation(const FString& SenderName, const FString& Message)
+void AMH_ChatManager::ServerSendChatMessage_Implementation(const FString& Message)
 {
 	// 서버에서 받은 메시지를 모든 클라이언트에게 브로드캐스트
-	BroadcastChatMessage(SenderName, Message);
+	MultiReceiveChatMessage(Message);
 }
 
-bool AMH_ChatManager::ServerSendChatMessage_Validate(const FString& SenderName, const FString& Message)
+bool AMH_ChatManager::ServerSendChatMessage_Validate(const FString& Message)
 {
 	// 유효성 검사 로직 예시: 메시지가 비어 있지 않아야 함
 	return !Message.IsEmpty();
 }
 
-void AMH_ChatManager::ClientReceiveChatMessage_Implementation(const FChatMessege ChatMessege)
+void AMH_ChatManager::MultiReceiveChatMessage_Implementation(const FChatMessage ChatMessage)
 {
+	
+}
+
+void AMH_ChatManager::AddChatting()
+{
+	
+}
+
+void AMH_ChatManager::AddChatMessage(const FString& Message)
+{
+	
+}
+
+void AMH_ChatManager::ClientReceiveChatMessage_Implementation(const FChatMessage ChatMessage)
+{
+	//클라이언트가 채팅 메세지를 수신 ->출력
+
 	
 }

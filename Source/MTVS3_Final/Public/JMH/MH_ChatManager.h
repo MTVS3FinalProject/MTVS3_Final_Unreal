@@ -3,23 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MH_Chatting.h"
 #include "GameFramework/Actor.h"
 #include "MH_ChatManager.generated.h"
 
 USTRUCT()
-struct FChatMessege
+struct FChatMessage
 {
 	GENERATED_BODY()
-
-	UPROPERTY()
-	FString SenderName;
-
 	UPROPERTY()
 	FString Message;
 
-	FChatMessege() {}
+	FChatMessage() {}
 
-	FChatMessege(const FString& InSenderName, const FString& InMessage): SenderName(InSenderName),Message(InMessage){}
+	FChatMessage(const FString& InMessage): Message(InMessage){}
 	
 	
 };
@@ -41,11 +38,31 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
+	//메시지 클라이언트들에게 전송하는 서버 함수
 	UFUNCTION(Server, Reliable, WithValidation)
-	void ServerSendChatMessage(const FString& SenderName, const FString& Message);
+	void ServerSendChatMessage(const FString& Message);
 
-	UFUNCTION(Client,Reliable)
-	void ClientReceiveChatMessage(const FChatMessege ChatMessege);
+	//메시지를 각 클라
+	UFUNCTION(NetMulticast,Reliable)
+	void MultiReceiveChatMessage(const FChatMessage ChatMessage);
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UMH_Chatting> ChatWidget;
+
+	UPROPERTY()
+	class UMH_Chatting* ChatUI;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UMH_Message> Message;
+
+	UPROPERTY()
+	class UMH_Message* MessageUI;
+	
+	UFUNCTION(Blueprintable)
+	void AddChatting();
+	UFUNCTION(Blueprintable)
+	void AddChatMessage(const FString& Message);
+
+	
 	
 };
