@@ -704,6 +704,13 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 			{
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1"));
 
+				AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+				if (HttpActor2)
+				{
+					HttpActor2->ReqPostNoticeGameStart(GI->GetConcertName(), HttpActor2->GetSeatId(), GI->GetAccessToken());
+				}
+				
 				// MainUI 숨기기
 				MainUI->SetVisibleCanvas(false);
 				// 좌석 경쟁 UI 표시

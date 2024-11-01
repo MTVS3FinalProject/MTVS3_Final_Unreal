@@ -113,7 +113,6 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 				if(ActualTag == ExpectedTag)
 				{
 					UE_LOG(LogTemp, Log, TEXT("Correct piece! Board[%d] matched with %s"), i, *ActualTag);
-					//BoardAreas[i]->SetVisibility(true);
 					
 					// 서버를 통해 동기화된 가시성 설정
 					ServerSetBoardAreaVisibility(i, true);
