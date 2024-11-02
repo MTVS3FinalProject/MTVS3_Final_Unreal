@@ -7,6 +7,8 @@
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/InputActionValue.h"
 #include "TTPlayer.generated.h"
 
+class AHM_PuzzlePiece;
+
 UCLASS()
 class MTVS3_FINAL_API ATTPlayer : public ACharacter
 {
@@ -98,6 +100,56 @@ public:
 	
 	UFUNCTION()
 	void OnRep_RandomSeatNumber();
+
+	// UFUNCTION()
+	// void OnRep_RandomSeatNumber();
+
+	// ====================퍼즐====================
+	UPROPERTY(Replicated, VisibleAnywhere , Category = Piece)
+	bool bHasPiece = false;
+	UPROPERTY(Replicated, VisibleAnywhere , Category = Piece)
+	class UStaticMeshComponent* TargetPieceComp;
+	UPROPERTY(Replicated, VisibleAnywhere , Category = Piece)
+	FTransform TargetPieceTransform;
+	UPROPERTY(Replicated, VisibleAnywhere , Category = Piece)
+	bool bIsZoomingIn = false;
+	
+	// 피스 조각 잡기와 놓기 던지기 기능
+	void MyTakePiece();
+	void MyReleasePiece();
+	void MyLaunchPiece();
+
+	void ZoomIn();
+	void ZoomOut();
+	
+	void AttachPiece(UStaticMeshComponent* PieceComp);
+	void DetachPiece(UStaticMeshComponent* PieceComp);
+	void LaunchPiece(UStaticMeshComponent* PieceComp);
+	
+	UFUNCTION(Server, Reliable)	// 피스 잡기 RPC
+	void ServerRPCTakePiece(AHM_PuzzlePiece* pieceActor, UStaticMeshComponent* PieceComp);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCTakePiece(UStaticMeshComponent* PieceComp);
+	
+	UFUNCTION(Server, Reliable) // 피스 놓기 RPC
+	void ServerRPCReleasePiece();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCReleasePiece(UStaticMeshComponent* PieceComp);
+	
+	UFUNCTION(Server, Reliable) // 피스 던지기 RPC
+	void ServerRPCLaunchPiece();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCLaunchPiece(UStaticMeshComponent* PieceComp);
+	
+	UFUNCTION(Server, Reliable) // 캐릭터 회전값 RPC
+	void ServerRPCUpdateRotation(const FRotator& NewRotation);
+	
+	UFUNCTION(Server, Reliable) // FPS카메라 회전값 RPC
+	void ServerRPCUpdateFPSCameraRotation(const FRotator& FPSCameraNewRotation);
+
 #pragma endregion
 
 #pragma region 개인 설정
@@ -163,6 +215,25 @@ public:
 
 	UPROPERTY(Transient)
 	class ULevelSequencePlayer* SequencePlayer;
+
+	// ====================퍼즐====================
+	// 잡은 피스 조각의 참조
+	UPROPERTY(Replicated)
+	class AHM_PuzzlePiece* PickupPieceActor;
+	
+	// 피스 조각을 잡았을 때 위치
+	UPROPERTY(EditDefaultsOnly, Category = Piece)
+	class USceneComponent* HandComp;
+
+	// 피스 조각과의 거리 제한
+	UPROPERTY(EditDefaultsOnly, Category = Piece)
+	float PickupDistance = 300;
+
+	// 피스 잡은 상태에서 줌인
+	float DefaultFOV; // 기본 시야각
+	float ZoomedFOV = 60.0f;  // 줌인 목표 시야각
+	float ZoomDuration = 10.f; // 보간 속도
+	FTimerHandle ZoomTimerHandle;   // 줌 타이머 핸들
 	
 #pragma region 입력
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
@@ -239,6 +310,15 @@ public:
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Cheat4;
 	void OnMyActionCheat4(const FInputActionValue& Value);
+
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	class UInputAction* IA_Piece;
+	void OnMyActionPickupPiece(const FInputActionValue& Value);
+	
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	class UInputAction* IA_Zoom;
+	void OnMyActionZoomInPiece(const FInputActionValue& Value);
+	void OnMyActionZoomOutPiece(const FInputActionValue& Value);
 #pragma endregion
 
 #pragma region UI
@@ -272,6 +352,16 @@ public:
 	TSubclassOf<class UMH_GameWidget> GameUIFactory;
 	UPROPERTY()
 	class UMH_GameWidget* GameUI;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UHM_AimingWidget> AimingUIFactory;
+	UPROPERTY()
+	class UHM_AimingWidget* AimingUI;
+	
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UHM_PuzzleWidget> PuzzleUIFactory;
+	UPROPERTY()
+	class UHM_PuzzleWidget* PuzzleUI;
 	
 	void InitGameUI();
 	void SetTextMyNum();
