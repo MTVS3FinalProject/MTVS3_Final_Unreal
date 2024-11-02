@@ -17,4 +17,8 @@ class MTVS3_FINAL_API ATTHallGameState : public AGameState
 protected:
 	virtual void BeginPlay() override;
 
+public:
+	void SendLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate);
+
+	void HideLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate);
 };

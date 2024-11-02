@@ -5,6 +5,9 @@
 #include "EngineUtils.h"
 #include "HJ/TTGameInstance.h"
 #include "HJ/TTPlayer.h"
+#include "HJ/TTPlayerState.h"
+#include "JMH/MainWidget.h"
+#include "JMH/MH_TicketingWidget.h"
 
 void ATTHallGameState::BeginPlay()
 {
@@ -21,6 +24,42 @@ void ATTHallGameState::BeginPlay()
 			TTPlayer->InitMainUI();
 			TTPlayer->ServerSetNickname(GI->GetNickname());
 			TTPlayer->SwitchCamera(TTPlayer->bIsThirdPerson);
+		}
+	}
+}
+
+void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate)
+{
+	for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+	{
+		ATTPlayer* TTPlayer = *It;
+		if ( TTPlayer && !TTPlayer->bIsHost)
+		{
+			if (NicknameList.Contains(TTPlayer->GetNickname()))
+			{
+				TTPlayer->ClientShowLuckyDrawInvitation(true, CompetitionRate);
+			}
+		}
+	}
+
+	FTimerHandle HideLDInvitationTimerHandle;
+	GetWorldTimerManager().SetTimer(HideLDInvitationTimerHandle, [this, NicknameList, CompetitionRate]()
+	{
+		HideLuckyDrawInvitation(NicknameList, CompetitionRate);
+	}, 90.0f, false);
+}
+
+void ATTHallGameState::HideLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate)
+{
+	for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+	{
+		ATTPlayer* TTPlayer = *It;
+		if ( TTPlayer && !TTPlayer->bIsHost)
+		{
+			if (NicknameList.Contains(TTPlayer->GetNickname()))
+			{
+				TTPlayer->ClientShowLuckyDrawInvitation(false, CompetitionRate);
+			}
 		}
 	}
 }

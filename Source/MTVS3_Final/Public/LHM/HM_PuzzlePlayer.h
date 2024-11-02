@@ -95,10 +95,10 @@ public:
 	UPROPERTY()
 	class UHM_AimingWidget* AimingUI;
 
-private:
+//private:
 	// 태어날 때 모든 피스 조각 목록을 기억하고 싶다.
-	UPROPERTY(Replicated)
-	TArray<AHM_PuzzlePiece*> PieceList;
+	//UPROPERTY(Replicated)
+	//TArray<AHM_PuzzlePiece*> PieceList;
 
 public:
 	// 잡은 피스 조각의 참조
@@ -169,5 +169,9 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRPCUpdateRotation(const FRotator& NewRotation);
 
+	// FPS카메라 회전값 RPC
+	UFUNCTION(Server, Reliable)
+	void ServerRPCUpdateFPSCameraRotation(const FRotator& FPSCameraNewRotation);
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
