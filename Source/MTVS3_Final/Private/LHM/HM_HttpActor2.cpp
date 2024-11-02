@@ -63,7 +63,7 @@ void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concert") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts") , *_url);
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concert/test") , *_url); // 테스트용
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));

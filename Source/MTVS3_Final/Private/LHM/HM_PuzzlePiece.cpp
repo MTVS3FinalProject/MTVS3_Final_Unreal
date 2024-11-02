@@ -37,7 +37,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
  
  }
 
-void AHM_PuzzlePiece::SetComponentOwner(UStaticMeshComponent* Component, class AHM_PuzzlePlayer* NewOwner)
+void AHM_PuzzlePiece::SetComponentOwner(UStaticMeshComponent* Component, class ATTPlayer* NewOwner)
 {
 	if (Component)
 	{
@@ -59,7 +59,7 @@ bool AHM_PuzzlePiece::IsComponentOwned(UStaticMeshComponent* Component)
 	return Component && ComponentOwners.Contains(Component);
 }
 
-class AHM_PuzzlePlayer* AHM_PuzzlePiece::GetComponentOwner(UStaticMeshComponent* Component)
+class ATTPlayer* AHM_PuzzlePiece::GetComponentOwner(UStaticMeshComponent* Component)
 {
 	if (ComponentOwners.Contains(Component))
 	{
@@ -72,8 +72,6 @@ void AHM_PuzzlePiece::InitializePieces()
 {
 	if (HasAuthority())  // 서버에서만 실행
 	{
-		UE_LOG(LogTemp , Log , TEXT("AHM_PuzzlePiece::InitializePieces"));
-
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
 			TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
 		if (!MeshAsset.Succeeded()) return;

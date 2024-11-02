@@ -29,20 +29,20 @@ public:
 
 	// 각 컴포넌트의 소유자를 저장하는 맵 추가
 	UPROPERTY(EditDefaultsOnly);
-	TMap<UStaticMeshComponent*, class AHM_PuzzlePlayer*> ComponentOwners;
+	TMap<UStaticMeshComponent*, class ATTPlayer*> ComponentOwners;
 	
 	// 피스의 마지막 소유자 저장
 	UPROPERTY()
 	TMap<UStaticMeshComponent*, AActor*> LastOwners;
 	
 	// 특정 컴포넌트의 소유자를 설정하는 함수
-	void SetComponentOwner(UStaticMeshComponent* Component, class AHM_PuzzlePlayer* NewOwner);
+	void SetComponentOwner(UStaticMeshComponent* Component, class ATTPlayer* NewOwner);
 	// 특정 컴포넌트의 소유자를 해제하는 함수
 	void ClearComponentOwner(UStaticMeshComponent* Component);
 	// 특정 컴포넌트가 소유 중인지 확인하는 함수
 	bool IsComponentOwned(UStaticMeshComponent* Component);
 	// 소유자를 반환하는 함수
-	class AHM_PuzzlePlayer* GetComponentOwner(UStaticMeshComponent* Component);
+	class ATTPlayer* GetComponentOwner(UStaticMeshComponent* Component);
 	
 	// 스태틱 메시 컴포넌트 반환 함수 추가
 	TArray<UStaticMeshComponent*> GetAllPieces() const

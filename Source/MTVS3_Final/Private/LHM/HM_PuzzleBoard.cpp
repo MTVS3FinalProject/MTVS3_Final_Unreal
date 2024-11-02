@@ -39,7 +39,7 @@ void AHM_PuzzleBoard::BeginPlay()
 			int32 Idx = Row * GridSize + Col;
 			if (BoardAreas.IsValidIndex(Idx) && BoardAreas[Idx])
 			{
-				FVector OffsetLocation = FVector(0, Col * CellSize , Row * CellSize);
+				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
 				FVector NewLocation = BoardLocation + OffsetLocation;
 				BoardAreas[Idx]->SetWorldLocation(NewLocation);
 			}
