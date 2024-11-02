@@ -20,6 +20,7 @@ void APuzzleManager::BeginPlay()
 	Super::BeginPlay();
 
 	PuzzleUI = CastChecked<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
+	if(PuzzleUI) PuzzleUI->InitializeTextBlocks();
 }
 
 // Called every frame
@@ -35,7 +36,7 @@ void APuzzleManager::AddPiece(UStaticMeshComponent* Piece, int32 InitialScore)
 	{
 		Pieces.Add(Piece, InitialScore);
 	}
-	UE_LOG(LogTemp, Log, TEXT("Piece %s Initial Score: %d"), *Piece->GetName(), InitialScore);
+	UE_LOG(LogTemp, Log, TEXT("%s Initial Score: %d"), *Piece->GetName(), InitialScore);
 }
 
 int32 APuzzleManager::GetPieceScore(UStaticMeshComponent* Piece) const
@@ -43,14 +44,6 @@ int32 APuzzleManager::GetPieceScore(UStaticMeshComponent* Piece) const
 	const int32* Score = Pieces.Find(Piece);
 	return Score ? *Score : 0;
 }
-
-// void APuzzleManager::SetPieceScore(UStaticMeshComponent* Piece, int32 NewScore)
-// {
-// 	if (Pieces.Contains(Piece))
-// 	{
-// 		Pieces[Piece] = NewScore;
-// 	}
-// }
 
 void APuzzleManager::AddScoreToPlayer(AActor* Player, int32 Score)
 {
@@ -81,20 +74,51 @@ void APuzzleManager::AddScoreToPlayer(AActor* Player, int32 Score)
 
 	if(!bPlayerFound)
 	{
-		FPlayerScoreInfo NewPlayerInfo;
-		NewPlayerInfo.Player = Player;
-		NewPlayerInfo.Score = PlayerScores[Player];
+		//FPlayerScoreInfo NewPlayerInfo;
+		//NewPlayerInfo.Player = Player;
+		//NewPlayerInfo.Score = PlayerScores[Player];
+		//PlayerScoresInfo.Add(NewPlayerInfo);
+		FPlayerScoreInfo NewPlayerInfo(Player, PlayerScores[Player]);
 		PlayerScoresInfo.Add(NewPlayerInfo);
 	}
 	
-	//UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *Player->GetName(), PlayerScores[Player]);
-	//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
-	//			FString::Printf(TEXT("Player %s new score: %d"),*Player->GetName(), PlayerScores[Player]));
+	UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *Player->GetName(), PlayerScores[Player]);
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
+				FString::Printf(TEXT("Player %s new score: %d"),*Player->GetName(), PlayerScores[Player]));
+
+
+	
+	// 랭킹 산정 및 UI 업데이트
+	SortAndUpdateRanking();
+}
+
+void APuzzleManager::SortAndUpdateRanking()
+{
+	// 점수 기준으로 내림차순 정렬
+	PlayerScoresInfo.Sort([](const FPlayerScoreInfo& A, const FPlayerScoreInfo& B) {
+		if (A.Score == B.Score)
+		{
+			// 점수가 같다면 Timestamp로 정렬 (먼저 도달한 순서대로)
+			return A.Timestamp < B.Timestamp;
+		}
+		return A.Score > B.Score;  // 높은 점수가 우선 ('>' 는 내림차순, '<' 는 오름차순)
+	});
 
 	// UI 업데이트
 	if (PuzzleUI)
 	{
 		PuzzleUI->UpdatePlayerScores(PlayerScoresInfo);
+        
+		// 디버그 로그로 정렬된 점수 출력
+		for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)
+		{
+			FString TimeString = PlayerScoresInfo[i].Timestamp.ToString(TEXT("%M:%S"));
+			UE_LOG(LogTemp, Log, TEXT("Rank %d - Player: %s, Score: %d, Time %s"), 
+				i + 1, 
+				*PlayerScoresInfo[i].Player->GetName(), 
+				PlayerScoresInfo[i].Score,
+				*TimeString);
+		}
 	}
 }
 

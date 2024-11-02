@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "HM_PuzzleWidget.generated.h"
 
+struct FPlayerScoreInfo;
 /**
  * 
  */
@@ -40,10 +41,9 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Piece9;
 	
-	void SetTextPieceInfo(FString PieceName, int32 Score, int32 Index);
-
 	
 	// TextPlayerScore 포인터 배열
+	UPROPERTY()
 	class UTextBlock* TextPlayerScores[9];
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -65,6 +65,11 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Player9Score;
 
-	UFUNCTION()
+	void InitializeTextBlocks();
+	void InitializePuzzlePieces();
+	
+	void SetTextPieceInfo(FString PieceName, int32 Score, int32 Index);
+	
+	//UFUNCTION()
 	void UpdatePlayerScores(const TArray<FPlayerScoreInfo>& PlayerScoresInfo);
 };

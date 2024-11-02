@@ -352,6 +352,11 @@ public:
 	UPROPERTY()
 	class UHM_AimingWidget* AimingUI;
 	
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UHM_PuzzleWidget> PuzzleUIFactory;
+	UPROPERTY()
+	class UHM_PuzzleWidget* PuzzleUI;
+	
 	void InitGameUI();
 	void SetTextMyNum();
 

@@ -141,7 +141,8 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 							}
 						}
 					}
-					
+
+					// 맞춘 피스는 제거
 					const TArray<UStaticMeshComponent*>& PiecesArray = PuzzlePiece->GetAllPieces();
 					for(UStaticMeshComponent* Piece : PiecesArray)
 					{

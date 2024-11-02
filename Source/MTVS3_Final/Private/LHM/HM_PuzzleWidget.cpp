@@ -5,7 +5,6 @@
 #include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/PuzzleManager.h"
-#include "Slate/SGameLayerManager.h"
 
 class APuzzleManager;
 
@@ -23,7 +22,15 @@ void UHM_PuzzleWidget::NativeConstruct()
 	TextPieces[6] = Text_Piece7;
 	TextPieces[7] = Text_Piece8;
 	TextPieces[8] = Text_Piece9;
+	
+	//InitializeTextBlocks();
+	InitializePuzzlePieces();
+	
+}
 
+void UHM_PuzzleWidget::InitializeTextBlocks()
+{
+	
 	// TextPlayerScore 포인터 배열로 초기화
 	TextPlayerScores[0] = Text_Player1Score;
 	TextPlayerScores[1] = Text_Player2Score;
@@ -34,7 +41,10 @@ void UHM_PuzzleWidget::NativeConstruct()
 	TextPlayerScores[6] = Text_Player7Score;
 	TextPlayerScores[7] = Text_Player8Score;
 	TextPlayerScores[8] = Text_Player9Score;
-	
+}
+
+void UHM_PuzzleWidget::InitializePuzzlePieces()
+{
 	APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
 	if (Manager)
 	{
@@ -71,20 +81,23 @@ void UHM_PuzzleWidget::SetTextPieceInfo(FString PieceName, int32 Score, int32 In
 
 void UHM_PuzzleWidget::UpdatePlayerScores(const TArray<FPlayerScoreInfo>& PlayerScoresInfo)
 {
-	UE_LOG(LogTemp, Display, TEXT("UHM_PuzzleWidget::UpdatePlayerScores"));
+    // 점수 정보 업데이트
 	for (int32 Index = 0; Index < PlayerScoresInfo.Num(); Index++)
 	{
-		if (Index < 9) // 최대 9명까지 표시
+		if(TextPlayerScores[Index] == nullptr) UE_LOG(LogTemp, Log, TEXT("TextPlayerScores[%d] is null!!"), Index);
+
+		
+		if (Index < 9 && TextPlayerScores[Index]) // 최대 9명까지 표시
 		{
-			FString ScoreText = FString::Printf(TEXT("%s: %d"), *PlayerScoresInfo[Index].Player->GetName(), PlayerScoresInfo[Index].Score);
-			if (TextPlayerScores[Index])
-			{
-				TextPlayerScores[Index]->SetText(FText::FromString(ScoreText));
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("TextPlayerScores[%d] is null!"), Index);
-			}
+			FString TimeString = PlayerScoresInfo[Index].Timestamp.ToString(TEXT("%M:%S"));
+			FString ScoreText = FString::Printf(TEXT("#%d %s: %d / %s"), 
+				Index + 1,  // 랭킹 표시
+                *PlayerScoresInfo[Index].Player->GetName(), 
+                PlayerScoresInfo[Index].Score,
+                *TimeString);
+
+			TextPlayerScores[Index]->SetText(FText::FromString(ScoreText));
+			UE_LOG(LogTemp, Log, TEXT("Successfully set text for player : %s"), *ScoreText);
 		}
 	}
 }

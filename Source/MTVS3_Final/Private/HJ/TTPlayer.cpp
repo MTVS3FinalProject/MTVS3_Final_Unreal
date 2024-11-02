@@ -31,6 +31,7 @@
 #include "JMH/PlayerNicknameWidget.h"
 #include "LHM/HM_AimingWidget.h"
 #include "LHM/HM_PuzzlePiece.h"
+#include "LHM/HM_PuzzleWidget.h"
 
 class ALuckyDrawManager;
 // Sets default values
@@ -173,13 +174,6 @@ void ATTPlayer::BeginPlay()
 	// ====================퍼즐====================
 	bReplicates = true;
 	
-	AimingUI = Cast<UHM_AimingWidget>(CreateWidget(GetWorld() , AimingUIFactory));
-	if ( AimingUI )
-	{
-		AimingUI->AddToViewport();
-		AimingUI->SetVisibility(ESlateVisibility::Hidden);
-	}
-
 	if (FPSCameraComp)
 	{
 		DefaultFOV = FPSCameraComp->FieldOfView;
@@ -590,6 +584,7 @@ void ATTPlayer::MyTakePiece()
 							}
 						}
 					}
+					if(PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
 				}
 			}
 		}
@@ -726,7 +721,7 @@ void ATTPlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 	PieceComp->SetGenerateOverlapEvents(true);
 
 	FVector LaunchDirection = FPSCameraComp->GetForwardVector();
-	float LaunchSpeed = 4000.0f;
+	float LaunchSpeed = 6000.0f;
 	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
 	PieceComp->AddImpulse(LaunchVelocity, NAME_None, true);
 
@@ -1238,10 +1233,12 @@ void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 	{
 		MyLaunchPiece();
 		if(AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
+		if(PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 	else if(bHasPiece)
 	{
 		MyReleasePiece();
+		if(PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 	//else if(!bIsZoomingIn && !bHasPiece)
 	else if(!bHasPiece)
@@ -1294,6 +1291,20 @@ void ATTPlayer::InitMainUI()
 	if (WorldMapUI)
 	{
 		WorldMapUI->AddToViewport();
+	}
+
+	AimingUI = Cast<UHM_AimingWidget>(CreateWidget(GetWorld() , AimingUIFactory));
+	if ( AimingUI )
+	{
+		AimingUI->AddToViewport();
+		AimingUI->SetVisibility(ESlateVisibility::Hidden);
+	}
+	
+	PuzzleUI = Cast<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
+	if ( PuzzleUI )
+	{
+		PuzzleUI->AddToViewport();
+		PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 
 	ATTPlayerController* MyController = Cast<ATTPlayerController>(GetController());

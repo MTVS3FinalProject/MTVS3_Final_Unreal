@@ -108,7 +108,7 @@ void AHM_PuzzlePiece::InitializePieces()
 				int32 InitialScore = ScoreOptions[i];
 				Pieces.Add(NewPiece , InitialScore);
 
-				UE_LOG(LogTemp , Log , TEXT("Assigned score %d to Piece %s") , InitialScore , *PieceName.ToString());
+				//UE_LOG(LogTemp , Log , TEXT("Assigned score %d to %s") , InitialScore , *PieceName.ToString());
 			}
 		}
 	}
@@ -129,8 +129,6 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
 		{
 			Manager->AddPiece(PieceComp, Score);
 		}
-			
-		UE_LOG(LogTemp, Log, TEXT("Piece %s has score %d"), *PieceComp->GetName(), Score);
 		
 		if(PieceComp)
 		{
