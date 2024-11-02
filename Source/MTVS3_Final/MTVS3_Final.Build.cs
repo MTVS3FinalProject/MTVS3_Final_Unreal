@@ -7,12 +7,8 @@ public class MTVS3_Final : ModuleRules
 	public MTVS3_Final(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" , "HTTP", "Json" , "JsonUtilities", "OnlineSubsystem", "OnlineSubsystemSteam" ,"Paper2D"});
-
-
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG" , "HTTP", "Json" , "JsonUtilities", "OnlineSubsystem", "OnlineSubsystemSteam" ,"Paper2D", "LevelSequence", "MovieScene"});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

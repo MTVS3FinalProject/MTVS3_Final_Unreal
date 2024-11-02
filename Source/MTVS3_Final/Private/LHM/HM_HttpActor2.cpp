@@ -2,6 +2,9 @@
 
 
 #include "LHM/HM_HttpActor2.h"
+
+#include <ThirdParty/ShaderConductor/ShaderConductor/External/DirectXShaderCompiler/include/dxc/DXIL/DxilConstants.h>
+
 #include "JMH/MH_TicketingWidget.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
@@ -10,6 +13,8 @@
 #include "ImageUtils.h"
 #include "JMH/MH_BuyTicketWidget.h"
 #include "GameFramework/PlayerState.h"
+#include "HJ/TTHallGameState.h"
+#include "HLSLTree/HLSLTreeTypes.h"
 #include "JMH/MainWidget.h"
 
 // Sets default values
@@ -930,18 +935,20 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 							NicknameList.Add(Value->AsString());
 						}
 						UE_LOG(LogTemp , Log , TEXT("Received %d nicknames") , NicknameList.Num());
+						
+						// NicknameList의 모든 요소를 ", "로 구분하여 출력
+						FString NicknameListString = FString::Join(NicknameList, TEXT(", "));
+						UE_LOG(LogTemp, Log, TEXT("NicknameList: %s"), *NicknameListString);
 					}
 
 					// competitionRate 파싱
 					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
 					UE_LOG(LogTemp , Log , TEXT("Competition Rate: %d") , CompetitionRate);
 
-					// PS의 네임리스트를 관리하는 함수에 매개변수로 넘겨주기
-					if ( PS )
-					{
-						// GI->SetNicknameList(NicknameList);
-						// GI->SetCompetitionRate(CompetitionRate);
-					}
+					TicketingUI->SetTextCompetitionRate(CompetitionRate);
+
+					ATTHallGameState* HallGameState = GetWorld()->GetGameState<ATTHallGameState>();
+					if (HallGameState) HallGameState->SendLuckyDrawInvitation(NicknameList, CompetitionRate);
 				}
 			}
 		}
@@ -1372,6 +1379,7 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					if ( TTPlayer && GI )
 					{
 						GI->SetCoin(UserCoin);
+						GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 					}
 					
 					SetSeatId(SeatId);
@@ -1380,11 +1388,8 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						//MainUI->BuyTicketWidget->SetTextSeatID2(SeatInfo);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetTextUserName(UserName);
-						//MainUI->BuyTicketWidget->SetTextUserPhoneNum(UserPhoneNum);
-						//MainUI->BuyTicketWidget->SetTextUserAddress(UserAddress);
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(8);
 					}
 				}

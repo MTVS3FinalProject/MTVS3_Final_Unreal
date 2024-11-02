@@ -75,6 +75,9 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientLuckyDrawWin();
 
+	UFUNCTION(Client, Reliable)
+	void ClientLDWinnerExitSession();
+
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetVisibilityTextRender(bool bIsVisible);
 
@@ -86,6 +89,9 @@ public:
 
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastChangeWalkSpeed(bool bIsRunning);
+
+	UFUNCTION(Client, Reliable)
+	void ClientShowLuckyDrawInvitation(bool bIsVisible, int32 CompetitionRate);
 
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
@@ -149,6 +155,12 @@ public:
 	bool bIsThirdPerson = true;
 	void SwitchCamera(bool _bIsThirdPerson);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sequences")
+	TObjectPtr<class ULevelSequence> LDWinnerLevelSequence;
+
+	UPROPERTY(Transient)
+	class ULevelSequencePlayer* SequencePlayer;
+	
 #pragma region 입력
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputMappingContext* IMC_TTPlayer;
@@ -260,6 +272,9 @@ public:
 	
 	void InitGameUI();
 	void SetTextMyNum();
+
+	bool bIsDrawSessionInviteVisible = false;
+	void UpdateDrawSessionInviteVisibility(int32 CompetitionRate);
 #pragma endregion
 
 private:

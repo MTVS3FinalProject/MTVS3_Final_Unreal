@@ -32,4 +32,9 @@ public:
 	void PlayStandUpMontage();
 
 	void PlaySittingMontage();
+
+	UPROPERTY(EditDefaultsOnly)
+	class UAnimMontage* DancingMontage;
+	
+	void PlayDancingMontage();
 };

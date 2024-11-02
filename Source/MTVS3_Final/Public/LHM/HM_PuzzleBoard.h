@@ -27,16 +27,20 @@ public:
 	TArray<UStaticMeshComponent*> BoardAreas;
 
 	UPROPERTY(EditAnywhere, Category = "Puzzle Board Settings")
-	float CellSize = 800.0f;
+	float CellSize = 700.0f;
 
 	void InitializeBoardAreas();
 	
 	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, 
-					   AActor* OtherActor, 
-					   UPrimitiveComponent* OtherComp, 
-					   int32 OtherBodyIndex, 
-					   bool bFromSweep, 
-					   const FHitResult& SweepResult);
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+// ==================================== 멀티 ====================================
+	
+	// 서버에서 호출되는 RPC 함수
+	UFUNCTION(Server, Reliable)
+	void ServerSetBoardAreaVisibility(int32 BoardIndex, bool bVisible);
+
+	// 모든 클라이언트에서 호출되는 RPC 함수
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetBoardAreaVisibility(int32 BoardIndex, bool bVisible);
 };

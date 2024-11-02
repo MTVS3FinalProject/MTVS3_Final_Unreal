@@ -7,7 +7,6 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "LHM/HM_AimingWidget.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "Net/UnrealNetwork.h"
@@ -34,47 +33,14 @@ AHM_PuzzlePlayer::AHM_PuzzlePlayer()
 	FPSCameraComp->bUsePawnControlRotation = true;
 	
 	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
-	//HandComp->SetupAttachment(GetMesh(), TEXT("PiecePosition"));
-	//HandComp->SetRelativeLocationAndRotation(FVector(-50, 0, 0), FRotator(0,90,-90));
 	HandComp->SetupAttachment(FPSCameraComp);
-	HandComp->SetRelativeLocation(FVector(120 , 0 , -40)); //(X=120.000000,Y=0.000000,Z=-40.000000)
-	// (X=100.000000,Y=0.000000,Z=0.000000)
-	// (Pitch=0.000000,Yaw=90.000000,Roll=-90.000000)
+	HandComp->SetRelativeLocation(FVector(120 , 0 , -40));
 }
 
 // Called when the game starts or when spawned
 void AHM_PuzzlePlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if(GetLocalRole() == ROLE_Authority)
-	{
-		//for(int32 i = 1; i <= 9; i++)
-		//{
-			//태어날 때 모든 피스 목록을 기억하고 싶다.
-		//	FName tag = FName(*FString::Printf(TEXT("Piece%d"), i));
-
-			FName tag = TEXT("Piece");
-			// 임시 AActor 배열에 피스 조각 수집
-			TArray<AActor*> TempPieceList;
-			UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld() , AHM_PuzzlePiece::StaticClass() , tag ,
-			                                             TempPieceList);
-			
-			for (AActor* actor : TempPieceList)
-			{
-				AHM_PuzzlePiece* piece = Cast<AHM_PuzzlePiece>(actor);
-				if (piece)
-				{
-					// AHM_PuzzlePiece에 있는 모든 컴포넌트 가져오기
-					//TArray<UActorComponent*> components = piece->GetComponentsByTag(UPrimitiveComponent::StaticClass(), tag);
-					//if(components.Num() > 0)
-					//{
-						PieceList.Add(piece);
-					//}
-				}
-			}
-		//}
-	}
 
 	if(IsLocallyControlled())
 	{
@@ -138,11 +104,7 @@ void AHM_PuzzlePlayer::Tick(float DeltaTime)
 
 				// 서버에 회전 값 전달
 				ServerRPCUpdateRotation(NewRotation);
-				
-				if (FPSCameraComp)
-				{
-					FPSCameraComp->SetWorldRotation(ControlRotation);
-				}
+				ServerRPCUpdateFPSCameraRotation(ControlRotation);
 			}
 
 			// Calculate movement direction based on camera rotation
@@ -264,6 +226,7 @@ void AHM_PuzzlePlayer::OnMyActionLook(const FInputActionValue& Value)
 
 				// 서버에 회전 값 전달
 				ServerRPCUpdateRotation(NewRotation);
+				ServerRPCUpdateFPSCameraRotation(ControlRotation);
 			}
 		}
 	}
@@ -302,25 +265,15 @@ void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 	{
 		MyLaunchPiece();
 		if(AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
-		//bHasPiece = false; 
-		//bIsZoomingIn = false;
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
-			FString::Printf(TEXT("OnMyActionPickupPiece : MyLaunchPiece")));
 	}
 	else if(bHasPiece)
 	{
 		MyReleasePiece();
-		//bHasPiece = false;
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
-			FString::Printf(TEXT("OnMyActionPickupPiece : MyReleasePiece")));
 	}
-	//else if(!bIsZoomingIn && !bHasPiece) 허파디비진다....
+	//else if(!bIsZoomingIn && !bHasPiece)
 	else if(!bHasPiece)
 	{
 		MyTakePiece();
-		//bHasPiece = true;
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
-			FString::Printf(TEXT("OnMyActionPickupPiece : MyTakePiece")));
 	}
 }
 
@@ -443,7 +396,6 @@ void AHM_PuzzlePlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 	if (!PieceComp) return;
 	SwitchCamera(false);
 	
-	//PickupPieceActor = PieceComp;
 	// 클라이언트와 서버 모두에서 실행될 회전 로직
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC && PC->IsLocalController())
@@ -465,7 +417,6 @@ void AHM_PuzzlePlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 		{
 			PieceComp->AttachToComponent(HandComp , FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 			PieceComp->SetRelativeLocation(FVector(100 , 0 , -30));
-			UE_LOG(LogTemp , Log , TEXT("MulticastRPCTakePiece AttachPiece"));
 		}
 	}
 	if (HasAuthority())
@@ -496,15 +447,17 @@ void AHM_PuzzlePlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 	if (!PieceComp) return;
 	SwitchCamera(true);
 
-	//PieceComp->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	//PieceComp->SetCollisionObjectType(ECollisionChannel::ECC_PhysicsBody);
 	PieceComp->SetSimulatePhysics(true);
 	PieceComp->SetEnableGravity(true);
 	PieceComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	PieceComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	
+	PieceComp->SetCollisionProfileName(TEXT("PuzzlePiece"));
+	PieceComp->SetNotifyRigidBodyCollision(true);
+	PieceComp->SetGenerateOverlapEvents(true);
 
 	FVector LaunchDirection = FPSCameraComp->GetForwardVector();
-	float LaunchSpeed = 2000.0f;
+	float LaunchSpeed = 4000.0f;
 	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
 	PieceComp->AddImpulse(LaunchVelocity, NAME_None, true);
 
@@ -517,7 +470,6 @@ void AHM_PuzzlePlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 
 void AHM_PuzzlePlayer::ZoomIn()
 {
-	//if(FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
 	if (FPSCameraComp)
 	{
 		// 기존 타이머가 있다면 종료
@@ -541,7 +493,6 @@ void AHM_PuzzlePlayer::ZoomIn()
 
 void AHM_PuzzlePlayer::ZoomOut()
 {
-	//if (FPSCameraComp && !GetWorld()->GetTimerManager().IsTimerActive(ZoomTimerHandle))
 	if(FPSCameraComp)
 	{
 		// 기존 타이머가 있다면 종료
@@ -565,9 +516,6 @@ void AHM_PuzzlePlayer::ZoomOut()
 
 void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceActor, UStaticMeshComponent* PieceComp)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ServerRPCTakePiece called on Server"));
-
-	//if (!HasAuthority() || !pieceActor || pieceActor->GetOwner() != nullptr) return;
 	if (!HasAuthority() || !pieceActor || !PieceComp || pieceActor->IsComponentOwned(PieceComp)) return;
 	
 	pieceActor->SetComponentOwner(PieceComp,this);
@@ -577,14 +525,11 @@ void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceA
 
 	// 모든 클라이언트에 알림
 	MulticastRPCTakePiece(PieceComp);
-		UE_LOG(LogTemp, Log, TEXT("ServerRPCTakePiece_Implementation") );
 }
 
 void AHM_PuzzlePlayer::MulticastRPCTakePiece_Implementation(UStaticMeshComponent* PieceComp)
 {
-	// 피스 액터를 HandComp에 붙이고 싶다.
 	AttachPiece(PieceComp);
-	UE_LOG(LogTemp, Log, TEXT("MulticastRPCTakePiece") );
 }
 
 void AHM_PuzzlePlayer::ServerRPCReleasePiece_Implementation()
@@ -596,7 +541,6 @@ void AHM_PuzzlePlayer::ServerRPCReleasePiece_Implementation()
 		MulticastRPCReleasePiece(TargetPieceComp);
 		PickupPieceActor = nullptr;
 		TargetPieceComp = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("ServerRPCReleasePiece_Implementation") );
 	}
 }
 
@@ -606,7 +550,6 @@ void AHM_PuzzlePlayer::MulticastRPCReleasePiece_Implementation(UStaticMeshCompon
 	{
 		DetachPiece(PieceComp); // 피스 분리
 		TargetPieceComp = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCReleasePiece_Implementation") );
 	}
 }
 
@@ -614,14 +557,14 @@ void AHM_PuzzlePlayer::ServerRPCLaunchPiece_Implementation()
 {
 	if (bHasPiece && TargetPieceComp && PickupPieceActor)
 	{
+		// 피스의 마지막 소유자를 현재 소유자로 설정
+		PickupPieceActor->LastOwners.Add(TargetPieceComp, this);
+		
 		bHasPiece = false;
 		PickupPieceActor->ClearComponentOwner(TargetPieceComp);
 		MulticastRPCLaunchPiece(TargetPieceComp);
 		PickupPieceActor = nullptr;
 		TargetPieceComp = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("ServerRPCLaunchPiece_Implementation") );
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
-			FString::Printf(TEXT("ServerRPCLaunchPiece_Implementation")));
 	}
 	bIsZoomingIn = false;
 }
@@ -632,9 +575,6 @@ void AHM_PuzzlePlayer::MulticastRPCLaunchPiece_Implementation(UStaticMeshCompone
 	{
 		LaunchPiece(PieceComp);
 		TargetPieceComp = nullptr;
-		UE_LOG(LogTemp, Log, TEXT("MulticastRPCLaunchPiece_Implementation") );
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
-			FString::Printf(TEXT("MulticastRPCLaunchPiece_Implementation")));
 	}
 }
 
@@ -642,6 +582,14 @@ void AHM_PuzzlePlayer::ServerRPCUpdateRotation_Implementation(const FRotator& Ne
 {
 	// 서버에서 캐릭터 회전 적용
 	SetActorRotation(NewRotation);
+}
+
+void AHM_PuzzlePlayer::ServerRPCUpdateFPSCameraRotation_Implementation(const FRotator& FPSCameraNewRotation)
+{
+	if(FPSCameraComp)
+	{
+		FPSCameraComp->SetWorldRotation(FPSCameraNewRotation);
+	}
 }
 
 void AHM_PuzzlePlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
