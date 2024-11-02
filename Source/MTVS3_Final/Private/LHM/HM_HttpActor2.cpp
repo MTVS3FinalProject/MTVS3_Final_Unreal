@@ -158,24 +158,24 @@ void AHM_HttpActor2::ReqPostConcertEntry(FString ConcertName , FString AccessTok
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concert") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concert/%d") , *_url, GetConcertId());
 	Request->SetURL(FormattedUrl);
-	Request->SetVerb(TEXT("POST"));
+	Request->SetVerb(TEXT("GET"));
 
 	// 헤더 설정
 	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
-	// 전달 데이터 (JSON)
-	FString ContentString;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
-	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("concertName") , ConcertName);
-	Writer->WriteObjectEnd();
-	Writer->Close();
-
-	// 본문 데이터 설정
-	Request->SetContentAsString(ContentString);
+	// // 전달 데이터 (JSON)
+	// FString ContentString;
+	// TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
+	// Writer->WriteObjectStart();
+	// Writer->WriteValue(TEXT("concertName") , ConcertName);
+	// Writer->WriteObjectEnd();
+	// Writer->Close();
+	//
+	// // 본문 데이터 설정
+	// Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수를 연결
 	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResPostConcertEntry);
