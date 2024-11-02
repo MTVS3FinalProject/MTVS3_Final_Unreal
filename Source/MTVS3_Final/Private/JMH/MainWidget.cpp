@@ -13,6 +13,7 @@
 
 #include "Components/Image.h"
 
+
 void UMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -36,6 +37,7 @@ void UMainWidget::NativeConstruct()
 	{
 		BuyTicketWidget->OnClickedBuyTickerBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
+	
 	if (BuyCoinsWidget)
 	{
 		BuyCoinsWidget->OnClickedBuyCoinBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);

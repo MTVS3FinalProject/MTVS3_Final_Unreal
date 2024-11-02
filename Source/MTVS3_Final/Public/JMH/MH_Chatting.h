@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MH_TTHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "MH_Chatting.generated.h"
 
@@ -26,14 +27,23 @@ public:
 	
 	UPROPERTY(meta = (BindWidget))
 	class UScrollBox* Scroll_Chat;
-
-	UPROPERTY()
-	class AMH_ChatManager* ChatManager;
-	//엔터키 한번 더 누르면 입력 내보냄
-protected:
-	UFUNCTION()
-	void OnTextCommitted(const FText& Text, ETextCommit::Type CommitMethod);
-
 	
+	UPROPERTY(meta = (BindWidget))
+	class UButton* Btn_Send;
+	UFUNCTION()
+	void OnClickedSendBtn();
+	
+	//엔터키 한번 더 누르면 입력 내보냄
+
+	UFUNCTION()
+	void AddChatMessage(const FString& Message);
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<class UMH_Message> MessageWidget;
+	
+protected:
+	
+	UPROPERTY()
+	APlayerController* OwningPlayer;
 	
 };

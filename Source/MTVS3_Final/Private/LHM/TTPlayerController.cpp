@@ -4,8 +4,10 @@
 #include "LHM/TTPlayerController.h"
 #include "Engine/World.h"
 #include "chrono"
+#include "HJ/TTPlayer.h"
 #include "JMH/MH_TicketingWidget.h"
 #include "JMH/MainWidget.h"
+#include "JMH/MH_Chatting.h"
 
 void ATTPlayerController::BeginPlay()
 {
@@ -50,6 +52,7 @@ void ATTPlayerController::RequestServerTime()
 	ServerGetCurrentTime();
 }
 
+
 void ATTPlayerController::ServerGetCurrentTime_Implementation()
 {
 	// 현재 시스템 시간 가져오기
@@ -84,7 +87,7 @@ void ATTPlayerController::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 
 void ATTPlayerController::SetMainUI(UMainWidget* InMainUI)
 {
-	MainUI = InMainUI;  // 전달받은 MainUI 참조 저장
+	MainUI = InMainUI; // 전달받은 MainUI 참조 저장
 }
 
 FString ATTPlayerController::GetSystemTime()
@@ -95,11 +98,11 @@ FString ATTPlayerController::GetSystemTime()
 
 	// tm 구조체로 변환 (로컬 시간)
 	std::tm localTime;
-	localtime_s(&localTime, &currentTime);
+	localtime_s(&localTime , &currentTime);
 
 	// 시간 포맷 설정 (yyyy-MM-dd HH:mm:ss)
 	char buffer[100];
-	std::strftime(buffer, sizeof(buffer), "%H:%M", &localTime);
+	std::strftime(buffer , sizeof(buffer) , "%H:%M" , &localTime);
 	//std::strftime(buffer , sizeof(buffer) , "%Y-%m-%d %H:%M:%S" , &localTime);
 
 	// FString로 변환하여 Unreal에서 출력
@@ -115,14 +118,14 @@ void ATTPlayerController::SetDrawStartTime()
 	//DrawStartTime = Now + FTimespan(0 , 10 , 0); // 10분 후
 
 	// 현재 날짜, 임의로 설정한 추첨 시작 시간
-	DrawStartTime = FDateTime(Now.GetYear(), Now.GetMonth(), Now.GetDay(), 20, 0, 0);
+	DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 20 , 0 , 0);
 
 	// DrawStartTime을 원하는 형식으로 변환
 	int32 Hours = DrawStartTime.GetHour();
 	int32 Minutes = DrawStartTime.GetMinute();
 
 	// 포맷된 시간 문자열 생성
-	FString FormattedTime = FString::Printf(TEXT("%02d:%02d"), Hours, Minutes);
+	FString FormattedTime = FString::Printf(TEXT("%02d:%02d") , Hours , Minutes);
 
 	// UI에 텍스트 설정
 	if (TicketingUI)
@@ -145,7 +148,7 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 		int32 Minutes = RemainingTime.GetMinutes();
 		int32 Seconds = RemainingTime.GetSeconds() % 60;
 
-		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+		FString CountdownText = FString::Printf(TEXT("%02d:%02d") , Minutes , Seconds);
 
 		if (TicketingUI)
 		{
@@ -153,4 +156,29 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 		}
 		//UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
 	}
+}
+
+//MH_Chatting
+void ATTPlayerController::MultiReceiveChatMessage_Implementation(const FString& ChatMessage)
+{
+	ATTPlayer* player = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	if (player)
+	{
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("666111"));
+		player->MainUI->WBP_Chatting->AddChatMessage(ChatMessage);
+	}
+}
+
+void ATTPlayerController::ServerSendChatMessage_Implementation(const FString& ServerMessage)
+{
+	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("555111"));
+	// 서버에서 받은 메시지를 모든 클라이언트에게
+	MultiReceiveChatMessage(ServerMessage);
+}
+
+bool ATTPlayerController::ServerSendChatMessage_Validate(const FString& ServerMessage)
+{
+	// 유효성 검사 로직 예시: 메시지가 비어 있지 않아야 함
+	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("444111"));
+	return !ServerMessage.IsEmpty();
 }

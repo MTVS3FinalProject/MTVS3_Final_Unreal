@@ -11,13 +11,11 @@ UCLASS()
 class MTVS3_FINAL_API AMH_ChatManager : public AActor
 {
 	GENERATED_BODY()
-
-
-		
+	
+public:	
 	UPROPERTY()
 	FString Message;
 	
-public:	
 	AMH_ChatManager();
 
 protected:
@@ -34,28 +32,5 @@ public:
 	//메시지를 각 클라
 	UFUNCTION(NetMulticast,Reliable)
 	void MultiReceiveChatMessage(const FString& ChatMessage);
-
-	UFUNCTION(Blueprintable)
-	void AddChatting();
-	
-	void AddChatMessage(const FString& Message1);
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UMH_Chatting> ChatWidget;
-
-	UPROPERTY()
-	class UMH_Chatting* ChatUI;
-	
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UMH_Message> MessageWidget;
-
-	UPROPERTY()
-	class UMH_Message* MessageUI;
-	
-private:
-	UPROPERTY()
-	class AMH_TTHUD* TTHUD;
-
-	
 	
 };

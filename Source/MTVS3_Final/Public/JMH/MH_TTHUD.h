@@ -17,20 +17,20 @@ class MTVS3_FINAL_API AMH_TTHUD : public AHUD
 public:
 
 	virtual void PostInitializeComponents() override;
+	virtual void BeginPlay() override;
+	
 
 public:
+	
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<UUserWidget> ChatWidget;
+	TSubclassOf<class UMH_Message> MessageWidget;
 
-	UPROPERTY()
-	class UMH_Chatting* ChatUI;
-	
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UUserWidget> MessageWidget;
-	
+	UFUNCTION()
 	void AddChatting();
+UFUNCTION()
 	void AddChatMessage(const FString& Message);
 
 	UPROPERTY()
 	APlayerController* OwningPlayer = nullptr;
+	
 };

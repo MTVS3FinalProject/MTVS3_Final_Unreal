@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MH_BuyTicketWidget.h"
+#include "MH_TTHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "MainWidget.generated.h"
 
@@ -77,6 +78,9 @@ public:
 		return BuyTicketWidget;
 	}
 
+	UPROPERTY(meta=(BindWidget))
+	class UMH_Chatting* WBP_Chatting;
+	
 	UPROPERTY(meta = (BindWidget))
 	UMH_BuyCoinsWidget* BuyCoinsWidget;
 	
@@ -137,6 +141,9 @@ public:
 	//UI 애니메이션
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* TicketImgAnim01;
+
+	UPROPERTY()
+	AMH_TTHUD* TTHUD;
 	
 	//티켓예매 알람
 	//티켓팅 시간대
