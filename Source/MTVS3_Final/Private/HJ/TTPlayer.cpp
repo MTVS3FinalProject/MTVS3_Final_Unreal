@@ -238,13 +238,13 @@ void ATTPlayer::SetNickname(const FString& _Nickname)
 
 	if (IsLocallyControlled())
 	{
-		// ServerSetNickname(_Nickname);
+		ServerSetNickname(_Nickname);
 
-		FTimerHandle ServerSetNicknameTimerHandle;
+		/*FTimerHandle ServerSetNicknameTimerHandle;
 		GetWorldTimerManager().SetTimer(ServerSetNicknameTimerHandle , [this, _Nickname]()
 		{
 			ServerSetNickname(_Nickname);
-		} , 0.5f , false);
+		} , 0.5f , false);*/
 	}
 }
 
@@ -252,8 +252,10 @@ void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
 {
 	Nickname = _Nickname;
 	UE_LOG(LogTemp , Warning , TEXT("ServerSetNickname: %s") , *GetNickname());
-	FTimerHandle SetNicknameTimerHandle;
-	GetWorldTimerManager().SetTimer(SetNicknameTimerHandle , this , &ATTPlayer::MulticastSetNickname , 1.5f , false);
+	MulticastSetNickname();
+	
+	/*FTimerHandle SetNicknameTimerHandle;
+	GetWorldTimerManager().SetTimer(SetNicknameTimerHandle , this , &ATTPlayer::MulticastSetNickname , 1.5f , false);*/
 }
 
 void ATTPlayer::MulticastSetNickname_Implementation()
@@ -306,20 +308,31 @@ void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSea
 	RandomSeatNumber = _RandomSeatNumber;
 	UE_LOG(LogTemp , Warning , TEXT("ServerSetRandomSeatNumber_Implementation: %d") , GetRandomSeatNumber());
 
-	FTimerHandle SetRandomSeatNumberTimerHandle;
+	MulticastSetRandomSeatNumber();
+	
+	/*FTimerHandle SetRandomSeatNumberTimerHandle;
 	// 1.5
 	GetWorldTimerManager().SetTimer(SetRandomSeatNumberTimerHandle , this , &ATTPlayer::MulticastSetRandomSeatNumber ,
-	                                1.5f , false);
+	                                1.5f , false);*/
 }
 
-// void ATTPlayer::OnRep_RandomSeatNumber()
-// {
-// 	if (NicknameUI)
-// 	{
-// 		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-// 		UE_LOG(LogTemp, Warning, TEXT("OnRep_RandomSeatNumber: %d"), GetRandomSeatNumber());
-// 	}
-// }
+void ATTPlayer::OnRep_Nickname()
+{
+	if (NicknameUI)
+	{
+		NicknameUI->UpdateNicknameUI(GetNickname());
+		UE_LOG(LogTemp, Warning, TEXT("NicknameUI: %s"), *GetNickname());
+	}
+}
+
+void ATTPlayer::OnRep_RandomSeatNumber()
+{
+	if (NicknameUI)
+	{
+		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
+		UE_LOG(LogTemp, Warning, TEXT("OnRep_RandomSeatNumber: %d"), GetRandomSeatNumber());
+	}
+}
 
 void ATTPlayer::MulticastSetRandomSeatNumber_Implementation()
 {
@@ -875,8 +888,10 @@ void ATTPlayer::InitMainUI()
 
 void ATTPlayer::InitGameUI()
 {
-	FTimerHandle SetTextMyNumTimerHandle;
-	GetWorldTimerManager().SetTimer(SetTextMyNumTimerHandle , this , &ATTPlayer::SetTextMyNum , 4.0f , false);
+	SetTextMyNum();
+	
+	/*FTimerHandle SetTextMyNumTimerHandle;
+	GetWorldTimerManager().SetTimer(SetTextMyNumTimerHandle , this , &ATTPlayer::SetTextMyNum , 4.0f , false);*/
 }
 
 void ATTPlayer::SetTextMyNum()

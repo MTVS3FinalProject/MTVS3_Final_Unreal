@@ -93,8 +93,11 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientShowLuckyDrawInvitation(bool bIsVisible, int32 CompetitionRate);
 
-	// UFUNCTION()
-	// void OnRep_RandomSeatNumber();
+	UFUNCTION()
+	void OnRep_Nickname();
+	
+	UFUNCTION()
+	void OnRep_RandomSeatNumber();
 #pragma endregion
 
 #pragma region 개인 설정
@@ -115,7 +118,7 @@ public:
 #pragma endregion
 
 #pragma region 플레이어 정보
-	UPROPERTY(Replicated , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(/*Replicated*/ReplicatedUsing=OnRep_Nickname , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString Nickname;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetNickname(const FString& _Nickname);
@@ -135,7 +138,7 @@ public:
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 	// 랜덤으로 배치된 좌석 번호
-	UPROPERTY(Replicated/*Using=OnRep_RandomSeatNumber*/ , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(/*Replicated*/ReplicatedUsing=OnRep_RandomSeatNumber , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	int32 RandomSeatNumber = -1;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
