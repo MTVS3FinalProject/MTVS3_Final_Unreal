@@ -9,13 +9,14 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedChatBtn);
+
 UCLASS()
 class MTVS3_FINAL_API UHM_MainBarWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
 public:
-	
 	virtual void NativeConstruct() override;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -36,6 +37,23 @@ public:
 	bool bIsChatVisible = false;
 	bool bIsSettingsVisible = false;
 
+	FOnClickedChatBtn OnClickedShowChatBtn;
+
+	UFUNCTION()
+	void CloseButtonPressed()
+	{
+		bIsChatVisible = !bIsChatVisible;
+		if (bIsChatVisible)
+		{
+			if (bIsMenuVisible)
+			{
+				OnClickedlMenuBtn();
+			}
+		}
+		// 델리게이트 호출
+		OnClickedShowChatBtn.Broadcast();
+	}
+	
 
 //MH
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))

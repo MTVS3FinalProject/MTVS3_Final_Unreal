@@ -12,6 +12,7 @@
 #include <HJ/TTPlayerState.h>
 
 #include "Components/Image.h"
+#include "JMH/MH_Chatting.h"
 
 
 void UMainWidget::NativeConstruct()
@@ -42,6 +43,13 @@ void UMainWidget::NativeConstruct()
 	{
 		BuyCoinsWidget->OnClickedBuyCoinBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
+
+	if(WBP_MH_MainBar)
+	{
+		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this, &UMainWidget::ShowChatUI);
+	}
+
+	
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -99,6 +107,19 @@ void UMainWidget::OnClickedExit()
 	if (PlayerController)
 	{
 		UKismetSystemLibrary::QuitGame(World , PlayerController , EQuitPreference::Quit , true);
+	}
+}
+
+void UMainWidget::ShowChatUI()
+{
+	bIsChatVisible = !bIsChatVisible;
+	if (bIsChatVisible)
+	{
+		WBP_Chatting->SetVisibility(ESlateVisibility::Visible);
+	}
+	else if(!bIsChatVisible)
+	{
+		WBP_Chatting->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 

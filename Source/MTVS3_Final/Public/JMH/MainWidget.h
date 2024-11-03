@@ -6,6 +6,7 @@
 #include "MH_BuyTicketWidget.h"
 #include "MH_TTHUD.h"
 #include "Blueprint/UserWidget.h"
+#include "LHM/HM_MainBarWidget.h"
 #include "MainWidget.generated.h"
 
 /**
@@ -78,11 +79,18 @@ public:
 		return BuyTicketWidget;
 	}
 
+	bool bIsChatVisible = false;
+	
 	UPROPERTY(meta=(BindWidget))
 	class UMH_Chatting* WBP_Chatting;
 	
 	UPROPERTY(meta = (BindWidget))
 	UMH_BuyCoinsWidget* BuyCoinsWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	UHM_MainBarWidget* WBP_MH_MainBar;
+	UFUNCTION()
+	void ShowChatUI();
 	
 	//0:Minimap
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))

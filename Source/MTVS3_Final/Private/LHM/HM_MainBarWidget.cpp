@@ -16,7 +16,7 @@ void UHM_MainBarWidget::NativeConstruct()
 	Btn_lightMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedlightModeBtn);
 	Btn_DarkMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedDarkModeBtn);
 	Btn_Menu->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedlMenuBtn);
-	Btn_Chat->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedChatBtn);
+	Btn_Chat->OnClicked.AddDynamic(this , &UHM_MainBarWidget::CloseButtonPressed);
 	Btn_Setting->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBtn);
 	Btn_Back_Settings->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBackBtn);
 
@@ -127,18 +127,7 @@ void UHM_MainBarWidget::OnClickedlMenuBtn()
 void UHM_MainBarWidget::OnClickedChatBtn()
 {
 	//Main UI에 있는 채팅창 켜지게. 꺼지게. 델리게이트 연결
-	bIsChatVisible = !bIsChatVisible;
-	if (bIsChatVisible)
-	{
-		if (bIsMenuVisible)
-		{
-			OnClickedlMenuBtn();
-		}
-	}
-	else if(!bIsChatVisible)
-	{
-		
-	}
+	
 }
 
 void UHM_MainBarWidget::OnClickedSettingBtn()
