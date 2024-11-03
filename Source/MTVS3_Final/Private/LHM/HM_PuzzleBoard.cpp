@@ -39,7 +39,7 @@ void AHM_PuzzleBoard::BeginPlay()
 			int32 Idx = Row * GridSize + Col;
 			if (BoardAreas.IsValidIndex(Idx) && BoardAreas[Idx])
 			{
-				FVector OffsetLocation = FVector(0, Col * CellSize , Row * CellSize);
+				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
 				FVector NewLocation = BoardLocation + OffsetLocation;
 				BoardAreas[Idx]->SetWorldLocation(NewLocation);
 			}
@@ -141,7 +141,8 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 							}
 						}
 					}
-					
+
+					// 맞춘 피스는 제거
 					const TArray<UStaticMeshComponent*>& PiecesArray = PuzzlePiece->GetAllPieces();
 					for(UStaticMeshComponent* Piece : PiecesArray)
 					{

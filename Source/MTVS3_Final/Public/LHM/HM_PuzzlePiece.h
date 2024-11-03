@@ -29,20 +29,20 @@ public:
 
 	// 각 컴포넌트의 소유자를 저장하는 맵 추가
 	UPROPERTY(EditDefaultsOnly);
-	TMap<UStaticMeshComponent*, class AHM_PuzzlePlayer*> ComponentOwners;
+	TMap<UStaticMeshComponent*, class ATTPlayer*> ComponentOwners;
 	
 	// 피스의 마지막 소유자 저장
 	UPROPERTY()
 	TMap<UStaticMeshComponent*, AActor*> LastOwners;
 	
 	// 특정 컴포넌트의 소유자를 설정하는 함수
-	void SetComponentOwner(UStaticMeshComponent* Component, class AHM_PuzzlePlayer* NewOwner);
+	void SetComponentOwner(UStaticMeshComponent* Component, class ATTPlayer* NewOwner);
 	// 특정 컴포넌트의 소유자를 해제하는 함수
 	void ClearComponentOwner(UStaticMeshComponent* Component);
 	// 특정 컴포넌트가 소유 중인지 확인하는 함수
 	bool IsComponentOwned(UStaticMeshComponent* Component);
 	// 소유자를 반환하는 함수
-	class AHM_PuzzlePlayer* GetComponentOwner(UStaticMeshComponent* Component);
+	class ATTPlayer* GetComponentOwner(UStaticMeshComponent* Component);
 	
 	// 스태틱 메시 컴포넌트 반환 함수 추가
 	TArray<UStaticMeshComponent*> GetAllPieces() const
@@ -51,23 +51,31 @@ public:
 		Pieces.GetKeys(Keys);
 		return Keys;
 	}
+
+	void InitializePieces();
+    void InitializeRandomSetting();
 	
 	// --------------- Multiplayer 요소들 ---------------
 	
-	// 물리 시뮬레이션 상태를 복제하기 위한 함수들
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-    
 	// 현재 Transform을 서버에서 클라이언트로 복제
 	UPROPERTY(ReplicatedUsing = OnRep_PieceTransform)
 	FTransform CurrentTransform;
 
-	UFUNCTION()
+	UFUNCTION() // Replication을 통해 클라이언트와 동기화하는 함수
 	void OnRep_PieceTransform();
 
 	// 물리 시뮬레이션 상태
 	UPROPERTY(Replicated)
 	bool bSimulatingPhysics;
 
-	void InitializePieces();
-    void InitializeRandomSetting();
+	// 점수 배열을 ReplicatedUsing으로 선언하여 클라이언트에 전달
+	UPROPERTY(ReplicatedUsing = OnRep_ScoreArray)
+	TArray<int32> ScoreArray;
+
+	UFUNCTION() // Replication을 통해 클라이언트와 동기화하는 함수
+	void OnRep_ScoreArray();
+	
+	// 복제하기 위한 함수들
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+    
 };

@@ -138,8 +138,8 @@ void AHM_PuzzlePlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 		input->BindAction(IA_Zoom , ETriggerEvent::Completed , this , &AHM_PuzzlePlayer::OnMyActionZoomOutPiece);
 	}
 		// 마우스 회전 입력 바인딩 추가
-		PlayerInputComponent->BindAxis("Look Up", this, &AHM_PuzzlePlayer::AddControllerPitchInput);
-		PlayerInputComponent->BindAxis("Turn Right", this, &AHM_PuzzlePlayer::AddControllerYawInput);
+		//PlayerInputComponent->BindAxis("Look Up", this, &AHM_PuzzlePlayer::AddControllerPitchInput);
+		//PlayerInputComponent->BindAxis("Turn Right", this, &AHM_PuzzlePlayer::AddControllerYawInput);
 }
 
 void AHM_PuzzlePlayer::SwitchCamera(bool _bIsThirdPerson)
@@ -518,7 +518,7 @@ void AHM_PuzzlePlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceA
 {
 	if (!HasAuthority() || !pieceActor || !PieceComp || pieceActor->IsComponentOwned(PieceComp)) return;
 	
-	pieceActor->SetComponentOwner(PieceComp,this);
+	//pieceActor->SetComponentOwner(PieceComp,this);
 	PickupPieceActor = pieceActor;
 	TargetPieceComp = PieceComp;
 	bHasPiece = true;
