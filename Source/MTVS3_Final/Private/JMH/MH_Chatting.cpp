@@ -17,15 +17,7 @@
 void UMH_Chatting::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	AMH_ChatManager* ChatManager = Cast<AMH_ChatManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AMH_ChatManager::StaticClass()));
-
-	if (!ChatManager)
-	{
-		UE_LOG(LogTemp , Warning , TEXT("ChatManager not found!"));
-	}
-
+	
 	OwningPlayer = GetOwningPlayer();
 
 	Btn_Send->OnClicked.AddDynamic(this , &UMH_Chatting::UMH_Chatting::OnClickedSendBtn);
