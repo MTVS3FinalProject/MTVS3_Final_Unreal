@@ -9,6 +9,7 @@
 #include "Interfaces/IHttpResponse.h"
 #include "HJ/TTGameInstance.h"
 #include "ImageUtils.h"
+#include "JsonObjectConverter.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -47,8 +48,6 @@ void AHM_HttpActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
-
-//=========================================================================================================================================
 
 // QR코드 요청을 서버에 보내는 함수
 void AHM_HttpActor::ReqPostGetVerifyIdentityQR(FText Email, FText Password)
@@ -104,8 +103,8 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 				// StartUI에서 QR UI로 넘어가는 함수 호출하기
 				StartUI->SetQRImg(Texture);
 				StartUI->SetWidgetSwitcher(3);
-				UE_LOG(LogTemp , Log , TEXT("Image Data Size: %d") , ImageData.Num());
-				UE_LOG(LogTemp , Log , TEXT("Texture created successfully: %s") , *Texture->GetName());
+				//UE_LOG(LogTemp , Log , TEXT("Image Data Size: %d") , ImageData.Num());
+				//UE_LOG(LogTemp , Log , TEXT("Texture created successfully: %s") , *Texture->GetName());
 			}
 			else
 			{
@@ -130,13 +129,11 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 				UE_LOG(LogTemp, Warning, TEXT("Failed to parse JSON response."));
 			}
 			UE_LOG(LogTemp , Warning , TEXT("Failed to verify IdentityQR, response code: %d") , Response->GetResponseCode());
-			//StartUI->(?); // (회원가입 실패 처리)
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp , Error , TEXT("Request failed or invalid response"));
-		//StartUI->(?); // 그 외 네트워크 연결 확인. (회원가입 실패 처리)
 	}
 }
 
@@ -182,9 +179,8 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
-		if ( Response->GetResponseCode() == 200 ) // 성공적 응답 (코드 200)
+		if ( Response->GetResponseCode() == 200 ) // 성공 코드
 		{
-			// 응답 처리
 			FString ResponseBody = Response->GetContentAsString();
 			TSharedPtr<FJsonObject> JsonObject;
 			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
@@ -196,8 +192,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 				if ( bVerified )
 				{
 					UE_LOG(LogTemp, Log, TEXT("Identity Verified Successfully"));
-					// 로그인 또는 다음 단계로 넘어가는 처리
-					StartUI->SetWidgetSwitcher(4);
+					StartUI->SetWidgetSwitcher(4); // 회원가입 정보 입력 UI
 				}
 				else
 				{
@@ -224,7 +219,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 				UE_LOG(LogTemp, Warning, TEXT("Failed to parse JSON response."));
 			}
 			UE_LOG(LogTemp , Warning , TEXT("Failed to verify IdentityQR, response code: %d") , Response->GetResponseCode());
-			//StartUI->(?); // 신원인증 확인 실패
+			//StartUI->(?); // 신원인증 확인 실패 UI 프론트에서 처리함
 		}
 	}
 	else
@@ -234,7 +229,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 }
 
 // 회원가입 요청을 서버에 보내는 함수
-void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , FString Birth , FText Nickname , int32 AvataData)
+void AHM_HttpActor::ReqPostSignup(FText Nickname ,bool bIsHost , FText Email , FText Password , FString Birth , int32 AvataData)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -249,15 +244,17 @@ void AHM_HttpActor::ReqPostSignup(bool bIsHost , FText Email , FText Password , 
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
+	int32 isHost = bIsHost ? 1 : 0;
+	
 	// 전달 데이터 (JSON)
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	//Writer->WriteValue(TEXT("isHost") , bIsHost);
+	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
+	Writer->WriteValue(TEXT("isHost") , isHost);
 	Writer->WriteValue(TEXT("email") , Email.ToString());
 	Writer->WriteValue(TEXT("password") , Password.ToString());
 	Writer->WriteValue(TEXT("birth") , Birth);
-	Writer->WriteValue(TEXT("nickname") , Nickname.ToString());
 	Writer->WriteValue(TEXT("avatarData") , AvataData);
 	Writer->WriteObjectEnd();
 	Writer->Close();
@@ -282,7 +279,7 @@ void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr R
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
-		if ( Response->GetResponseCode() == 200 ) // 성공 응답 코드 (200)
+		if ( Response->GetResponseCode() == 200 ) // 성공 코드
 		{
 			// 성공 처리 (회원가입 완료)
 			if ( StartUI )
@@ -319,8 +316,6 @@ void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr R
 	}
 }
 
-//=========================================================================================================================================
-
 // 로그인 요청을 서버에 보내는 함수
 void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 {
@@ -333,7 +328,7 @@ void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 
 	// 서버 URL 설정
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/auth/login") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/auth/login") , *_url); // signin으로 바꿔야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
@@ -374,90 +369,90 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 			FString ResponseBody = Response->GetContentAsString();
 			TSharedPtr<FJsonObject> JsonObject;
 			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+			
+			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+            {
+                // response 객체 접근
+                TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+                if (ResponseObject.IsValid())
+                {
+                    // memberInfoDTO 객체를 JSON 문자열로 추출
+                    TSharedPtr<FJsonObject> MemberInfo = ResponseObject->GetObjectField(TEXT("memberInfoDTO"));
+                    if (MemberInfo.IsValid())
+                    {
+                        FString MemberInfoString;
+                        TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&MemberInfoString);
+                        FJsonSerializer::Serialize(MemberInfo.ToSharedRef(), Writer);
 
-			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+                        // FPlayerData 구조체에 JSON 매핑
+                        FPlayerData PlayerData;
+                        if (FJsonObjectConverter::JsonObjectStringToUStruct(MemberInfoString, &PlayerData, 0, 0))
+                        {
+                            // authTokenDTO 데이터 수동 설정
+                            TSharedPtr<FJsonObject> AuthTokenObject = ResponseObject->GetObjectField(TEXT("authTokenDTO"));
+                            if (AuthTokenObject.IsValid())
+                            {
+                                PlayerData.accessToken = AuthTokenObject->GetStringField(TEXT("accessToken"));
+                            }
+
+                            // GameInstance에 PlayerData 설정
+                            GI->SetPlayerData(PlayerData);
+
+                            // 디버그 메시지 출력
+                            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, FString::Printf(TEXT("Nickname: %s"), *PlayerData.nickname));
+                            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, FString::Printf(TEXT("Coin: %d"), PlayerData.coin));
+                            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, FString::Printf(TEXT("AvatarData: %d"), PlayerData.avatarData));
+                            
+                            // 로그 출력
+                            UE_LOG(LogTemp, Log, TEXT("Nickname: %s"), *GI->GetNickname());
+                            UE_LOG(LogTemp, Log, TEXT("Coin: %d"), GI->GetCoin());
+                            UE_LOG(LogTemp, Log, TEXT("AvatarData: %d"), GI->GetAvatarData());
+                            UE_LOG(LogTemp, Log, TEXT("AccessToken: %s"), *GI->GetAccessToken());
+
+                            // 세션 입장
+                            StartUI->GoToLobby();
+                        }
+                        else
+                        {
+                            UE_LOG(LogTemp, Warning, TEXT("FPlayerData 구조체로 JSON 응답 파싱 실패."));
+                        }
+                    }
+                    else
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("'memberInfoDTO' 객체를 찾을 수 없습니다."));
+                    }
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("'response' 객체를 찾을 수 없습니다."));
+                }
+            }
+		}
+		else if ( Response->GetResponseCode() == 400 ) // 실패 코드
+		{
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
+			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 			{
-				// "response" 객체에 접근
-				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				TSharedPtr<FJsonObject> ErrorObject = JsonObject->GetObjectField(TEXT("error"));
+				FString ErrorMessage = ErrorObject->GetStringField(TEXT("message"));
+				int32 ErrorStatus = ErrorObject->GetIntegerField(TEXT("status"));
 
-				if ( ResponseObject.IsValid() )
-				{
-					// "memberInfoDTO" 객체에 접근
-					TSharedPtr<FJsonObject> MemberInfo = ResponseObject->GetObjectField(TEXT("memberInfoDTO"));
-					if ( MemberInfo.IsValid() )
-					{
-						// 받아올 정보 추출
-						FString Nickname = MemberInfo->GetStringField(TEXT("nickname"));
-						//FString Birth = MemberInfo->GetStringField(TEXT("birth"));
-						int32 Coin = MemberInfo->GetIntegerField(TEXT("coin"));
-						int32 AvatarData = MemberInfo->GetIntegerField(TEXT("avatarData"));
+				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
+				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
 
-						// 디버그 메시지 출력
-						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Nickname: %s") , *Nickname));
-						//GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Birth: %s") , *Birth));
-						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("Coin: %d") , Coin));
-						GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("AvatarData: %d") , AvatarData));
-
-						
-						if ( GI )
-						{
-							// 닉네임 설정 및 가져오기
-							GI->SetNickname(Nickname);
-							UE_LOG(LogTemp , Log , TEXT("Nickname: %s") , *GI->GetNickname());
-
-							// 코인 더하기 및 가져오기
-							GI->SetCoin(Coin);
-							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetCoin());
-
-							// 아바타 설정 및 가져오기
-							GI->SetAvatarData(AvatarData);
-							UE_LOG(LogTemp , Log , TEXT("Coin: %d") , GI->GetAvatarData());
-						}
-					}
-					else
-					{
-						UE_LOG(LogTemp , Warning , TEXT("'memberInfoDTO' 객체를 찾을 수 없습니다."));
-					}
-
-					// "authTokenDTO" 객체에 접근
-					TSharedPtr<FJsonObject> AuthTokenObject = ResponseObject->GetObjectField(TEXT("authTokenDTO"));
-					if ( AuthTokenObject.IsValid() )
-					{
-						FString AccessToken = AuthTokenObject->GetStringField(TEXT("accessToken"));
-						UE_LOG(LogTemp , Log , TEXT("AccessToken: %s") , *AccessToken);
-
-						GI->SetAccessToken(AccessToken);
-					}
-					else
-					{
-						UE_LOG(LogTemp , Warning , TEXT("'authTokenDTO' 객체를 찾을 수 없습니다."));
-					}
-					// 세션 입장
-					StartUI->GoToLobby();
-				}
-				else
-				{
-					UE_LOG(LogTemp , Warning , TEXT("'response' 객체를 찾을 수 없습니다."));
-					//StartUI->OnLoginFail(1); // 로그인 실패 처리
-				}
+				//StartUI->OnSigninFail(ErrorMessage); // 로그인 실패 메세지 Set Text
 			}
 			else
 			{
-				UE_LOG(LogTemp , Warning , TEXT("JSON 응답 파싱 실패."));
-				//StartUI->OnLoginFail(1); // 로그인 실패 처리
+				UE_LOG(LogTemp, Warning, TEXT("Failed to parse JSON response."));
 			}
-		}
-		else if ( Response->GetResponseCode() == 400 )
-		{
-			UE_LOG(LogTemp , Warning , TEXT("로그인 실패, 응답 코드: %d") , Response->GetResponseCode());
-			//StartUI->OnLoginFail(1); // 로그인 실패 처리
+			UE_LOG(LogTemp , Warning , TEXT("Failed to Sign in, response code: %d") , Response->GetResponseCode());
 		}
 	}
 	else
 	{
 		UE_LOG(LogTemp , Error , TEXT("요청 실패 또는 응답이 유효하지 않음"));
-		//StartUI->OnLoginFail(2); // 네트워크 오류 처리
+		//StartUI->OnSigninFail(); // 네트워크 오류 처리
 	}
 }
-
-//=========================================================================================================================================
