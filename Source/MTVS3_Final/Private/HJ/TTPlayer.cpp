@@ -142,7 +142,7 @@ void ATTPlayer::BeginPlay()
 				// 추첨 당첨 UI 표시
 				if (MainUI) MainUI->SetWidgetSwitcher(1);
 			// HTTP 요청
-				HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
+				HttpActor2->ReqPostGameResult(GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
 			case ELuckyDrawState::Loser:
 				// 추첨 탈락 UI 표시
@@ -937,27 +937,31 @@ void ATTPlayer::OnMyActionLook(const FInputActionValue& Value)
 	{
 		AddControllerPitchInput(-v.Y);
 		AddControllerYawInput(v.X);
-		
-		// 1인칭 모드이고 피스를 들고 있을 때는 캐릭터도 회전
-		if (!bIsThirdPerson && bHasPiece)
-		{
-			APlayerController* PC = Cast<APlayerController>(GetController());
-			if (PC && PC->IsLocalController())
-			{
-				// 마우스 커서 숨기기 및 게임 모드 설정
-				PC->bShowMouseCursor = false;
-				PC->SetInputMode(FInputModeGameOnly());
-				
-				FRotator ControlRotation = PC->GetControlRotation();
-				FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
-				SetActorRotation(NewRotation);
-				PC->SetViewTargetWithBlend(this);
 
-				// 서버에 회전 값 전달
-				ServerRPCUpdateRotation(NewRotation);
-				ServerRPCUpdateFPSCameraRotation(ControlRotation);
+		if(!bIsSitting)
+		{
+			// 1인칭 모드이고 피스를 들고 있을 때는 캐릭터도 회전
+			if (!bIsThirdPerson && bHasPiece)
+			{
+				APlayerController* PC = Cast<APlayerController>(GetController());
+				if (PC && PC->IsLocalController())
+				{
+					// 마우스 커서 숨기기 및 게임 모드 설정
+					PC->bShowMouseCursor = false;
+					PC->SetInputMode(FInputModeGameOnly());
+				
+					FRotator ControlRotation = PC->GetControlRotation();
+					FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
+					SetActorRotation(NewRotation);
+					PC->SetViewTargetWithBlend(this);
+
+					// 서버에 회전 값 전달
+					ServerRPCUpdateRotation(NewRotation);
+					ServerRPCUpdateFPSCameraRotation(ControlRotation);
+				}
 			}
 		}
+		
 	}
 }
 
@@ -989,7 +993,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!HttpActor2 || !GI) return;
-
+	if (bHasPiece) return;
 	if (Chair)
 	{
 		// Chair의 태그를 가져와서 매개변수로 넘김
@@ -1006,7 +1010,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			// 좌석 접수 UI 표시
 			TicketingUI->SetVisibleSwitcher(true , 0);
 			//TicketingUI->SetWidgetSwitcher(0);
-			HttpActor2->ReqPostSeatRegistrationInquiry(GI->GetConcertName() , ChairTag , GI->GetAccessToken());
+			HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 
 			ServerSetSitting(true);
 
@@ -1076,7 +1080,7 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 		// 좌석 경쟁 UI 표시(테스트용)
 		TicketingUI->SetVisibleSwitcher(true , 0);
 		//TicketingUI->SetWidgetSwitcher(1);
-		HttpActor2->ReqPostSeatRegistrationInquiry(GI->GetConcertName() , ChairTag , GI->GetAccessToken());
+		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
 }
 
@@ -1138,7 +1142,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 				if (HttpActor2)
 				{
-					HttpActor2->ReqPostNoticeGameStart(GI->GetConcertName() , TEXT("2024A113") ,
+					HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
 					                                   GI->GetAccessToken());
 				}
 
@@ -1191,7 +1195,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 			MainUI->SetWidgetSwitcher(1);
 
 			// HTTP 통신 요청
-			HttpActor2->ReqPostCheatGameResult(GI->GetConcertName() , GI->GetAccessToken());
+			HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
