@@ -101,7 +101,7 @@ public:
 	UFUNCTION()
 	void OnRep_RandomSeatNumber();
 
-	UFUNCTION(Server , Reliable)
+	UFUNCTION(Server , Reliable, BlueprintCallable)
 	void ServerTeleportPlayer(bool bIsToConcertHall);
 
 	// UFUNCTION()

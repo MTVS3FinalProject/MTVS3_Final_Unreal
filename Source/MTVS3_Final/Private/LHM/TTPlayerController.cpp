@@ -165,7 +165,10 @@ void ATTPlayerController::MultiReceiveChatMessage_Implementation(const FString& 
 	if (player)
 	{
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("666111"));
-		player->MainUI->WBP_Chatting->AddChatMessage(ChatMessage);
+		if (MainUI)
+		{
+			player->MainUI->WBP_Chatting->AddChatMessage(ChatMessage);
+		}
 	}
 }
 

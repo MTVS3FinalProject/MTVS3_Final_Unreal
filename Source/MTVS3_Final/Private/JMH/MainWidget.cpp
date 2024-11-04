@@ -12,6 +12,7 @@
 #include <HJ/TTPlayerState.h>
 
 #include "Components/Image.h"
+#include "HJ/TTPlayer.h"
 #include "JMH/MH_Chatting.h"
 
 
@@ -57,6 +58,7 @@ void UMainWidget::SetWidgetSwitcher(int32 num)
 	WS_MainWidgetSwitcher->SetActiveWidgetIndex(num);
 	if (num == 2)
 	{
+		//PlayAnimation(TicketImgAnim01,0,0,EUMGSequencePlayMode::Reverse;
 		PlayAnimation(TicketImgAnim01);
 	}
 }
@@ -83,12 +85,24 @@ void UMainWidget::SetTextCurrentTime(FString CurrentTime)
 void UMainWidget::OnClickedBackMain()
 {
 	// 로비로?
-	// 방에서 퇴장하고 싶다.
-	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
+	auto* GI = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (GI)
 	{
-		gi->ExitSession();
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ExitSession"));
+		GI->SetPlaceState(EPlaceState::Plaza);
+	}
+    
+	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
+	if (Local)
+	{
+		APlayerController* PC = Local->GetPlayerController(GetWorld());
+		if (PC)
+		{
+			ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn());
+			if (TTPlayer)
+			{
+				TTPlayer->ServerTeleportPlayer(false);
+			}
+		}
 	}
 }
 
@@ -179,7 +193,7 @@ void UMainWidget::OnClickedConcert01()
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 	if (!GI || !Local) return;
 
-	GI->SetPlaceState(EPlaceState::ConcertHall);
+	//GI->SetPlaceState(EPlaceState::ConcertHall);
 
 	if (GI)
 	{
@@ -200,4 +214,14 @@ void UMainWidget::OnClickedConcert01()
 void UMainWidget::OnTicketWidgetClose()
 {
 	SetWidgetSwitcher(0);
+}
+
+void UMainWidget::OnClickedConcertL()
+{
+	//1~5 애니메이션 순환하기..	
+}
+
+void UMainWidget::OnClickedConcertR()
+{
+	//1~5 애니메이션 순환하기
 }
