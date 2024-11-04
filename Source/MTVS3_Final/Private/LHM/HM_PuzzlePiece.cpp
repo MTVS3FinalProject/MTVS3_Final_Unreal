@@ -75,7 +75,7 @@ void AHM_PuzzlePiece::InitializePieces()
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
 			TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
 		if (!MeshAsset.Succeeded()) return;
-
+		
 		// 점수 배열 설정하고 배열을 섞어서 랜덤으로 배치
 		TArray<int32> ScoreOptions = {50 , 50 , 30 , 30 , 30 , 20 , 20 , 20 , 20};
 		FMath::RandInit(FDateTime::Now().GetMillisecond());
@@ -83,30 +83,31 @@ void AHM_PuzzlePiece::InitializePieces()
 
 		ScoreArray = ScoreOptions;  // 클라이언트 동기화를 위한 ScoreArray 설정
 		
+		PieceMeshes.SetNum(9);
 		for (int32 i = 0; i < 9; i++)
 		{
 			// UStaticMeshComponent 생성 및 설정
 			FName PieceName = *FString::Printf(TEXT("Piece%d") , i + 1);
-			UStaticMeshComponent* NewPiece = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
-			if (NewPiece)
+			PieceMeshes[i] = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
+			if (PieceMeshes[i])
 			{
 				//NewPiece->SetupAttachment(RootComponent);
-				NewPiece->SetStaticMesh(MeshAsset.Object);
-				NewPiece->SetRelativeScale3D(FVector(0.5f , 0.5f , 0.5f));
+				PieceMeshes[i]->SetStaticMesh(MeshAsset.Object);
+				PieceMeshes[i]->SetRelativeScale3D(FVector(0.5f , 0.5f , 0.5f));
 
 				// 물리 및 충돌 설정
-				NewPiece->SetSimulatePhysics(true);
-				NewPiece->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				NewPiece->SetCollisionProfileName(TEXT("PuzzlePiece"));
-				NewPiece->SetNotifyRigidBodyCollision(true);
-				NewPiece->SetGenerateOverlapEvents(true);
+				PieceMeshes[i]->SetSimulatePhysics(true);
+				PieceMeshes[i]->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				PieceMeshes[i]->SetCollisionProfileName(TEXT("PuzzlePiece"));
+				PieceMeshes[i]->SetNotifyRigidBodyCollision(true);
+				PieceMeshes[i]->SetGenerateOverlapEvents(true);
 
 				// 태그 설정
-				NewPiece->ComponentTags.Add(PieceName);
+				PieceMeshes[i]->ComponentTags.Add(PieceName);
 
 				// 랜덤 점수 할당하고 Pieces 배열에 추가
 				int32 InitialScore = ScoreOptions[i];
-				Pieces.Add(NewPiece , InitialScore);
+				Pieces.Add(PieceMeshes[i] , InitialScore);
 
 				//UE_LOG(LogTemp , Log , TEXT("Assigned score %d to %s") , InitialScore , *PieceName.ToString());
 			}
