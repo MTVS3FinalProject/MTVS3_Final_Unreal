@@ -54,4 +54,15 @@ public:
     
     // 서버 시간 요청
     void RequestServerTime();
+
+
+	//MH
+	//메시지 클라이언트들에게 전송하는 서버 함수
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerSendChatMessage(const FString& ServerMessage);
+
+	//메시지를 각 클라
+	UFUNCTION(NetMulticast,Reliable)
+	void MultiReceiveChatMessage(const FString& ChatMessage);
+	
 };

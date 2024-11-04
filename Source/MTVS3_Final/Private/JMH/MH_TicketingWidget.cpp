@@ -27,12 +27,12 @@ void UMH_TicketingWidget::NativeConstruct()
 	//위젯 꺼져있는게 기본값
 	//SetVisibleSwitcher(false);
 	WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+	//현민 : 작업 완료후 지우기
 	SetCompletedVisible(false);
 
 	//콘서트정보 담아오기
 	//SetConcertInfo();
-
-
+	
 	//// HttpActor2 공연장 입장 통신 테스트용
 	//Btn_CancelRegisteredSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelRegisteredSeat);
 	//Btn_MyRegisterSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedMyRegisterSeat);
@@ -183,7 +183,7 @@ void UMH_TicketingWidget::OnClickedConfirmButton()
 
 			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-			HttpActor2->ReqPostRegisterSeat(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
+			HttpActor2->ReqGetRegisterSeat(ChairTag , gi->GetAccessToken());
 			//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
 			//SetCompletedVisible(true); 응답 완료했을 때 호출하게 해줬음
 		}
@@ -209,7 +209,7 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 
 			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-			HttpActor2->ReqDeleteCancelRegisteredSeat(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
+			HttpActor2->ReqDeleteCancelRegisteredSeat(ChairTag , gi->GetAccessToken());
 			//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
 			//SetCompletedVisible(false);
 		}
