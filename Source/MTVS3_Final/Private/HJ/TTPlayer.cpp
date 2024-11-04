@@ -389,8 +389,8 @@ void ATTPlayer::OnRep_RandomSeatNumber()
 
 void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 {
-	FVector TargetLocation = bIsToConcertHall ? FVector(460, 5700, 110) : FVector(0, 0, 110); // 콘서트홀 위치와 광장 위치 설정
-	FRotator TargetRotation = bIsToConcertHall ? FRotator(0, 180, 0) : FRotator(0, 0, 0); // 각 위치의 기본 회전값
+	FVector TargetLocation = bIsToConcertHall ? FVector(460, 5700, 110) : FVector(20680, 6260, 3092);
+	FRotator TargetRotation = bIsToConcertHall ? FRotator(0, 180, 0) : FRotator(0, 170, 0);
 
 	TeleportTo(TargetLocation, TargetRotation);
 }
