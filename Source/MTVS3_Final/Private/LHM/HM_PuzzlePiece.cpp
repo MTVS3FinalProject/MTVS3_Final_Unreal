@@ -73,7 +73,7 @@ void AHM_PuzzlePiece::InitializePieces()
 	if (HasAuthority())  // 서버에서만 실행
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
-			TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
+			TEXT("/Script/Engine.StaticMesh'/Game/LHM/Meshes/SM_PuzzleCube.SM_PuzzleCube'"));
 		if (!MeshAsset.Succeeded()) return;
 		
 		// 점수 배열 설정하고 배열을 섞어서 랜덤으로 배치

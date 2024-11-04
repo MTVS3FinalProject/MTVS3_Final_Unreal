@@ -733,6 +733,8 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 // 좌석 게임 결과 요청
 void AHM_HttpActor2::ReqPostGameResult(FString SeatName , FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("Request Post Game Result"));
+	
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
