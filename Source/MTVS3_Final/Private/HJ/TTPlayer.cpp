@@ -29,6 +29,9 @@
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_GameWidget.h"
 #include "JMH/PlayerNicknameWidget.h"
+#include "LHM/HM_AimingWidget.h"
+#include "LHM/HM_PuzzlePiece.h"
+#include "LHM/HM_PuzzleWidget.h"
 
 class ALuckyDrawManager;
 // Sets default values
@@ -65,6 +68,11 @@ ATTPlayer::ATTPlayer()
 	// 머리 위로 30 단위 상승
 	/*NicknameUIComp->SetupAttachment(RootComponent);
 	NicknameUIComp->SetRelativeLocation(FVector(0 , 0 , 100));*/
+
+	// 퍼즐
+	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
+	HandComp->SetupAttachment(FPSCameraComp);
+	HandComp->SetRelativeLocation(FVector(120 , 0 , -40));
 }
 
 // Called when the game starts or when spawned
@@ -162,6 +170,14 @@ void ATTPlayer::BeginPlay()
 		//	}
 		//}
 	}
+	
+	// ====================퍼즐====================
+	bReplicates = true;
+	
+	if (FPSCameraComp)
+	{
+		DefaultFOV = FPSCameraComp->FieldOfView;
+	}
 }
 
 void ATTPlayer::PossessedBy(AController* NewController)
@@ -174,12 +190,44 @@ void ATTPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// ====================퍼즐====================
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (!PC || !PC->IsLocalController()) return;
+	
+	if(!bHasPiece)
+	{
 	FTransform ttt = FTransform(GetControlRotation());
 	Direction = ttt.TransformVector(Direction);
 
 	AddMovementInput(Direction , 1);
 	Direction = FVector::ZeroVector;
+	}
+	else if(bHasPiece)
+	{
+		if (PC && PC->IsLocalController())
+		{
+			FRotator ControlRotation = PC->GetControlRotation();
 
+			if (!bIsThirdPerson) // 1인칭
+			{
+				// Set the actor's rotation to match the camera's rotation
+				FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
+				SetActorRotation(NewRotation);
+
+				// 서버에 회전 값 전달
+				ServerRPCUpdateRotation(NewRotation);
+				ServerRPCUpdateFPSCameraRotation(ControlRotation);
+			}
+
+			// Calculate movement direction based on camera rotation
+			Direction = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y) * Direction.Y +
+						FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X) * Direction.X;
+
+			AddMovementInput(Direction);
+			Direction = FVector::ZeroVector;
+		}
+	}
+	
 	if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
 	{
 		// P = P0 + vt
@@ -220,6 +268,9 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 		input->BindAction(IA_Cheat2 , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat2);
 		input->BindAction(IA_Cheat3 , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat3);
 		input->BindAction(IA_Cheat4 , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionCheat4);
+		input->BindAction(IA_Piece , ETriggerEvent::Started , this , &ATTPlayer::OnMyActionPickupPiece);
+		input->BindAction(IA_Zoom , ETriggerEvent::Triggered , this , &ATTPlayer::OnMyActionZoomInPiece);
+		input->BindAction(IA_Zoom , ETriggerEvent::Completed , this , &ATTPlayer::OnMyActionZoomOutPiece);
 	}
 }
 
@@ -494,6 +545,284 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 	}
 }
 
+void ATTPlayer::MyTakePiece()
+{
+	ZoomOut();
+
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC) return;
+
+	FVector2D MousePosition;
+	if (PC->GetMousePosition(MousePosition.X, MousePosition.Y))
+	{
+		// 마우스 위치를 월드 위치(Start)와 방향(Direction)으로 변환
+		FVector Start, Dir;
+		PC->DeprojectScreenPositionToWorld(MousePosition.X, MousePosition.Y, Start, Dir);
+
+		float TraceDistance = 1000.0f;
+		FVector End = Start + (Dir * TraceDistance);
+
+		FHitResult HitResult;
+		FCollisionQueryParams TraceParams(FName(TEXT("MouseTrace")), true, this);
+		TraceParams.bReturnPhysicalMaterial = false;
+		TraceParams.AddIgnoredActor(this);
+
+		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult , Start , End , ECC_Visibility , TraceParams);
+
+		DrawDebugLine(GetWorld() , Start , End , FColor::Blue , false , 5.f , 0 , 1.f);
+
+		if (bHit && HitResult.GetComponent())
+		{
+			AHM_PuzzlePiece* HitPiece = Cast<AHM_PuzzlePiece>(HitResult.GetActor());
+			if(HitPiece)
+			{
+				UStaticMeshComponent* HitComponent = Cast<UStaticMeshComponent>(HitResult.GetComponent());
+				if (HitComponent && HitPiece->GetAllPieces().Contains(HitComponent))
+				{
+					// 소유되지 않은 상태이며, 특정 태그가 있는지 확인
+					if (!HitPiece->IsComponentOwned(HitComponent))
+					{
+						for (int32 i = 1; i <= 9; ++i)
+						{
+							FString TagName = FString::Printf(TEXT("Piece%d"), i);
+							if (HitComponent->ComponentHasTag(FName(*TagName)))
+							{
+								GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
+																 FString::Printf(TEXT("Found piece with tag: %s"), *TagName));
+								TargetPieceComp = HitComponent;
+
+								// 서버로 소유 요청을 보냄
+								ServerRPCTakePiece(HitPiece, TargetPieceComp);
+								break;
+							}
+						}
+					}
+					if(PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+				}
+			}
+		}
+	}
+}
+
+void ATTPlayer::MyReleasePiece()
+{
+	if ( false == bHasPiece || false == IsLocallyControlled() )
+		return;
+	else
+	{
+		ServerRPCReleasePiece();
+	}
+}
+
+void ATTPlayer::MyLaunchPiece()
+{
+	if ( false == bHasPiece || false == IsLocallyControlled() )
+		return;
+	else
+	{
+		ServerRPCLaunchPiece();
+	}
+}
+
+void ATTPlayer::ZoomIn()
+{
+	if (FPSCameraComp)
+	{
+		// 기존 타이머가 있다면 종료
+		GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+		
+		bIsZoomingIn = true;
+		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
+		{
+			float NewFOV = FMath::FInterpTo(FPSCameraComp->FieldOfView, ZoomedFOV, GetWorld()->GetDeltaSeconds(), ZoomDuration);
+			FPSCameraComp->SetFieldOfView(NewFOV);
+
+			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, ZoomedFOV, 0.1f))
+			{
+				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+				//bIsZoomingIn = true; // 줌 인 상태로 고정
+			}
+		}, 0.01f, true);
+	}
+}
+
+void ATTPlayer::ZoomOut()
+{
+	if(FPSCameraComp)
+	{
+		// 기존 타이머가 있다면 종료
+		GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+		
+		bIsZoomingIn = false;
+		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
+		{
+			float NewFOV = FMath::FInterpTo(FPSCameraComp->FieldOfView, DefaultFOV, GetWorld()->GetDeltaSeconds(), ZoomDuration);
+			FPSCameraComp->SetFieldOfView(NewFOV);
+
+			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, DefaultFOV, 0.1f))
+			{
+				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
+				//bIsZoomingIn = false; // 줌 아웃 상태로 고정
+			}
+		}, 0.01f, true);
+	}
+}
+
+void ATTPlayer::AttachPiece(UStaticMeshComponent* PieceComp)
+{
+	if (!PieceComp) return;
+	SwitchCamera(false);
+	
+	// 클라이언트와 서버 모두에서 실행될 회전 로직
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if (PC && PC->IsLocalController())
+	{
+		FRotator ControlRotation = PC->GetControlRotation();
+		// 캐릭터의 회전을 카메라 회전과 동기화
+		SetActorRotation(FRotator(0.0f, ControlRotation.Yaw, 0.0f));
+		PC->SetViewTargetWithBlend(this);
+	}
+	
+	if(PieceComp)
+	{
+		PieceComp->SetSimulatePhysics(false);
+		PieceComp->SetEnableGravity(false);
+		PieceComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		// if(IsLocallyControlled())
+		if (PC && !bIsThirdPerson)
+		{
+			PieceComp->AttachToComponent(HandComp , FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			PieceComp->SetRelativeLocation(FVector(100 , 0 , -30));
+		}
+	}
+	if (HasAuthority())
+	{
+		TargetPieceTransform = PieceComp->GetComponentTransform();
+	}
+}
+
+void ATTPlayer::DetachPiece(UStaticMeshComponent* PieceComp)
+{
+	if (!PieceComp) return;
+	SwitchCamera(true);
+	
+	PieceComp->SetSimulatePhysics(true);
+	PieceComp->SetEnableGravity(true);
+	PieceComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	PieceComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+
+	if (HasAuthority())
+	{
+		TargetPieceTransform = PieceComp->GetComponentTransform();
+	}
+	TargetPieceComp = nullptr;
+}
+
+void ATTPlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
+{
+	if (!PieceComp) return;
+	SwitchCamera(true);
+
+	PieceComp->SetSimulatePhysics(true);
+	PieceComp->SetEnableGravity(true);
+	PieceComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	PieceComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+	
+	PieceComp->SetCollisionProfileName(TEXT("PuzzlePiece"));
+	PieceComp->SetNotifyRigidBodyCollision(true);
+	PieceComp->SetGenerateOverlapEvents(true);
+
+	FVector LaunchDirection = FPSCameraComp->GetForwardVector();
+	float LaunchSpeed = 6000.0f;
+	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
+	PieceComp->AddImpulse(LaunchVelocity, NAME_None, true);
+
+	if (HasAuthority())
+	{
+		TargetPieceTransform = PieceComp->GetComponentTransform();
+	}
+	TargetPieceComp = nullptr;
+}
+
+void ATTPlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceActor, UStaticMeshComponent* PieceComp)
+{
+	if (!HasAuthority() || !pieceActor || !PieceComp || pieceActor->IsComponentOwned(PieceComp)) return;
+	
+	pieceActor->SetComponentOwner(PieceComp,this);
+	PickupPieceActor = pieceActor;
+	TargetPieceComp = PieceComp;
+	bHasPiece = true;
+
+	// 모든 클라이언트에 알림
+	MulticastRPCTakePiece(PieceComp);
+}
+
+void ATTPlayer::MulticastRPCTakePiece_Implementation(UStaticMeshComponent* PieceComp)
+{
+	AttachPiece(PieceComp);
+}
+
+void ATTPlayer::ServerRPCReleasePiece_Implementation()
+{
+	if (bHasPiece && TargetPieceComp)
+	{
+		bHasPiece = false;
+		PickupPieceActor->ClearComponentOwner(TargetPieceComp);
+		MulticastRPCReleasePiece(TargetPieceComp);
+		PickupPieceActor = nullptr;
+		TargetPieceComp = nullptr;
+	}
+}
+
+void ATTPlayer::MulticastRPCReleasePiece_Implementation(UStaticMeshComponent* PieceComp)
+{
+	if (PieceComp)
+	{
+		DetachPiece(PieceComp); // 피스 분리
+		TargetPieceComp = nullptr;
+	}
+}
+
+void ATTPlayer::ServerRPCLaunchPiece_Implementation()
+{
+	if (bHasPiece && TargetPieceComp && PickupPieceActor)
+	{
+		// 피스의 마지막 소유자를 현재 소유자로 설정
+		PickupPieceActor->LastOwners.Add(TargetPieceComp, this);
+		
+		bHasPiece = false;
+		PickupPieceActor->ClearComponentOwner(TargetPieceComp);
+		MulticastRPCLaunchPiece(TargetPieceComp);
+		PickupPieceActor = nullptr;
+		TargetPieceComp = nullptr;
+	}
+	bIsZoomingIn = false;
+}
+
+void ATTPlayer::MulticastRPCLaunchPiece_Implementation(UStaticMeshComponent* PieceComp)
+{
+	if (PieceComp)
+	{
+		LaunchPiece(PieceComp);
+		TargetPieceComp = nullptr;
+	}
+}
+
+void ATTPlayer::ServerRPCUpdateRotation_Implementation(const FRotator& NewRotation)
+{
+	// 서버에서 캐릭터 회전 적용
+	SetActorRotation(NewRotation);
+}
+
+void ATTPlayer::ServerRPCUpdateFPSCameraRotation_Implementation(const FRotator& FPSCameraNewRotation)
+{
+	if(FPSCameraComp)
+	{
+		FPSCameraComp->SetWorldRotation(FPSCameraNewRotation);
+	}
+}
+
 void ATTPlayer::PrintStateLog()
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -519,38 +848,74 @@ void ATTPlayer::PrintStateLog()
 
 void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 {
-	if (_bIsThirdPerson) // 3인칭 모드
+	bIsThirdPerson = _bIsThirdPerson;
+	
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if(!PC || !PC->IsLocalController()) return;
+	
+	if (bIsThirdPerson) // 3인칭 모드
 	{
+		PC->bShowMouseCursor = true;
+		PC->SetInputMode(FInputModeGameAndUI());
+		
 		GetMesh()->SetOwnerNoSee(false);
 		FPSCameraComp->SetActive(false);
 		TPSCameraComp->SetActive(true);
 		NicknameUIComp->SetOwnerNoSee(false);
-
+		PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
+		
+		//APlayerController* PC = Cast<APlayerController>(GetController());
 		// 플레이어의 회전 방향과 카메라 정렬
-		APlayerController* PC = Cast<APlayerController>(GetController());
-		if (PC && PC->IsLocalController())
-		{
-			PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
-		}
+		//if (PC && PC->IsLocalController())
+		//{
+		//	PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
+		//}
 	}
 	else // 1인칭 모드
 	{
 		FPSCameraComp->SetActive(true);
 		TPSCameraComp->SetActive(false);
 		NicknameUIComp->SetOwnerNoSee(true);
+		GetMesh()->SetOwnerNoSee(true);
 
-		// 플레이어의 회전 방향과 카메라 정렬
-		APlayerController* PC = Cast<APlayerController>(GetController());
-		if (PC && PC->IsLocalController())
+		if(!bHasPiece)
 		{
-			// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
-			GetMesh()->SetOwnerNoSee(true);
+			// 플레이어의 회전 방향과 카메라 정렬
+			//APlayerController* PC = Cast<APlayerController>(GetController());
+			if (PC && PC->IsLocalController())
+			{
+				// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
+				GetMesh()->SetOwnerNoSee(true);
+			
+				// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
+				FRotator ControlRotation = GetActorRotation();
+				PC->SetControlRotation(ControlRotation);
+			
+				PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
+			}
+		}
+		// ====================퍼즐====================
+		else if(bHasPiece)
+		{
+			// 마우스 커서 숨기기 및 게임 모드 설정
+			PC->bShowMouseCursor = false;
+			PC->SetInputMode(FInputModeGameOnly());
+			
+			FRotator NewRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+			SetActorRotation(FRotator(NewRotation));
+			PC->SetViewTargetWithBlend(this);
 
-			// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
-			FRotator ControlRotation = GetActorRotation();
-			PC->SetControlRotation(ControlRotation);
-
-			PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
+			// 서버에 회전 값 전달
+			ServerRPCUpdateRotation(NewRotation);
+			ServerRPCUpdateFPSCameraRotation(PC->GetControlRotation());
+			
+			// 마우스 감도 설정
+			if (APlayerCameraManager* CameraMgr = PC->PlayerCameraManager)
+			{
+				CameraMgr->ViewPitchMin = -20.0f;
+				CameraMgr->ViewPitchMax = 50.0f;
+			}
+			
 		}
 	}
 }
@@ -576,10 +941,36 @@ void ATTPlayer::OnMyActionEnableLookComplete(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionLook(const FInputActionValue& Value)
 {
 	FVector2D v = Value.Get<FVector2D>();
-	if (bIsEnableLook)
+	// if (bIsEnableLook)
+	// {
+	// 	AddControllerPitchInput(-v.Y);
+	// 	AddControllerYawInput(v.X);
+	// }
+	if ( !bIsThirdPerson || bIsEnableLook )
 	{
 		AddControllerPitchInput(-v.Y);
 		AddControllerYawInput(v.X);
+		
+		// 1인칭 모드이고 피스를 들고 있을 때는 캐릭터도 회전
+		if (!bIsThirdPerson && bHasPiece)
+		{
+			APlayerController* PC = Cast<APlayerController>(GetController());
+			if (PC && PC->IsLocalController())
+			{
+				// 마우스 커서 숨기기 및 게임 모드 설정
+				PC->bShowMouseCursor = false;
+				PC->SetInputMode(FInputModeGameOnly());
+				
+				FRotator ControlRotation = PC->GetControlRotation();
+				FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
+				SetActorRotation(NewRotation);
+				PC->SetViewTargetWithBlend(this);
+
+				// 서버에 회전 값 전달
+				ServerRPCUpdateRotation(NewRotation);
+				ServerRPCUpdateFPSCameraRotation(ControlRotation);
+			}
+		}
 	}
 }
 
@@ -849,6 +1240,52 @@ void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 	bShowDebug = !bShowDebug;
 }
 
+void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
+{
+	if (bIsZoomingIn && bHasPiece)
+	{
+		MyLaunchPiece();
+		if(AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
+		if(PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
+	}
+	else if(bHasPiece)
+	{
+		MyReleasePiece();
+		if(PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
+	}
+	//else if(!bIsZoomingIn && !bHasPiece)
+	else if(!bHasPiece)
+	{
+		MyTakePiece();
+	}
+}
+
+void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
+{
+	if ( bHasPiece && !bIsZoomingIn && !bIsThirdPerson )
+	{
+		bIsZoomingIn = true;
+		if (AimingUI)
+		{
+			AimingUI->SetVisibility(ESlateVisibility::Visible);
+		}
+		ZoomIn();
+	}
+}
+
+void ATTPlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
+{
+	if ( bHasPiece && bIsZoomingIn && !bIsThirdPerson )
+	{
+		bIsZoomingIn = false;
+		if (AimingUI)
+		{
+			AimingUI->SetVisibility(ESlateVisibility::Hidden);
+		}
+		ZoomOut();
+	}
+}
+
 void ATTPlayer::InitMainUI()
 {
 	MainUI = Cast<UMainWidget>(CreateWidget(GetWorld() , MainUIFactory));
@@ -867,6 +1304,20 @@ void ATTPlayer::InitMainUI()
 	if (WorldMapUI)
 	{
 		WorldMapUI->AddToViewport();
+	}
+
+	AimingUI = Cast<UHM_AimingWidget>(CreateWidget(GetWorld() , AimingUIFactory));
+	if ( AimingUI )
+	{
+		AimingUI->AddToViewport();
+		AimingUI->SetVisibility(ESlateVisibility::Hidden);
+	}
+	
+	PuzzleUI = Cast<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
+	if ( PuzzleUI )
+	{
+		PuzzleUI->AddToViewport();
+		PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 
 	ATTPlayerController* MyController = Cast<ATTPlayerController>(GetController());
@@ -914,6 +1365,13 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , bIsSitting);
 	DOREPLIFETIME(ATTPlayer , Nickname);
 	DOREPLIFETIME(ATTPlayer , RandomSeatNumber);
+
+	// 퍼즐
+	DOREPLIFETIME(ATTPlayer, bHasPiece);
+	DOREPLIFETIME(ATTPlayer, bIsZoomingIn);
+	DOREPLIFETIME(ATTPlayer, PickupPieceActor);
+	DOREPLIFETIME(ATTPlayer, TargetPieceComp);
+	DOREPLIFETIME(ATTPlayer, TargetPieceTransform);
 }
 
 void ATTPlayer::ForceStandUp()
