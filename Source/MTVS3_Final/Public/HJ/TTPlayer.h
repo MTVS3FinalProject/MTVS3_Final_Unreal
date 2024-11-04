@@ -101,6 +101,9 @@ public:
 	UFUNCTION()
 	void OnRep_RandomSeatNumber();
 
+	UFUNCTION(Server , Reliable, BlueprintCallable)
+	void ServerTeleportPlayer(bool bIsToConcertHall);
+
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
 
@@ -209,6 +212,7 @@ public:
 	UPROPERTY(EditInstanceOnly , Category = "TTSettings|State")
 	bool bIsThirdPerson = true;
 	void SwitchCamera(bool _bIsThirdPerson);
+	void SwitchCameraOnPiece(bool _bIsThirdPerson);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sequences")
 	TObjectPtr<class ULevelSequence> LDWinnerLevelSequence;

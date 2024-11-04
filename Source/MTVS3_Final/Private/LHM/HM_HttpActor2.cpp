@@ -51,8 +51,10 @@ void AHM_HttpActor2::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 
 #pragma region Entry Concert
 // 공연장 선택 UI 요청
-void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken)
+void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken, ATTPlayer* TTPlayer)
 {
+	TargetPlayer = TTPlayer;
+
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
@@ -115,22 +117,22 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 							SetConcertInfo(NewConcertInfo);
 							
 							// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-							UE_LOG(LogTemp , Log , TEXT("Concert Info: %d | %s | %d-%d-%d %s") ,
+							UE_LOG(LogTemp , Log , TEXT("Concert Info | Id: %d, Name: %s, Date: %d-%d-%d %s") ,
 							       NewConcertInfo.concertId ,
 							       *NewConcertInfo.concertName ,
-							       NewConcertInfo.year ,
-							       NewConcertInfo.month ,
-							       NewConcertInfo.day ,
-							       *NewConcertInfo.time);
+							       NewConcertInfo.concertTime.year ,
+							       NewConcertInfo.concertTime.month ,
+							       NewConcertInfo.concertTime.day ,
+							       *NewConcertInfo.concertTime.time);
 
 							if (MainUI && MainUI->GetBuyTicketWidget())
 							{
 								MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
 									NewConcertInfo.concertName ,
-									NewConcertInfo.year ,
-									NewConcertInfo.month ,
-									NewConcertInfo.day ,
-									NewConcertInfo.time);
+									NewConcertInfo.concertTime.year ,
+									NewConcertInfo.concertTime.month ,
+									NewConcertInfo.concertTime.day ,
+									NewConcertInfo.concertTime.time);
 							}
 						}
 						else
@@ -155,6 +157,8 @@ void AHM_HttpActor2::ReqGetConcertEntry(FString AccessToken)
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
 	
+	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d"), GetConcertId());
+		
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d") , *_url, GetConcertId());
@@ -181,11 +185,12 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
 		// 캐스팅은 여기서 한 번만 실행
-		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 
 		if ( Response->GetResponseCode() == 200 )
 		{
+			TargetPlayer->ServerTeleportPlayer(true);
+			
 			// JSON 응답 파싱
 			FString ResponseBody = Response->GetContentAsString();
 			TSharedPtr<FJsonObject> JsonObject;
@@ -218,12 +223,13 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						SetConcertInfo(NewConcertInfo);
 						
 						// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-						UE_LOG(LogTemp , Log , TEXT("Concert Info: %s | %d-%d-%d %s") ,
+						UE_LOG(LogTemp , Log , TEXT("Concert Info | Id: %d, Name: %s, Date: %d-%d-%d %s") ,
+								NewConcertInfo.concertId ,
 							   *NewConcertInfo.concertName ,
-							   NewConcertInfo.year ,
-							   NewConcertInfo.month ,
-							   NewConcertInfo.day ,
-							   *NewConcertInfo.time);
+							   NewConcertInfo.concertTime.year ,
+							   NewConcertInfo.concertTime.month ,
+							   NewConcertInfo.concertTime.day ,
+							   *NewConcertInfo.concertTime.time);
 					}
 					
 					// 접수 가능한 좌석 목록
@@ -243,7 +249,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						{
 							SetAvailableSeats(NewAvailableInfo);
 							// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-							UE_LOG(LogTemp , Log , TEXT("AvailableSeats Info: %d | %s | %s") ,
+							UE_LOG(LogTemp , Log , TEXT("AvailableSeats Info | Id: %d, Name: %s, DrawingTime: %s") ,
 								   NewAvailableInfo.seatId ,
 								   *NewAvailableInfo.seatName ,
 								   *NewAvailableInfo.drawingTime);
@@ -270,7 +276,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							SetReceptionSeats(NewFReceptionInfo);
 							
 							// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-							UE_LOG(LogTemp , Log , TEXT("ReceptionSeats Info: %d | %s | %s") ,
+							UE_LOG(LogTemp , Log , TEXT("ReceptionSeats Info | Id: %d, Name: %s, DrawingTime: %s") ,
 								   NewFReceptionInfo.seatId ,
 								   *NewFReceptionInfo.seatName ,
 								   *NewFReceptionInfo.drawingTime);
@@ -278,12 +284,6 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							// 공연장 입장할 때 예매 완료된 좌석 데이터 받아서 의자 액터에 이펙터 처리
 						}
 					}
-					
-					// 공연장으로 입장하는 SetActorLocation 함수
-					//if ( TTPlayer )
-					//{
-					//	TTPlayer->
-					//}
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("뉴진스 콘서트 입장~~~")));
 				}
 			}
@@ -306,7 +306,7 @@ void AHM_HttpActor2::ReqGetSeatRegistrationInquiry(FString SeatName , FString Ac
 
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-	
+	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d") , GetConcertId());
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId()); // 임의 SeatId(1) SeatId => SeatName으로 바꿀 예정
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
@@ -406,7 +406,7 @@ void AHM_HttpActor2::ReqGetRegisterSeat(FString SeatName , FString AccessToken)
 	
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/reception") , *_url, GetConcertId()); // 임의 SeatId(1) SeatId => SeatName으로 바꿀 예정
 	Request->SetURL(FormattedUrl);
-	Request->SetVerb(TEXT("GET"));
+	Request->SetVerb(TEXT("POST"));
 
 	// 헤더 설정
 	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
@@ -730,6 +730,8 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 // 좌석 게임 결과 요청
 void AHM_HttpActor2::ReqPostGameResult(FString SeatName , FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("Request Post Game Result"));
+	
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;

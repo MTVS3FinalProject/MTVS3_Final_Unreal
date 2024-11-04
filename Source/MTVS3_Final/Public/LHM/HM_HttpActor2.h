@@ -9,6 +9,39 @@
 
 #pragma region struct FConcertInfo
 USTRUCT()
+struct FConcertDate
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	int32 year;
+    
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	int32 month;
+    
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	int32 day;
+    
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	FString time;
+	
+	FConcertDate()
+		: year(0)
+		, month(0)
+		, day(0)
+		, time(TEXT(""))
+	{}
+	// 매개 변수를 받는 생성자
+	FConcertDate(int32 InYear, int32 InMonth, int32 InDay, const FString& InTime)
+		: year(InYear)
+		, month(InMonth)
+		, day(InDay)
+		, time(InTime)
+	{}
+};
+
+USTRUCT()
 struct FConcertInfo
 {
     GENERATED_BODY()
@@ -21,24 +54,12 @@ public:
     FString concertName;
     
     UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-    int32 year;
-    
-    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-    int32 month;
-    
-    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-    int32 day;
-    
-    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-    FString time;
+	FConcertDate concertTime;
 	
     FConcertInfo()
 	    : concertId(0)
         , concertName(TEXT(""))
-        , year(0)
-        , month(0)
-        , day(0)
-        , time(TEXT(""))
+        , concertTime(0,0,0,TEXT(""))
     {}
 };
 #pragma endregion
@@ -170,7 +191,6 @@ class MTVS3_FINAL_API AHM_HttpActor2 : public AActor
 public:
 #pragma region FConcertInfo Getter & Setter Methods
     FConcertInfo ConcertInfo; // 콘서트 정보를 저장할 변수
-	
 	FConcertInfo GetConcertInfo() const { return ConcertInfo; };
 	void SetConcertInfo(const FConcertInfo& NewConcertInfo) { ConcertInfo = NewConcertInfo; };
 	
@@ -178,14 +198,19 @@ public:
     int32 GetConcertId() const { return ConcertInfo.concertId; }
 	void SetConcertName(const FString& ConcertName) { ConcertInfo.concertName = ConcertName; SetConcertInfo(ConcertInfo); };
     const FString& GetConcertName() const { return ConcertInfo.concertName; }
-	void SetConcertYear(int32 ConcertYear) { ConcertInfo.year = ConcertYear; SetConcertInfo(ConcertInfo);}
-    int32 GetConcertYear() const { return ConcertInfo.year; }
-	void SetConcertMonth(int32 ConcertMonth) { ConcertInfo.month = ConcertMonth; SetConcertInfo(ConcertInfo);}
-    int32 GetConcertMonth() const { return ConcertInfo.month; }
-	void SetConcertDay(int32 ConcertDay) { ConcertInfo.day = ConcertDay; SetConcertInfo(ConcertInfo);}
-    int32 GetConcertDay() const { return ConcertInfo.day; }
-	void SetConcertTime(const FString& ConcertTime) { ConcertInfo.time = ConcertTime; SetConcertInfo(ConcertInfo);}
-    const FString& GetConcertTime() const { return ConcertInfo.time; }
+
+	FConcertDate ConcertDate;
+	FConcertDate GetConcertDate() const { return ConcertDate; };
+	void SetConcertDate(const FConcertDate& NewConcertTime) { ConcertDate = NewConcertTime; };
+	
+	void SetConcertYear(int32 Year) { ConcertDate.year = Year; SetConcertDate(ConcertDate);}
+    int32 GetConcertYear() const { return ConcertDate.year; }
+	void SetConcertMonth(int32 Month) { ConcertDate.month = Month; SetConcertDate(ConcertDate);}
+    int32 GetConcertMonth() const { return ConcertDate.month; }
+	void SetConcertDay(int32 Day) { ConcertDate.day = Day; SetConcertDate(ConcertDate);}
+    int32 GetConcertDay() const { return ConcertDate.day; }
+	void SetConcertTime(const FString& Time) { ConcertDate.time = Time; SetConcertDate(ConcertDate);}
+    const FString& GetConcertTime() const { return ConcertDate.time; }
 #pragma endregion
 
 #pragma region FAvailableSeats Getter & Setter Methods
@@ -279,7 +304,8 @@ public:
 
 #pragma region HTTP : Entry Concert
 	// 공연장 선택 UI 요청
-    void ReqGetConcertInfo(FString AccessToken);
+	void ReqGetConcertInfo(FString AccessToken, ATTPlayer* TTPlayer);
+	class ATTPlayer* TargetPlayer;
 
     // 공연장 선택 UI 요청에 대한 응답
     void OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
