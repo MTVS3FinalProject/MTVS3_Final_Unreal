@@ -53,6 +53,10 @@ void UHM_MainBarWidget::OnClickedEmojiBtn()
 		{
 			OnClickedlMenuBtn();
 		}
+		if(bIsChatVisible)
+		{
+			CloseButtonPressed();
+		}
 	}
 	else
 	{
@@ -72,6 +76,10 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 		{
 			OnClickedlMenuBtn();
 		}
+		if(bIsChatVisible)
+		{
+			CloseButtonPressed();
+		}
 	}
 	else
 	{
@@ -90,6 +98,10 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 		if (bIsMenuVisible)
 		{
 			OnClickedlMenuBtn();
+		}
+		if(bIsChatVisible)
+		{
+			CloseButtonPressed();
 		}
 	}
 	else
@@ -139,6 +151,10 @@ void UHM_MainBarWidget::OnClickedSettingBtn()
 		if (bIsMenuVisible)
 		{
 			OnClickedlMenuBtn();
+		}
+		if(bIsChatVisible)
+		{
+			CloseButtonPressed();
 		}
 		SetWidgetSwitcher(3);
 		SetVisibleSwitcher(true);

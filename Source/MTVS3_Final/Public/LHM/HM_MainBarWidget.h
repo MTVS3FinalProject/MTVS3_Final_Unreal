@@ -45,9 +45,26 @@ public:
 		bIsChatVisible = !bIsChatVisible;
 		if (bIsChatVisible)
 		{
+			//이게 맞아??
 			if (bIsMenuVisible)
 			{
 				OnClickedlMenuBtn();
+			}
+			if (bIsEmojiVisible)
+			{
+				OnClickedEmojiBtn();
+			}
+			if (bIsCollectionBookVisible)
+			{
+				OnClickedCollectionBookBtn();
+			}
+			if (bIsNoticeVisible)
+			{
+				OnClickedNoticeBtn();
+			}
+			if (bIsSettingsVisible)
+			{
+				OnClickedSettingBtn();
 			}
 		}
 		// 델리게이트 호출

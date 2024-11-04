@@ -32,8 +32,7 @@ void UMH_TicketingWidget::NativeConstruct()
 
 	//콘서트정보 담아오기
 	//SetConcertInfo();
-
-
+	
 	//// HttpActor2 공연장 입장 통신 테스트용
 	//Btn_CancelRegisteredSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelRegisteredSeat);
 	//Btn_MyRegisterSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedMyRegisterSeat);
