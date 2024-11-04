@@ -190,6 +190,20 @@ void ATTPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
+	{
+		// P = P0 + vt
+		// 카메라 위치
+		FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
+		// 체력바em와 카메라의 방향 벡터
+		FVector NicknameUIDirection = CamLoc - NicknameUIComp->GetComponentLocation();
+		//NicknameUIDirection.Z = 0.0f;
+
+		NicknameUIComp->SetWorldRotation(NicknameUIDirection.GetSafeNormal().ToOrientationRotator());
+	}
+
+	PrintStateLog();
+	
 	// ====================퍼즐====================
 	APlayerController* PC = Cast<APlayerController>(GetController());
 
@@ -228,33 +242,7 @@ void ATTPlayer::Tick(float DeltaTime)
 				Direction = FVector::ZeroVector;
 			}
 		}
-		if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
-		{
-			// P = P0 + vt
-			// 카메라 위치
-			FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
-			// 체력바와 카메라의 방향 벡터
-			FVector NicknameUIDirection = CamLoc - NicknameUIComp->GetComponentLocation();
-			//NicknameUIDirection.Z = 0.0f;
-
-			NicknameUIComp->SetWorldRotation(NicknameUIDirection.GetSafeNormal().ToOrientationRotator());
-		}
 	}
-	else
-	{
-		if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
-		{
-			// P = P0 + vt
-			// 카메라 위치
-			FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
-			// 체력바와 카메라의 방향 벡터
-			FVector NicknameUIDirection = CamLoc - NicknameUIComp->GetComponentLocation();
-			//NicknameUIDirection.Z = 0.0f;
-
-			NicknameUIComp->SetWorldRotation(NicknameUIDirection.GetSafeNormal().ToOrientationRotator());
-		}
-	}
-	PrintStateLog();
 }
 
 // Called to bind functionality to input
