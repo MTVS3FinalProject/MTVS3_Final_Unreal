@@ -73,7 +73,7 @@ void AHM_PuzzlePiece::InitializePieces()
 	if (HasAuthority())  // 서버에서만 실행
 	{
 		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
-			TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
+			TEXT("/Script/Engine.StaticMesh'/Game/LHM/Meshes/SM_PuzzleCube.SM_PuzzleCube'"));
 		if (!MeshAsset.Succeeded()) return;
 		
 		// 점수 배열 설정하고 배열을 섞어서 랜덤으로 배치
@@ -101,6 +101,7 @@ void AHM_PuzzlePiece::InitializePieces()
 				PieceMeshes[i]->SetCollisionProfileName(TEXT("PuzzlePiece"));
 				PieceMeshes[i]->SetNotifyRigidBodyCollision(true);
 				PieceMeshes[i]->SetGenerateOverlapEvents(true);
+				PieceMeshes[i]->SetMassScale(NAME_None, 100);
 
 				// 태그 설정
 				PieceMeshes[i]->ComponentTags.Add(PieceName);

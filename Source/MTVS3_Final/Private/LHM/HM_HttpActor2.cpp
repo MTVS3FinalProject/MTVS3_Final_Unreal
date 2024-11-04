@@ -155,6 +155,8 @@ void AHM_HttpActor2::ReqGetConcertEntry(FString AccessToken)
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
 	
+	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d"), GetConcertId());
+		
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d") , *_url, GetConcertId());
@@ -731,6 +733,8 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 // 좌석 게임 결과 요청
 void AHM_HttpActor2::ReqPostGameResult(FString SeatName , FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("Request Post Game Result"));
+	
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
