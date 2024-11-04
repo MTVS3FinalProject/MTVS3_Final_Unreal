@@ -39,9 +39,10 @@ void AHM_PuzzleBoard::BeginPlay()
 			int32 Idx = Row * GridSize + Col;
 			if (BoardAreas.IsValidIndex(Idx) && BoardAreas[Idx])
 			{
-				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
+				FVector OffsetLocation = FVector(Col * -CellSize , 0, Row * CellSize);
 				FVector NewLocation = BoardLocation + OffsetLocation;
 				BoardAreas[Idx]->SetWorldLocation(NewLocation);
+				BoardAreasGrid[Idx]->SetWorldLocation(NewLocation);
 			}
 		}
 	}
@@ -79,6 +80,24 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			BoardAreas[i]->SetVisibility(false);
 		}
 	}
+
+	BoardAreasGrid.SetNum(9);
+	for (int i = 0; i < 9; i++)
+	{
+		FString ComponentName = FString::Printf(TEXT("BoardAreaLines%d"), i+1);
+		BoardAreasGrid[i] = CreateDefaultSubobject<UStaticMeshComponent>(*ComponentName);
+
+		if (BoardAreasGrid[i])
+		{
+			BoardAreasGrid[i]->SetupAttachment(RootComponent);
+			BoardAreasGrid[i]->SetStaticMesh(MeshAsset.Object);
+			BoardAreasGrid[i]->SetRelativeScale3D(FVector(0.1f , 6.0f , 6.0f));
+			BoardAreasGrid[i]->SetRelativeRotation(FRotator(0,90,0));
+			
+			BoardAreasGrid[i]->SetVisibility(true);
+		}
+	}
+	
 }
 
 void AHM_PuzzleBoard::ServerSetBoardAreaVisibility_Implementation(int32 BoardIndex, bool bVisible)
