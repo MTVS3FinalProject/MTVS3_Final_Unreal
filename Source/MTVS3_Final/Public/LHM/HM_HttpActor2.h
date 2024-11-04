@@ -64,8 +64,6 @@ public:
 };
 #pragma endregion
 
-
-
 #pragma region struct FAvailableSeats
 USTRUCT()
 struct FAvailableSeats

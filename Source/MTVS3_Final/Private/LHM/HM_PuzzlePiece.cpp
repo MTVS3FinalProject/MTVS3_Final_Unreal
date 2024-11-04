@@ -101,6 +101,7 @@ void AHM_PuzzlePiece::InitializePieces()
 				PieceMeshes[i]->SetCollisionProfileName(TEXT("PuzzlePiece"));
 				PieceMeshes[i]->SetNotifyRigidBodyCollision(true);
 				PieceMeshes[i]->SetGenerateOverlapEvents(true);
+				PieceMeshes[i]->SetMassScale(NAME_None, 100);
 
 				// 태그 설정
 				PieceMeshes[i]->ComponentTags.Add(PieceName);

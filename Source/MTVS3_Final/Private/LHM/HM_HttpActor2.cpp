@@ -155,6 +155,8 @@ void AHM_HttpActor2::ReqGetConcertEntry(FString AccessToken)
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
 	
+	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d"), GetConcertId());
+		
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d") , *_url, GetConcertId());
