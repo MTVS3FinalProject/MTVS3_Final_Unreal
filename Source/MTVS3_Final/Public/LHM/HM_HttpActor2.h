@@ -304,7 +304,8 @@ public:
 
 #pragma region HTTP : Entry Concert
 	// 공연장 선택 UI 요청
-    void ReqGetConcertInfo(FString AccessToken);
+	void ReqGetConcertInfo(FString AccessToken, ATTPlayer* TTPlayer);
+	class ATTPlayer* TargetPlayer;
 
     // 공연장 선택 UI 요청에 대한 응답
     void OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
