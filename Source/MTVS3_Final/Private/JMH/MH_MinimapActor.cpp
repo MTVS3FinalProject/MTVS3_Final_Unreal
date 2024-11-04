@@ -128,7 +128,7 @@ void AMH_MinimapActor::Tick(float DeltaTime)
 void AMH_MinimapActor::ApplyMinimap()
 {
 	if( Player == nullptr )	return;
-	/*
+	
 	// 오너 캐릭터 확인 및 미니맵 업데이트
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	if( PlayerController && PlayerController->IsLocalController() )
@@ -163,7 +163,7 @@ void AMH_MinimapActor::ApplyMinimap()
 			}
 		
 	}
-	*/
+	
 	/*
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this , 0);
 	if (PlayerController)
