@@ -389,8 +389,8 @@ void ATTPlayer::OnRep_RandomSeatNumber()
 
 void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 {
-	FVector TargetLocation = bIsToConcertHall ? FVector(460, 5700, 110) : FVector(20680, 6260, 3092);
-	FRotator TargetRotation = bIsToConcertHall ? FRotator(0, 180, 0) : FRotator(0, 170, 0);
+	FVector TargetLocation = bIsToConcertHall ? FVector(19, -4962, 516) : FVector(20680, 6260, 3092);
+	FRotator TargetRotation = bIsToConcertHall ? FRotator(0, 90, 0) : FRotator(0, 170, 0);
 
 	TeleportTo(TargetLocation, TargetRotation);
 }
