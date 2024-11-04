@@ -9,13 +9,14 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedChatBtn);
+
 UCLASS()
 class MTVS3_FINAL_API UHM_MainBarWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
 public:
-	
 	virtual void NativeConstruct() override;
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -25,27 +26,96 @@ public:
 	void SetVisibleSwitcher(bool bVisible);
 
 	UFUNCTION()
-	void SetWidgetSwitcher(int32 num);
+	void SetWidgetSwitcher(int32 num);//0:Emoji . 01: Notice . 02: CollectionBook . 03: Settings
+	
+
+	
+	bool bIsEmojiVisible = false;
+	bool bIsCollectionBookVisible = false;
+	bool bIsNoticeVisible = false;
+	bool bIsMenuVisible = false;
+	bool bIsChatVisible = false;
+	bool bIsSettingsVisible = false;
+
+	FOnClickedChatBtn OnClickedShowChatBtn;
+
+	UFUNCTION()
+	void CloseButtonPressed()
+	{
+		bIsChatVisible = !bIsChatVisible;
+		if (bIsChatVisible)
+		{
+			//이게 맞아??
+			if (bIsMenuVisible)
+			{
+				OnClickedlMenuBtn();
+			}
+			if (bIsEmojiVisible)
+			{
+				OnClickedEmojiBtn();
+			}
+			if (bIsCollectionBookVisible)
+			{
+				OnClickedCollectionBookBtn();
+			}
+			if (bIsNoticeVisible)
+			{
+				OnClickedNoticeBtn();
+			}
+			if (bIsSettingsVisible)
+			{
+				OnClickedSettingBtn();
+			}
+		}
+		// 델리게이트 호출
+		OnClickedShowChatBtn.Broadcast();
+	}
+	
+
+//MH
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_lightMode;
+	UFUNCTION()
+	void OnClickedlightModeBtn();
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_DarkMode;
+	UFUNCTION()
+	void OnClickedDarkModeBtn();
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Menu;
+    UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_0_Menu;
+	UFUNCTION()
+	void OnClickedlMenuBtn();
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_Emoji;
-	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_CollectionBook;
-
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Notice;
-	
-	bool bIsEmojiiVisible = false;
-	bool bIsCollectionBookVisible = false;
-	bool bIsNoticeVisible = false;
-
 	UFUNCTION()
 	void OnClickedEmojiBtn();
 	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Notice;
+	UFUNCTION()
+	void OnClickedNoticeBtn();
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_CollectionBook;
 	UFUNCTION()
 	void OnClickedCollectionBookBtn();
 	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Chat;
 	UFUNCTION()
-	void OnClickedNoticeBtn();
+	void OnClickedChatBtn();
+
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Setting;
+	UFUNCTION()
+	void OnClickedSettingBtn();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Back_Settings;
+	UFUNCTION()
+	void OnClickedSettingBackBtn();
 };

@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "MH_BuyTicketWidget.h"
+#include "MH_TTHUD.h"
 #include "Blueprint/UserWidget.h"
+#include "LHM/HM_MainBarWidget.h"
 #include "MainWidget.generated.h"
 
 /**
@@ -77,8 +79,18 @@ public:
 		return BuyTicketWidget;
 	}
 
+	bool bIsChatVisible = false;
+	
+	UPROPERTY(meta=(BindWidget))
+	class UMH_Chatting* WBP_Chatting;
+	
 	UPROPERTY(meta = (BindWidget))
 	UMH_BuyCoinsWidget* BuyCoinsWidget;
+
+	UPROPERTY(meta = (BindWidget))
+	UHM_MainBarWidget* WBP_MH_MainBar;
+	UFUNCTION()
+	void ShowChatUI();
 	
 	//0:Minimap
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -131,16 +143,37 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_SelectConcertBack;
 
+	//왼쪽 버튼 클릭
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_ConcertL;
+	UFUNCTION()
+	void OnClickedConcertL();
+
+	//오른쪽버튼 클릭
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_ConcertR;
+	UFUNCTION()
+	void OnClickedConcertR();
+
+	//콘서트선택 위젯 애니메이션
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* TicketImgAnim01;
+
 	UFUNCTION()
 	void OnTicketWidgetClose();
 
 	//UI 애니메이션
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
-	UWidgetAnimation* TicketImgAnim01;
+	UWidgetAnimation* ConcertAnim1;
+
+	UPROPERTY()
+	AMH_TTHUD* TTHUD;
 	
 	//티켓예매 알람
 	//티켓팅 시간대
 	//상호작용 버튼
 
+	
+	
 	
 };

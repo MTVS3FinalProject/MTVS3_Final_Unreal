@@ -199,8 +199,7 @@ void UMH_BuyTicketWidget::OnClickedConfirm_QRUi1Button()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if (HttpActor2)
 		{
-			HttpActor2->ReqGetPostConfirmMemberPhoto(HttpActor2->GetUserCode() , gi->GetAccessToken());
-			UE_LOG(LogTemp , Log , TEXT("HttpActor2->GetUserCode() : %s") , *HttpActor2->GetUserCode());
+			HttpActor2->ReqGetPostConfirmMemberPhoto(gi->GetAccessToken());
 		}
 	}
 	//현민 : 인증 완료버튼 -> 성공 : SetWidgetSwitcher(1); /실패 : SetWidgetSwitcher(2);이동
@@ -325,9 +324,8 @@ void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
 		if (HttpActor2)
 		{
 			//HttpActor2->ReqPostPaymentSeat(gi->GetConcertName() , HttpActor2->GetMySeatId() , gi->GetAccessToken());
-			HttpActor2->ReqPostCheatPaymentSeat(gi->GetConcertName() , gi->GetAccessToken());
+			HttpActor2->ReqPostCheatPaymentSeat(gi->GetAccessToken());
 			// ReqPostCheatPaymentSeat 개발자키 프로토시연용
-			UE_LOG(LogTemp , Log , TEXT("HttpActor2->GetMySeatId(): %s") , *HttpActor2->GetMySeatId());
 		}
 		//현민 결제 성공하면 SetWidgetSwitcher(8);로 /
 	}

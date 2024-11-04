@@ -142,7 +142,7 @@ void ATTPlayer::BeginPlay()
 				// 추첨 당첨 UI 표시
 				if (MainUI) MainUI->SetWidgetSwitcher(1);
 			// HTTP 요청
-				HttpActor2->ReqPostGameResult(GI->GetConcertName() , GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
+				HttpActor2->ReqPostGameResult(GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
 			case ELuckyDrawState::Loser:
 				// 추첨 탈락 UI 표시
@@ -190,50 +190,12 @@ void ATTPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// ====================퍼즐====================
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (!PC || !PC->IsLocalController()) return;
-	
-	if(!bHasPiece)
-	{
-	FTransform ttt = FTransform(GetControlRotation());
-	Direction = ttt.TransformVector(Direction);
-
-	AddMovementInput(Direction , 1);
-	Direction = FVector::ZeroVector;
-	}
-	else if(bHasPiece)
-	{
-		if (PC && PC->IsLocalController())
-		{
-			FRotator ControlRotation = PC->GetControlRotation();
-
-			if (!bIsThirdPerson) // 1인칭
-			{
-				// Set the actor's rotation to match the camera's rotation
-				FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
-				SetActorRotation(NewRotation);
-
-				// 서버에 회전 값 전달
-				ServerRPCUpdateRotation(NewRotation);
-				ServerRPCUpdateFPSCameraRotation(ControlRotation);
-			}
-
-			// Calculate movement direction based on camera rotation
-			Direction = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y) * Direction.Y +
-						FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X) * Direction.X;
-
-			AddMovementInput(Direction);
-			Direction = FVector::ZeroVector;
-		}
-	}
-	
 	if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
 	{
 		// P = P0 + vt
 		// 카메라 위치
 		FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
-		// 체력바와 카메라의 방향 벡터
+		// 체력바em와 카메라의 방향 벡터
 		FVector NicknameUIDirection = CamLoc - NicknameUIComp->GetComponentLocation();
 		//NicknameUIDirection.Z = 0.0f;
 
@@ -241,6 +203,46 @@ void ATTPlayer::Tick(float DeltaTime)
 	}
 
 	PrintStateLog();
+	
+	// ====================퍼즐====================
+	APlayerController* PC = Cast<APlayerController>(GetController());
+
+	if(PC && PC->IsLocalController())
+	{
+		if(!bHasPiece)
+		{
+			FTransform ttt = FTransform(GetControlRotation());
+			Direction = ttt.TransformVector(Direction);
+
+			AddMovementInput(Direction , 1);
+			Direction = FVector::ZeroVector;
+		}
+		else if(bHasPiece)
+		{
+			if (PC && PC->IsLocalController())
+			{
+				FRotator ControlRotation = PC->GetControlRotation();
+
+				if (!bIsThirdPerson) // 1인칭
+				{
+					// Set the actor's rotation to match the camera's rotation
+					FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
+					SetActorRotation(NewRotation);
+
+					// 서버에 회전 값 전달
+					ServerRPCUpdateRotation(NewRotation);
+					ServerRPCUpdateFPSCameraRotation(ControlRotation);
+				}
+
+				// Calculate movement direction based on camera rotation
+				Direction = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y) * Direction.Y +
+							FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X) * Direction.X;
+
+				AddMovementInput(Direction);
+				Direction = FVector::ZeroVector;
+			}
+		}
+	}
 }
 
 // Called to bind functionality to input
@@ -289,13 +291,13 @@ void ATTPlayer::SetNickname(const FString& _Nickname)
 
 	if (IsLocallyControlled())
 	{
-		// ServerSetNickname(_Nickname);
+		ServerSetNickname(_Nickname);
 
-		FTimerHandle ServerSetNicknameTimerHandle;
+		/*FTimerHandle ServerSetNicknameTimerHandle;
 		GetWorldTimerManager().SetTimer(ServerSetNicknameTimerHandle , [this, _Nickname]()
 		{
 			ServerSetNickname(_Nickname);
-		} , 0.5f , false);
+		} , 0.5f , false);*/
 	}
 }
 
@@ -303,8 +305,10 @@ void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
 {
 	Nickname = _Nickname;
 	UE_LOG(LogTemp , Warning , TEXT("ServerSetNickname: %s") , *GetNickname());
-	FTimerHandle SetNicknameTimerHandle;
-	GetWorldTimerManager().SetTimer(SetNicknameTimerHandle , this , &ATTPlayer::MulticastSetNickname , 1.5f , false);
+	MulticastSetNickname();
+	
+	/*FTimerHandle SetNicknameTimerHandle;
+	GetWorldTimerManager().SetTimer(SetNicknameTimerHandle , this , &ATTPlayer::MulticastSetNickname , 1.5f , false);*/
 }
 
 void ATTPlayer::MulticastSetNickname_Implementation()
@@ -357,20 +361,39 @@ void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSea
 	RandomSeatNumber = _RandomSeatNumber;
 	UE_LOG(LogTemp , Warning , TEXT("ServerSetRandomSeatNumber_Implementation: %d") , GetRandomSeatNumber());
 
-	FTimerHandle SetRandomSeatNumberTimerHandle;
+	MulticastSetRandomSeatNumber();
+	
+	/*FTimerHandle SetRandomSeatNumberTimerHandle;
 	// 1.5
 	GetWorldTimerManager().SetTimer(SetRandomSeatNumberTimerHandle , this , &ATTPlayer::MulticastSetRandomSeatNumber ,
-	                                1.5f , false);
+	                                1.5f , false);*/
 }
 
-// void ATTPlayer::OnRep_RandomSeatNumber()
-// {
-// 	if (NicknameUI)
-// 	{
-// 		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-// 		UE_LOG(LogTemp, Warning, TEXT("OnRep_RandomSeatNumber: %d"), GetRandomSeatNumber());
-// 	}
-// }
+void ATTPlayer::OnRep_Nickname()
+{
+	if (NicknameUI)
+	{
+		NicknameUI->UpdateNicknameUI(GetNickname());
+		UE_LOG(LogTemp, Warning, TEXT("NicknameUI: %s"), *GetNickname());
+	}
+}
+
+void ATTPlayer::OnRep_RandomSeatNumber()
+{
+	if (NicknameUI)
+	{
+		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
+		UE_LOG(LogTemp, Warning, TEXT("OnRep_RandomSeatNumber: %d"), GetRandomSeatNumber());
+	}
+}
+
+void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
+{
+	FVector TargetLocation = bIsToConcertHall ? FVector(19, -4962, 516) : FVector(20680, 6260, 3092);
+	FRotator TargetRotation = bIsToConcertHall ? FRotator(0, 90, 0) : FRotator(0, 170, 0);
+
+	TeleportTo(TargetLocation, TargetRotation);
+}
 
 void ATTPlayer::MulticastSetRandomSeatNumber_Implementation()
 {
@@ -658,7 +681,7 @@ void ATTPlayer::ZoomOut()
 void ATTPlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 {
 	if (!PieceComp) return;
-	SwitchCamera(false);
+	SwitchCameraOnPiece(false);
 	
 	// 클라이언트와 서버 모두에서 실행될 회전 로직
 	APlayerController* PC = Cast<APlayerController>(GetController());
@@ -692,7 +715,7 @@ void ATTPlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 void ATTPlayer::DetachPiece(UStaticMeshComponent* PieceComp)
 {
 	if (!PieceComp) return;
-	SwitchCamera(true);
+	SwitchCameraOnPiece(true);
 	
 	PieceComp->SetSimulatePhysics(true);
 	PieceComp->SetEnableGravity(true);
@@ -709,7 +732,7 @@ void ATTPlayer::DetachPiece(UStaticMeshComponent* PieceComp)
 void ATTPlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 {
 	if (!PieceComp) return;
-	SwitchCamera(true);
+	SwitchCameraOnPiece(true);
 
 	PieceComp->SetSimulatePhysics(true);
 	PieceComp->SetEnableGravity(true);
@@ -835,6 +858,45 @@ void ATTPlayer::PrintStateLog()
 
 void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 {
+	if (_bIsThirdPerson) // 3인칭 모드
+	{
+		GetMesh()->SetOwnerNoSee(false);
+		FPSCameraComp->SetActive(false);
+		TPSCameraComp->SetActive(true);
+		NicknameUIComp->SetOwnerNoSee(false);
+		
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		// 플레이어의 회전 방향과 카메라 정렬
+		if (PC && PC->IsLocalController())
+		{
+			PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
+		}
+	}
+	else // 1인칭 모드
+	{
+		FPSCameraComp->SetActive(true);
+		TPSCameraComp->SetActive(false);
+		NicknameUIComp->SetOwnerNoSee(true);
+		GetMesh()->SetOwnerNoSee(true);
+
+		// 플레이어의 회전 방향과 카메라 정렬
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC && PC->IsLocalController())
+		{
+			// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
+			GetMesh()->SetOwnerNoSee(true);
+
+			// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
+			FRotator ControlRotation = GetActorRotation();
+			PC->SetControlRotation(ControlRotation);
+
+			PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
+		}
+	}
+}
+
+void ATTPlayer::SwitchCameraOnPiece(bool _bIsThirdPerson)
+{
 	bIsThirdPerson = _bIsThirdPerson;
 	
 	APlayerController* PC = Cast<APlayerController>(GetController());
@@ -849,14 +911,8 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 		FPSCameraComp->SetActive(false);
 		TPSCameraComp->SetActive(true);
 		NicknameUIComp->SetOwnerNoSee(false);
+
 		PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
-		
-		//APlayerController* PC = Cast<APlayerController>(GetController());
-		// 플레이어의 회전 방향과 카메라 정렬
-		//if (PC && PC->IsLocalController())
-		//{
-		//	PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
-		//}
 	}
 	else // 1인칭 모드
 	{
@@ -867,8 +923,6 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 
 		if(!bHasPiece)
 		{
-			// 플레이어의 회전 방향과 카메라 정렬
-			//APlayerController* PC = Cast<APlayerController>(GetController());
 			if (PC && PC->IsLocalController())
 			{
 				// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
@@ -881,7 +935,6 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 				PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
 			}
 		}
-		// ====================퍼즐====================
 		else if(bHasPiece)
 		{
 			// 마우스 커서 숨기기 및 게임 모드 설정
@@ -905,6 +958,7 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 			
 		}
 	}
+		
 }
 
 void ATTPlayer::OnMyActionMove(const FInputActionValue& Value)
@@ -928,35 +982,32 @@ void ATTPlayer::OnMyActionEnableLookComplete(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionLook(const FInputActionValue& Value)
 {
 	FVector2D v = Value.Get<FVector2D>();
-	// if (bIsEnableLook)
-	// {
-	// 	AddControllerPitchInput(-v.Y);
-	// 	AddControllerYawInput(v.X);
-	// }
-	if ( !bIsThirdPerson || bIsEnableLook )
+	if (bIsEnableLook)
 	{
 		AddControllerPitchInput(-v.Y);
 		AddControllerYawInput(v.X);
-		
-		// 1인칭 모드이고 피스를 들고 있을 때는 캐릭터도 회전
-		if (!bIsThirdPerson && bHasPiece)
-		{
-			APlayerController* PC = Cast<APlayerController>(GetController());
-			if (PC && PC->IsLocalController())
-			{
-				// 마우스 커서 숨기기 및 게임 모드 설정
-				PC->bShowMouseCursor = false;
-				PC->SetInputMode(FInputModeGameOnly());
-				
-				FRotator ControlRotation = PC->GetControlRotation();
-				FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
-				SetActorRotation(NewRotation);
-				PC->SetViewTargetWithBlend(this);
+	}
+	
+	if ( !bIsThirdPerson && bHasPiece )
+	{
+		AddControllerPitchInput(-v.Y);
+		AddControllerYawInput(v.X);
 
-				// 서버에 회전 값 전달
-				ServerRPCUpdateRotation(NewRotation);
-				ServerRPCUpdateFPSCameraRotation(ControlRotation);
-			}
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC && PC->IsLocalController())
+		{
+			// 마우스 커서 숨기기 및 게임 모드 설정
+			PC->bShowMouseCursor = false;
+			PC->SetInputMode(FInputModeGameOnly());
+
+			FRotator ControlRotation = PC->GetControlRotation();
+			FRotator NewRotation = FRotator(0.0f , ControlRotation.Yaw , 0.0f);
+			SetActorRotation(NewRotation);
+			PC->SetViewTargetWithBlend(this);
+
+			// 서버에 회전 값 전달
+			ServerRPCUpdateRotation(NewRotation);
+			ServerRPCUpdateFPSCameraRotation(ControlRotation);
 		}
 	}
 }
@@ -1006,7 +1057,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			// 좌석 접수 UI 표시
 			TicketingUI->SetVisibleSwitcher(true , 0);
 			//TicketingUI->SetWidgetSwitcher(0);
-			HttpActor2->ReqPostSeatRegistrationInquiry(GI->GetConcertName() , ChairTag , GI->GetAccessToken());
+			HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 
 			ServerSetSitting(true);
 
@@ -1040,7 +1091,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("SelectConcert")))
 	{
 		MainUI->SetWidgetSwitcher(5);
-		HttpActor2->ReqGetConcertInfo(GI->GetAccessToken());
+		HttpActor2->ReqGetConcertInfo(GI->GetAccessToken(), this);
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
@@ -1076,7 +1127,7 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 		// 좌석 경쟁 UI 표시(테스트용)
 		TicketingUI->SetVisibleSwitcher(true , 0);
 		//TicketingUI->SetWidgetSwitcher(1);
-		HttpActor2->ReqPostSeatRegistrationInquiry(GI->GetConcertName() , ChairTag , GI->GetAccessToken());
+		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
 }
 
@@ -1138,7 +1189,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 				if (HttpActor2)
 				{
-					HttpActor2->ReqPostNoticeGameStart(GI->GetConcertName() , TEXT("2024A113") ,
+					HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
 					                                   GI->GetAccessToken());
 				}
 
@@ -1191,7 +1242,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 			MainUI->SetWidgetSwitcher(1);
 
 			// HTTP 통신 요청
-			HttpActor2->ReqPostCheatGameResult(GI->GetConcertName() , GI->GetAccessToken());
+			HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
@@ -1326,8 +1377,10 @@ void ATTPlayer::InitMainUI()
 
 void ATTPlayer::InitGameUI()
 {
-	FTimerHandle SetTextMyNumTimerHandle;
-	GetWorldTimerManager().SetTimer(SetTextMyNumTimerHandle , this , &ATTPlayer::SetTextMyNum , 4.0f , false);
+	SetTextMyNum();
+	
+	/*FTimerHandle SetTextMyNumTimerHandle;
+	GetWorldTimerManager().SetTimer(SetTextMyNumTimerHandle , this , &ATTPlayer::SetTextMyNum , 4.0f , false);*/
 }
 
 void ATTPlayer::SetTextMyNum()

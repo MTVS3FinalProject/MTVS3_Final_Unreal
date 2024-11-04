@@ -70,13 +70,13 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			BoardAreas[i]->SetupAttachment(RootComponent);
 			BoardAreas[i]->SetStaticMesh(MeshAsset.Object);
 			BoardAreas[i]->SetRelativeScale3D(FVector(0.7f , 7.0f , 7.0f));
-
+			BoardAreas[i]->SetRelativeRotation(FRotator(0,90,0));
+			
 			BoardAreas[i]->SetCollisionProfileName(TEXT("PuzzleBoard"));
 			BoardAreas[i]->SetNotifyRigidBodyCollision(true);
 			BoardAreas[i]->SetGenerateOverlapEvents(true);
 			
 			BoardAreas[i]->SetVisibility(false);
-			//BoardAreas[i]->SetVisibility(true);
 		}
 	}
 }

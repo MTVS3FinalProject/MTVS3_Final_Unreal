@@ -23,10 +23,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Puzzle Board")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<UStaticMeshComponent*> BoardAreas;
 
-	UPROPERTY(EditAnywhere, Category = "Puzzle Board Settings")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float CellSize = 700.0f;
 
 	void InitializeBoardAreas();
