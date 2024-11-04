@@ -23,10 +23,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<UStaticMeshComponent*> BoardAreas;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float CellSize = 700.0f;
 
 	void InitializeBoardAreas();

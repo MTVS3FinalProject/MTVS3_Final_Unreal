@@ -115,7 +115,7 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 							SetConcertInfo(NewConcertInfo);
 							
 							// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-							UE_LOG(LogTemp , Log , TEXT("Concert Info: %d | %s | %d-%d-%d %s") ,
+							UE_LOG(LogTemp , Log , TEXT("Concert Info | Id: %d, Name: %s, Date: %d-%d-%d %s") ,
 							       NewConcertInfo.concertId ,
 							       *NewConcertInfo.concertName ,
 							       NewConcertInfo.concertTime.year ,
@@ -218,7 +218,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						SetConcertInfo(NewConcertInfo);
 						
 						// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-						UE_LOG(LogTemp , Log , TEXT("Concert Info: %d | %s | %d-%d-%d %s") ,
+						UE_LOG(LogTemp , Log , TEXT("Concert Info | Id: %d, Name: %s, Date: %d-%d-%d %s") ,
 								NewConcertInfo.concertId ,
 							   *NewConcertInfo.concertName ,
 							   NewConcertInfo.concertTime.year ,
@@ -244,7 +244,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						{
 							SetAvailableSeats(NewAvailableInfo);
 							// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-							UE_LOG(LogTemp , Log , TEXT("AvailableSeats Info: %d | %s | %s") ,
+							UE_LOG(LogTemp , Log , TEXT("AvailableSeats Info | Id: %d, Name: %s, DrawingTime: %s") ,
 								   NewAvailableInfo.seatId ,
 								   *NewAvailableInfo.seatName ,
 								   *NewAvailableInfo.drawingTime);
@@ -271,7 +271,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							SetReceptionSeats(NewFReceptionInfo);
 							
 							// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-							UE_LOG(LogTemp , Log , TEXT("ReceptionSeats Info: %d | %s | %s") ,
+							UE_LOG(LogTemp , Log , TEXT("ReceptionSeats Info | Id: %d, Name: %s, DrawingTime: %s") ,
 								   NewFReceptionInfo.seatId ,
 								   *NewFReceptionInfo.seatName ,
 								   *NewFReceptionInfo.drawingTime);

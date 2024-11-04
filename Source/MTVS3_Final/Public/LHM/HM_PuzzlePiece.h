@@ -23,7 +23,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<UStaticMeshComponent*> PieceMeshes;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

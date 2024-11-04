@@ -91,7 +91,7 @@ void AHM_PuzzlePiece::InitializePieces()
 			PieceMeshes[i] = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
 			if (PieceMeshes[i])
 			{
-				//NewPiece->SetupAttachment(RootComponent);
+				PieceMeshes[i]->SetupAttachment(RootComponent);
 				PieceMeshes[i]->SetStaticMesh(MeshAsset.Object);
 				PieceMeshes[i]->SetRelativeScale3D(FVector(0.5f , 0.5f , 0.5f));
 
