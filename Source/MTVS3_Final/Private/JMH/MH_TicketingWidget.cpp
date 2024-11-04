@@ -183,7 +183,7 @@ void UMH_TicketingWidget::OnClickedConfirmButton()
 
 			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-			HttpActor2->ReqPostRegisterSeat(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
+			HttpActor2->ReqGetRegisterSeat(ChairTag , gi->GetAccessToken());
 			//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
 			//SetCompletedVisible(true); 응답 완료했을 때 호출하게 해줬음
 		}
@@ -209,7 +209,7 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 
 			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-			HttpActor2->ReqDeleteCancelRegisteredSeat(gi->GetConcertName() , ChairTag , gi->GetAccessToken());
+			HttpActor2->ReqDeleteCancelRegisteredSeat(ChairTag , gi->GetAccessToken());
 			//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
 			//SetCompletedVisible(false);
 		}
