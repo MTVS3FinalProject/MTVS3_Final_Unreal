@@ -387,6 +387,14 @@ void ATTPlayer::OnRep_RandomSeatNumber()
 	}
 }
 
+void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
+{
+	FVector TargetLocation = bIsToConcertHall ? FVector(460, 5700, 110) : FVector(0, 0, 110); // 콘서트홀 위치와 광장 위치 설정
+	FRotator TargetRotation = bIsToConcertHall ? FRotator(0, 180, 0) : FRotator(0, 0, 0); // 각 위치의 기본 회전값
+
+	TeleportTo(TargetLocation, TargetRotation);
+}
+
 void ATTPlayer::MulticastSetRandomSeatNumber_Implementation()
 {
 	TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
@@ -1083,7 +1091,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("SelectConcert")))
 	{
 		MainUI->SetWidgetSwitcher(5);
-		HttpActor2->ReqGetConcertInfo(GI->GetAccessToken());
+		HttpActor2->ReqGetConcertInfo(GI->GetAccessToken(), this);
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
