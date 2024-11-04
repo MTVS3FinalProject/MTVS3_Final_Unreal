@@ -9,6 +9,8 @@
 #include "HM_HttpActor2.generated.h"
 
 #pragma region struct FConcertInfo
+class ATTPlayer;
+
 USTRUCT()
 struct FConcertDate
 {
@@ -270,11 +272,6 @@ public:
 	FString UserCode;
 	const FString& GetUserCode() const { return UserCode; }
 	void SetUserCode(const FString& _UserCode) { UserCode = _UserCode; }
-
-	UPROPERTY(VisibleAnywhere, Category = "Default|params")
-	int32 SeatFloor;
-	int32 GetSeatFloor() const { return SeatFloor; }
-	void SetSeatFloor(int32 _SeatFloor) { SeatFloor = _SeatFloor; }
 	
 public:	
 	// Sets default values for this actor's properties
@@ -380,7 +377,7 @@ public:
 	void OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 결제 요청
-	void ReqPostPaymentSeat(FString SeatId, FString AccessToken);
+	void ReqPostPaymentSeat(int32 SeatId, FString AccessToken);
 
 	// 좌석 결제 요청에 대한 응답
 	void OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
