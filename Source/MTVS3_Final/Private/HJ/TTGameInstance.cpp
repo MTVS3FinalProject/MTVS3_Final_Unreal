@@ -346,19 +346,19 @@ void UTTGameInstance::SetbIsHost(const bool& _bIsHost)
 
 void UTTGameInstance::SetNickname(const FString& _Nickname)
 {
-	PlayerData.Nickname = _Nickname;
+	PlayerData.nickname = _Nickname;
 	SetPlayerData(PlayerData);
 }
 
 void UTTGameInstance::SetAccessToken(const FString& _AccessToken)
 {
-	PlayerData.AccessToken = _AccessToken;
+	PlayerData.accessToken = _AccessToken;
 	SetPlayerData(PlayerData);
 }
 
 void UTTGameInstance::SetCoin(const int32& _Coin)
 {
-	PlayerData.Coin = _Coin;
+	PlayerData.coin = _Coin;
 	SetPlayerData(PlayerData);
 }
 
@@ -370,7 +370,7 @@ void UTTGameInstance::SetCoin(const int32& _Coin)
 
 void UTTGameInstance::SetRemainingTicketCount(const int32& _RemainingTicketCount)
 {
-	PlayerData.RemainingTicketCount = _RemainingTicketCount;
+	PlayerData.remainingTicketCount = _RemainingTicketCount;
 	SetPlayerData(PlayerData);
 }
 
@@ -382,15 +382,15 @@ void UTTGameInstance::SetRemainingTicketCount(const int32& _RemainingTicketCount
 
 void UTTGameInstance::SetAvatarData(const int32& _AvatarData)
 {
-	PlayerData.AvatarData = _AvatarData;
+	PlayerData.avatarData = _AvatarData;
 	SetPlayerData(PlayerData);
 }
 
-void UTTGameInstance::SetConcertName(const FString& _ConcertName)
-{
-	PlayerData.ConcertName = _ConcertName;
-	SetPlayerData(PlayerData);
-}
+// void UTTGameInstance::SetConcertName(const FString& _ConcertName)
+// {
+// 	PlayerData.ConcertName = _ConcertName;
+// 	SetPlayerData(PlayerData);
+// }
 
 void UTTGameInstance::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 {

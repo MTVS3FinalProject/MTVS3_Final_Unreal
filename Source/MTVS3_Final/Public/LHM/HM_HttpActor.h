@@ -33,9 +33,6 @@ public:
 
 	// 백엔드에 요청 보낼 때만 api 포함, 프론트는 api X
 	const FString _url = "https://ticketaka.shop/api";
-	//const FString _url = "http://221.163.19.218:7878/api";
-
-//===========================================================================================================
 
 	// QR코드 요청을 서버에 보내는 함수
 	void ReqPostGetVerifyIdentityQR(FText Email, FText Password);
@@ -50,18 +47,14 @@ public:
 	void OnResPostVerifyIdentity(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	// 회원가입 요청을 서버에 보내는 함수
-	void ReqPostSignup(bool bIsHost , FText Email , FText Password , FString Birth , FText Nickname, int32 AvataData);
+	void ReqPostSignup(FText Nickname, bool bIsHost , FText Email , FText Password , FString Birth , int32 AvataData);
 
 	// 회원가입 요청에 대한 응답을 처리하는 함수
 	void OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-
-//===========================================================================================================
 
 	// 로그인 요청을 서버에 보내는 함수
 	void ReqPostLogin(FText Email, FText Password);
 
 	// 로그인 요청에 대한 응답을 처리하는 함수
 	void OnResPostLogin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
-
-//===========================================================================================================
 };

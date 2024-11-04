@@ -7,304 +7,249 @@
 #include "HttpFwd.h"
 #include "HM_HttpActor2.generated.h"
 
-// SeatIdDTO 구조체
+#pragma region struct FConcertInfo
 USTRUCT()
-struct FSeatIdDTO
+struct FConcertInfo
 {
     GENERATED_BODY()
 
 public:
-    FSeatIdDTO() : SeatId(TEXT("")) {}
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	int32 concertId;
+	
+    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+    FString concertName;
+    
+    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+    int32 year;
+    
+    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+    int32 month;
+    
+    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+    int32 day;
+    
+    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+    FString time;
+	
+    FConcertInfo()
+	    : concertId(0)
+        , concertName(TEXT(""))
+        , year(0)
+        , month(0)
+        , day(0)
+        , time(TEXT(""))
+    {}
+};
+#pragma endregion
+
+#pragma region struct FAvailableSeats
+USTRUCT()
+struct FAvailableSeats
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	int32 seatId;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	FString seatName;
+    
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	FString drawingTime;
+	
+	FAvailableSeats()
+		: seatId(0)
+		, seatName(TEXT(""))
+		, drawingTime(TEXT(""))
+	{}
+};
+#pragma endregion
+
+#pragma region struct FReceptionSeats
+USTRUCT()
+struct FReceptionSeats
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	int32 seatId;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	FString seatName;
+    
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	FString drawingTime;
+	
+	FReceptionSeats()
+		: seatId(0)
+		, seatName(TEXT(""))
+		, drawingTime(TEXT(""))
+	{}
+};
+#pragma endregion
+
+#pragma region struct FMyReceptionSeatInfo
+USTRUCT()
+struct FMyReceptionSeats
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|MyReceptionSeatInfo")
+	int32 seatId;
+
+	UPROPERTY(VisibleAnywhere, Category = "Default|MyReceptionSeatInfo")
+	FString seatName;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|MyReceptionSeatInfo")
+	FString seatInfo;
+
+	UPROPERTY(VisibleAnywhere, Category = "Default|MyReceptionSeatInfo")
+	int32 year;
+
+	UPROPERTY(VisibleAnywhere, Category = "Default|MyReceptionSeatInfo")
+	int32 month;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|MyReceptionSeatInfo")
+	int32 day;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|MyReceptionSeatInfo")
+	FString time;
+
+	UPROPERTY(VisibleAnywhere, Category = "Default|MyReceptionSeatInfo")
+	int32 competitionRate;
+
+	FMyReceptionSeats()
+		: seatId(0)
+		, seatName(TEXT(""))
+		, seatInfo(TEXT(""))
+		, year(0)
+		, month(0)
+		, day(0)
+		, time(TEXT(""))
+		, competitionRate(0)
+	{}
+};
+#pragma endregion
+
+#pragma region struct FSeatId
+USTRUCT()
+struct FSeatId
+{
+    GENERATED_BODY()
+
+public:
+    FSeatId()
+	: SeatId(TEXT(""))
+	, DrawingTime(TEXT(""))
+	{}
 
     const FString& GetSeatId() const { return SeatId; }
-    void SetSeatId(const FString& InSeatId) { SeatId = InSeatId; }
+    void SetSeatId(const FString& _SeatId) { SeatId = _SeatId; }
 
     const FString& GetDrawingTime() const { return DrawingTime; }
-    void SetDrawingTime(const FString& InDrawingTime) { DrawingTime = InDrawingTime; }
+    void SetDrawingTime(const FString& _DrawingTime) { DrawingTime = _DrawingTime; }
 
 private:
     UPROPERTY(VisibleAnywhere, Category = "Default|Seat")
     FString SeatId;
 
     UPROPERTY(VisibleAnywhere, Category = "Default|Seat")
-    FString DrawingTime;
+	FString DrawingTime;
 };
-
-// MyReceptionSeatInfoDTO 구조체
-USTRUCT()
-struct FMyReceptionSeatInfoDTO
-{
-    GENERATED_BODY()
-
-public:
-    FMyReceptionSeatInfoDTO()
-        : m_MySeatId(TEXT(""))
-        , m_MyConcertDate(TEXT(""))
-        , m_MySeatInfo(TEXT(""))
-        , m_MyDrawingTime(TEXT(""))
-        , m_MyCompetitionRate(TEXT(""))
-    {}
-
-    const FString& GetMySeatId() const { return m_MySeatId; }
-    void SetMySeatId(const FString& MySeatId) { m_MySeatId = MySeatId; }
-
-    const FString& GetMyConcertDate() const { return m_MyConcertDate; }
-    void SetMyConcertDate(const FString& MyConcertDate) { m_MyConcertDate = MyConcertDate; }
-
-    const FString& GetMySeatInfo() const { return m_MySeatInfo; }
-    void SetMySeatInfo(const FString& MySeatInfo) { m_MySeatInfo = MySeatInfo; }
-
-    const FString& GetMyDrawingTime() const { return m_MyDrawingTime; }
-    void SetMyDrawingTime(const FString& MyDrawingTime) { m_MyDrawingTime = MyDrawingTime; }
-
-    const FString& GetMyCompetitionRate() const { return m_MyCompetitionRate; }
-    void SetMyCompetitionRate(const FString& MyCompetitionRate) { m_MyCompetitionRate = MyCompetitionRate; }
-
-private:
-    UPROPERTY(VisibleAnywhere, Category = "Default|Seat")
-    FString m_MySeatId;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Seat")
-    FString m_MyConcertDate;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Seat")
-    FString m_MySeatInfo;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Seat")
-    FString m_MyDrawingTime;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Seat")
-    FString m_MyCompetitionRate;
-};
-
-// Concert 구조체
-USTRUCT()
-struct FConcertDTO
-{
-    GENERATED_BODY()
-
-public:
-    FConcertDTO()
-	    : m_ConcertId(0)
-        , m_ConcertName(TEXT(""))
-        , m_ConcertYear(0)
-        , m_ConcertMonth(0)
-        , m_ConcertDay(0)
-        , m_ConcertTime(TEXT(""))
-    {}
-	
-	int32 GetConcertId() const { return m_ConcertId; }
-	void SetConcertId(const int32 ConcertId) { m_ConcertId = ConcertId; }
-	
-    const FString& GetConcertName() const { return m_ConcertName; }
-    void SetConcertName(const FString& ConcertName) { m_ConcertName = ConcertName; }
-
-    int32 GetConcertYear() const { return m_ConcertYear; }
-    void SetConcertYear(int32 ConcertYear) { m_ConcertYear = ConcertYear; }
-
-    int32 GetConcertMonth() const { return m_ConcertMonth; }
-    void SetConcertMonth(int32 ConcertMonth) { m_ConcertMonth = ConcertMonth; }
-
-    int32 GetConcertDay() const { return m_ConcertDay; }
-    void SetConcertDay(int32 ConcertDay) { m_ConcertDay = ConcertDay; }
-
-    const FString& GetConcertTime() const { return m_ConcertTime; }
-    void SetConcertTime(const FString& ConcertTime) { m_ConcertTime = ConcertTime; }
-
-private:
-	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-	int32 m_ConcertId;
-	
-    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-    FString m_ConcertName;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-    int32 m_ConcertYear;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-    int32 m_ConcertMonth;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-    int32 m_ConcertDay;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-    FString m_ConcertTime;
-};
-
-// ConcertReservation 구조체
-USTRUCT()
-struct FConcertReservation
-{
-    GENERATED_BODY()
-
-public:
-    FConcertReservation()
-        : m_SeatId(TEXT(""))
-        , m_SeatFloor(0)
-        , m_SeatInfo(TEXT(""))
-        , m_SeatPrice(0)
-        , m_CompetitionRate(0)
-        , m_UserCode(TEXT(""))
-        , m_NeedCoin(0)
-        , m_UserName(TEXT(""))
-        , m_UserPhoneNumber(TEXT(""))
-        , m_UserAddress1(TEXT(""))
-        , m_UserAddress2(TEXT(""))
-        {}
-
-    const FString& GetSeatId() const { return m_SeatId; }
-    void SetSeatId(const FString& SeatId) { m_SeatId = SeatId; }
-
-	int32 GetSeatFloor() { return m_SeatFloor; }
-	void SetSeatFloor(int32 SeatFloor) { m_SeatFloor = SeatFloor; }
-	
-    const FString& GetSeatInfo() const { return m_SeatInfo; }
-    void SetSeatInfo(const FString& SeatInfo) { m_SeatInfo = SeatInfo; }
-
-    int32 GetSeatPrice() const { return m_SeatPrice; }
-    void SetSeatPrice(int32 SeatPrice) { m_SeatPrice = SeatPrice; }
-
-    const TArray<FSeatIdDTO>& GetAvailableSeats() const { return m_AvailableSeats; }
-    void SetAvailableSeats(const TArray<FSeatIdDTO>& AvailableSeats) { m_AvailableSeats = AvailableSeats; }
-
-    const TArray<FSeatIdDTO>& GetReceptionSeats() const { return m_ReceptionSeats; }
-    void SetReceptionSeats(const TArray<FSeatIdDTO>& ReceptionSeats) { m_ReceptionSeats = ReceptionSeats; }
-
-    int32 GetCompetitionRate() const { return m_CompetitionRate; }
-    void SetCompetitionRate(int32 CompetitionRate) { m_CompetitionRate = CompetitionRate; }
-
-    const FString& GetUserCode() const { return m_UserCode; }
-    void SetUserCode(const FString& UserCode) { m_UserCode = UserCode; }
-
-    int32 GetNeedCoin() const { return m_NeedCoin; }
-    void SetNeedCoin(int32 NeedCoin) { m_NeedCoin = NeedCoin; }
-
-    const FString& GetUserName() const { return m_UserName; }
-    void SetUserName(const FString& UserName) { m_UserName = UserName; }
-
-    const FString& GetUserPhoneNumber() const { return m_UserPhoneNumber; }
-    void SetUserPhoneNumber(const FString& UserPhoneNumber) { m_UserPhoneNumber = UserPhoneNumber; }
-
-    const FString& GetUserAddress1() const { return m_UserAddress1; }
-    void SetUserAddress1(const FString& UserAddress1) { m_UserAddress1 = UserAddress1; }
-
-    const FString& GetUserAddress2() const { return m_UserAddress2; }
-    void SetUserAddress2(const FString& UserAddress2) { m_UserAddress2 = UserAddress2; }
-
-private:
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
-    FString m_SeatId;
-    
-	UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
-	int32 m_SeatFloor;
-	
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
-    FString m_SeatInfo;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
-    int32 m_SeatPrice;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
-    TArray<FSeatIdDTO> m_AvailableSeats;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|Seat")
-    TArray<FSeatIdDTO> m_ReceptionSeats;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|System")
-    int32 m_CompetitionRate;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|System")
-    FString m_UserCode;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|System")
-    int32 m_NeedCoin;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|User")
-    FString m_UserName;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|User")
-    FString m_UserPhoneNumber;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|User")
-    FString m_UserAddress1;
-
-    UPROPERTY(VisibleAnywhere, Category = "Default|Reservation|User")
-    FString m_UserAddress2;
-};
+#pragma endregion
 
 UCLASS()
 class MTVS3_FINAL_API AHM_HttpActor2 : public AActor
 {
 	GENERATED_BODY()
 
-private:
-    FConcertDTO m_Concert; // 콘서트 정보를 저장할 변수
-    FConcertReservation m_ConcertReservation; // 콘서트 예약 정보를 저장할 변수
-    FMyReceptionSeatInfoDTO m_MyReceptionSeats;
-
 public:
-    // FConcert 관련 메서드
-    int32 GetConcertId() const { return m_Concert.GetConcertId(); }
-    const FString& GetConcertName() const { return m_Concert.GetConcertName(); }
-    int32 GetConcertYear() const { return m_Concert.GetConcertYear(); }
-    int32 GetConcertMonth() const { return m_Concert.GetConcertMonth(); }
-    int32 GetConcertDay() const { return m_Concert.GetConcertDay(); }
-    const FString& GetConcertTime() const { return m_Concert.GetConcertTime(); }
-
-    void SetConcertInfo(int32 Id , const FString& Name , int32 Year , int32 Month , int32 Day , const FString& Time)
-    {
-        m_Concert.SetConcertId(Id);
-        m_Concert.SetConcertName(Name);
-        m_Concert.SetConcertYear(Year);
-        m_Concert.SetConcertMonth(Month);
-        m_Concert.SetConcertDay(Day);
-        m_Concert.SetConcertTime(Time);
-    }
-
-    // MyReceptionSeats 좌석 메서드
-	const FString& GetMySeatId() const { return m_MyReceptionSeats.GetMySeatId(); }
-	void SetMySeatId(const FString& MySeatId) { m_MyReceptionSeats.SetMySeatId(MySeatId); }
-
-    // FConcertReservation 관련 메서드
-    const FString& GetSeatId() const { return m_ConcertReservation.GetSeatId(); }
-    void SetSeatId(const FString& SeatId) { m_ConcertReservation.SetSeatId(SeatId); }
-
-	int32 GetSeatFloor() { return m_ConcertReservation.GetSeatFloor(); }
-	void SetSeatFloor(int32 SeatFloor) { m_ConcertReservation.SetSeatFloor(SeatFloor); }
+#pragma region FConcertInfo Getter & Setter Methods
+    FConcertInfo ConcertInfo; // 콘서트 정보를 저장할 변수
 	
-    const FString& GetSeatInfo() const { return m_ConcertReservation.GetSeatInfo(); }
-    void SetSeatInfo(const FString& SeatInfo) { m_ConcertReservation.SetSeatInfo(SeatInfo); }
+	FConcertInfo GetConcertInfo() const { return ConcertInfo; };
+	void SetConcertInfo(const FConcertInfo& NewConcertInfo) { ConcertInfo = NewConcertInfo; };
+	
+	void SetConcertId(const int32 _ConcertId) { ConcertInfo.concertId = _ConcertId; SetConcertInfo(ConcertInfo); };
+    int32 GetConcertId() const { return ConcertInfo.concertId; }
+	void SetConcertName(const FString& ConcertName) { ConcertInfo.concertName = ConcertName; SetConcertInfo(ConcertInfo); };
+    const FString& GetConcertName() const { return ConcertInfo.concertName; }
+	void SetConcertYear(int32 ConcertYear) { ConcertInfo.year = ConcertYear; SetConcertInfo(ConcertInfo);}
+    int32 GetConcertYear() const { return ConcertInfo.year; }
+	void SetConcertMonth(int32 ConcertMonth) { ConcertInfo.month = ConcertMonth; SetConcertInfo(ConcertInfo);}
+    int32 GetConcertMonth() const { return ConcertInfo.month; }
+	void SetConcertDay(int32 ConcertDay) { ConcertInfo.day = ConcertDay; SetConcertInfo(ConcertInfo);}
+    int32 GetConcertDay() const { return ConcertInfo.day; }
+	void SetConcertTime(const FString& ConcertTime) { ConcertInfo.time = ConcertTime; SetConcertInfo(ConcertInfo);}
+    const FString& GetConcertTime() const { return ConcertInfo.time; }
+#pragma endregion
 
-    int32 GetSeatPrice() const { return m_ConcertReservation.GetSeatPrice(); }
-    void SetSeatPrice(int32 SeatPrice) { m_ConcertReservation.SetSeatPrice(SeatPrice); }
+#pragma region FAvailableSeats Getter & Setter Methods
+	FAvailableSeats AvailableSeats; // 접수 가능한 좌석 정보를 저장할 변수
 
-    const TArray<FSeatIdDTO>& GetAvailableSeats() const { return m_ConcertReservation.GetAvailableSeats(); }
-    void SetAvailableSeats(const TArray<FSeatIdDTO>& AvailableSeats) { m_ConcertReservation.SetAvailableSeats(AvailableSeats); }
+	FAvailableSeats GetAvailableSeats() const { return  AvailableSeats; };
+	void SetAvailableSeats(const FAvailableSeats& NewAvailableSeats) { AvailableSeats = NewAvailableSeats; };
 
-    const TArray<FSeatIdDTO>& GetReceptionSeats() const { return m_ConcertReservation.GetReceptionSeats(); }
-    void SetReceptionSeats(const TArray<FSeatIdDTO>& ReceptionSeats) { m_ConcertReservation.SetReceptionSeats(ReceptionSeats); }
+	void SetAvailableSeatId(const int32 _SeatId) { AvailableSeats.seatId = _SeatId; SetAvailableSeats(AvailableSeats); };
+	int32 GetAvailableSeatId() const { return AvailableSeats.seatId; }
+	void SetAvailableSeatName(const FString& _SeatName) { AvailableSeats.seatName = _SeatName; SetAvailableSeats(AvailableSeats); };
+	const FString& GetAvailableSeatName() const { return AvailableSeats.seatName; }
+	void SetAvailableSeatDrawingTime(const FString& _DrawingTime) { AvailableSeats.drawingTime = _DrawingTime; SetAvailableSeats(AvailableSeats); };
+	const FString& GetAvailableDrawingTime() const { return AvailableSeats.drawingTime; }
+#pragma endregion
 
-    int32 GetCompetitionRate() const { return m_ConcertReservation.GetCompetitionRate(); }
-    void SetCompetitionRate(int32 CompetitionRate) { m_ConcertReservation.SetCompetitionRate(CompetitionRate); }
+#pragma region FReceptionSeats Getter & Setter Methods
+	FReceptionSeats ReceptionSeats; // 접수 가능한 좌석 정보를 저장할 변수
 
-    const FString& GetUserCode() const { return m_ConcertReservation.GetUserCode(); }
-    void SetUserCode(const FString& UserCode) { m_ConcertReservation.SetUserCode(UserCode); }
+	FReceptionSeats GetReceptionSeats() const { return  ReceptionSeats; };
+	void SetReceptionSeats(const FReceptionSeats& NewReceptionSeats) { ReceptionSeats = NewReceptionSeats; };
 
-    int32 GetNeedCoin() const { return m_ConcertReservation.GetNeedCoin(); }
-    void SetNeedCoin(int32 NeedCoin) { m_ConcertReservation.SetNeedCoin(NeedCoin); }
+	void SetReceptionSeatId(const int32 _SeatId) { ReceptionSeats.seatId = _SeatId; SetReceptionSeats(ReceptionSeats); };
+	int32 GetReceptionSeatId() const { return ReceptionSeats.seatId; }
+	void SetReceptionSeatName(const FString& _SeatName) { ReceptionSeats.seatName = _SeatName; SetReceptionSeats(ReceptionSeats); };
+	const FString& GetReceptionSeatName() const { return ReceptionSeats.seatName; }
+	void SetReceptionSeatDrawingTime(const FString& _DrawingTime) { ReceptionSeats.drawingTime = _DrawingTime; SetReceptionSeats(ReceptionSeats); };
+	const FString& GetReceptionDrawingTime() const { return ReceptionSeats.drawingTime; }
+#pragma endregion
 
-    const FString& GetUserName() const { return m_ConcertReservation.GetUserName(); }
-    void SetUserName(const FString& UserName) { m_ConcertReservation.SetUserName(UserName); }
+#pragma region FMyReceptionSeatInfo Getter & Setter Methods
+	FMyReceptionSeats MyReceptionSeats; // 내가 접수한 좌석 정보를 저장할 변수
 
-    const FString& GetUserPhoneNumber() const { return m_ConcertReservation.GetUserPhoneNumber(); }
-    void SetUserPhoneNumber(const FString& UserPhoneNumber) { m_ConcertReservation.SetUserPhoneNumber(UserPhoneNumber); }
+	FMyReceptionSeats GetMyReceptionSeats() const { return  MyReceptionSeats; };
+	void SetMyReceptionSeats(const FMyReceptionSeats& NewMyReceptionSeatInfo) { MyReceptionSeats = NewMyReceptionSeatInfo; };
+	
+	void SetMyReceptionSeatId(int32 _SeatId) { MyReceptionSeats.seatId = _SeatId; SetMyReceptionSeats(MyReceptionSeats); }
+	int32 GetMyReceptionSeatId() const { return MyReceptionSeats.seatId; }
+	void SetMyReceptionSeatName(const FString& _SeatName) { MyReceptionSeats.seatName = _SeatName; SetMyReceptionSeats(MyReceptionSeats); }
+	const FString& GetMyReceptionSeatName() const { return MyReceptionSeats.seatName; }
+	void SetMyReceptionSeatInfo(const FString& _SeatInfo) { MyReceptionSeats.seatInfo = _SeatInfo; SetMyReceptionSeats(MyReceptionSeats); }
+	const FString& GetMyReceptionSeatInfo() const { return MyReceptionSeats.seatInfo; }
+	void SetMyReceptionYear(int32 _Year) { MyReceptionSeats.year = _Year; SetMyReceptionSeats(MyReceptionSeats); }
+	int32 GetMyReceptionYear() const { return MyReceptionSeats.year; }
+	void SetMyReceptionMonth(int32 _Month) { MyReceptionSeats.month = _Month; SetMyReceptionSeats(MyReceptionSeats); }
+	int32 GetMyReceptionMonth() const { return MyReceptionSeats.month; }
+	void SetMyReceptionDay(int32 _Day) { MyReceptionSeats.day = _Day; SetMyReceptionSeats(MyReceptionSeats); }
+	int32 GetMyReceptionDay() const { return MyReceptionSeats.day; }
+	void SetMyReceptionTime(const FString& _time) { MyReceptionSeats.time = _time; SetMyReceptionSeats(MyReceptionSeats); }
+	const FString& GetMyReceptionTime() const { return MyReceptionSeats.time; }
+	void SetMyReceptionCompetitionRate(int32 _CompetitionRate) { MyReceptionSeats.competitionRate = _CompetitionRate; SetMyReceptionSeats(MyReceptionSeats); }
+	int32 GetMyReceptionCompetitionRate() const { return MyReceptionSeats.competitionRate; }
+#pragma endregion
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|params")
+	FString UserCode;
+	const FString& GetUserCode() const { return UserCode; }
+	void SetUserCode(const FString& _UserCode) { UserCode = _UserCode; }
 
-    const FString& GetUserAddress1() const { return m_ConcertReservation.GetUserAddress1(); }
-    void SetUserAddress1(const FString& UserAddress1) { m_ConcertReservation.SetUserAddress1(UserAddress1); }
-
-    const FString& GetUserAddress2() const { return m_ConcertReservation.GetUserAddress2(); }
-    void SetUserAddress2(const FString& UserAddress2) { m_ConcertReservation.SetUserAddress2(UserAddress2); }
-
+	UPROPERTY(VisibleAnywhere, Category = "Default|params")
+	int32 SeatFloor;
+	int32 GetSeatFloor() const { return SeatFloor; }
+	void SetSeatFloor(int32 _SeatFloor) { SeatFloor = _SeatFloor; }
+	
 public:	
 	// Sets default values for this actor's properties
 	AHM_HttpActor2();
@@ -332,8 +277,7 @@ public:
 	// 백엔드에 요청 보낼 때만 api 포함, 프론트는 api X
 	const FString _url = "https://ticketaka.shop/api";
 
-//===========================================================================================================
-
+#pragma region HTTP : Entry Concert
 	// 공연장 선택 UI 요청
     void ReqGetConcertInfo(FString AccessToken);
 
@@ -341,59 +285,55 @@ public:
     void OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
     
     // 공연장 입장 요청
-	void ReqPostConcertEntry(FString ConcertName , FString AccessToken);
+	void ReqGetConcertEntry(FString AccessToken);
 
 	// 공연장 입장 요청에 대한 응답
-	void OnResPostConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void OnResGetConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+#pragma endregion
 
-// GET 테스트용
-	
-	// 공연장 입장 요청
-	void TESTReqPostConcertEntry(FString AccessToken);
-
-	// 공연장 입장 요청에 대한 응답
-	void TESTOnResPostConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-	
-//===========================================================================================================
-
+#pragma region HTTP : Register Seat
 	// 좌석 조회 요청
-	void ReqPostSeatRegistrationInquiry(FString ConcertName , FString SeatId , FString AccessToken);
+	void ReqGetSeatRegistrationInquiry(FString SeatName , FString AccessToken);
 
 	// 좌석 조회 요청에 대한 응답
-	void OnResPostSeatRegistrationInquiry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 접수 요청
-	void ReqPostRegisterSeat(FString ConcertName , FString SeatId , FString AccessToken);
+	void ReqGetRegisterSeat(FString SeatName , FString AccessToken);
 
 	// 좌석 접수 요청에 대한 응답
-	void OnResPostRegisterSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
-    // 내가 접수한 좌석 조회 요청
-    void ReqPostMyRegisteredSeat(FString ConcertName , FString AccessToken);
+    // 내가 접수한 좌석 조회 요청 => 알림창에서(?) 접수한 좌석 조회할 때
+    void ReqGetMyRegisteredSeat(FString AccessToken);
 
     // 내가 접수한 좌석 조회 요청에 대한 응답
-    void OnResPostMyRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+    void OnResGetMyRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 취소 요청
-	void ReqDeleteCancelRegisteredSeat(FString ConcertName , FString SeatId , FString AccessToken);
+	void ReqDeleteCancelRegisteredSeat(FString SeatId , FString AccessToken);
 
 	// 좌석 취소 요청에 대한 응답
 	void OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
-    // 추첨 시작 알림 요청
-    void ReqPostNoticeGameStart(FString ConcertName , FString SeatId , FString AccessToken);
+#pragma endregion
 
-    // 추첨 시작 알림 요청에 대한 응답
-    void OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+#pragma region HTTP : Lucky Drawing
+	// 추첨 시작 알림 요청
+	void ReqPostNoticeGameStart(FString SeatName , FString AccessToken);
 
-//===========================================================================================================
-
+	// 추첨 시작 알림 요청에 대한 응답
+	void OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
 	// 좌석 게임 결과 요청
-	void ReqPostGameResult(FString ConcertName , FString SeatId , FString AccessToken);
+	void ReqPostGameResult(FString SeatName , FString AccessToken);
 
     // 좌석 게임 결과 요청에 대한 응답
     void OnResPostGameResult(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
+#pragma endregion
+
+#pragma region HTTP : Seat payment
 	// 결제시 회원 인증용 QR 요청
 	void ReqGetMemberAuthQR(FString AccessToken);
 
@@ -401,11 +341,11 @@ public:
 	void OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 결제시 회원 인증 사진 업로드 확인
-	void ReqGetPostConfirmMemberPhoto(FString UserCode , FString AccessToken);
+	void ReqGetPostConfirmMemberPhoto(FString AccessToken);
 
 	// 결제시 회원 인증 사진 업로드 확인에 대한 응답
 	void OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-
+	
 	// 예매자 정보 입력 요청
 	void ReqPostReservationinfo(FText UserName, FText UserPhoneNum , FText UserAddress1 , FText UserAddress2 , FString AccessToken);
 
@@ -413,16 +353,24 @@ public:
 	void OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 결제 요청
-	void ReqPostPaymentSeat(FString ConcertName, FString SeatId, FString AccessToken);
+	void ReqPostPaymentSeat(FString SeatId, FString AccessToken);
 
 	// 좌석 결제 요청에 대한 응답
 	void OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
+	// 예매 정보 불러오기 요청
+	void ReqGetReservationInfo(FString AccessToken);
 
-    //=======================================================================================================
+	// 예매 정보 불러오기 요청에 대한 응답
+	void OnResGetReservationInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
+#pragma endregion
+
+#pragma region HTTP : 개발자 키
     // 개발자 키(2) Cheat Seat 좌석 게임 결과 요청
-    void ReqPostCheatGameResult(FString ConcertName , FString AccessToken);
+    void ReqPostCheatGameResult( FString AccessToken);
 	// 개발자 키(2-1) 좌석 결제 요청/응답
-	void ReqPostCheatPaymentSeat(FString ConcertName, FString AccessToken);
+	void ReqPostCheatPaymentSeat(FString AccessToken);
 	void OnResPostCheatPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+#pragma endregion
 };
