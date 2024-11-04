@@ -24,6 +24,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TArray<UStaticMeshComponent*> BoardAreasGrid;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<UStaticMeshComponent*> BoardAreas;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

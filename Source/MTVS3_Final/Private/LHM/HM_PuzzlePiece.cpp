@@ -135,8 +135,8 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
 		if(PieceComp)
 		{
 			FVector RandomOffset = FVector(
-				FMath::RandRange(-1000.f, 1000.f),
-				FMath::RandRange(-1000.f, 1000.f),
+				FMath::RandRange(-1500.f, 1500.f),
+				FMath::RandRange(-1500.f, 1500.f),
 				FMath::RandRange(350.f, 350.f)
 			);
 			
