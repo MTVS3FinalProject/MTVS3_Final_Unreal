@@ -51,8 +51,10 @@ void AHM_HttpActor2::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 
 #pragma region Entry Concert
 // 공연장 선택 UI 요청
-void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken)
+void AHM_HttpActor2::ReqGetConcertInfo(FString AccessToken, ATTPlayer* TTPlayer)
 {
+	TargetPlayer = TTPlayer;
+
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
@@ -183,11 +185,12 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
 		// 캐스팅은 여기서 한 번만 실행
-		ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 
 		if ( Response->GetResponseCode() == 200 )
 		{
+			TargetPlayer->ServerTeleportPlayer(true);
+			
 			// JSON 응답 파싱
 			FString ResponseBody = Response->GetContentAsString();
 			TSharedPtr<FJsonObject> JsonObject;
@@ -281,12 +284,6 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							// 공연장 입장할 때 예매 완료된 좌석 데이터 받아서 의자 액터에 이펙터 처리
 						}
 					}
-					
-					// 공연장으로 입장하는 SetActorLocation 함수
-					//if ( TTPlayer )
-					//{
-					//	TTPlayer->
-					//}
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("뉴진스 콘서트 입장~~~")));
 				}
 			}
