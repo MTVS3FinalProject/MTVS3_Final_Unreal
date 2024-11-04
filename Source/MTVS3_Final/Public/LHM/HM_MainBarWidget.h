@@ -118,4 +118,20 @@ public:
 	class UButton* Btn_Back_Settings;
 	UFUNCTION()
 	void OnClickedSettingBackBtn();
+
+
+#pragma region 현민 Http Test용
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_HttpTest01;
+	UFUNCTION()
+	void OnClickedHttpTest01();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_HttpTest02;
+	UFUNCTION()
+	void OnClickedHttpTest02();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_HttpTest03;
+	UFUNCTION()
+	void OnClickedHttpTest03();
+#pragma endregion
 };
