@@ -848,28 +848,19 @@ void ATTPlayer::PrintStateLog()
 
 void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 {
-	bIsThirdPerson = _bIsThirdPerson;
-	
-	APlayerController* PC = Cast<APlayerController>(GetController());
-	if(!PC || !PC->IsLocalController()) return;
-	
-	if (bIsThirdPerson) // 3인칭 모드
+	if (_bIsThirdPerson) // 3인칭 모드
 	{
-		PC->bShowMouseCursor = true;
-		PC->SetInputMode(FInputModeGameAndUI());
-		
 		GetMesh()->SetOwnerNoSee(false);
 		FPSCameraComp->SetActive(false);
 		TPSCameraComp->SetActive(true);
 		NicknameUIComp->SetOwnerNoSee(false);
-		PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
 		
-		//APlayerController* PC = Cast<APlayerController>(GetController());
+		APlayerController* PC = Cast<APlayerController>(GetController());
 		// 플레이어의 회전 방향과 카메라 정렬
-		//if (PC && PC->IsLocalController())
-		//{
-		//	PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
-		//}
+		if (PC && PC->IsLocalController())
+		{
+			PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
+		}
 	}
 	else // 1인칭 모드
 	{
@@ -878,44 +869,18 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 		NicknameUIComp->SetOwnerNoSee(true);
 		GetMesh()->SetOwnerNoSee(true);
 
-		if(!bHasPiece)
+		// 플레이어의 회전 방향과 카메라 정렬
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		if (PC && PC->IsLocalController())
 		{
-			// 플레이어의 회전 방향과 카메라 정렬
-			//APlayerController* PC = Cast<APlayerController>(GetController());
-			if (PC && PC->IsLocalController())
-			{
-				// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
-				GetMesh()->SetOwnerNoSee(true);
-			
-				// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
-				FRotator ControlRotation = GetActorRotation();
-				PC->SetControlRotation(ControlRotation);
-			
-				PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
-			}
-		}
-		// ====================퍼즐====================
-		else if(bHasPiece)
-		{
-			// 마우스 커서 숨기기 및 게임 모드 설정
-			PC->bShowMouseCursor = false;
-			PC->SetInputMode(FInputModeGameOnly());
-			
-			FRotator NewRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
-			SetActorRotation(FRotator(NewRotation));
-			PC->SetViewTargetWithBlend(this);
+			// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
+			GetMesh()->SetOwnerNoSee(true);
 
-			// 서버에 회전 값 전달
-			ServerRPCUpdateRotation(NewRotation);
-			ServerRPCUpdateFPSCameraRotation(PC->GetControlRotation());
-			
-			// 마우스 감도 설정
-			if (APlayerCameraManager* CameraMgr = PC->PlayerCameraManager)
-			{
-				CameraMgr->ViewPitchMin = -20.0f;
-				CameraMgr->ViewPitchMax = 50.0f;
-			}
-			
+			// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
+			FRotator ControlRotation = GetActorRotation();
+			PC->SetControlRotation(ControlRotation);
+
+			PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
 		}
 	}
 }
@@ -946,13 +911,13 @@ void ATTPlayer::OnMyActionLook(const FInputActionValue& Value)
 	// 	AddControllerPitchInput(-v.Y);
 	// 	AddControllerYawInput(v.X);
 	// }
-	if ( !bIsThirdPerson || bIsEnableLook )
+	if ( bIsEnableLook )
 	{
 		AddControllerPitchInput(-v.Y);
 		AddControllerYawInput(v.X);
 		
-		// 1인칭 모드이고 피스를 들고 있을 때는 캐릭터도 회전
-		if (!bIsThirdPerson && bHasPiece)
+		// 피스를 들고 있을 때는 캐릭터도 회전
+		if (bHasPiece)
 		{
 			APlayerController* PC = Cast<APlayerController>(GetController());
 			if (PC && PC->IsLocalController())
