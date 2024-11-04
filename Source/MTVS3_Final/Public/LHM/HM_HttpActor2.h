@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "HttpFwd.h"
+#include "HJ/TTPlayer.h"
 #include "HM_HttpActor2.generated.h"
 
 #pragma region struct FConcertInfo
