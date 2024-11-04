@@ -209,6 +209,7 @@ public:
 	UPROPERTY(EditInstanceOnly , Category = "TTSettings|State")
 	bool bIsThirdPerson = true;
 	void SwitchCamera(bool _bIsThirdPerson);
+	void SwitchCameraOnPiece(bool _bIsThirdPerson);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sequences")
 	TObjectPtr<class ULevelSequence> LDWinnerLevelSequence;

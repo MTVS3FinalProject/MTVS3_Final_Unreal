@@ -192,54 +192,68 @@ void ATTPlayer::Tick(float DeltaTime)
 
 	// ====================퍼즐====================
 	APlayerController* PC = Cast<APlayerController>(GetController());
-	if (!PC || !PC->IsLocalController()) return;
-	
-	if(!bHasPiece)
-	{
-	FTransform ttt = FTransform(GetControlRotation());
-	Direction = ttt.TransformVector(Direction);
 
-	AddMovementInput(Direction , 1);
-	Direction = FVector::ZeroVector;
-	}
-	else if(bHasPiece)
+	if(PC && PC->IsLocalController())
 	{
-		if (PC && PC->IsLocalController())
+		if(!bHasPiece)
 		{
-			FRotator ControlRotation = PC->GetControlRotation();
+			FTransform ttt = FTransform(GetControlRotation());
+			Direction = ttt.TransformVector(Direction);
 
-			if (!bIsThirdPerson) // 1인칭
-			{
-				// Set the actor's rotation to match the camera's rotation
-				FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
-				SetActorRotation(NewRotation);
-
-				// 서버에 회전 값 전달
-				ServerRPCUpdateRotation(NewRotation);
-				ServerRPCUpdateFPSCameraRotation(ControlRotation);
-			}
-
-			// Calculate movement direction based on camera rotation
-			Direction = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y) * Direction.Y +
-						FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X) * Direction.X;
-
-			AddMovementInput(Direction);
+			AddMovementInput(Direction , 1);
 			Direction = FVector::ZeroVector;
 		}
+		else if(bHasPiece)
+		{
+			if (PC && PC->IsLocalController())
+			{
+				FRotator ControlRotation = PC->GetControlRotation();
+
+				if (!bIsThirdPerson) // 1인칭
+				{
+					// Set the actor's rotation to match the camera's rotation
+					FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
+					SetActorRotation(NewRotation);
+
+					// 서버에 회전 값 전달
+					ServerRPCUpdateRotation(NewRotation);
+					ServerRPCUpdateFPSCameraRotation(ControlRotation);
+				}
+
+				// Calculate movement direction based on camera rotation
+				Direction = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y) * Direction.Y +
+							FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X) * Direction.X;
+
+				AddMovementInput(Direction);
+				Direction = FVector::ZeroVector;
+			}
+		}
+		if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
+		{
+			// P = P0 + vt
+			// 카메라 위치
+			FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
+			// 체력바와 카메라의 방향 벡터
+			FVector NicknameUIDirection = CamLoc - NicknameUIComp->GetComponentLocation();
+			//NicknameUIDirection.Z = 0.0f;
+
+			NicknameUIComp->SetWorldRotation(NicknameUIDirection.GetSafeNormal().ToOrientationRotator());
+		}
 	}
-	
-	if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
+	else
 	{
-		// P = P0 + vt
-		// 카메라 위치
-		FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
-		// 체력바와 카메라의 방향 벡터
-		FVector NicknameUIDirection = CamLoc - NicknameUIComp->GetComponentLocation();
-		//NicknameUIDirection.Z = 0.0f;
+		if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
+		{
+			// P = P0 + vt
+			// 카메라 위치
+			FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
+			// 체력바와 카메라의 방향 벡터
+			FVector NicknameUIDirection = CamLoc - NicknameUIComp->GetComponentLocation();
+			//NicknameUIDirection.Z = 0.0f;
 
-		NicknameUIComp->SetWorldRotation(NicknameUIDirection.GetSafeNormal().ToOrientationRotator());
+			NicknameUIComp->SetWorldRotation(NicknameUIDirection.GetSafeNormal().ToOrientationRotator());
+		}
 	}
-
 	PrintStateLog();
 }
 
@@ -671,7 +685,7 @@ void ATTPlayer::ZoomOut()
 void ATTPlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 {
 	if (!PieceComp) return;
-	SwitchCamera(false);
+	SwitchCameraOnPiece(false);
 	
 	// 클라이언트와 서버 모두에서 실행될 회전 로직
 	APlayerController* PC = Cast<APlayerController>(GetController());
@@ -705,7 +719,7 @@ void ATTPlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 void ATTPlayer::DetachPiece(UStaticMeshComponent* PieceComp)
 {
 	if (!PieceComp) return;
-	SwitchCamera(true);
+	SwitchCameraOnPiece(true);
 	
 	PieceComp->SetSimulatePhysics(true);
 	PieceComp->SetEnableGravity(true);
@@ -722,7 +736,7 @@ void ATTPlayer::DetachPiece(UStaticMeshComponent* PieceComp)
 void ATTPlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 {
 	if (!PieceComp) return;
-	SwitchCamera(true);
+	SwitchCameraOnPiece(true);
 
 	PieceComp->SetSimulatePhysics(true);
 	PieceComp->SetEnableGravity(true);
@@ -881,6 +895,50 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 			PC->SetControlRotation(ControlRotation);
 
 			PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
+		}
+	}
+}
+
+void ATTPlayer::SwitchCameraOnPiece(bool _bIsThirdPerson)
+{
+	bIsThirdPerson = _bIsThirdPerson;
+
+	APlayerController* PC = Cast<APlayerController>(GetController());
+	if(!PC || !PC->IsLocalController()) return;
+	
+	if ( bIsThirdPerson ) // 3인칭 모드
+	{
+		// 마우스 커서 보이기 및 게임 모드 설정
+		PC->bShowMouseCursor = true;
+		PC->SetInputMode(FInputModeGameAndUI());
+		
+		GetMesh()->SetOwnerNoSee(false);
+		FPSCameraComp->SetActive(false);
+		TPSCameraComp->SetActive(true);
+		PC->SetViewTargetWithBlend(this);  // 부드러운 시점 전환
+	}
+	else // 1인칭 모드
+	{
+		// 마우스 커서 숨기기 및 게임 모드 설정
+		PC->bShowMouseCursor = false;
+		PC->SetInputMode(FInputModeGameOnly());
+		
+		FPSCameraComp->SetActive(true);
+		TPSCameraComp->SetActive(false);
+		GetMesh()->SetOwnerNoSee(true);
+		
+		if(bHasPiece)
+		{
+			FRotator ControlRotation = PC->GetControlRotation();
+			SetActorRotation(FRotator(0, ControlRotation.Yaw, 0));
+			PC->SetViewTargetWithBlend(this);
+		}
+
+		// 마우스 감도 설정
+		if (APlayerCameraManager* CameraMgr = PC->PlayerCameraManager)
+		{
+			CameraMgr->ViewPitchMin = -50.0f;
+			CameraMgr->ViewPitchMax = 50.0f;
 		}
 	}
 }

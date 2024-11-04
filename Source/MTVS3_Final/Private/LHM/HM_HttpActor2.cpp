@@ -118,19 +118,19 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 							UE_LOG(LogTemp , Log , TEXT("Concert Info: %d | %s | %d-%d-%d %s") ,
 							       NewConcertInfo.concertId ,
 							       *NewConcertInfo.concertName ,
-							       NewConcertInfo.year ,
-							       NewConcertInfo.month ,
-							       NewConcertInfo.day ,
-							       *NewConcertInfo.time);
+							       NewConcertInfo.concertTime.year ,
+							       NewConcertInfo.concertTime.month ,
+							       NewConcertInfo.concertTime.day ,
+							       *NewConcertInfo.concertTime.time);
 
 							if (MainUI && MainUI->GetBuyTicketWidget())
 							{
 								MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
 									NewConcertInfo.concertName ,
-									NewConcertInfo.year ,
-									NewConcertInfo.month ,
-									NewConcertInfo.day ,
-									NewConcertInfo.time);
+									NewConcertInfo.concertTime.year ,
+									NewConcertInfo.concertTime.month ,
+									NewConcertInfo.concertTime.day ,
+									NewConcertInfo.concertTime.time);
 							}
 						}
 						else
@@ -218,12 +218,13 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						SetConcertInfo(NewConcertInfo);
 						
 						// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-						UE_LOG(LogTemp , Log , TEXT("Concert Info: %s | %d-%d-%d %s") ,
+						UE_LOG(LogTemp , Log , TEXT("Concert Info: %d | %s | %d-%d-%d %s") ,
+								NewConcertInfo.concertId ,
 							   *NewConcertInfo.concertName ,
-							   NewConcertInfo.year ,
-							   NewConcertInfo.month ,
-							   NewConcertInfo.day ,
-							   *NewConcertInfo.time);
+							   NewConcertInfo.concertTime.year ,
+							   NewConcertInfo.concertTime.month ,
+							   NewConcertInfo.concertTime.day ,
+							   *NewConcertInfo.concertTime.time);
 					}
 					
 					// 접수 가능한 좌석 목록
@@ -306,7 +307,7 @@ void AHM_HttpActor2::ReqGetSeatRegistrationInquiry(FString SeatName , FString Ac
 
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-	
+	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d") , GetConcertId());
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId()); // 임의 SeatId(1) SeatId => SeatName으로 바꿀 예정
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
@@ -406,7 +407,7 @@ void AHM_HttpActor2::ReqGetRegisterSeat(FString SeatName , FString AccessToken)
 	
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/reception") , *_url, GetConcertId()); // 임의 SeatId(1) SeatId => SeatName으로 바꿀 예정
 	Request->SetURL(FormattedUrl);
-	Request->SetVerb(TEXT("GET"));
+	Request->SetVerb(TEXT("POST"));
 
 	// 헤더 설정
 	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
