@@ -355,7 +355,6 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 					UE_LOG(LogTemp , Log , TEXT("IsReceived: %s") , IsReceived ? TEXT("true") : TEXT("false"));
 					UE_LOG(LogTemp , Log , TEXT("CompetitionRate: %d") , CompetitionRate);
 
-					SetSeatFloor(Floor);
 					if(MainUI) MainUI->SetTextSeatNum1(SeatInfo);
 					
 					if(MainUI->GetBuyTicketWidget())
@@ -764,11 +763,25 @@ void AHM_HttpActor2::OnResPostGameResult(FHttpRequestPtr Request , FHttpResponse
 
 		if ( Response->GetResponseCode() == 200 )
 		{
-			UE_LOG(LogTemp , Log , TEXT("Request Post Game Result successful!"));
-			// 추첨이 끝났을 때 당첨자에게만 예매창 UI 띄우는 함수에 연결
-			if ( MainUI->GetBuyTicketWidget() )
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
 			{
-				MainUI->BuyTicketWidget->SetWidgetSwitcher(0);
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					UE_LOG(LogTemp , Log , TEXT("Request Post Game Result successful!"));
+					// 추첨이 끝났을 때 당첨자에게만 예매창 UI 띄우는 함수에 연결
+					if ( MainUI->GetBuyTicketWidget() )
+					{
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(0);
+					}
+				}
 			}
 		}
 		else if ( Response->GetResponseCode() == 400 )
@@ -907,13 +920,32 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 
 		if ( Response->GetResponseCode() == 200 )
 		{
-			if ( MainUI->GetBuyTicketWidget() )
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
 			{
-				MainUI->BuyTicketWidget->SetTextSeatID(GetSeatFloor(), GetMyReceptionSeatName());
-				UE_LOG(LogTemp , Log , TEXT("GetSeatFloor : %d / GetSeatName : %s"), GetSeatFloor() , *GetMyReceptionSeatName());
-				//MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(GetConcertName(),GetConcertYear(),GetConcertMonth(),GetConcertDay(),GetConcertTime());
-				MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
-				UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// 받아올 정보 추출
+					int32 Floor = ResponseObject->GetIntegerField(TEXT("floor"));
+					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo"));
+					int32 SeatNum = ResponseObject->GetIntegerField(TEXT("seatNum"));
+					UE_LOG(LogTemp , Log , TEXT("Floor : %d / SeatInfo : %s / SeatNum : %d"), Floor , *SeatInfo, SeatNum);
+
+					if ( MainUI->GetBuyTicketWidget() )
+					{
+						MainUI->BuyTicketWidget->SetTextSeatID(Floor, SeatInfo);
+						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
+						MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
+						UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
+					}
+				}
 			}
 		}
 		else if ( Response->GetResponseCode() == 400 )
@@ -1032,7 +1064,7 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 }
  
 // 좌석 결제 요청
-void AHM_HttpActor2::ReqPostPaymentSeat(FString SeatId , FString AccessToken)
+void AHM_HttpActor2::ReqPostPaymentSeat(int32 SeatId , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
