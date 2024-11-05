@@ -5,6 +5,12 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/WidgetSwitcher.h"
+#include "HJ/TTGameInstance.h"
+#include "Kismet/GameplayStatics.h"
+#include "LHM/HM_HttpActor2.h"
+
+class UTTGameInstance;
+class AHM_HttpActor2;
 
 void UHM_MainBarWidget::NativeConstruct()
 {
@@ -20,6 +26,11 @@ void UHM_MainBarWidget::NativeConstruct()
 	Btn_Setting->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBtn);
 	Btn_Back_Settings->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBackBtn);
 
+	// 현민 Http Test용
+	Btn_HttpTest01->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest01);
+	Btn_HttpTest02->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest02);
+	Btn_HttpTest03->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest03);
+	
 	SetVisibleSwitcher(false);
 }
 
@@ -169,3 +180,36 @@ void UHM_MainBarWidget::OnClickedSettingBackBtn()
 {
 	SetVisibleSwitcher(false);
 }
+
+#pragma region 현민 Http Test용
+void UHM_MainBarWidget::OnClickedHttpTest01()
+{
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor2) return;
+
+	// 내가 접수한 좌석 조회 요청(인벤토리?)
+	HttpActor2->ReqGetMyRegisteredSeat(GI->GetAccessToken());
+}
+
+void UHM_MainBarWidget::OnClickedHttpTest02()
+{
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor2) return;
+	// 예매 티켓 정보 불러오기 요청
+	HttpActor2->ReqGetReservationInfo(GI->GetAccessToken());
+}
+
+void UHM_MainBarWidget::OnClickedHttpTest03()
+{
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor2) return;
+	// 좌석 결제 요청
+	HttpActor2->ReqPostPaymentSeat(HttpActor2->GetMyReceptionSeatId(), GI->GetAccessToken());
+}
+#pragma endregion
