@@ -69,9 +69,17 @@ void AHJ_Actor::ShowText()
 	{
 		// 위젯 인스턴스를 UMH_Interaction으로 캐스팅
 		UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(WidgetCompUI);
+		
 		if ( InteractionUI )
 		{
-			InteractionUI->SetActiveWidgetIndex(1);
+			if (ActorHasTag("SelectConcert"))
+			{
+				InteractionUI->SetActiveWidgetIndex(1);
+			}
+			else if(ActorHasTag("Customizing"))
+			{
+				InteractionUI->SetActiveWidgetIndex(2);
+			}
 		}
 		else
 		{

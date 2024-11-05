@@ -350,6 +350,12 @@ void UTTGameInstance::SetNickname(const FString& _Nickname)
 	SetPlayerData(PlayerData);
 }
 
+void UTTGameInstance::SetTitle(const FString& _Title)
+{
+	PlayerData.title = _Title;
+	SetPlayerData(PlayerData);
+}
+
 void UTTGameInstance::SetAccessToken(const FString& _AccessToken)
 {
 	PlayerData.accessToken = _AccessToken;
