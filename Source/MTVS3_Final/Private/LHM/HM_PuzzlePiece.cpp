@@ -12,11 +12,30 @@
 AHM_PuzzlePiece::AHM_PuzzlePiece()
  {
   	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    PrimaryActorTick.bCanEverTick = true;
-	
+    
+	PrimaryActorTick.bCanEverTick = true;
+    
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+    
+	// 컴포넌트만 생성하고 기본 설정
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
+		TEXT("/Script/Engine.StaticMesh'/Game/KHJ/Assets/SM_BoxBrush.SM_BoxBrush'"));
+	if (MeshAsset.Succeeded())
+	{
+		PieceMeshes.SetNum(9);
+		for (int32 i = 0; i < 9; i++)
+		{
+			FName PieceName = *FString::Printf(TEXT("Piece%d"), i + 1);
+			PieceMeshes[i] = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
+			if (PieceMeshes[i])
+			{
+				PieceMeshes[i]->SetupAttachment(RootComponent);
+				PieceMeshes[i]->SetStaticMesh(MeshAsset.Object);
+				PieceMeshes[i]->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+			}
+		}
+	}
 	
-	InitializePieces();
  }
  
  // Called when the game starts or when spawned
@@ -68,33 +87,23 @@ class ATTPlayer* AHM_PuzzlePiece::GetComponentOwner(UStaticMeshComponent* Compon
 	return nullptr;
 }
 
-void AHM_PuzzlePiece::InitializePieces()
+void AHM_PuzzlePiece::PostInitializeComponents()
 {
-	if (HasAuthority())  // 서버에서만 실행
+	Super::PostInitializeComponents();
+    
+	if (HasAuthority())
 	{
-		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
-			TEXT("/Script/Engine.StaticMesh'/Game/LHM/Meshes/SM_PuzzleCube.SM_PuzzleCube'"));
-		if (!MeshAsset.Succeeded()) return;
-		
-		// 점수 배열 설정하고 배열을 섞어서 랜덤으로 배치
-		TArray<int32> ScoreOptions = {50 , 50 , 30 , 30 , 30 , 20 , 20 , 20 , 20};
+		// 점수 배열 설정
+		TArray<int32> ScoreOptions = {50, 50, 30, 30, 30, 20, 20, 20, 20};
 		FMath::RandInit(FDateTime::Now().GetMillisecond());
 		Algo::RandomShuffle(ScoreOptions);
+		ScoreArray = ScoreOptions;
 
-		ScoreArray = ScoreOptions;  // 클라이언트 동기화를 위한 ScoreArray 설정
-		
-		PieceMeshes.SetNum(9);
-		for (int32 i = 0; i < 9; i++)
+		// 물리 속성 설정
+		for (int32 i = 0; i < PieceMeshes.Num(); i++)
 		{
-			// UStaticMeshComponent 생성 및 설정
-			FName PieceName = *FString::Printf(TEXT("Piece%d") , i + 1);
-			PieceMeshes[i] = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
 			if (PieceMeshes[i])
 			{
-				PieceMeshes[i]->SetupAttachment(RootComponent);
-				PieceMeshes[i]->SetStaticMesh(MeshAsset.Object);
-				PieceMeshes[i]->SetRelativeScale3D(FVector(0.5f , 0.5f , 0.5f));
-
 				// 물리 및 충돌 설정
 				PieceMeshes[i]->SetSimulatePhysics(true);
 				PieceMeshes[i]->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -104,13 +113,10 @@ void AHM_PuzzlePiece::InitializePieces()
 				PieceMeshes[i]->SetMassScale(NAME_None, 100);
 
 				// 태그 설정
-				PieceMeshes[i]->ComponentTags.Add(PieceName);
+				PieceMeshes[i]->ComponentTags.Add(*FString::Printf(TEXT("Piece%d"), i + 1));
 
-				// 랜덤 점수 할당하고 Pieces 배열에 추가
-				int32 InitialScore = ScoreOptions[i];
-				Pieces.Add(PieceMeshes[i] , InitialScore);
-
-				//UE_LOG(LogTemp , Log , TEXT("Assigned score %d to %s") , InitialScore , *PieceName.ToString());
+				// 점수 할당
+				Pieces.Add(PieceMeshes[i], ScoreOptions[i]);
 			}
 		}
 	}
