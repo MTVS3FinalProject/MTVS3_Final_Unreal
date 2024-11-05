@@ -21,5 +21,5 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_InteractionWidgetSwitcher;
 	
-	void SetActiveWidgetIndex(int index);//0: Chair 
+	void SetActiveWidgetIndex(int index);//0:Chair, 1:콘서트 입장, 2:스타일 라운지
 };

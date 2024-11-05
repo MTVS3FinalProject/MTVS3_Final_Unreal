@@ -534,9 +534,10 @@ void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible, in
 
 void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 {
-	// if (!bIsHoldingCube) // 큐브를 들고 있지 않은 경우에만 UI 표시
-	if (bIsDrawSessionInviteVisible)
+	if (!bHasPiece && bIsDrawSessionInviteVisible)
 	{
+		// 큐브를 들고 있지 않고 초대 UI가 보이는 상태
+		// 티켓팅 UI 표시, 메인 UI 숨기기
 		if (MainUI) MainUI->SetVisibleCanvas(false);
 		if (TicketingUI)
 		{
@@ -546,6 +547,8 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 	}
 	else
 	{
+		// 큐브를 들고 있거나 초대 UI가 안 보이는 상태
+		// 메인 UI 표시, 티켓팅 UI 숨기기
 		if (MainUI) MainUI->SetVisibleCanvas(true);
 		if (TicketingUI)
 		{
@@ -1093,6 +1096,10 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		MainUI->SetWidgetSwitcher(5);
 		HttpActor2->ReqGetConcertInfo(GI->GetAccessToken(), this);
 	}
+	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Customizing")))
+	{
+		// 티켓 커스터마이징 액터 상호작용 시 UI 표시
+	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
 
@@ -1148,6 +1155,7 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
 	}
+	if (MainUI) MainUI->ShowChatUI();
 }
 
 void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
