@@ -91,33 +91,30 @@ void AHM_PuzzlePiece::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
     
-	if (HasAuthority())
+	// 점수 배열 설정
+	TArray<int32> ScoreOptions = {50, 50, 30, 30, 30, 20, 20, 20, 20};
+	FMath::RandInit(FDateTime::Now().GetMillisecond());
+	Algo::RandomShuffle(ScoreOptions);
+	ScoreArray = ScoreOptions;
+
+	// 물리 속성 설정
+	for (int32 i = 0; i < PieceMeshes.Num(); i++)
 	{
-		// 점수 배열 설정
-		TArray<int32> ScoreOptions = {50, 50, 30, 30, 30, 20, 20, 20, 20};
-		FMath::RandInit(FDateTime::Now().GetMillisecond());
-		Algo::RandomShuffle(ScoreOptions);
-		ScoreArray = ScoreOptions;
-
-		// 물리 속성 설정
-		for (int32 i = 0; i < PieceMeshes.Num(); i++)
+		if (PieceMeshes[i])
 		{
-			if (PieceMeshes[i])
-			{
-				// 물리 및 충돌 설정
-				PieceMeshes[i]->SetSimulatePhysics(true);
-				PieceMeshes[i]->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				PieceMeshes[i]->SetCollisionProfileName(TEXT("PuzzlePiece"));
-				PieceMeshes[i]->SetNotifyRigidBodyCollision(true);
-				PieceMeshes[i]->SetGenerateOverlapEvents(true);
-				PieceMeshes[i]->SetMassScale(NAME_None, 100);
+			// 물리 및 충돌 설정
+			PieceMeshes[i]->SetSimulatePhysics(true);
+			PieceMeshes[i]->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+			PieceMeshes[i]->SetCollisionProfileName(TEXT("PuzzlePiece"));
+			PieceMeshes[i]->SetNotifyRigidBodyCollision(true);
+			PieceMeshes[i]->SetGenerateOverlapEvents(true);
+			PieceMeshes[i]->SetMassScale(NAME_None, 100);
 
-				// 태그 설정
-				PieceMeshes[i]->ComponentTags.Add(*FString::Printf(TEXT("Piece%d"), i + 1));
+			// 태그 설정
+			PieceMeshes[i]->ComponentTags.Add(*FString::Printf(TEXT("Piece%d"), i + 1));
 
-				// 점수 할당
-				Pieces.Add(PieceMeshes[i], ScoreOptions[i]);
-			}
+			// 점수 할당
+			Pieces.Add(PieceMeshes[i], ScoreOptions[i]);
 		}
 	}
 }

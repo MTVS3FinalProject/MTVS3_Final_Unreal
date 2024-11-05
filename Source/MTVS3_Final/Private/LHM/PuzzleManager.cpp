@@ -2,8 +2,6 @@
 
 
 #include "LHM/PuzzleManager.h"
-
-#include "Kismet/GameplayStatics.h"
 #include "LHM/HM_PuzzleWidget.h"
 
 // Sets default values
