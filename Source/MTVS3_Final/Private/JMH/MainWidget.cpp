@@ -32,6 +32,8 @@ void UMainWidget::NativeConstruct()
 	Btn_ExitMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExitMainWin);
 	Btn_ExitMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExit);
 	Btn_BackMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
+	Btn_ConcertR->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertR);
+	Btn_ConcertL->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertL);
 	//Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 
 	//닫기 버튼 다른 위젯 클래스와 연결 
@@ -39,18 +41,16 @@ void UMainWidget::NativeConstruct()
 	{
 		BuyTicketWidget->OnClickedBuyTickerBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
-	
+
 	if (BuyCoinsWidget)
 	{
 		BuyCoinsWidget->OnClickedBuyCoinBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
 
-	if(WBP_MH_MainBar)
+	if (WBP_MH_MainBar)
 	{
-		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this, &UMainWidget::ShowChatUI);
+		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this , &UMainWidget::ShowChatUI);
 	}
-
-	
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -76,6 +76,27 @@ void UMainWidget::SetVisibleCanvas(bool bVisible)
 	}
 }
 
+void UMainWidget::GoToConcertHall()
+{
+	// KHJ: EPlaceState::ConcertHall로 변경
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
+	if (!GI || !Local) return;
+
+	//GI->SetPlaceState(EPlaceState::ConcertHall);
+
+	if (GI)
+	{
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if (HttpActor2)
+		{
+			HttpActor2->ReqGetConcertEntry(GI->GetAccessToken());
+			//HttpActor2->TESTReqPostConcertEntry( GI->GetAccessToken());
+		}
+	}
+}
+
 void UMainWidget::SetTextCurrentTime(FString CurrentTime)
 {
 	//FString으로 변환해놓은 시간값 받아와서 표시
@@ -90,7 +111,7 @@ void UMainWidget::OnClickedBackMain()
 	{
 		GI->SetPlaceState(EPlaceState::Plaza);
 	}
-    
+
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 	if (Local)
 	{
@@ -131,7 +152,7 @@ void UMainWidget::ShowChatUI()
 	{
 		WBP_Chatting->SetVisibility(ESlateVisibility::Visible);
 	}
-	else if(!bIsChatVisible)
+	else if (!bIsChatVisible)
 	{
 		WBP_Chatting->SetVisibility(ESlateVisibility::Hidden);
 	}
@@ -188,27 +209,27 @@ void UMainWidget::OnClickedBuyCoinsButton()
 
 void UMainWidget::OnClickedConcert01()
 {
-	// KHJ: EPlaceState::ConcertHall로 변경
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
-	if (!GI || !Local) return;
+	GoToConcertHall();
+}
 
-	//GI->SetPlaceState(EPlaceState::ConcertHall);
+void UMainWidget::OnClickedConcert02()
+{
+	GoToConcertHall();
+}
 
-	if (GI)
-	{
-		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if (HttpActor2)
-		{
-			HttpActor2->ReqGetConcertEntry(GI->GetAccessToken());
-			//HttpActor2->TESTReqPostConcertEntry( GI->GetAccessToken());
-		}
-	}
+void UMainWidget::OnClickedConcert03()
+{
+	GoToConcertHall();
+}
 
-	//현민
-	//서버에서 콘서트 정보 받아오기
-	//로비로이동
+void UMainWidget::OnClickedConcert04()
+{
+	GoToConcertHall();
+}
+
+void UMainWidget::OnClickedConcert05()
+{
+	GoToConcertHall();
 }
 
 void UMainWidget::OnTicketWidgetClose()
@@ -216,12 +237,85 @@ void UMainWidget::OnTicketWidgetClose()
 	SetWidgetSwitcher(0);
 }
 
+void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
+{
+	if (bIsRightBtn)
+	{
+		switch (AnimNum)
+		{
+		case 1:
+			PlayAnimation(ConcertAnim1);
+			break;
+		case 2:
+			PlayAnimation(ConcertAnim2);
+			break;
+		case 3:
+			PlayAnimation(ConcertAnim3);
+			break;
+		case 4:
+			PlayAnimation(ConcertAnim4);
+			break;
+		case 5:
+			PlayAnimation(ConcertAnim5);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	else if (!bIsRightBtn)
+	{
+		switch (AnimNum)
+		{
+		case 1:
+			PlayAnimation(ConcertAnim1 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			break;
+		case 2:
+			PlayAnimation(ConcertAnim2 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			break;
+		case 3:
+			PlayAnimation(ConcertAnim3 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			break;
+		case 4:
+			PlayAnimation(ConcertAnim4 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			break;
+		case 5:
+			PlayAnimation(ConcertAnim5 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+
 void UMainWidget::OnClickedConcertL()
 {
-	//1~5 애니메이션 순환하기..	
+	ConcertNum++;
+	//1~5 애니메이션 순환하기..
+	if (ConcertNum > 5)
+	{
+		ConcertNum = 1;
+		SelectConcertAnim(true , ConcertNum);
+	}
+	else
+	{
+		SelectConcertAnim(true , ConcertNum);
+	}
 }
 
 void UMainWidget::OnClickedConcertR()
 {
 	//1~5 애니메이션 순환하기
+	ConcertNum--;
+	if (ConcertNum < 1)
+	{
+		ConcertNum = 5;
+		SelectConcertAnim(false , ConcertNum);
+	}
+	else
+	{
+		SelectConcertAnim(false , ConcertNum);
+	}
 }
