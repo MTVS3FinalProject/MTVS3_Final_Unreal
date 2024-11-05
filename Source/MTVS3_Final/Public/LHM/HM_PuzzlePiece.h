@@ -46,7 +46,8 @@ public:
 	bool IsComponentOwned(UStaticMeshComponent* Component);
 	// 소유자를 반환하는 함수
 	class ATTPlayer* GetComponentOwner(UStaticMeshComponent* Component);
-	
+	virtual void PostInitializeComponents() override;
+
 	// 스태틱 메시 컴포넌트 반환 함수 추가
 	TArray<UStaticMeshComponent*> GetAllPieces() const
 	{
@@ -55,7 +56,7 @@ public:
 		return Keys;
 	}
 
-	void InitializePieces();
+	// void InitializePieces();
     void InitializeRandomSetting();
 	
 	// --------------- Multiplayer 요소들 ---------------
