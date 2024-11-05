@@ -169,7 +169,10 @@ public:
 	float MaxSittingDuration = 15.0f;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
-	bool bHideOtherPlayersWhileSitting = true;
+	bool bHideOtherPlayersWhileSitting = false;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
+	bool bMuteSoundWhileSitting = false;
 #pragma endregion
 
 #pragma region 플레이어 정보
