@@ -47,13 +47,11 @@ void AMH_ChatManager::SendMessage(const FString& chatMessage)
 bool AMH_ChatManager::ServerSendChatMessage_Validate(const FString& ServerMessage)
 {
 	// 유효성 검사 로직 예시: 메시지가 비어 있지 않아야 함
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("444"));
 	return !ServerMessage.IsEmpty();
 }
 
 void AMH_ChatManager::ServerSendChatMessage_Implementation(const FString& ServerMessage)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("555"));
 	// 서버에서 받은 메시지를 모든 클라이언트에게
 	MultiReceiveChatMessage(ServerMessage);
 }
