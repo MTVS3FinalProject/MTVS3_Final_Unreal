@@ -245,15 +245,15 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						FJsonSerializer::Serialize(AvailbleObject.ToSharedRef() , AvailableWriter);
 
 						// JSON 문자열을 FConcertInfo 구조체로 변환
-						FAvailableSeats NewAvailableInfo;
+						FAvailableSeatsList NewAvailableInfo;
 						if (FJsonObjectConverter::JsonObjectStringToUStruct(AvailbleJsonString , &NewAvailableInfo , 0 , 0))
 						{
-							SetAvailableSeats(NewAvailableInfo);
+							SetAvailableSeatsList(NewAvailableInfo);
 							// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
 							UE_LOG(LogTemp , Log , TEXT("AvailableSeats Info | Id: %d, Name: %s, DrawingTime: %s") ,
-								   NewAvailableInfo.seatId ,
-								   *NewAvailableInfo.seatName ,
-								   *NewAvailableInfo.drawingTime);
+								   NewAvailableInfo.SeatsInfo.seatId ,
+								   *NewAvailableInfo.SeatsInfo.seatName ,
+								   *NewAvailableInfo.SeatsInfo.drawingTime);
 							
 							// 공연장 입장할 때 접수 가능한 좌석 데이터 받아서 의자 액터에 이펙터 처리
 						}

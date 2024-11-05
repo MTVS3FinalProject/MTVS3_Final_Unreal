@@ -8,11 +8,11 @@
 #include "HJ/TTPlayer.h"
 #include "HM_HttpActor2.generated.h"
 
-#pragma region struct FConcertInfo
 class ATTPlayer;
+#pragma region struct FConcertInfo
 
 USTRUCT()
-struct FConcertDate
+struct FConcertTime
 {
 	GENERATED_BODY()
 
@@ -29,14 +29,14 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
 	FString time;
 	
-	FConcertDate()
+	FConcertTime()
 		: year(0)
 		, month(0)
 		, day(0)
 		, time(TEXT(""))
 	{}
 	// 매개 변수를 받는 생성자
-	FConcertDate(int32 InYear, int32 InMonth, int32 InDay, const FString& InTime)
+	FConcertTime(int32 InYear, int32 InMonth, int32 InDay, const FString& InTime)
 		: year(InYear)
 		, month(InMonth)
 		, day(InDay)
@@ -57,7 +57,7 @@ public:
     FString concertName;
     
     UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-	FConcertDate concertTime;
+	FConcertTime concertTime;
 	
     FConcertInfo()
 	    : concertId(0)
@@ -69,7 +69,7 @@ public:
 
 #pragma region struct FAvailableSeats
 USTRUCT()
-struct FAvailableSeats
+struct FAvailableSeatsInfo
 {
 	GENERATED_BODY()
 
@@ -83,10 +83,31 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
 	FString drawingTime;
 	
-	FAvailableSeats()
+	FAvailableSeatsInfo()
 		: seatId(0)
 		, seatName(TEXT(""))
 		, drawingTime(TEXT(""))
+	{}
+
+	// 매개 변수를 받는 생성자
+	FAvailableSeatsInfo(int32 InId, const FString&  InName, const FString& InTime)
+		: seatId(InId)
+		, seatName(InName)
+		, drawingTime(InTime)
+	{}
+};
+
+USTRUCT()
+struct FAvailableSeatsList
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	FAvailableSeatsInfo SeatsInfo;
+	
+	FAvailableSeatsList()
+		: SeatsInfo(0,TEXT(""), TEXT(""))
 	{}
 };
 #pragma endregion
@@ -195,39 +216,54 @@ public:
 #pragma region FConcertInfo Getter & Setter Methods
     FConcertInfo ConcertInfo; // 콘서트 정보를 저장할 변수
 	FConcertInfo GetConcertInfo() const { return ConcertInfo; };
-	void SetConcertInfo(const FConcertInfo& NewConcertInfo) { ConcertInfo = NewConcertInfo; };
+	void SetConcertInfo(const FConcertInfo& NewConcertInfo)
+	{
+		ConcertInfo = NewConcertInfo;
+		SetConcertDate(NewConcertInfo.concertTime);
+	};
 	
 	void SetConcertId(const int32 _ConcertId) { ConcertInfo.concertId = _ConcertId; SetConcertInfo(ConcertInfo); };
     int32 GetConcertId() const { return ConcertInfo.concertId; }
-	void SetConcertName(const FString& ConcertName) { ConcertInfo.concertName = ConcertName; SetConcertInfo(ConcertInfo); };
+	void SetConcertName(const FString& ConcertName) { ConcertInfo.concertName = ConcertName; SetConcertInfo(ConcertInfo);};
     const FString& GetConcertName() const { return ConcertInfo.concertName; }
 
-	FConcertDate ConcertDate;
-	FConcertDate GetConcertDate() const { return ConcertDate; };
-	void SetConcertDate(const FConcertDate& NewConcertTime) { ConcertDate = NewConcertTime; };
+	FConcertTime ConcertTime;
+	FConcertTime GetConcertDate() const { return ConcertTime; };
+	void SetConcertDate(const FConcertTime& NewConcertTime)
+	{
+		ConcertTime = NewConcertTime;
+	};
 	
-	void SetConcertYear(int32 Year) { ConcertDate.year = Year; SetConcertDate(ConcertDate);}
-    int32 GetConcertYear() const { return ConcertDate.year; }
-	void SetConcertMonth(int32 Month) { ConcertDate.month = Month; SetConcertDate(ConcertDate);}
-    int32 GetConcertMonth() const { return ConcertDate.month; }
-	void SetConcertDay(int32 Day) { ConcertDate.day = Day; SetConcertDate(ConcertDate);}
-    int32 GetConcertDay() const { return ConcertDate.day; }
-	void SetConcertTime(const FString& Time) { ConcertDate.time = Time; SetConcertDate(ConcertDate);}
-    const FString& GetConcertTime() const { return ConcertDate.time; }
+	void SetConcertYear(int32 Year) { ConcertTime.year = Year; SetConcertDate(ConcertTime);}
+    int32 GetConcertYear() const { return ConcertTime.year; }
+	void SetConcertMonth(int32 Month) { ConcertTime.month = Month; SetConcertDate(ConcertTime);}
+    int32 GetConcertMonth() const { return ConcertTime.month; }
+	void SetConcertDay(int32 Day) { ConcertTime.day = Day; SetConcertDate(ConcertTime);}
+    int32 GetConcertDay() const { return ConcertTime.day; }
+	void SetConcertTime(const FString& Time) { ConcertTime.time = Time; SetConcertDate(ConcertTime);}
+    const FString& GetConcertTime() const { return ConcertTime.time; }
 #pragma endregion
 
 #pragma region FAvailableSeats Getter & Setter Methods
-	FAvailableSeats AvailableSeats; // 접수 가능한 좌석 정보를 저장할 변수
+	FAvailableSeatsList AvailableSeatsList; // 접수 가능한 좌석 정보를 저장할 변수
 
-	FAvailableSeats GetAvailableSeats() const { return  AvailableSeats; };
-	void SetAvailableSeats(const FAvailableSeats& NewAvailableSeats) { AvailableSeats = NewAvailableSeats; };
+	FAvailableSeatsList GetAvailableSeatsList() const { return  AvailableSeatsList; };
+	void SetAvailableSeatsList(const FAvailableSeatsList& NewAvailableSeatsList)
+	{
+		SetAvailableSeatsInfo( NewAvailableSeatsList.SeatsInfo );
+	};
 
-	void SetAvailableSeatId(const int32 _SeatId) { AvailableSeats.seatId = _SeatId; SetAvailableSeats(AvailableSeats); };
-	int32 GetAvailableSeatId() const { return AvailableSeats.seatId; }
-	void SetAvailableSeatName(const FString& _SeatName) { AvailableSeats.seatName = _SeatName; SetAvailableSeats(AvailableSeats); };
-	const FString& GetAvailableSeatName() const { return AvailableSeats.seatName; }
-	void SetAvailableSeatDrawingTime(const FString& _DrawingTime) { AvailableSeats.drawingTime = _DrawingTime; SetAvailableSeats(AvailableSeats); };
-	const FString& GetAvailableDrawingTime() const { return AvailableSeats.drawingTime; }
+	FAvailableSeatsInfo AvailableSeatsInfo;
+	FAvailableSeatsInfo GetAvailableSeatsInfo() const { return  AvailableSeatsInfo; };
+	void SetAvailableSeatsInfo(const FAvailableSeatsInfo& NewAvailableSeatsInfo) { AvailableSeatsInfo = NewAvailableSeatsInfo; };
+
+	void SetAvailableSeatId(const int32 _SeatId) { AvailableSeatsInfo.seatId = _SeatId; SetAvailableSeatsInfo(AvailableSeatsInfo); };
+	int32 GetAvailableSeatId() const { return AvailableSeatsInfo.seatId; }
+	void SetAvailableSeatName(const FString& _SeatName) { AvailableSeatsInfo.seatName = _SeatName; SetAvailableSeatsInfo(AvailableSeatsInfo); };
+	const FString& GetAvailableSeatName() const { return AvailableSeatsInfo.seatName; }
+	void SetAvailableSeatDrawingTime(const FString& _DrawingTime) { AvailableSeatsInfo.drawingTime = _DrawingTime; SetAvailableSeatsInfo(AvailableSeatsInfo); };
+	const FString& GetAvailableDrawingTime() const { return AvailableSeatsInfo.drawingTime; }
+	
 #pragma endregion
 
 #pragma region FReceptionSeats Getter & Setter Methods
