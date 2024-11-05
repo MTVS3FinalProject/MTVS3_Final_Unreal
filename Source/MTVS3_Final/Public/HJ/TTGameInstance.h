@@ -41,6 +41,9 @@ struct FPlayerData
 	FString nickname;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString title;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString accessToken;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
@@ -121,7 +124,7 @@ public:
 	void SetLuckyDrawState(ELuckyDrawState NextLuckyDrawState);
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")
 	ELuckyDrawState GetLuckyDrawState() const { return LuckyDrawState; }
-
+	
 #pragma region Getter 및 Setter 함수
 	FPlayerData GetPlayerData() const { return PlayerData; };
 	void SetPlayerData(const FPlayerData& NewPlayerData) { PlayerData = NewPlayerData; };
@@ -133,6 +136,10 @@ public:
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetNickname(const FString& _Nickname);
 	FString GetNickname() const { return PlayerData.nickname; };
+
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetTitle(const FString& _Title);
+	FString GetTitle() const { return PlayerData.title; };
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetAccessToken(const FString& _AccessToken);
