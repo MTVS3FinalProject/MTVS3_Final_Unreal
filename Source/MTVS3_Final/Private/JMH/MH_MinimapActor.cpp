@@ -50,9 +50,7 @@ AMH_MinimapActor::AMH_MinimapActor()
 void AMH_MinimapActor::BeginPlay()
 {
 	Super::BeginPlay();
-
 	
-	/*
 	Player = UGameplayStatics::GetPlayerCharacter(this , 0);
 	if (Player)
 	{
@@ -75,7 +73,7 @@ void AMH_MinimapActor::BeginPlay()
 	// 그림자도 숨김
 	// 동적 그림자 비활성화
 	MinimapCapture->ShowFlags.DynamicShadows = false;
-*/
+
 	
 }
 
@@ -83,7 +81,7 @@ void AMH_MinimapActor::BeginPlay()
 void AMH_MinimapActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+/*
 	if( Player == nullptr )
 	{
 		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
@@ -120,7 +118,7 @@ void AMH_MinimapActor::Tick(float DeltaTime)
 		}		
 	}
 	
-
+*/
 	ApplyMinimap();
 
 }
@@ -128,7 +126,7 @@ void AMH_MinimapActor::Tick(float DeltaTime)
 void AMH_MinimapActor::ApplyMinimap()
 {
 	if( Player == nullptr )	return;
-	/*
+	
 	// 오너 캐릭터 확인 및 미니맵 업데이트
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	if( PlayerController && PlayerController->IsLocalController() )
@@ -163,7 +161,7 @@ void AMH_MinimapActor::ApplyMinimap()
 			}
 		
 	}
-	*/
+	
 	/*
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this , 0);
 	if (PlayerController)

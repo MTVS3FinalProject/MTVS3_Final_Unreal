@@ -38,6 +38,10 @@ public:
 	
 	UFUNCTION()
 	void SetVisibleCanvas(bool bVisible);
+
+	//콘서트 입장
+	UFUNCTION()
+	void GoToConcertHall();
 	
 	//미니맵
 	//현재시간 받아오기
@@ -141,8 +145,27 @@ public:
 	UFUNCTION()
 	void OnClickedConcert01();
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Concert02;
+	UFUNCTION()
+	void OnClickedConcert02();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Concert03;
+	UFUNCTION()
+	void OnClickedConcert03();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Concert04;
+	UFUNCTION()
+	void OnClickedConcert04();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Concert05;
+	UFUNCTION()
+	void OnClickedConcert05();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_SelectConcertBack;
 
+	UPROPERTY()
+	int32 ConcertNum = 0;
+	
 	//왼쪽 버튼 클릭
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_ConcertL;
@@ -165,6 +188,17 @@ public:
 	//UI 애니메이션
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* ConcertAnim1;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim2;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim3;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim4;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim5;
+
+	UFUNCTION()
+	void SelectConcertAnim(bool bIsRightBtn,int32 AnimNum);
 
 	UPROPERTY()
 	AMH_TTHUD* TTHUD;

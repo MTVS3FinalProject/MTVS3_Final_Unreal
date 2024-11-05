@@ -28,8 +28,6 @@ public:
 	UFUNCTION()
 	void SetWidgetSwitcher(int32 num);//0:Emoji . 01: Notice . 02: CollectionBook . 03: Settings
 	
-
-	
 	bool bIsEmojiVisible = false;
 	bool bIsCollectionBookVisible = false;
 	bool bIsNoticeVisible = false;

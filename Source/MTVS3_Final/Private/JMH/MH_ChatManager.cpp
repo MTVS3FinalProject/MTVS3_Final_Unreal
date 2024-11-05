@@ -3,9 +3,6 @@
 
 #include "JMH/MH_ChatManager.h"
 
-#include "JMH/MH_TTHUD.h"
-#include "LHM/TTPlayerController.h"
-
 // Sets default values
 AMH_ChatManager::AMH_ChatManager()
 {
@@ -33,6 +30,20 @@ void AMH_ChatManager::Tick(float DeltaTime)
 
 }
 
+void AMH_ChatManager::SendMessage(const FString& chatMessage)
+{
+	if(HasAuthority())
+	{
+		//서버에서 발생한 메세지: 모든 클라에 전달
+		MultiReceiveChatMessage(chatMessage);
+	}
+	else
+	{
+		//클라에서 발생한 메세지: 서버로 전송
+		ServerSendChatMessage(chatMessage);
+	}
+}
+
 bool AMH_ChatManager::ServerSendChatMessage_Validate(const FString& ServerMessage)
 {
 	// 유효성 검사 로직 예시: 메시지가 비어 있지 않아야 함
@@ -48,17 +59,5 @@ void AMH_ChatManager::ServerSendChatMessage_Implementation(const FString& Server
 }
 void AMH_ChatManager::MultiReceiveChatMessage_Implementation(const FString& ChatMessage)
 {
-	for(FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-	{
-		APlayerController*PC = It->Get();
-		if(PC)
-		{
-			AMH_TTHUD* TTHUD1 = Cast<AMH_TTHUD>(PC->GetHUD());
-			if(TTHUD1)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("666"));
-				TTHUD1->AddChatMessage(ChatMessage);
-			}
-		}
-	}
+	OnMessageReceived.Broadcast(ChatMessage);
 }

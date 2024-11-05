@@ -149,7 +149,7 @@ void UHM_MainBarWidget::OnClickedlMenuBtn()
 
 void UHM_MainBarWidget::OnClickedChatBtn()
 {
-	//Main UI에 있는 채팅창 켜지게. 꺼지게. 델리게이트 연결
+	//Main UI에 있는 채팅창 켜지게. 꺼지게. 델리게이트 연결함
 	
 }
 
