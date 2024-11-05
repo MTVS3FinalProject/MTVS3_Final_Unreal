@@ -1148,6 +1148,7 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
 	}
+	if (MainUI) MainUI->ShowChatUI();
 }
 
 void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
