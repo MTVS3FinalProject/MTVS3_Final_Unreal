@@ -67,9 +67,9 @@ public:
 };
 #pragma endregion
 
-#pragma region struct FAvailableSeats
+#pragma region struct FSeatsList
 USTRUCT()
-struct FAvailableSeatsInfo
+struct FAvailableSeats
 {
 	GENERATED_BODY()
 
@@ -83,36 +83,20 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
 	FString drawingTime;
 	
-	FAvailableSeatsInfo()
+	FAvailableSeats()
 		: seatId(0)
 		, seatName(TEXT(""))
 		, drawingTime(TEXT(""))
 	{}
 
 	// 매개 변수를 받는 생성자
-	FAvailableSeatsInfo(int32 InId, const FString&  InName, const FString& InTime)
+	FAvailableSeats(int32 InId, const FString&  InName, const FString& InTime)
 		: seatId(InId)
 		, seatName(InName)
 		, drawingTime(InTime)
 	{}
 };
 
-USTRUCT()
-struct FAvailableSeatsList
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-	FAvailableSeatsInfo SeatsInfo;
-	
-	FAvailableSeatsList()
-		: SeatsInfo(0,TEXT(""), TEXT(""))
-	{}
-};
-#pragma endregion
-
-#pragma region struct FReceptionSeats
 USTRUCT()
 struct FReceptionSeats
 {
@@ -133,6 +117,28 @@ public:
 		, seatName(TEXT(""))
 		, drawingTime(TEXT(""))
 	{}
+	
+	// 매개 변수를 받는 생성자
+	FReceptionSeats(int32 InId, const FString&  InName, const FString& InTime)
+		: seatId(InId)
+		, seatName(InName)
+		, drawingTime(InTime)
+	{}
+};
+
+
+USTRUCT()
+struct FSeatsList
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	TArray<FAvailableSeats> availableSeats;
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	TArray<FReceptionSeats> receptionSeats;
+	
+	FSeatsList() {}
 };
 #pragma endregion
 
@@ -244,40 +250,17 @@ public:
     const FString& GetConcertTime() const { return ConcertTime.time; }
 #pragma endregion
 
-#pragma region FAvailableSeats Getter & Setter Methods
-	FAvailableSeatsList AvailableSeatsList; // 접수 가능한 좌석 정보를 저장할 변수
+#pragma region FSeatsList Getter & Setter Methods
+	FSeatsList SeatsList; // 전체 시트 정보
 
-	FAvailableSeatsList GetAvailableSeatsList() const { return  AvailableSeatsList; };
-	void SetAvailableSeatsList(const FAvailableSeatsList& NewAvailableSeatsList)
-	{
-		SetAvailableSeatsInfo( NewAvailableSeatsList.SeatsInfo );
-	};
+	FSeatsList GetSeatsList() const{return  SeatsList;};
+	void SetSeatsList(const FSeatsList& NewSeatsList){SeatsList = NewSeatsList;};
 
-	FAvailableSeatsInfo AvailableSeatsInfo;
-	FAvailableSeatsInfo GetAvailableSeatsInfo() const { return  AvailableSeatsInfo; };
-	void SetAvailableSeatsInfo(const FAvailableSeatsInfo& NewAvailableSeatsInfo) { AvailableSeatsInfo = NewAvailableSeatsInfo; };
-
-	void SetAvailableSeatId(const int32 _SeatId) { AvailableSeatsInfo.seatId = _SeatId; SetAvailableSeatsInfo(AvailableSeatsInfo); };
-	int32 GetAvailableSeatId() const { return AvailableSeatsInfo.seatId; }
-	void SetAvailableSeatName(const FString& _SeatName) { AvailableSeatsInfo.seatName = _SeatName; SetAvailableSeatsInfo(AvailableSeatsInfo); };
-	const FString& GetAvailableSeatName() const { return AvailableSeatsInfo.seatName; }
-	void SetAvailableSeatDrawingTime(const FString& _DrawingTime) { AvailableSeatsInfo.drawingTime = _DrawingTime; SetAvailableSeatsInfo(AvailableSeatsInfo); };
-	const FString& GetAvailableDrawingTime() const { return AvailableSeatsInfo.drawingTime; }
+	TArray<FAvailableSeats> GetAvailableSeats() const{return SeatsList.availableSeats;};
+	void SetAvailableSeats(TArray<FAvailableSeats>& NewAvailableSeats ){SeatsList.availableSeats = NewAvailableSeats;};
 	
-#pragma endregion
-
-#pragma region FReceptionSeats Getter & Setter Methods
-	FReceptionSeats ReceptionSeats; // 접수 가능한 좌석 정보를 저장할 변수
-
-	FReceptionSeats GetReceptionSeats() const { return  ReceptionSeats; };
-	void SetReceptionSeats(const FReceptionSeats& NewReceptionSeats) { ReceptionSeats = NewReceptionSeats; };
-
-	void SetReceptionSeatId(const int32 _SeatId) { ReceptionSeats.seatId = _SeatId; SetReceptionSeats(ReceptionSeats); };
-	int32 GetReceptionSeatId() const { return ReceptionSeats.seatId; }
-	void SetReceptionSeatName(const FString& _SeatName) { ReceptionSeats.seatName = _SeatName; SetReceptionSeats(ReceptionSeats); };
-	const FString& GetReceptionSeatName() const { return ReceptionSeats.seatName; }
-	void SetReceptionSeatDrawingTime(const FString& _DrawingTime) { ReceptionSeats.drawingTime = _DrawingTime; SetReceptionSeats(ReceptionSeats); };
-	const FString& GetReceptionDrawingTime() const { return ReceptionSeats.drawingTime; }
+	TArray<FReceptionSeats> GetReceptionSeats() const{return SeatsList.receptionSeats;}
+	void SetReceptionSeats(const TArray<FReceptionSeats>& NewReceptionSeats){SeatsList.receptionSeats = NewReceptionSeats;}
 #pragma endregion
 
 #pragma region FMyReceptionSeatInfo Getter & Setter Methods

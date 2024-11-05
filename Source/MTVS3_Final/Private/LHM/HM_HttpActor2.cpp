@@ -212,7 +212,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					MainUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
 					UE_LOG(LogTemp, Log, TEXT("RemainingTicketCount: %d"), GI->GetRemainingTicketCount());
 
-					// ConcertObject를 JSON 문자열로 변환
+					// 1. FConcertInfo
 					FString ConcertJsonString;
 					TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ConcertJsonString);
 					FJsonSerializer::Serialize(ResponseObject.ToSharedRef() , Writer);
@@ -232,11 +232,14 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							   NewConcertInfo.concertTime.day ,
 							   *NewConcertInfo.concertTime.time);
 					}
+
+					// 2. FSeatsList 구조체로 좌석 정보 파싱
+					FSeatsList NewSeatsList;
 					
-					// 접수 가능한 좌석 목록
 					TArray<TSharedPtr<FJsonValue>> LocalAvailableSeats = ResponseObject->GetArrayField(TEXT("availableSeats"));
 					for ( const TSharedPtr<FJsonValue>& AvailbleValue : LocalAvailableSeats )
 					{
+						FAvailableSeats AvailableSeat;
 						TSharedPtr<FJsonObject> AvailbleObject = AvailbleValue->AsObject();
 						
 						// ConcertObject를 JSON 문자열로 변환
@@ -244,45 +247,34 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						TSharedRef<TJsonWriter<>> AvailableWriter  = TJsonWriterFactory<>::Create(&AvailbleJsonString);
 						FJsonSerializer::Serialize(AvailbleObject.ToSharedRef() , AvailableWriter);
 
-						// JSON 문자열을 FConcertInfo 구조체로 변환
-						FAvailableSeatsList NewAvailableInfo;
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(AvailbleJsonString , &NewAvailableInfo , 0 , 0))
+						if (FJsonObjectConverter::JsonObjectStringToUStruct(AvailbleJsonString , &AvailableSeat , 0 , 0))
 						{
-							SetAvailableSeatsList(NewAvailableInfo);
-							// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-							UE_LOG(LogTemp , Log , TEXT("AvailableSeats Info | Id: %d, Name: %s, DrawingTime: %s") ,
-								   NewAvailableInfo.SeatsInfo.seatId ,
-								   *NewAvailableInfo.SeatsInfo.seatName ,
-								   *NewAvailableInfo.SeatsInfo.drawingTime);
+							NewSeatsList.availableSeats.Add(AvailableSeat);
+							UE_LOG(LogTemp , Log , TEXT("Available Seat | ID: %d, Name: %s, DrawingTime: %s")
+										,AvailableSeat.seatId, *AvailableSeat.seatName, *AvailableSeat.drawingTime);
 							
 							// 공연장 입장할 때 접수 가능한 좌석 데이터 받아서 의자 액터에 이펙터 처리
 						}
 					}
 
-					// 예매 완료된 좌석들 목록
 					TArray<TSharedPtr<FJsonValue>> LocalReceptionSeats = ResponseObject->GetArrayField(TEXT("receptionSeats"));
 					for ( const TSharedPtr<FJsonValue>& ReceptionValue : LocalReceptionSeats )
 					{
+						FReceptionSeats ReceptionSeat;
 						TSharedPtr<FJsonObject> ReceptionObject = ReceptionValue->AsObject();
 						
 						// ConcertObject를 JSON 문자열로 변환
 						FString ReceptionJsonString;
-						TSharedRef<TJsonWriter<>> ReceptionWriter = TJsonWriterFactory<>::Create(&ReceptionJsonString);
+						TSharedRef<TJsonWriter<>> ReceptionWriter  = TJsonWriterFactory<>::Create(&ReceptionJsonString);
 						FJsonSerializer::Serialize(ReceptionObject.ToSharedRef() , ReceptionWriter);
 
-						// JSON 문자열을 FConcertInfo 구조체로 변환
-						FReceptionSeats NewFReceptionInfo;
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(ReceptionJsonString , &NewFReceptionInfo , 0 , 0))
+						if (FJsonObjectConverter::JsonObjectStringToUStruct(ReceptionJsonString , &ReceptionSeat , 0 , 0))
 						{
-							SetReceptionSeats(NewFReceptionInfo);
+							NewSeatsList.receptionSeats.Add(ReceptionSeat);
+							UE_LOG(LogTemp , Log , TEXT("Reception Seat | ID: %d, Name: %s, DrawingTime: %s")
+										,ReceptionSeat.seatId, *ReceptionSeat.seatName, *ReceptionSeat.drawingTime);
 							
-							// 변환된 NewConcertInfo 구조체에 대한 디버그 메시지 출력
-							UE_LOG(LogTemp , Log , TEXT("ReceptionSeats Info | Id: %d, Name: %s, DrawingTime: %s") ,
-								   NewFReceptionInfo.seatId ,
-								   *NewFReceptionInfo.seatName ,
-								   *NewFReceptionInfo.drawingTime);
-							
-							// 공연장 입장할 때 예매 완료된 좌석 데이터 받아서 의자 액터에 이펙터 처리
+							// 공연장 입장할 때 접수 가능한 좌석 데이터 받아서 의자 액터에 이펙터 처리
 						}
 					}
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("뉴진스 콘서트 입장~~~")));
@@ -301,6 +293,9 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 // 좌석 조회 요청
 void AHM_HttpActor2::ReqGetSeatRegistrationInquiry(FString SeatName , FString AccessToken)
 {
+
+	// ChairTag랑 FAvailableSeats의 SeatName과 비교해서 같으면 해당 SeatName의 SeatId를 매개변수로 받아서 url에 Set해주기
+	
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
