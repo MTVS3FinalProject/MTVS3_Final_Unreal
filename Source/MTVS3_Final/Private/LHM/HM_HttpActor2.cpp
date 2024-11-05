@@ -190,6 +190,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 		if ( Response->GetResponseCode() == 200 )
 		{
 			TargetPlayer->ServerTeleportPlayer(true);
+			GI->SetPlaceState(EPlaceState::ConcertHall);
 			
 			// JSON 응답 파싱
 			FString ResponseBody = Response->GetContentAsString();
@@ -1137,10 +1138,6 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 						GI->SetCoin(UserCoin);
 						GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 					}
-					
-					//SetSeatId(SeatId);
-					//SetSeatInfo(SeatInfo);
-					//SetSeatPrice(SeatPrice);
 					
 					if ( MainUI->GetBuyTicketWidget() )
 					{
