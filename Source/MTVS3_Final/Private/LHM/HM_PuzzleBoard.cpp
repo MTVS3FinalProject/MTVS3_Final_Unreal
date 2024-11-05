@@ -29,23 +29,9 @@ void AHM_PuzzleBoard::BeginPlay()
 	// 네트워크 리플리케이션 활성화
 	bReplicates = true;
 	
-	FVector BoardLocation = GetActorLocation();
-	// 3x3 형태로 퍼즐 보드 위치를 설정
-	const int32 GridSize = 3;
-	for (int32 Row = 0; Row < GridSize; ++Row)
-	{
-		for (int32 Col = 0; Col < GridSize; ++Col)
-		{
-			int32 Idx = Row * GridSize + Col;
-			if (BoardAreas.IsValidIndex(Idx) && BoardAreas[Idx])
-			{
-				FVector OffsetLocation = FVector(Col * -CellSize , 0, Row * CellSize);
-				FVector NewLocation = BoardLocation + OffsetLocation;
-				BoardAreas[Idx]->SetWorldLocation(NewLocation);
-				BoardAreasGrid[Idx]->SetWorldLocation(NewLocation);
-			}
-		}
-	}
+	InitializeBoardAreasLocation();
+	InitializeBoardAreasGridLocation();
+	
 }
 
 // Called every frame
@@ -68,6 +54,7 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 
 		if (BoardAreas[i])
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreas[%d]"), i);
 			BoardAreas[i]->SetupAttachment(RootComponent);
 			BoardAreas[i]->SetStaticMesh(MeshAsset.Object);
 			BoardAreas[i]->SetRelativeScale3D(FVector(0.7f , 7.0f , 7.0f));
@@ -84,20 +71,61 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 	BoardAreasGrid.SetNum(9);
 	for (int i = 0; i < 9; i++)
 	{
-		FString ComponentName = FString::Printf(TEXT("BoardAreaLines%d"), i+1);
+		FString ComponentName = FString::Printf(TEXT("BoardAreasGrid_%d"), i+1);
 		BoardAreasGrid[i] = CreateDefaultSubobject<UStaticMeshComponent>(*ComponentName);
 
 		if (BoardAreasGrid[i])
 		{
+			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreasGrid[%d]"), i);
 			BoardAreasGrid[i]->SetupAttachment(RootComponent);
 			BoardAreasGrid[i]->SetStaticMesh(MeshAsset.Object);
+			//BoardAreasGrid[i]->SetRelativeLocation(FVector(0.0f, 10.f, 0.0f));
 			BoardAreasGrid[i]->SetRelativeScale3D(FVector(0.1f , 6.0f , 6.0f));
 			BoardAreasGrid[i]->SetRelativeRotation(FRotator(0,90,0));
 			
 			BoardAreasGrid[i]->SetVisibility(true);
 		}
 	}
-	
+}
+
+void AHM_PuzzleBoard::InitializeBoardAreasLocation()
+{
+	FVector BoardLocation = GetActorLocation();
+	// 3x3 형태로 퍼즐 보드 위치를 설정
+	const int32 GridSize = 3;
+	for (int32 Row = 0; Row < GridSize; ++Row)
+	{
+		for (int32 Col = 0; Col < GridSize; ++Col)
+		{
+			int32 Idx = Row * GridSize + Col;
+			if (BoardAreas.IsValidIndex(Idx) && BoardAreas[Idx])
+			{
+				FVector OffsetLocation = FVector(Col * -CellSize , 0, Row * CellSize);
+				FVector NewLocation = BoardLocation + OffsetLocation;
+				BoardAreas[Idx]->SetWorldLocation(NewLocation);
+			}
+		}
+	}
+}
+
+void AHM_PuzzleBoard::InitializeBoardAreasGridLocation()
+{
+	FVector BoardGridLocation = GetActorLocation();
+	// 3x3 형태로 퍼즐 보드 위치를 설정
+	const int32 GridSize = 3;
+	for (int32 Row = 0; Row < GridSize; ++Row)
+	{
+		for (int32 Col = 0; Col < GridSize; ++Col)
+		{
+			int32 Idx = Row * GridSize + Col;
+			if (BoardAreasGrid.IsValidIndex(Idx) && BoardAreasGrid[Idx])
+			{
+				FVector OffsetLocation = FVector(Col * -CellSize , 0, Row * CellSize);
+				FVector NewLocation = BoardGridLocation + OffsetLocation;
+				BoardAreasGrid[Idx]->SetWorldLocation(NewLocation);
+			}
+		}
+	}
 }
 
 void AHM_PuzzleBoard::ServerSetBoardAreaVisibility_Implementation(int32 BoardIndex, bool bVisible)
