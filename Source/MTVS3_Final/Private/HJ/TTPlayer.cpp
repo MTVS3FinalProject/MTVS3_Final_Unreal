@@ -95,7 +95,7 @@ void ATTPlayer::BeginPlay()
 		SetbIsHost(GetbIsHost());
 		SetAvatarData(GetAvatarData());
 	}
-	else
+	else // 로컬 플레이어일 때
 	{
 		SetbIsHost(GI->GetbIsHost());
 		SetAvatarData(GI->GetAvatarData());
@@ -280,51 +280,81 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ATTPlayer::SetNickname(const FString& _Nickname)
 {
-	Nickname = _Nickname;
-
-	if (NicknameUIFactory)
+	if (HasAuthority())
 	{
-		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
-
-		// C++ 클래스로 캐스팅하여 접근
-		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-		NicknameUI->UpdateNicknameUI(Nickname);
+		Nickname = _Nickname;
+		OnRep_Nickname();
 	}
-
-	if (IsLocallyControlled())
+	else
 	{
 		ServerSetNickname(_Nickname);
-
-		/*FTimerHandle ServerSetNicknameTimerHandle;
-		GetWorldTimerManager().SetTimer(ServerSetNicknameTimerHandle , [this, _Nickname]()
-		{
-			ServerSetNickname(_Nickname);
-		} , 0.5f , false);*/
 	}
 }
 
 void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
 {
 	Nickname = _Nickname;
-	UE_LOG(LogTemp , Warning , TEXT("ServerSetNickname: %s") , *GetNickname());
-	MulticastSetNickname();
-
-	/*FTimerHandle SetNicknameTimerHandle;
-	GetWorldTimerManager().SetTimer(SetNicknameTimerHandle , this , &ATTPlayer::MulticastSetNickname , 1.5f , false);*/
+	OnRep_Nickname();
 }
 
-void ATTPlayer::MulticastSetNickname_Implementation()
+void ATTPlayer::OnRep_Nickname()
 {
+	// 위젯이 없다면 생성
+	if (!NicknameUI && NicknameUIFactory)
+	{
+		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
+		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
+	}
+
+	// 닉네임 업데이트
 	if (NicknameUI)
 	{
-		UE_LOG(LogTemp , Warning , TEXT("MulticastSetNickname: %s") , *GetNickname());
-		NicknameUI->UpdateNicknameUI(GetNickname());
+		NicknameUI->UpdateNicknameUI(Nickname);
 	}
 }
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI) GI->SetbIsHost(_bIsHost);
+
 	ServerSetbIsHost(_bIsHost);
+}
+
+void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
+{
+	bIsHost = _bIsHost;
+
+	if (bIsHost == true)
+	{
+		ServerSetNewSkeletalMesh(0);
+	}
+	else
+	{
+		ServerSetNewSkeletalMesh(GetAvatarData());
+	}
+}
+
+void ATTPlayer::OnRep_bIsHost()
+{
+	if (GetbIsHost() == true)
+	{
+		SetNewSkeletalMesh(0);
+	}
+	else
+	{
+		SetNewSkeletalMesh(GetAvatarData());
+	}
+}
+
+void ATTPlayer::SetAvatarData(const int32& _AvatarData)
+{
+	ServerSetAvatarData(_AvatarData);
+}
+
+void ATTPlayer::ServerSetAvatarData_Implementation(const int32& _AvatarData)
+{
+	AvatarData = _AvatarData;
 }
 
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
@@ -354,11 +384,6 @@ void ATTPlayer::SetRandomSeatNumber(const int32& _RandomSeatNumber)
 	ServerSetRandomSeatNumber(RandomSeatNumber);
 }
 
-void ATTPlayer::SetAvatarData(const int32& _AvatarData)
-{
-	AvatarData = _AvatarData;
-}
-
 void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSeatNumber)
 {
 	RandomSeatNumber = _RandomSeatNumber;
@@ -372,50 +397,12 @@ void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSea
 	                                1.5f , false);*/
 }
 
-void ATTPlayer::OnRep_Nickname()
-{
-	if (NicknameUI)
-	{
-		NicknameUI->UpdateNicknameUI(GetNickname());
-		UE_LOG(LogTemp , Warning , TEXT("NicknameUI: %s") , *GetNickname());
-	}
-}
-
 void ATTPlayer::OnRep_RandomSeatNumber()
 {
 	if (NicknameUI)
 	{
 		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
 		UE_LOG(LogTemp , Warning , TEXT("OnRep_RandomSeatNumber: %d") , GetRandomSeatNumber());
-	}
-}
-
-void ATTPlayer::OnRep_bIsHost()
-{
-	if (GetbIsHost() == true)
-	{
-		if (GetbIsHost() == true) SetNewSkeletalMesh(0);
-	}
-	else
-	{
-		SetNewSkeletalMesh(GetAvatarData());
-	}
-}
-
-void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
-{
-	bIsHost = _bIsHost;
-
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (GI) GI->SetbIsHost(bIsHost);
-
-	if (bIsHost == true)
-	{
-		ServerSetNewSkeletalMesh(0);
-	}
-	else
-	{
-		ServerSetNewSkeletalMesh(GetAvatarData());
 	}
 }
 
