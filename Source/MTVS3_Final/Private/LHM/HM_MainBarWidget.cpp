@@ -31,14 +31,13 @@ void UHM_MainBarWidget::NativeConstruct()
 	Btn_HttpTest01->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest01);
 	Btn_HttpTest02->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest02);
 	Btn_HttpTest03->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest03);
-	
+
 	SetVisibleSwitcher(false);
 
-	if(WBP_inventory)
+	if (WBP_inventory)
 	{
-		WBP_inventory->OnClickedBack_InvenBtn.AddDynamic(this,&UHM_MainBarWidget::CloseAllCategory);
+		WBP_inventory->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::CloseAllCategory);
 	}
-
 }
 
 void UHM_MainBarWidget::SetVisibleSwitcher(bool bVisible)
@@ -61,17 +60,21 @@ void UHM_MainBarWidget::SetWidgetSwitcher(int32 num)
 
 void UHM_MainBarWidget::OnClickedEmojiBtn()
 {
+	//이모티콘 버튼 누르면
 	bIsEmojiVisible = !bIsEmojiVisible;
 
 	if (bIsEmojiVisible)
 	{
+		//스위처 0번 이모지 띄우기
 		SetWidgetSwitcher(0);
 		SetVisibleSwitcher(true);
+		//메뉴바 켜져있으면 끄기
 		if (bIsMenuVisible)
 		{
 			OnClickedMenuBtn();
 		}
-		if(bIsChatVisible)
+		//채팅창 켜져있으면 끄기
+		if (bIsChatVisible)
 		{
 			CloseButtonPressed();
 		}
@@ -88,13 +91,13 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 
 	if (bIsCollectionBookVisible)
 	{
-		SetWidgetSwitcher(1);
+		SetWidgetSwitcher(2);
 		SetVisibleSwitcher(true);
 		if (bIsMenuVisible)
 		{
 			OnClickedMenuBtn();
 		}
-		if(bIsChatVisible)
+		if (bIsChatVisible)
 		{
 			CloseButtonPressed();
 		}
@@ -111,13 +114,13 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 
 	if (bIsNoticeVisible)
 	{
-		SetWidgetSwitcher(2);
 		SetVisibleSwitcher(true);
+		SetWidgetSwitcher(1);
 		if (bIsMenuVisible)
 		{
 			OnClickedMenuBtn();
 		}
-		if(bIsChatVisible)
+		if (bIsChatVisible)
 		{
 			CloseButtonPressed();
 		}
@@ -144,6 +147,15 @@ void UHM_MainBarWidget::OnClickedMenuBtn()
 {
 	//이모티콘이랑 알림 버튼 on
 	bIsMenuVisible = !bIsMenuVisible;
+	//이모티콘, 알림 비지블 켜져있으면 같이 꺼주기
+	if (bIsNoticeVisible)
+	{
+		bIsNoticeVisible = !bIsNoticeVisible;
+	}
+	if (bIsEmojiVisible)
+	{
+		bIsEmojiVisible = !bIsEmojiVisible;
+	}
 	if (bIsMenuVisible)
 	{
 		Can_0_Menu->SetVisibility(ESlateVisibility::Visible);
@@ -157,7 +169,6 @@ void UHM_MainBarWidget::OnClickedMenuBtn()
 void UHM_MainBarWidget::OnClickedChatBtn()
 {
 	//Main UI에 있는 채팅창 켜지게. 꺼지게. 델리게이트 연결함
-	
 }
 
 void UHM_MainBarWidget::OnClickedSettingBtn()
@@ -166,14 +177,6 @@ void UHM_MainBarWidget::OnClickedSettingBtn()
 	//세팅창 켜지게
 	if (bIsSettingsVisible)
 	{
-		if (bIsMenuVisible)
-		{
-			OnClickedMenuBtn();
-		}
-		if(bIsChatVisible)
-		{
-			CloseButtonPressed();
-		}
 		SetWidgetSwitcher(3);
 		SetVisibleSwitcher(true);
 	}
@@ -210,7 +213,7 @@ void UHM_MainBarWidget::CloseAllCategory()
 	{
 		OnClickedSettingBtn();
 	}
-	if(bIsChatVisible)
+	if (bIsChatVisible)
 	{
 		CloseButtonPressed();
 	}
@@ -220,7 +223,7 @@ void UHM_MainBarWidget::CloseAllCategory()
 void UHM_MainBarWidget::OnClickedHttpTest01()
 {
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI && !HttpActor2) return;
 
@@ -231,7 +234,7 @@ void UHM_MainBarWidget::OnClickedHttpTest01()
 void UHM_MainBarWidget::OnClickedHttpTest02()
 {
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI && !HttpActor2) return;
 	// 예매 티켓 정보 불러오기 요청
@@ -241,10 +244,10 @@ void UHM_MainBarWidget::OnClickedHttpTest02()
 void UHM_MainBarWidget::OnClickedHttpTest03()
 {
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI && !HttpActor2) return;
 	// 좌석 결제 요청
-	HttpActor2->ReqPostPaymentSeat(HttpActor2->GetMyReceptionSeatId(), GI->GetAccessToken());
+	HttpActor2->ReqPostPaymentSeat(HttpActor2->GetMyReceptionSeatId() , GI->GetAccessToken());
 }
 #pragma endregion

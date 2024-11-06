@@ -40,8 +40,6 @@ public:
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_Back_Inven;
-	UFUNCTION()
-	void OnClickedBack_Inven();
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UHorizontalBox* Hori_InvenBox_00_PlayerTitle;
@@ -66,4 +64,23 @@ public:
 	class UButton* Btn_02_Sticker;
 	UFUNCTION()
 	void OnClicked_Sticker();
+
+
+	//칭호,티켓,스티커 정보 받아오기
+	UFUNCTION()
+	void SetPlayerTitleInfo();
+	UFUNCTION()
+	void SetPlayerTicketsInfo();
+	UFUNCTION()
+	void SetPlayerStickerInfo();
+
+	//플레이어 칭호 적용
+	UFUNCTION()
+	void SetPlayerTitle(int32 TitleID);
+
+	//정보창 띄우기
+	UFUNCTION()
+	void ShowInfoWin();
+
+	
 };
