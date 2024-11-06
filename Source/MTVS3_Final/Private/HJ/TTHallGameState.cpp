@@ -66,7 +66,20 @@ void ATTHallGameState::HideLuckyDrawInvitation(const TArray<FString>& NicknameLi
 	for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
 	{
 		ATTPlayer* TTPlayer = *It;
-		if ( TTPlayer && !TTPlayer->bIsHost)
+
+		if (!TTPlayer)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Found null TTPlayer"));
+			continue;
+		}
+
+		if (!IsValid(TTPlayer))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Found invalid TTPlayer"));
+			continue;
+		}
+		
+		if ( !TTPlayer->bIsHost)
 		{
 			if (NicknameList.Contains(TTPlayer->GetNickname()))
 			{
