@@ -324,22 +324,7 @@ void ATTPlayer::MulticastSetNickname_Implementation()
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
-	/*if (HasAuthority())
-	{
-		bIsHost = _bIsHost;
-	}*/
-	bIsHost = _bIsHost;
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (GI) GI->SetbIsHost(bIsHost);
-
-	if (GetbIsHost() == true)
-	{
-		if (GetbIsHost() == true) ServerSetNewSkeletalMesh(0);
-	}
-	else
-	{
-		ServerSetNewSkeletalMesh(GetAvatarData());
-	}
+	ServerSetbIsHost(_bIsHost);
 }
 
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
@@ -417,13 +402,39 @@ void ATTPlayer::OnRep_bIsHost()
 	}
 }
 
+void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
+{
+	bIsHost = _bIsHost;
+
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI) GI->SetbIsHost(bIsHost);
+
+	if (bIsHost == true)
+	{
+		ServerSetNewSkeletalMesh(0);
+	}
+	else
+	{
+		ServerSetNewSkeletalMesh(GetAvatarData());
+	}
+}
+
 void ATTPlayer::ServerSetNewSkeletalMesh_Implementation(const int32& _AvatarData)
 {
-	USkeletalMesh* Avatar1Mesh = LoadObject<USkeletalMesh>(nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* Avatar2Mesh = LoadObject<USkeletalMesh>(nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* Avatar3Mesh = LoadObject<USkeletalMesh>(nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* Avatar4Mesh = LoadObject<USkeletalMesh>(nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* ManagerMesh = LoadObject<USkeletalMesh>(nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/KHJ/Assets/SM_Manager.SM_Manager'"));
+	USkeletalMesh* Avatar1Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar2Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar3Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar4Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* ManagerMesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/KHJ/Assets/SM_Manager.SM_Manager'"));
 
 	switch (_AvatarData)
 	{
