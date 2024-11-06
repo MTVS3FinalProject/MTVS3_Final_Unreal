@@ -20,11 +20,11 @@ void UHM_TicketCustom::NativeConstruct()
 	Btn_Save->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedSaveButton);
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
 
-	SetupDraggableImage(Img_Sticker01);
-	SetupDraggableImage(Img_Sticker02);
-	SetupDraggableImage(Img_Sticker03);
-	SetupDraggableImage(Img_Sticker04);
-	SetupDraggableImage(Img_Sticker05);
+	// SetupDraggableImage(Img_Sticker01);
+	// SetupDraggableImage(Img_Sticker02);
+	// SetupDraggableImage(Img_Sticker03);
+	// SetupDraggableImage(Img_Sticker04);
+	// SetupDraggableImage(Img_Sticker05);
 	
 	bIsDragging = false;
 }
@@ -41,10 +41,11 @@ void UHM_TicketCustom::SetupDraggableImage(UImage* Image)
 
 FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
+	// 현재 마우스 위치에서 드래그 시작
 	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
+		// 드래그 시작
 		bIsDragging = true;
-		//CurrentImage = Cast<UImage>(MouseEvent.GetEffectingButton());
 		DragOffset = MouseEvent.GetScreenSpacePosition() - MyGeometry.GetAbsolutePosition();
 		return FReply::Handled();
 	}
@@ -53,10 +54,11 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 
 FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
-	if (bIsDragging && CurrentImage)
+	if (bIsDragging)
 	{
+		// 드래그 중일 때 현재 마우스 위치를 계산하여 위치 변경
 		FVector2D NewPosition = MouseEvent.GetScreenSpacePosition() - DragOffset;
-		CurrentImage->SetRenderTranslation(NewPosition);
+		this->SetRenderTranslation(NewPosition); // 현재 위젯의 위치 변경
 		return FReply::Handled();
 	}
 	return FReply::Unhandled();
@@ -67,22 +69,22 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 {
 	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
+		// 드래그 종료
 		bIsDragging = false;
-        CurrentImage = nullptr;  // 드래그 종료
 		return FReply::Handled();
 	}
 	return FReply::Unhandled();
 }
 
-void UHM_TicketCustom::SetRotation(FWidgetTransform NewRotation)
-{
-	this->SetRenderTransform(NewRotation);
-}
-
-void UHM_TicketCustom::SetScale(FVector2D NewScale)
-{
-	this->SetRenderScale(NewScale);
-}
+// void UHM_TicketCustom::SetRotation(FWidgetTransform NewRotation)
+// {
+// 	this->SetRenderTransform(NewRotation);
+// }
+//
+// void UHM_TicketCustom::SetScale(FVector2D NewScale)
+// {
+// 	this->SetRenderScale(NewScale);
+// }
 
 void UHM_TicketCustom::OnClickedResetSticker01Button()
 {

@@ -37,13 +37,13 @@ protected:
 	virtual FReply NativeOnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 
-	void SetRotation(FWidgetTransform NewRotation);
-	void SetScale(FVector2D NewScale);
+	//void SetRotation(FWidgetTransform NewRotation);
+	//void SetScale(FVector2D NewScale);
 
 	bool bIsDragging;
 	FVector2D DragOffset;
     class UImage* CurrentImage;
-
+	FVector2D OriginalPosition;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_ResetSticker01;
