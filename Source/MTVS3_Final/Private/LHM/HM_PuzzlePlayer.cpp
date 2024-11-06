@@ -254,12 +254,12 @@ void AHM_PuzzlePlayer::OnMyActionRunComplete(const FInputActionValue& Value)
 
 void AHM_PuzzlePlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Pickup Action Triggered"));
+	//UE_LOG(LogTemp, Warning, TEXT("Pickup Action Triggered"));
 
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
-	   FString::Printf(TEXT("bIsZoomingIn: %s, bHasPiece: %s"), 
-	   bIsZoomingIn ? TEXT("True") : TEXT("False"), 
-	   bHasPiece ? TEXT("True") : TEXT("False")));
+	// GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, 
+	//    FString::Printf(TEXT("bIsZoomingIn: %s, bHasPiece: %s"), 
+	//    bIsZoomingIn ? TEXT("True") : TEXT("False"), 
+	//    bHasPiece ? TEXT("True") : TEXT("False")));
 
 	if (bIsZoomingIn && bHasPiece)
 	{
@@ -306,8 +306,8 @@ void AHM_PuzzlePlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 void AHM_PuzzlePlayer::MyTakePiece()
 {
 	ZoomOut();
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
-				FString::Printf(TEXT("MyTakePiece")));
+	// GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+	// 			FString::Printf(TEXT("MyTakePiece")));
 
 	// 플레이어 컨트롤러 가져오기
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -350,8 +350,8 @@ void AHM_PuzzlePlayer::MyTakePiece()
 							FString TagName = FString::Printf(TEXT("Piece%d"), i);
 							if (HitComponent->ComponentHasTag(FName(*TagName)))
 							{
-								GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
-																 FString::Printf(TEXT("Found piece with tag: %s"), *TagName));
+								//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
+								//								 FString::Printf(TEXT("Found piece with tag: %s"), *TagName));
 								TargetPieceComp = HitComponent;
 
 								// 서버로 소유 요청을 보냄
@@ -373,8 +373,8 @@ void AHM_PuzzlePlayer::MyReleasePiece()
 		return;
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
-			FString::Printf(TEXT("MyReleasePiece")));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+		//	FString::Printf(TEXT("MyReleasePiece")));
 		ServerRPCReleasePiece();
 	}
 }
@@ -385,8 +385,8 @@ void AHM_PuzzlePlayer::MyLaunchPiece()
 		return;
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
-			FString::Printf(TEXT("MyLaunchPiece")));
+		//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, 
+		//	FString::Printf(TEXT("MyLaunchPiece")));
 		ServerRPCLaunchPiece();
 	}
 }
@@ -487,7 +487,7 @@ void AHM_PuzzlePlayer::ZoomIn()
 				//bIsZoomingIn = true; // 줌 인 상태로 고정
 			}
 		}, 0.01f, true);
-		UE_LOG(LogTemp, Log, TEXT("ZoomIn Started"));
+		//UE_LOG(LogTemp, Log, TEXT("ZoomIn Started"));
 	}
 }
 
@@ -510,7 +510,7 @@ void AHM_PuzzlePlayer::ZoomOut()
 				//bIsZoomingIn = false; // 줌 아웃 상태로 고정
 			}
 		}, 0.01f, true);
-		UE_LOG(LogTemp, Log, TEXT("ZoomOut Completed"));
+		//UE_LOG(LogTemp, Log, TEXT("ZoomOut Completed"));
 	}
 }
 

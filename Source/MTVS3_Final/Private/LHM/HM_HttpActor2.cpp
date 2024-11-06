@@ -207,8 +207,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					int32 RemainingTickets = ResponseObject->GetIntegerField(TEXT("remainingTickets"));
 					
 					// RemainingTickets을 GameInstance에 저장
-					GI->SetRemainingTicketCount(RemainingTickets);
-					TicketingUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
+					TicketingUI->SetTextRemainingTicket(RemainingTickets);
 					MainUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
 					UE_LOG(LogTemp, Log, TEXT("RemainingTicketCount: %d"), GI->GetRemainingTicketCount());
 
@@ -447,9 +446,8 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 					UE_LOG(LogTemp , Log , TEXT("RemainingTicket : %d") , RemainingTicket);
 					UE_LOG(LogTemp , Log , TEXT("CompetitionRate : %d") , CompetitionRate);
 
-					if( GI && MainUI )
+					if( MainUI )
 					{
-						GI->SetRemainingTicketCount(RemainingTicket);
 						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 					}
 
@@ -619,8 +617,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 					if ( GI && TicketingUI )
 					{
 						// 접수 취소 성공했을 때
-						GI->SetRemainingTicketCount(RemainingTicket);
-						TicketingUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
+						TicketingUI->SetTextRemainingTicket(RemainingTicket);
 						TicketingUI->SetCompletedVisible(false);
 						TicketingUI->SetWidgetSwitcher(0);
 					}
