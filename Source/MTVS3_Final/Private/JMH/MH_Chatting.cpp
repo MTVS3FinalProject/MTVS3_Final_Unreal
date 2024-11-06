@@ -2,7 +2,6 @@
 
 
 #include "JMH/MH_Chatting.h"
-
 #include "Components/Button.h"
 #include "Components/EditableText.h"
 #include "Components/ScrollBox.h"
