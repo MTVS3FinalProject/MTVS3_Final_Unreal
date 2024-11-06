@@ -81,88 +81,13 @@ void AMH_MinimapActor::BeginPlay()
 void AMH_MinimapActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-/*
-	if( Player == nullptr )
-	{
-		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-		if( PlayerController == nullptr )	return;
-		UE_LOG(LogTemp, Warning, TEXT("MiniMap Player : 0000000000000000000"));
-		if( PlayerController->GetCharacter() == nullptr )	return;
-		UE_LOG(LogTemp, Warning, TEXT("MiniMap Player : 11111111111111111111"));
-		if( !PlayerController->GetCharacter()->IsLocallyControlled() )	return;
-		{
-			UE_LOG(LogTemp, Warning, TEXT("MiniMap Player : 22222222222222222222222"));
-			Player = PlayerController->GetCharacter();
-			if (Player)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("MiniMap Player : %s"), *Player->GetName());
-				MinimapCameraBoom->AttachToComponent(Player->GetRootComponent() , FAttachmentTransformRules::KeepRelativeTransform);
-				MinimapSprite->AttachToComponent(Player->GetRootComponent() , FAttachmentTransformRules::KeepRelativeTransform);
-			}
-
-			if (MinimapRenderTargetClass)
-			{
-				MinimapCapture->TextureTarget = NewObject<UTextureRenderTarget2D>(this , MinimapRenderTargetClass);
-			}
-
-			if (MinimapSpriteClass)
-			{
-				MinimapSprite->SetSprite(NewObject<UPaperSprite>(this , MinimapSpriteClass));
-			}
-
-			//플레이어 메쉬 숨김
-			MinimapCapture->ShowFlags.SetSkeletalMeshes(false);
-			// 그림자도 숨김
-			// 동적 그림자 비활성화
-			MinimapCapture->ShowFlags.DynamicShadows = false;
-		}		
-	}
 	
-*/
 	ApplyMinimap();
 
 }
 
 void AMH_MinimapActor::ApplyMinimap()
 {
-	if( Player == nullptr )	return;
-	
-	// 오너 캐릭터 확인 및 미니맵 업데이트
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	if( PlayerController && PlayerController->IsLocalController() )
-	{
-		
-			Player = PlayerController->GetCharacter();
-			if (Player)
-			{
-				//카메라 위치 업뎃
-				FVector PlayerLocation = Player->GetActorLocation();
-				FVector MinimapCameraLocation = FVector(PlayerLocation.X , PlayerLocation.Y , PlayerLocation.Z + 500.f);
-				MinimapCameraBoom->SetWorldLocation(MinimapCameraLocation);
-				MinimapSprite->SetWorldLocation(FVector(PlayerLocation.X , PlayerLocation.Y , PlayerLocation.Z + 300.f));
-
-				//플레이어 회전값
-				FRotator PlayerRotation = Player->GetActorRotation();
-
-				// 플레이어의 카메라 회전값 가져오기
-				FRotator CameraRotation;
-				if (Player->GetController())
-				{
-					CameraRotation = Player->GetControlRotation(); // 플레이어의 카메라(컨트롤러) 회전 값
-				}
-				// 미니맵 캡처의 회전을 카메라의 회전 값에 맞춰 설정
-				FRotator MinimapRotation = FRotator(-90.f , CameraRotation.Yaw , 0.f);
-				MinimapCapture->SetWorldRotation(MinimapRotation);
-
-				//플레이어의 회전 포인트 이미지에 적용
-				FRotator MinimapSpriteRotation = FRotator(
-					FRotator::MakeFromEuler(FVector(90.f , 0.f , PlayerRotation.Yaw - 90.f)));
-				MinimapSprite->SetWorldRotation(MinimapSpriteRotation);
-			}
-		
-	}
-	
-	/*
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this , 0);
 	if (PlayerController)
 	{
@@ -194,6 +119,6 @@ void AMH_MinimapActor::ApplyMinimap()
 			MinimapSprite->SetWorldRotation(MinimapSpriteRotation);
 		}
 	}
-	*/
+	
 }
 
