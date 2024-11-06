@@ -394,11 +394,11 @@ void ATTPlayer::OnRep_bIsHost()
 {
 	if (GetbIsHost() == true)
 	{
-		if (GetbIsHost() == true) ServerSetNewSkeletalMesh(0);
+		if (GetbIsHost() == true) SetNewSkeletalMesh(0);
 	}
 	else
 	{
-		ServerSetNewSkeletalMesh(AvatarData);
+		SetNewSkeletalMesh(GetAvatarData());
 	}
 }
 
@@ -1039,6 +1039,43 @@ void ATTPlayer::SwitchCameraOnPiece(bool _bIsThirdPerson)
 				CameraMgr->ViewPitchMax = 50.0f;
 			}
 		}
+	}
+}
+
+void ATTPlayer::SetNewSkeletalMesh(const int32& _AvatarData)
+{
+	USkeletalMesh* Avatar1Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar2Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar3Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar4Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* ManagerMesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/KHJ/Assets/SM_Manager.SM_Manager'"));
+
+	switch (_AvatarData)
+	{
+	case 1:
+		if (Avatar1Mesh) GetMesh()->SetSkeletalMesh(Avatar1Mesh);
+		break;
+	case 2:
+		if (Avatar2Mesh) GetMesh()->SetSkeletalMesh(Avatar2Mesh);
+		break;
+	case 3:
+		if (Avatar3Mesh) GetMesh()->SetSkeletalMesh(Avatar3Mesh);
+		break;
+	case 4:
+		if (Avatar4Mesh) GetMesh()->SetSkeletalMesh(Avatar4Mesh);
+		break;
+	default:
+		if (ManagerMesh) GetMesh()->SetSkeletalMesh(ManagerMesh);
+		break;
 	}
 }
 

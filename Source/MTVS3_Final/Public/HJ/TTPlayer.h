@@ -243,6 +243,8 @@ public:
 	UPROPERTY(Transient)
 	class ULevelSequencePlayer* SequencePlayer;
 
+	void SetNewSkeletalMesh(const int32& _AvatarData);
+
 	// ====================퍼즐====================
 	// 잡은 피스 조각의 참조
 	UPROPERTY(Replicated)
