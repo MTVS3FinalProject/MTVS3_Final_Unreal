@@ -87,6 +87,7 @@ void ATTPlayer::BeginPlay()
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
 		{
 			SetNickname(GetNickname());
+			OnRep_Nickname();
 		}
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
@@ -134,7 +135,7 @@ void ATTPlayer::BeginPlay()
 		// TTHallMap의 시작은 Plaza(광장)
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
 		{
-			SwitchCamera(bIsThirdPerson);
+			// SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
 			// InitMainUI();
 

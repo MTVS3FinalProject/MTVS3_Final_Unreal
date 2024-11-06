@@ -169,8 +169,6 @@ public:
 	FString Nickname;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetNickname(const FString& _Nickname);
-	UFUNCTION(NetMulticast , Unreliable)
-	void MulticastSetNickname();
 	UFUNCTION(Server , Reliable)
 	void ServerSetNickname(const FString& _Nickname);
 	FString GetNickname() const { return Nickname; };
