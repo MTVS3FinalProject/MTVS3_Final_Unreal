@@ -102,9 +102,6 @@ public:
 	void OnRep_RandomSeatNumber();
 
 	UFUNCTION()
-	void OnRep_AvatarData();
-
-	UFUNCTION()
 	void OnRep_bIsHost();
 
 	UFUNCTION(Server , Reliable, BlueprintCallable)
@@ -116,6 +113,9 @@ public:
 	// 클라이언트 모두에게 메시를 변경하는 함수
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetNewSkeletalMesh(USkeletalMesh* NewMesh);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetbIsHost(const bool _bIsHost);
 
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
