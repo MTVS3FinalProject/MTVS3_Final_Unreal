@@ -3,6 +3,7 @@
 
 #include "JMH/MH_Inventory.h"
 
+#include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 
 void UMH_Inventory::NativeConstruct()
@@ -10,6 +11,11 @@ void UMH_Inventory::NativeConstruct()
 	Super::NativeConstruct();
 	//칭호에서 시작
 	OnClicked_PlayerTitle();
+
+	Btn_00_PlayerTitle->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_PlayerTitle);
+	Btn_01_Ticket->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket);
+	Btn_02_Sticker->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker);
+	Btn_Back_Inven->OnClicked.AddDynamic(this,&UMH_Inventory::CloseBtn_Inven);
 }
 
 void UMH_Inventory::SetWidgetSwitcher(int32 num)

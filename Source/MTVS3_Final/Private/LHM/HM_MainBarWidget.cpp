@@ -6,6 +6,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/WidgetSwitcher.h"
 #include "HJ/TTGameInstance.h"
+#include "JMH/MH_Inventory.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
 
@@ -21,7 +22,7 @@ void UHM_MainBarWidget::NativeConstruct()
 	Btn_Notice->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
 	Btn_lightMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedlightModeBtn);
 	Btn_DarkMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedDarkModeBtn);
-	Btn_Menu->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedlMenuBtn);
+	Btn_Menu->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedMenuBtn);
 	Btn_Chat->OnClicked.AddDynamic(this , &UHM_MainBarWidget::CloseButtonPressed);
 	Btn_Setting->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBtn);
 	Btn_Back_Settings->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBackBtn);
@@ -32,6 +33,12 @@ void UHM_MainBarWidget::NativeConstruct()
 	Btn_HttpTest03->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest03);
 	
 	SetVisibleSwitcher(false);
+
+	if(WBP_inventory)
+	{
+		WBP_inventory->OnClickedBack_InvenBtn.AddDynamic(this,&UHM_MainBarWidget::CloseAllCategory);
+	}
+
 }
 
 void UHM_MainBarWidget::SetVisibleSwitcher(bool bVisible)
@@ -62,7 +69,7 @@ void UHM_MainBarWidget::OnClickedEmojiBtn()
 		SetVisibleSwitcher(true);
 		if (bIsMenuVisible)
 		{
-			OnClickedlMenuBtn();
+			OnClickedMenuBtn();
 		}
 		if(bIsChatVisible)
 		{
@@ -85,7 +92,7 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 		SetVisibleSwitcher(true);
 		if (bIsMenuVisible)
 		{
-			OnClickedlMenuBtn();
+			OnClickedMenuBtn();
 		}
 		if(bIsChatVisible)
 		{
@@ -108,7 +115,7 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 		SetVisibleSwitcher(true);
 		if (bIsMenuVisible)
 		{
-			OnClickedlMenuBtn();
+			OnClickedMenuBtn();
 		}
 		if(bIsChatVisible)
 		{
@@ -133,7 +140,7 @@ void UHM_MainBarWidget::OnClickedDarkModeBtn()
 	//UI 다크모드로 변환
 }
 
-void UHM_MainBarWidget::OnClickedlMenuBtn()
+void UHM_MainBarWidget::OnClickedMenuBtn()
 {
 	//이모티콘이랑 알림 버튼 on
 	bIsMenuVisible = !bIsMenuVisible;
@@ -161,7 +168,7 @@ void UHM_MainBarWidget::OnClickedSettingBtn()
 	{
 		if (bIsMenuVisible)
 		{
-			OnClickedlMenuBtn();
+			OnClickedMenuBtn();
 		}
 		if(bIsChatVisible)
 		{
@@ -179,6 +186,34 @@ void UHM_MainBarWidget::OnClickedSettingBtn()
 void UHM_MainBarWidget::OnClickedSettingBackBtn()
 {
 	SetVisibleSwitcher(false);
+}
+
+void UHM_MainBarWidget::CloseAllCategory()
+{
+	if (bIsMenuVisible)
+	{
+		OnClickedMenuBtn();
+	}
+	if (bIsEmojiVisible)
+	{
+		OnClickedEmojiBtn();
+	}
+	if (bIsCollectionBookVisible)
+	{
+		OnClickedCollectionBookBtn();
+	}
+	if (bIsNoticeVisible)
+	{
+		OnClickedNoticeBtn();
+	}
+	if (bIsSettingsVisible)
+	{
+		OnClickedSettingBtn();
+	}
+	if(bIsChatVisible)
+	{
+		CloseButtonPressed();
+	}
 }
 
 #pragma region 현민 Http Test용

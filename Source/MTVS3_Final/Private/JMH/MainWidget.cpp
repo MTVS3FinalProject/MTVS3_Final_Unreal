@@ -14,6 +14,7 @@
 #include "Components/Image.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_Chatting.h"
+#include "JMH/MH_Inventory.h"
 
 
 void UMainWidget::NativeConstruct()
@@ -51,6 +52,7 @@ void UMainWidget::NativeConstruct()
 	{
 		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this , &UMainWidget::ShowChatUI);
 	}
+	
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)

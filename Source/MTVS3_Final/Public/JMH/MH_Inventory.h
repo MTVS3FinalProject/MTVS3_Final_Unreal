@@ -9,14 +9,28 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedBack_Inven);
+
 UCLASS()
 class MTVS3_FINAL_API UMH_Inventory : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+	FOnClickedBack_Inven OnClickedBack_InvenBtn;
 
+	bool bIsCollectionBookVisible = false;
+	
+	UFUNCTION()
+	void CloseBtn_Inven()
+	{
+		//상태 바꿔주고
+		bIsCollectionBookVisible = !bIsCollectionBookVisible;
+		//끄기
+		OnClickedBack_InvenBtn.Broadcast();
+	}
+	
 	virtual void NativeConstruct() override;
-
 	
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_InvenWidgetSwitcher;
