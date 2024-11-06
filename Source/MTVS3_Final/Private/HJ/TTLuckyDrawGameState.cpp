@@ -24,7 +24,7 @@ void ATTLuckyDrawGameState::BeginPlay()
         GameUI->AddToViewport();
         GameUI->SetWidgetSwitcher(0);
     }
-
+    
     for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
     {
         ATTPlayer* TTPlayer = *It;
@@ -42,7 +42,7 @@ void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
     for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
     {
         ATTPlayer* TTPlayer = *It;
-        if ( TTPlayer && !TTPlayer->GetbIsHost() && TTPlayer->GetRandomSeatNumber() == -1 )
+        if ( TTPlayer && !TTPlayer->GetbIsHost() && TTPlayer->GetRandomSeatNumber() == 0 )
         {
             TTPlayer->SetRandomSeatNumber(++CurrentSeatNumber);
 
@@ -52,6 +52,8 @@ void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
                     *TTPlayer->GetNickname() , TTPlayer->GetRandomSeatNumber()));
 
             NewSeatNumber = TTPlayer->GetRandomSeatNumber();
+
+            if (HasAuthority() && TTPlayer->GameUI) TTPlayer->GameUI->SetTextMyNum(TTPlayer->GetRandomSeatNumber());
             
             if (GameUI)
             {

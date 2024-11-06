@@ -101,8 +101,21 @@ public:
 	UFUNCTION()
 	void OnRep_RandomSeatNumber();
 
+	UFUNCTION()
+	void OnRep_bIsHost();
+
 	UFUNCTION(Server , Reliable, BlueprintCallable)
 	void ServerTeleportPlayer(bool bIsToConcertHall);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetNewSkeletalMesh(const int32& _AvatarData);
+
+	// 클라이언트 모두에게 메시를 변경하는 함수
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetNewSkeletalMesh(USkeletalMesh* NewMesh);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetbIsHost(const bool _bIsHost);
 
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
@@ -182,7 +195,7 @@ public:
 	void SetNickname(const FString& _Nickname);
 	FString GetNickname() const { return Nickname; };
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(ReplicatedUsing=OnRep_bIsHost, BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	bool bIsHost;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetbIsHost(const bool& _bIsHost);
@@ -196,11 +209,18 @@ public:
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 	// 랜덤으로 배치된 좌석 번호
-	UPROPERTY(/*Replicated*/ReplicatedUsing=OnRep_RandomSeatNumber , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	int32 RandomSeatNumber = -1;
+	UPROPERTY(ReplicatedUsing=OnRep_RandomSeatNumber , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	int32 RandomSeatNumber = 0;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
 	int32 GetRandomSeatNumber() const { return RandomSeatNumber; }
+
+	UPROPERTY(Replicated , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	int32 AvatarData = 1;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetAvatarData(const int32& _AvatarData);
+	int32 GetAvatarData() const { return AvatarData; }
+
 #pragma endregion
 
 	UPROPERTY(EditDefaultsOnly)
@@ -222,6 +242,8 @@ public:
 
 	UPROPERTY(Transient)
 	class ULevelSequencePlayer* SequencePlayer;
+
+	void SetNewSkeletalMesh(const int32& _AvatarData);
 
 	// ====================퍼즐====================
 	// 잡은 피스 조각의 참조

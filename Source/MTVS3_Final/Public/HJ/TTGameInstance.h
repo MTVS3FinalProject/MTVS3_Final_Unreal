@@ -64,7 +64,7 @@ struct FPlayerData
 	// 기본 생성자
 	FPlayerData()
 		: bIsHost(false) , nickname(TEXT("티케타카")) , accessToken(TEXT("-1")) ,
-		coin(-1) , remainingTicketCount(-1) , avatarData(-1), /*ConcertName(TEXT("-1")),*/ LuckyDrawSeatID(TEXT("-1"))
+		coin(-1) , remainingTicketCount(-1) , avatarData(1), /*ConcertName(TEXT("-1")),*/ LuckyDrawSeatID(TEXT("-1"))
 	{}
 };
 
