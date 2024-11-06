@@ -197,7 +197,7 @@ public:
 
 	// 랜덤으로 배치된 좌석 번호
 	UPROPERTY(/*Replicated*/ReplicatedUsing=OnRep_RandomSeatNumber , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	int32 RandomSeatNumber = -1;
+	int32 RandomSeatNumber = 0;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
 	int32 GetRandomSeatNumber() const { return RandomSeatNumber; }
