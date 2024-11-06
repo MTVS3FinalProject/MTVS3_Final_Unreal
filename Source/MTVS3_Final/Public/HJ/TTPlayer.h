@@ -182,7 +182,7 @@ public:
 	void SetNickname(const FString& _Nickname);
 	FString GetNickname() const { return Nickname; };
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(Replicated, BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	bool bIsHost;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetbIsHost(const bool& _bIsHost);
