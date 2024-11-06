@@ -11,8 +11,6 @@ void UHM_TicketCustom::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	Btn_ResetSticker01->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedResetSticker01Button);
-	Btn_ResetSticker02->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedResetSticker02Button);
 	Btn_ResetBackground->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedResetBackgroundButton);
 	Btn_Save->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedSaveButton);
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
@@ -60,13 +58,6 @@ UImage* UHM_TicketCustom::CreateDraggableImageCopy(UImage* SourceImage)
 	NewImage->bIsVariable = true;
 	NewImage->SetIsEnabled(true);
 
-	// 고유 ID 생성 (예: "CopiedImage_1", "CopiedImage_2" 등)
-	//FString ImageID = FString::Printf(TEXT("CopiedImage_%d"), CopiedImages.Num() + 1);
-	//CopiedImages.Add(NewImage, ImageID); // 맵에 이미지와 ID 매핑
-
-	// 클릭 이벤트 바인딩
-	//NewImage->OnMouseButtonDownEvent.BindUFunction(this, FName("OnCopiedImageClicked"));
-	
 	// 캔버스 패널 슬롯 설정
 	UCanvasPanelSlot* CanvasSlot = RootCanvas->AddChildToCanvas(NewImage);
 	if (!CanvasSlot) return nullptr;
@@ -79,9 +70,6 @@ UImage* UHM_TicketCustom::CreateDraggableImageCopy(UImage* SourceImage)
 		CanvasSlot->SetPosition(SourceSlot->GetPosition());
 		CanvasSlot->SetZOrder(100);
 	}
-
-	
-	
 	return NewImage;
 }
 
@@ -89,8 +77,8 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 {
 	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
-		TArray<UImage*> Images = { Img_Sticker01, Img_Sticker02, Img_Sticker03, Img_Sticker04, Img_Sticker05 };
-		for (UImage* Image : Images)
+		TArray<UImage*> Img_Stickers {Img_Sticker01, Img_Sticker02, Img_Sticker03, Img_Sticker04, Img_Sticker05};
+		for (UImage* Image : Img_Stickers)
 		{
 			if (Image && Image->IsVisible() && Image->GetIsEnabled() == true)
 			{
@@ -104,16 +92,43 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 						bIsDragging = true;
 						CurrentImage = DraggedImageCopy;
                         
-						FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-						
 						// 초기 위치 설정
-						if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(DraggedImageCopy->Slot))
+						FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+						FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f, 86.5f));
+						
+						if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
 						{
 							CanvasSlot->SetSize(FVector2D(193,193));
-							CanvasSlot->SetPosition(LocalMousePosition);
+							CanvasSlot->SetPosition(AdjustedPosition);
+							CanvasSlot->SetZOrder(100);
 						}
+						Img_Copieds.Add(DraggedImageCopy);
 						return FReply::Handled().CaptureMouse(this->TakeWidget());
 					}
+				}
+			}
+		}
+		// 복사본 이미지 클릭 처리
+		for(UImage* Copied : Img_Copieds)
+		{
+			if (Copied && Copied->IsVisible() && Copied->GetIsEnabled() == true)
+			{
+				FGeometry ImageGeometry = Copied->GetCachedGeometry();
+				if (ImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+				{
+					bIsDragging = true;
+					CurrentImage = Copied;
+					
+					FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+					FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f, 86.5f));
+					
+					if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
+					{
+						CanvasSlot->SetSize(FVector2D(193,193));
+						CanvasSlot->SetPosition(AdjustedPosition);
+						CanvasSlot->SetZOrder(100);
+					}
+					return FReply::Handled().CaptureMouse(this->TakeWidget());
 				}
 			}
 		}
@@ -127,11 +142,12 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	{
 		// 마우스의 현재 위치를 로컬 좌표로 변환
 		FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-        
+		FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f, 86.5f));
+		
 		// 캔버스 슬롯의 위치 직접 업데이트
 		if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
 		{
-			CanvasSlot->SetPosition(LocalMousePosition);
+			CanvasSlot->SetPosition(AdjustedPosition);
         }
         
 		// 현재 이미지의 Transform 업데이트
@@ -150,44 +166,9 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 	{
 		bIsDragging = false;
 		CurrentImage = nullptr;
-		return FReply::Handled();
+		return FReply::Handled().ReleaseMouseCapture();
 	}
-	return FReply::Unhandled().ReleaseMouseCapture();
-}
-
-void UHM_TicketCustom::OnCopiedImageClicked()
-{
-	// ClickedImage = Cast<UImage>(GetOwningPlayer()->GetMousePosition()); // 클릭된 이미지 저장
-	// if (ClickedImage)
-	// {
-	// 	// 추가 작업 수행
-	// 	if (FString* ImageID = CopiedImages.Find(ClickedImage)) // 클릭된 이미지의 ID 가져오기
-	// 	{
-	// 		UE_LOG(LogTemp, Log, TEXT("Clicked image ID: %s"), **ImageID);
-	//
-	// 		// 특정 ID와 일치하는 경우 추가 작업 수행
-	// 		if (*ImageID == TEXT("CopiedImage_1")) // 첫 번째 이미지일 경우
-	// 		{
-	// 			UE_LOG(LogTemp, Log, TEXT("Special action for CopiedImage_1"));
-	//
-	// 			// ZOrder를 가장 위로 설정
-	// 			if (UCanvasPanelSlot* ClickedSlot = Cast<UCanvasPanelSlot>(ClickedImage->Slot))
-	// 			{
-	// 				ClickedSlot->SetZOrder(100);
-	// 			}
-	// 		}
-	// 	}
-	// }
-}
-
-void UHM_TicketCustom::OnClickedResetSticker01Button()
-{
-	// 스티커 이미지1 리셋 통신 요청
-}
-
-void UHM_TicketCustom::OnClickedResetSticker02Button()
-{
-	// 스티커 이미지2 리셋 통신 요청
+	return FReply::Unhandled();
 }
 
 void UHM_TicketCustom::OnClickedResetBackgroundButton()

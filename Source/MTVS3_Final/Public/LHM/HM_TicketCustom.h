@@ -18,6 +18,11 @@ class MTVS3_FINAL_API UHM_TicketCustom : public UUserWidget
 	
 public:
 	virtual void NativeConstruct() override;
+
+	UPROPERTY()
+	class UCanvasPanel* RootCanvas;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UImage* Img_TicketBackground;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UImage* Img_Sticker01;
@@ -30,37 +35,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UImage* Img_Sticker05;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UImage* Img_TicketBackground;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_ResetSticker01;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_ResetSticker02;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_ResetBackground;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_ResetTicketImage;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_Save;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_Exit;
-	
-	UFUNCTION()
-	void OnClickedResetSticker01Button();
-	UFUNCTION()
-	void OnClickedResetSticker02Button();
-	UFUNCTION()
-	void OnClickedResetBackgroundButton();
-	UFUNCTION()
-	void OnClickedResetTicketImageButton();
-	UFUNCTION()
-	void OnClickedSaveButton();
-	UFUNCTION()
-	void OnClickedExitButton();
-
-	UPROPERTY()
-	class UCanvasPanel* RootCanvas;
-
+	TArray<UImage*> Img_Copieds;
 	
 	void SetupDraggableImage(UImage* Image);
 	UImage* CreateDraggableImageCopy(UImage* SourceImage);
@@ -77,7 +52,26 @@ public:
 	UPROPERTY()
 	UImage* DraggedImageCopy;
 	UPROPERTY()
-	TMap<UImage*, FString> CopiedImages;
+	TArray<UImage*> DraggedImageCopies;
+
+
+#pragma region Button Functions
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_ResetBackground;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_ResetTicketImage;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_Save;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_Exit;
+	
 	UFUNCTION()
-	void OnCopiedImageClicked();
+	void OnClickedResetBackgroundButton();
+	UFUNCTION()
+	void OnClickedResetTicketImageButton();
+	UFUNCTION()
+	void OnClickedSaveButton();
+	UFUNCTION()
+	void OnClickedExitButton();
+#pragma endregion
 };
