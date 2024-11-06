@@ -44,8 +44,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void ApplyMinimap();
-
-	//
+	
 	// Render Target 텍스처
 	UPROPERTY()
 	UTextureRenderTarget2D* RenderTarget;
