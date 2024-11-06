@@ -327,6 +327,8 @@ void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 		bIsHost = _bIsHost;
 	}*/
 	bIsHost = _bIsHost;
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI) GI->SetbIsHost(bIsHost);
 }
 
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
@@ -1219,7 +1221,16 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
-		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap(Nothing)"));
+		if (GetbIsHost())
+		{
+			if (GI)
+			{
+				GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
+				GI->SwitchSession(EPlaceState::Plaza);
+				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap(Switch Session)"));
+			}
+		}
+		else UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap(Nothing)"));
 	/*GI->SwitchSession(EPlaceState::Plaza);
 	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
 	bIsCheat1Active = !bIsCheat1Active;*/
@@ -1411,6 +1422,7 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , bIsSitting);
 	DOREPLIFETIME(ATTPlayer , Nickname);
 	DOREPLIFETIME(ATTPlayer , RandomSeatNumber);
+	DOREPLIFETIME(ATTPlayer , bIsHost);
 
 	// 퍼즐
 	DOREPLIFETIME(ATTPlayer, bHasPiece);

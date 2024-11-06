@@ -30,6 +30,12 @@ void ATTHallGameState::BeginPlay()
 
 void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate)
 {
+	if (!GetWorld() || NicknameList.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetWorld() is invalid or NicknameList is empty."));
+		return;
+	}
+	
 	for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
 	{
 		ATTPlayer* TTPlayer = *It;
@@ -51,6 +57,12 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 
 void ATTHallGameState::HideLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate)
 {
+	if (!GetWorld() || NicknameList.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetWorld() is invalid or NicknameList is empty."));
+		return;
+	}
+	
 	for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
 	{
 		ATTPlayer* TTPlayer = *It;
