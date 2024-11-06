@@ -281,15 +281,7 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ATTPlayer::SetNickname(const FString& _Nickname)
 {
-	if (HasAuthority())
-	{
-		Nickname = _Nickname;
-		OnRep_Nickname();
-	}
-	else
-	{
-		ServerSetNickname(_Nickname);
-	}
+	ServerSetNickname(_Nickname);
 }
 
 void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
