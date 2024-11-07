@@ -99,7 +99,9 @@ void ATTPlayer::BeginPlay()
 	}
 	else // 로컬 플레이어일 때
 	{
+		if (HasAuthority()) GI->SetbIsHost(true);
 		SetbIsHost(GI->GetbIsHost());
+		
 		SetAvatarData(GI->GetAvatarData());
 		MulticastSetVisibilityTextRender(false);
 
@@ -1379,9 +1381,9 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
-		bIsCheat3Active = !bIsCheat3Active;
-		if (GI) GI->SetbIsHost(bIsCheat3Active);
-		SetbIsHost(bIsCheat3Active);
+		bIsHost = !bIsHost;
+		if (GI) GI->SetbIsHost(bIsHost);
+		SetbIsHost(bIsHost);
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTLuckyDrawMap"));

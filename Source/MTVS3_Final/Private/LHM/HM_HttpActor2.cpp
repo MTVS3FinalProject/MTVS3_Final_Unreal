@@ -208,8 +208,8 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					
 					// RemainingTickets을 GameInstance에 저장
 					TicketingUI->SetTextRemainingTicket(RemainingTickets);
-					MainUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
-					UE_LOG(LogTemp, Log, TEXT("RemainingTicketCount: %d"), GI->GetRemainingTicketCount());
+					MainUI->SetTextRemainingTicket(RemainingTickets);
+					UE_LOG(LogTemp, Log, TEXT("RemainingTicketCount: %d"), RemainingTickets);
 
 					// 1. FConcertInfo
 					FString ConcertJsonString;
@@ -453,7 +453,7 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 
 					if ( TicketingUI )
 					{
-						TicketingUI->SetTextRemainingTicket(GI->GetRemainingTicketCount());
+						TicketingUI->SetTextRemainingTicket(RemainingTicket);
 						TicketingUI->SetTextTicketPrice(SeatPrice);
 						TicketingUI->SetTextCompetitionRate(CompetitionRate);
 						TicketingUI->SetCompletedVisible(true);

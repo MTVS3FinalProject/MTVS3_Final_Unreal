@@ -202,7 +202,20 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 			UImage* Copied = ImagePair.CopiedImage;
 			UImage* Outline = ImagePair.OutlineImage;
 			UImage* RenderBtn = ImagePair.RenderBtnImage;
-			
+
+			// RenderBtn이 클릭되었는지 확인
+			if (RenderBtn && RenderBtn->IsVisible() && RenderBtn->GetIsEnabled())
+			{
+				FGeometry RenderBtnGeometry = RenderBtn->GetCachedGeometry();
+				if (RenderBtnGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+				{
+					// RenderBtn이 클릭된 경우에만 SetRenderScale, SetRenderAngle 호출
+					//SetRenderScale(Copied); // 또는 RenderBtn으로 변경 가능
+					//SetRenderAngle(Copied); // 또는 RenderBtn으로 변경 가능
+					//return FReply::Handled();
+				}
+			}
+			// CopiedImage가 클릭되었는지 확인
 			if (Copied && Copied->IsVisible() && Copied->GetIsEnabled() == true)
 			{
 				FGeometry ImageGeometry = Copied->GetCachedGeometry();
