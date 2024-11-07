@@ -184,9 +184,13 @@ void ATTPlayer::BeginPlay()
 	}
 }
 
-void ATTPlayer::PossessedBy(AController* NewController)
+void ATTPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::PossessedBy(NewController);
+	Super::EndPlay(EndPlayReason);
+
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (IsValid(GI) && (EndPlayReason == EEndPlayReason::EndPlayInEditor || EndPlayReason == EEndPlayReason::Quit))
+		GI->ExitSession();
 }
 
 // Called every frame
@@ -194,10 +198,18 @@ void ATTPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// 동기화 지연 있어서 Tick에 추가
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
+	switch (GI->GetPlaceState())
 	{
-		OnRep_RandomSeatNumber(); // 동기화 지연 있어서 Tick에 추가
+	case EPlaceState::Plaza:
+	case EPlaceState::ConcertHall:
+		OnRep_bIsHost();
+		OnRep_Nickname(); 
+		break;
+	case EPlaceState::LuckyDrawRoom:
+		OnRep_RandomSeatNumber();
+		break;
 	}
 
 	if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
@@ -315,9 +327,6 @@ void ATTPlayer::OnRep_Nickname()
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (GI) GI->SetbIsHost(_bIsHost);
-
 	ServerSetbIsHost(_bIsHost);
 }
 
@@ -603,6 +612,19 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 			TicketingUI->SetVisibleSwitcher(false , 1);
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 		}
+	}
+}
+
+void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
+{
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI) return;
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
+										   GI->GetAccessToken());
 	}
 }
 
@@ -1278,14 +1300,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 			if (bIsCheat1Active)
 			{
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1"));
-
-				AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-				if (HttpActor2)
-				{
-					HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
-					                                   GI->GetAccessToken());
-				}
+				ServerNoticeLucyDrawStart();
 
 				// MainUI 숨기기
 				MainUI->SetVisibleCanvas(false);
@@ -1365,6 +1380,7 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	case EPlaceState::ConcertHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
 		bIsCheat3Active = !bIsCheat3Active;
+		if (GI) GI->SetbIsHost(bIsCheat3Active);
 		SetbIsHost(bIsCheat3Active);
 		break;
 	case EPlaceState::LuckyDrawRoom:

@@ -22,7 +22,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void PossessedBy(AController* NewController) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	void UpdateNicknameUI();
 
@@ -86,6 +86,9 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetNewSkeletalMesh(const int32& _AvatarData);
+
+	UFUNCTION(Server, Reliable)
+	void ServerNoticeLucyDrawStart();
 
 	// 클라이언트 모두에게 메시를 변경하는 함수
 	UFUNCTION(NetMulticast, Reliable)

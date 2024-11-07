@@ -115,6 +115,7 @@ public:
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|State")
 	EPlaceState PlaceState = EPlaceState::Plaza;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")
 	void SetPlaceState(EPlaceState NextPlaceState);
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")
 	EPlaceState GetPlaceState() const { return PlaceState; }

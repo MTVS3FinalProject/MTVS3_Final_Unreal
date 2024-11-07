@@ -630,6 +630,74 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 		UE_LOG(LogTemp , Error , TEXT("Failed to cancel seat: %s") , *Response->GetContentAsString());
 	}
 }
+
+void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat2(FString SeatId, FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d") , *_url, GetConcertId(), GetMySeatId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId()); // 임의 seatId 1 SeatId => SeatName으로 변경?
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("DELETE"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor2::OnResDeleteCancelRegisteredSeat2);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					// 받아올 정보 추출
+					int32 RemainingTicket = ResponseObject->GetIntegerField(TEXT("remainingTicket"));
+					
+					if ( GI && TicketingUI )
+					{
+						// 접수 취소 성공했을 때
+						TicketingUI->SetTextRemainingTicket(RemainingTicket);
+						TicketingUI->SetVisibleSwitcher(false, 1);
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp , Error , TEXT("Failed to cancel seat: %s") , *Response->GetContentAsString());
+	}
+}
 #pragma endregion
 
 #pragma region Lucky Drawing
