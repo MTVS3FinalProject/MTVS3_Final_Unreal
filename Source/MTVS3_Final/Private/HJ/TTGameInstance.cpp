@@ -368,25 +368,6 @@ void UTTGameInstance::SetCoin(const int32& _Coin)
 	SetPlayerData(PlayerData);
 }
 
-/*void UTTGameInstance::AddCoin(int32 _Coin)
-{
-	PlayerData.Coin += _Coin;
-	SetPlayerData(PlayerData);
-}*/
-
-// 삭제 예정
-void UTTGameInstance::SetRemainingTicketCount(const int32& _RemainingTicketCount)
-{
-	PlayerData.remainingTicketCount = _RemainingTicketCount;
-	SetPlayerData(PlayerData);
-}
-
-/*void UTTGameInstance::UseRemainingTicket(int32 UsedTicketCount)
-{
-	PlayerData.RemainingTicketCount -= UsedTicketCount;
-	SetPlayerData(PlayerData);
-}*/
-
 void UTTGameInstance::SetAvatarData(const int32& _AvatarData)
 {
 	PlayerData.avatarData = _AvatarData;
