@@ -87,15 +87,17 @@ void ATTPlayer::BeginPlay()
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
 		{
 			SetNickname(GetNickname());
+			OnRep_Nickname();
 		}
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
 			SetRandomSeatNumber(GetRandomSeatNumber());
+			OnRep_RandomSeatNumber();
 		}
 		SetbIsHost(GetbIsHost());
 		SetAvatarData(GetAvatarData());
 	}
-	else
+	else // 로컬 플레이어일 때
 	{
 		SetbIsHost(GI->GetbIsHost());
 		SetAvatarData(GI->GetAvatarData());
@@ -134,7 +136,7 @@ void ATTPlayer::BeginPlay()
 		// TTHallMap의 시작은 Plaza(광장)
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
 		{
-			SwitchCamera(bIsThirdPerson);
+			// SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
 			// InitMainUI();
 
@@ -161,7 +163,7 @@ void ATTPlayer::BeginPlay()
 		}
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
-			SetRandomSeatNumber(GetRandomSeatNumber());
+			// SetRandomSeatNumber(GetRandomSeatNumber());
 			SwitchCamera(!bIsThirdPerson);
 		}
 
@@ -182,15 +184,33 @@ void ATTPlayer::BeginPlay()
 	}
 }
 
-void ATTPlayer::PossessedBy(AController* NewController)
+void ATTPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::PossessedBy(NewController);
+	Super::EndPlay(EndPlayReason);
+
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (IsValid(GI) && (EndPlayReason == EEndPlayReason::EndPlayInEditor || EndPlayReason == EEndPlayReason::Quit))
+		GI->ExitSession();
 }
 
 // Called every frame
 void ATTPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// 동기화 지연 있어서 Tick에 추가
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	switch (GI->GetPlaceState())
+	{
+	case EPlaceState::Plaza:
+	case EPlaceState::ConcertHall:
+		OnRep_bIsHost();
+		OnRep_Nickname(); 
+		break;
+	case EPlaceState::LuckyDrawRoom:
+		OnRep_RandomSeatNumber();
+		break;
+	}
 
 	if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
 	{
@@ -280,51 +300,70 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ATTPlayer::SetNickname(const FString& _Nickname)
 {
-	Nickname = _Nickname;
-
-	if (NicknameUIFactory)
-	{
-		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
-
-		// C++ 클래스로 캐스팅하여 접근
-		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-		NicknameUI->UpdateNicknameUI(Nickname);
-	}
-
-	if (IsLocallyControlled())
-	{
-		ServerSetNickname(_Nickname);
-
-		/*FTimerHandle ServerSetNicknameTimerHandle;
-		GetWorldTimerManager().SetTimer(ServerSetNicknameTimerHandle , [this, _Nickname]()
-		{
-			ServerSetNickname(_Nickname);
-		} , 0.5f , false);*/
-	}
+	ServerSetNickname(_Nickname);
 }
 
 void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
 {
 	Nickname = _Nickname;
-	UE_LOG(LogTemp , Warning , TEXT("ServerSetNickname: %s") , *GetNickname());
-	MulticastSetNickname();
-
-	/*FTimerHandle SetNicknameTimerHandle;
-	GetWorldTimerManager().SetTimer(SetNicknameTimerHandle , this , &ATTPlayer::MulticastSetNickname , 1.5f , false);*/
+	OnRep_Nickname();
 }
 
-void ATTPlayer::MulticastSetNickname_Implementation()
+void ATTPlayer::OnRep_Nickname()
 {
+	// 위젯이 없다면 생성
+	if (!NicknameUI && NicknameUIFactory)
+	{
+		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
+		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
+	}
+
+	// 닉네임 업데이트
 	if (NicknameUI)
 	{
-		UE_LOG(LogTemp , Warning , TEXT("MulticastSetNickname: %s") , *GetNickname());
-		NicknameUI->UpdateNicknameUI(GetNickname());
+		NicknameUI->UpdateNicknameUI(Nickname);
 	}
 }
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
 	ServerSetbIsHost(_bIsHost);
+}
+
+void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
+{
+	bIsHost = _bIsHost;
+
+	if (bIsHost == true)
+	{
+		ServerSetNewSkeletalMesh(0);
+	}
+	else
+	{
+		ServerSetNewSkeletalMesh(GetAvatarData());
+	}
+}
+
+void ATTPlayer::OnRep_bIsHost()
+{
+	if (GetbIsHost() == true)
+	{
+		SetNewSkeletalMesh(0);
+	}
+	else
+	{
+		SetNewSkeletalMesh(GetAvatarData());
+	}
+}
+
+void ATTPlayer::SetAvatarData(const int32& _AvatarData)
+{
+	ServerSetAvatarData(_AvatarData);
+}
+
+void ATTPlayer::ServerSetAvatarData_Implementation(const int32& _AvatarData)
+{
+	AvatarData = _AvatarData;
 }
 
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
@@ -338,84 +377,35 @@ void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 
 void ATTPlayer::SetRandomSeatNumber(const int32& _RandomSeatNumber)
 {
-	RandomSeatNumber = _RandomSeatNumber;
-
-	if (NicknameUIFactory)
+	if (HasAuthority())
 	{
-		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
-
-		// C++ 클래스로 캐스팅하여 접근
-		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
-		UE_LOG(LogTemp , Warning , TEXT("SetRandomSeatNumber: %d") , GetRandomSeatNumber());
+		RandomSeatNumber = _RandomSeatNumber;
+		OnRep_RandomSeatNumber();
 	}
-
-	ServerSetRandomSeatNumber(RandomSeatNumber);
-}
-
-void ATTPlayer::SetAvatarData(const int32& _AvatarData)
-{
-	AvatarData = _AvatarData;
+	else
+	{
+		ServerSetRandomSeatNumber(_RandomSeatNumber);
+	}
 }
 
 void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSeatNumber)
 {
 	RandomSeatNumber = _RandomSeatNumber;
-	UE_LOG(LogTemp , Warning , TEXT("ServerSetRandomSeatNumber_Implementation: %d") , GetRandomSeatNumber());
-
-	MulticastSetRandomSeatNumber();
-
-	/*FTimerHandle SetRandomSeatNumberTimerHandle;
-	// 1.5
-	GetWorldTimerManager().SetTimer(SetRandomSeatNumberTimerHandle , this , &ATTPlayer::MulticastSetRandomSeatNumber ,
-	                                1.5f , false);*/
-}
-
-void ATTPlayer::OnRep_Nickname()
-{
-	if (NicknameUI)
-	{
-		NicknameUI->UpdateNicknameUI(GetNickname());
-		UE_LOG(LogTemp , Warning , TEXT("NicknameUI: %s") , *GetNickname());
-	}
 }
 
 void ATTPlayer::OnRep_RandomSeatNumber()
 {
+	if (!NicknameUI && NicknameUIFactory)
+	{
+		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
+		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
+	}
+
+	// 닉네임UI, TextRenderComp 업데이트
 	if (NicknameUI)
 	{
 		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		UE_LOG(LogTemp , Warning , TEXT("OnRep_RandomSeatNumber: %d") , GetRandomSeatNumber());
-	}
-}
-
-void ATTPlayer::OnRep_bIsHost()
-{
-	if (GetbIsHost() == true)
-	{
-		if (GetbIsHost() == true) SetNewSkeletalMesh(0);
-	}
-	else
-	{
-		SetNewSkeletalMesh(GetAvatarData());
-	}
-}
-
-void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
-{
-	bIsHost = _bIsHost;
-
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (GI) GI->SetbIsHost(bIsHost);
-
-	if (bIsHost == true)
-	{
-		ServerSetNewSkeletalMesh(0);
-	}
-	else
-	{
-		ServerSetNewSkeletalMesh(GetAvatarData());
+		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
 	}
 }
 
@@ -470,16 +460,6 @@ void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , 170 , 0);
 
 	TeleportTo(TargetLocation , TargetRotation);
-}
-
-void ATTPlayer::MulticastSetRandomSeatNumber_Implementation()
-{
-	TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
-	if (NicknameUI)
-	{
-		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		UE_LOG(LogTemp , Warning , TEXT("Multicast RandomSeatNumber: %d") , GetRandomSeatNumber());
-	}
 }
 
 void ATTPlayer::ServerLuckyDrawStart_Implementation()
@@ -1394,7 +1374,7 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	case EPlaceState::ConcertHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
 		bIsCheat3Active = !bIsCheat3Active;
-		GI->SetbIsHost(bIsCheat3Active);
+		if (GI) GI->SetbIsHost(bIsCheat3Active);
 		SetbIsHost(bIsCheat3Active);
 		break;
 	case EPlaceState::LuckyDrawRoom:

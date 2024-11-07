@@ -16,8 +16,6 @@ void UMH_Chatting::NativeConstruct()
 
 	OwningPlayer = GetOwningPlayer();
 
-	Btn_Send->OnClicked.AddDynamic(this , &UMH_Chatting::UMH_Chatting::OnClickedSendBtn);
-
 	// PlayerController를 가져와 캐스팅
 	ChatPlayerControllerInstance = Cast<ATTPlayerController>(GetOwningPlayer());
 
