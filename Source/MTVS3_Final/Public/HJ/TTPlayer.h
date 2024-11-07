@@ -203,8 +203,6 @@ public:
 	void OnRep_RandomSeatNumber();
 	UFUNCTION(Server , Reliable)
 	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetRandomSeatNumber();
 
 	// 추첨을 시작할 좌석 ID
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")

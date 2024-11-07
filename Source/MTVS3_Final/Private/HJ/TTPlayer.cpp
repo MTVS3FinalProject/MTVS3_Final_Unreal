@@ -92,6 +92,7 @@ void ATTPlayer::BeginPlay()
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
 			SetRandomSeatNumber(GetRandomSeatNumber());
+			OnRep_RandomSeatNumber();
 		}
 		SetbIsHost(GetbIsHost());
 		SetAvatarData(GetAvatarData());
@@ -162,7 +163,7 @@ void ATTPlayer::BeginPlay()
 		}
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
-			SetRandomSeatNumber(GetRandomSeatNumber());
+			// SetRandomSeatNumber(GetRandomSeatNumber());
 			SwitchCamera(!bIsThirdPerson);
 		}
 
@@ -192,6 +193,12 @@ void ATTPlayer::PossessedBy(AController* NewController)
 void ATTPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
+	{
+		OnRep_RandomSeatNumber(); // 동기화 지연 있어서 Tick에 추가
+	}
 
 	if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
 	{
@@ -361,41 +368,35 @@ void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 
 void ATTPlayer::SetRandomSeatNumber(const int32& _RandomSeatNumber)
 {
-	RandomSeatNumber = _RandomSeatNumber;
-
-	if (NicknameUIFactory)
+	if (HasAuthority())
 	{
-		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
-
-		// C++ 클래스로 캐스팅하여 접근
-		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
-		UE_LOG(LogTemp , Warning , TEXT("SetRandomSeatNumber: %d") , GetRandomSeatNumber());
+		RandomSeatNumber = _RandomSeatNumber;
+		OnRep_RandomSeatNumber();
 	}
-
-	ServerSetRandomSeatNumber(RandomSeatNumber);
+	else
+	{
+		ServerSetRandomSeatNumber(_RandomSeatNumber);
+	}
 }
 
 void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSeatNumber)
 {
 	RandomSeatNumber = _RandomSeatNumber;
-	UE_LOG(LogTemp , Warning , TEXT("ServerSetRandomSeatNumber_Implementation: %d") , GetRandomSeatNumber());
-
-	MulticastSetRandomSeatNumber();
-
-	/*FTimerHandle SetRandomSeatNumberTimerHandle;
-	// 1.5
-	GetWorldTimerManager().SetTimer(SetRandomSeatNumberTimerHandle , this , &ATTPlayer::MulticastSetRandomSeatNumber ,
-	                                1.5f , false);*/
 }
 
 void ATTPlayer::OnRep_RandomSeatNumber()
 {
+	if (!NicknameUI && NicknameUIFactory)
+	{
+		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
+		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
+	}
+
+	// 닉네임UI, TextRenderComp 업데이트
 	if (NicknameUI)
 	{
 		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		UE_LOG(LogTemp , Warning , TEXT("OnRep_RandomSeatNumber: %d") , GetRandomSeatNumber());
+		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
 	}
 }
 
@@ -450,16 +451,6 @@ void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , 170 , 0);
 
 	TeleportTo(TargetLocation , TargetRotation);
-}
-
-void ATTPlayer::MulticastSetRandomSeatNumber_Implementation()
-{
-	TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
-	if (NicknameUI)
-	{
-		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		UE_LOG(LogTemp , Warning , TEXT("Multicast RandomSeatNumber: %d") , GetRandomSeatNumber());
-	}
 }
 
 void ATTPlayer::ServerLuckyDrawStart_Implementation()
@@ -1374,7 +1365,6 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	case EPlaceState::ConcertHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
 		bIsCheat3Active = !bIsCheat3Active;
-		GI->SetbIsHost(bIsCheat3Active);
 		SetbIsHost(bIsCheat3Active);
 		break;
 	case EPlaceState::LuckyDrawRoom:
