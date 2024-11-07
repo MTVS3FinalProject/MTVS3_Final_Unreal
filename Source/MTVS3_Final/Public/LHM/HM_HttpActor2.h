@@ -353,12 +353,18 @@ public:
     // 내가 접수한 좌석 조회 요청에 대한 응답
     void OnResGetMyRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
-	// 좌석 취소 요청
+	// 좌석 취소 요청1
 	void ReqDeleteCancelRegisteredSeat(FString SeatId , FString AccessToken);
 
-	// 좌석 취소 요청에 대한 응답
+	// 좌석 취소 요청에 대한 응답1
 	void OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
+	// 좌석 취소 요청2
+	void ReqDeleteCancelRegisteredSeat2(FString SeatId , FString AccessToken);
+
+	// 좌석 취소 요청에 대한 응답2
+	void OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
 #pragma endregion
 
 #pragma region HTTP : Lucky Drawing

@@ -6,7 +6,7 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
-#include "UObject/FastReferenceCollector.h"
+
 
 void UHM_TicketCustom::NativeConstruct()
 {
@@ -25,6 +25,7 @@ void UHM_TicketCustom::NativeConstruct()
 	SetupDraggableImage(Img_Sticker05);
 	
 	bIsDragging = false;
+	bIsRendering = false;
 	CurrentImage = nullptr;
     DraggedImageCopy = nullptr;
 
@@ -69,9 +70,73 @@ UImage* UHM_TicketCustom::CreateDraggableImageCopy(UImage* SourceImage)
 	{
 		CanvasSlot->SetAutoSize(true);
 		CanvasSlot->SetPosition(SourceSlot->GetPosition());
-		CanvasSlot->SetZOrder(100);
+		CanvasSlot->SetZOrder(101);
 	}
 	return NewImage;
+}
+
+std::pair<UImage*, UImage*> UHM_TicketCustom::CreateOutlineImageCopy(UImage* SourceImage)
+{
+	// 아웃라인, 조정버튼 이미지 생성
+	UImage* OutLineImage = NewObject<UImage>(this , UImage::StaticClass());
+	UImage* RenderBtnImage = NewObject<UImage>(this , UImage::StaticClass());
+	if (OutLineImage && RenderBtnImage)
+	{
+		// 아웃라인, 조정버튼 이미지의 텍스처 설정
+		UTexture2D* TextureResource1 = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
+		                                                                TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_Guide.T_Guide'")));
+		UTexture2D* TextureResource2 = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
+																		TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_Render.T_Render'")));
+		if (TextureResource1, TextureResource2)
+		{
+			OutLineImage->SetBrushFromTexture(TextureResource1);
+			RenderBtnImage->SetBrushFromTexture(TextureResource2);
+		}
+
+		// 속성 설정
+		OutLineImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
+		OutLineImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
+		OutLineImage->SetVisibility(ESlateVisibility::Hidden);
+		OutLineImage->bIsVariable = true;
+		OutLineImage->SetIsEnabled(true);
+		
+		RenderBtnImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
+		RenderBtnImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
+		RenderBtnImage->SetVisibility(ESlateVisibility::Hidden);
+		RenderBtnImage->bIsVariable = true;
+		RenderBtnImage->SetIsEnabled(true);
+
+		if (UCanvasPanelSlot* CurrentImageSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
+		{
+			// OutLineImage를 RootCanvas에 추가
+			UCanvasPanelSlot* NewOutLineSlot = RootCanvas->AddChildToCanvas(OutLineImage);
+			UCanvasPanelSlot* NewRenderBtnSlot = RootCanvas->AddChildToCanvas(RenderBtnImage);
+			if (NewOutLineSlot && NewRenderBtnSlot)
+			{
+				// CurrentImage의 위치와 크기를 NewCanvasSlot에 적용
+				NewOutLineSlot->SetPosition(CurrentImageSlot->GetPosition());
+				NewOutLineSlot->SetSize(CurrentImageSlot->GetSize());
+				NewOutLineSlot->SetZOrder(102); // ZOrder 설정으로 다른 이미지 위에 표시
+				
+				NewRenderBtnSlot->SetPosition(CurrentImageSlot->GetPosition()+ FVector2D(170));
+				NewRenderBtnSlot->SetSize(FVector2D(35));
+				NewRenderBtnSlot->SetZOrder(103);
+			}
+		}
+		Img_CopiedPairs.Add(FImagePair(CurrentImage, OutLineImage, RenderBtnImage));
+
+		// 복사된 이미지 배열 인덱스와 이름 출력
+		if (CurrentImage && OutLineImage && RenderBtnImage)
+		{
+			// OriginalImage와 OutlinedImage의 이름과 인덱스 로그 출력
+			UE_LOG(LogTemp, Log, TEXT("Img_CopiedPairs[%d]: CopiedImage = %s, OutlinedImage = %s, RenderBtnImage = %s"),
+				   Img_CopiedPairs.Num() - 1,
+				   *CurrentImage->GetName(),
+				   *OutLineImage->GetName(),
+				   *RenderBtnImage->GetName());
+		}
+	}
+	return std::make_pair(OutLineImage, RenderBtnImage);
 }
 
 void UHM_TicketCustom::SetRenderScale(UImage* Image, const FVector2D& MouseDelta)
@@ -87,7 +152,7 @@ void UHM_TicketCustom::SetRenderAngle(UImage* Image, const FVector2D& MouseDelta
 	// 마우스 이동에 따라 회전 각도 조정
 	// 임의 조절 비율 0.5
 	float AngleDelta = MouseDelta.X * 0.5f;
-	float CurrentAngle = Image->RenderTransform.Angle;
+	float CurrentAngle = Image->GetRenderTransformAngle();
 	Image->SetRenderTransformAngle(CurrentAngle + AngleDelta);
 }
 
@@ -120,15 +185,24 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 							CanvasSlot->SetPosition(AdjustedPosition);
 							CanvasSlot->SetZOrder(100);
 						}
-						Img_Copieds.Add(DraggedImageCopy);
+
+						// 아웃라인 생성
+						if (CurrentImage)
+						{
+							CreateOutlineImageCopy(CurrentImage);
+						}
 						return FReply::Handled().CaptureMouse(this->TakeWidget());
 					}
 				}
 			}
 		}
 		// 복사본 이미지 클릭 처리
-		for(UImage* Copied : Img_Copieds)
+		for(const FImagePair& ImagePair : Img_CopiedPairs)
 		{
+			UImage* Copied = ImagePair.CopiedImage;
+			UImage* Outline = ImagePair.OutlineImage;
+			UImage* RenderBtn = ImagePair.RenderBtnImage;
+			
 			if (Copied && Copied->IsVisible() && Copied->GetIsEnabled() == true)
 			{
 				FGeometry ImageGeometry = Copied->GetCachedGeometry();
@@ -144,7 +218,21 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 					{
 						CanvasSlot->SetSize(FVector2D(193));
 						CanvasSlot->SetPosition(AdjustedPosition);
-						CanvasSlot->SetZOrder(100);
+						CanvasSlot->SetZOrder(104);
+						
+						if(UCanvasPanelSlot* OutlineSlot = Cast<UCanvasPanelSlot>(Outline->Slot))
+						{
+							OutlineSlot->SetSize(FVector2D(193));
+							OutlineSlot->SetPosition(AdjustedPosition);
+							OutlineSlot->SetZOrder(105);
+						}
+						if(UCanvasPanelSlot* RenderBtnSlot = Cast<UCanvasPanelSlot>(RenderBtn->Slot))
+						{
+							RenderBtnSlot->SetSize(FVector2D(35));
+							RenderBtnSlot->SetPosition(AdjustedPosition + FVector2D(170));
+							RenderBtnSlot->SetZOrder(106);
+							UE_LOG(LogTemp , Log , TEXT("RenderBtn X :%f, Y:%f"),RenderBtnSlot->GetPosition().X, RenderBtnSlot->GetPosition().Y);
+						}
 					}
 					return FReply::Handled().CaptureMouse(this->TakeWidget());
 				}
@@ -161,18 +249,25 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 		// 마우스의 현재 위치를 로컬 좌표로 변환
 		FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
 		FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f));
-		
-		// 캔버스 슬롯의 위치 직접 업데이트
-		if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
+
+		// Img_CopiedPairs 배열에서 CurrentImage와 매칭되는 쌍을 찾음
+		for (FImagePair& ImagePair : Img_CopiedPairs)
 		{
-			CanvasSlot->SetPosition(AdjustedPosition);
-        }
-        
-		// 현재 이미지의 Transform 업데이트
-		//FWidgetTransform CurrentTransform = CurrentImage->GetRenderTransform();
-		//CurrentTransform.Translation = NewPosition;
-		//CurrentImage->SetRenderTransform(CurrentTransform);
-        
+			if (ImagePair.CopiedImage == CurrentImage)
+			{
+				// 캔버스 슬롯의 위치 직접 업데이트
+				UCanvasPanelSlot* CopiedSlot = Cast<UCanvasPanelSlot>(ImagePair.CopiedImage->Slot);
+				UCanvasPanelSlot* OutlineSlot = Cast<UCanvasPanelSlot>(ImagePair.OutlineImage->Slot);
+				UCanvasPanelSlot* RenderBtnSlot = Cast<UCanvasPanelSlot>(ImagePair.RenderBtnImage->Slot);
+				if (CopiedSlot && OutlineSlot && RenderBtnSlot)
+				{
+					CopiedSlot->SetPosition(AdjustedPosition);
+					OutlineSlot->SetPosition(AdjustedPosition);
+					RenderBtnSlot->SetPosition(AdjustedPosition+ FVector2D(170));
+				}
+			}
+		}
+
 		return FReply::Handled();
 	}
 	return FReply::Unhandled();
@@ -183,43 +278,21 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton && bIsDragging)
 	{
 		bIsDragging = false;
-		
-		 if (CurrentImage)
-		 {
-		 	// 아웃라인 이미지 생성
-		 	UImage* OutLineImage = NewObject<UImage>(this, UImage::StaticClass());
-		 	if (OutLineImage)
-		 	{
-		 		// 최종 이미지의 텍스처 설정
-		 		UTexture2D* TextureResource = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr, TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/Guide.Guide'")));
-		 		if (TextureResource)
-		 		{
-		 			OutLineImage->SetBrushFromTexture(TextureResource);
-		 		}
-		
-		 		// 새로운 이미지의 속성 설정
-		 		OutLineImage->SetDesiredSizeOverride(CurrentImage->GetBrush().GetImageSize());
-		 		OutLineImage->SetColorAndOpacity(CurrentImage->GetColorAndOpacity());
-		 		OutLineImage->SetVisibility(ESlateVisibility::Visible);
-		 		OutLineImage->bIsVariable = true;
-		 		OutLineImage->SetIsEnabled(true);
-		
-		 		// 캔버스에 추가
-		 		UCanvasPanelSlot* NewCanvasSlot = RootCanvas->AddChildToCanvas(OutLineImage);
-		 		if (NewCanvasSlot)
-		 		{
-		 			// 최종 이미지의 위치와 크기 설정 (원하는 위치에 맞게 조정 가능)
-		 			//FVector2D Position = CurrentImage->GetCachedGeometry().GetAbsolutePosition();
-		 			FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		 			FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(120));
-		 			NewCanvasSlot->SetPosition(AdjustedPosition);
-		 			NewCanvasSlot->SetSize(FVector2D(240));
-		 			NewCanvasSlot->SetZOrder(100); // ZOrder를 조정하여 다른 이미지 위에 표시
-		 			//UE_LOG(LogTemp , Log , TEXT("%d"), NewCanvasSlot->GetZOrder());
-		 		}
-		 	}
-		 }
 
+		for(FImagePair& ImagePair : Img_CopiedPairs)
+		{
+			if (ImagePair.CopiedImage == CurrentImage)
+			{
+				ImagePair.OutlineImage->SetVisibility(ESlateVisibility::Visible);
+				ImagePair.RenderBtnImage->SetVisibility(ESlateVisibility::Visible);
+			}
+			else
+			{
+				ImagePair.OutlineImage->SetVisibility(ESlateVisibility::Hidden);
+				ImagePair.RenderBtnImage->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+		
 		CurrentImage = nullptr;
 		return FReply::Handled().ReleaseMouseCapture();
 	}
