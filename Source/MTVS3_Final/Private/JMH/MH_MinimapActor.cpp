@@ -83,7 +83,7 @@ void AMH_MinimapActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	/*if (MinimapCameraBoom)
+	if (MinimapCameraBoom)
 	{
 		MinimapCameraBoom->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
 	}
@@ -91,7 +91,7 @@ void AMH_MinimapActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (MinimapSprite)
 	{
 		MinimapSprite->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-	}*/
+	}
 }
 
 void AMH_MinimapActor::ApplyMinimap()
