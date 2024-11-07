@@ -27,5 +27,4 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UButton* Btn_Item;
 	
-	
 };

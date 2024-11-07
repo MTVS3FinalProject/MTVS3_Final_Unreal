@@ -179,6 +179,14 @@ void UHM_MainBarWidget::OnClickedSettingBtn()
 	{
 		SetWidgetSwitcher(3);
 		SetVisibleSwitcher(true);
+		if (bIsMenuVisible)
+		{
+			OnClickedMenuBtn();
+		}
+		if (bIsChatVisible)
+		{
+			CloseButtonPressed();
+		}
 	}
 	else if (!bIsSettingsVisible)
 	{

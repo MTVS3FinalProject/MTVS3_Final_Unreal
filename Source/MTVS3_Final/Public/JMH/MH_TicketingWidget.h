@@ -114,10 +114,6 @@ public:
 	UFUNCTION()
 	void OnClickedConfirmButton();
 
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UButton* Btn_Cancel_Ticketting1;
-	UFUNCTION()
-	void OnClickedCancelButton();
 
 	
 	//추첨 입장전 게임 카운트다운
@@ -159,7 +155,13 @@ public:
 	
 	//취소
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Cancel_Ticketting1;
+	UFUNCTION()
+	void OnClickedCancelButton();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Cancel_Ticketting2;
+	UFUNCTION()
+	void OnClickedCancelButton2();
 
 	//설정
 	//PlayerVisible

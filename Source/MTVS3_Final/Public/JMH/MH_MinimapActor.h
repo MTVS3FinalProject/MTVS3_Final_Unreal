@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "PaperSprite.h"
 #include "GameFramework/Actor.h"
+#include "HJ/TTPlayer.h"
 #include "MH_MinimapActor.generated.h"
 
 UCLASS()
@@ -23,6 +24,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
 	class USpringArmComponent* MinimapCameraBoom;
@@ -48,5 +51,8 @@ public:
 	// Render Target 텍스처
 	UPROPERTY()
 	UTextureRenderTarget2D* RenderTarget;
+
+	UFUNCTION()
+	void InitializeMinimap(ACharacter* LocalPlayer);
 
 };

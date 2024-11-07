@@ -615,6 +615,19 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 	}
 }
 
+void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
+{
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI) return;
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
+										   GI->GetAccessToken());
+	}
+}
+
 void ATTPlayer::MyTakePiece()
 {
 	ZoomOut();
@@ -1287,14 +1300,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 			if (bIsCheat1Active)
 			{
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1"));
-
-				AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-				if (HttpActor2)
-				{
-					HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
-					                                   GI->GetAccessToken());
-				}
+				ServerNoticeLucyDrawStart();
 
 				// MainUI 숨기기
 				MainUI->SetVisibleCanvas(false);
