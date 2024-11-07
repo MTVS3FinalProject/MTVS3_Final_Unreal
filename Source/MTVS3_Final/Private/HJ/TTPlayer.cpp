@@ -99,7 +99,9 @@ void ATTPlayer::BeginPlay()
 	}
 	else // 로컬 플레이어일 때
 	{
+		if (HasAuthority()) GI->SetbIsHost(true);
 		SetbIsHost(GI->GetbIsHost());
+		
 		SetAvatarData(GI->GetAvatarData());
 		MulticastSetVisibilityTextRender(false);
 
