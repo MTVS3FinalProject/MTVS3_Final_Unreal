@@ -22,7 +22,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void PossessedBy(AController* NewController) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	void UpdateNicknameUI();
 
