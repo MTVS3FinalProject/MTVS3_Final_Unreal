@@ -6,6 +6,7 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "UObject/FastReferenceCollector.h"
 
 void UHM_TicketCustom::NativeConstruct()
 {
@@ -73,6 +74,23 @@ UImage* UHM_TicketCustom::CreateDraggableImageCopy(UImage* SourceImage)
 	return NewImage;
 }
 
+void UHM_TicketCustom::SetRenderScale(UImage* Image, const FVector2D& MouseDelta)
+{
+	// 마우스 이동 거리의 크기에 따라 Sclae 조정
+	// 임의 조절 비율 0.01
+	float ScaleFactor = 1 + MouseDelta.Y * 0.01f;
+	Image->SetRenderScale(FVector2D(ScaleFactor, ScaleFactor));
+}
+
+void UHM_TicketCustom::SetRenderAngle(UImage* Image, const FVector2D& MouseDelta)
+{
+	// 마우스 이동에 따라 회전 각도 조정
+	// 임의 조절 비율 0.5
+	float AngleDelta = MouseDelta.X * 0.5f;
+	float CurrentAngle = Image->RenderTransform.Angle;
+	Image->SetRenderTransformAngle(CurrentAngle + AngleDelta);
+}
+
 FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
 	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
@@ -95,7 +113,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 						// 초기 위치 설정
 						FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
 						FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f, 86.5f));
-						
+
 						if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
 						{
 							CanvasSlot->SetSize(FVector2D(193,193));
@@ -120,11 +138,11 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 					CurrentImage = Copied;
 					
 					FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-					FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f, 86.5f));
+					FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f));
 					
 					if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
 					{
-						CanvasSlot->SetSize(FVector2D(193,193));
+						CanvasSlot->SetSize(FVector2D(193));
 						CanvasSlot->SetPosition(AdjustedPosition);
 						CanvasSlot->SetZOrder(100);
 					}
@@ -142,7 +160,7 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	{
 		// 마우스의 현재 위치를 로컬 좌표로 변환
 		FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f, 86.5f));
+		FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f));
 		
 		// 캔버스 슬롯의 위치 직접 업데이트
 		if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
@@ -165,6 +183,43 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton && bIsDragging)
 	{
 		bIsDragging = false;
+		
+		 if (CurrentImage)
+		 {
+		 	// 아웃라인 이미지 생성
+		 	UImage* OutLineImage = NewObject<UImage>(this, UImage::StaticClass());
+		 	if (OutLineImage)
+		 	{
+		 		// 최종 이미지의 텍스처 설정
+		 		UTexture2D* TextureResource = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr, TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/Guide.Guide'")));
+		 		if (TextureResource)
+		 		{
+		 			OutLineImage->SetBrushFromTexture(TextureResource);
+		 		}
+		
+		 		// 새로운 이미지의 속성 설정
+		 		OutLineImage->SetDesiredSizeOverride(CurrentImage->GetBrush().GetImageSize());
+		 		OutLineImage->SetColorAndOpacity(CurrentImage->GetColorAndOpacity());
+		 		OutLineImage->SetVisibility(ESlateVisibility::Visible);
+		 		OutLineImage->bIsVariable = true;
+		 		OutLineImage->SetIsEnabled(true);
+		
+		 		// 캔버스에 추가
+		 		UCanvasPanelSlot* NewCanvasSlot = RootCanvas->AddChildToCanvas(OutLineImage);
+		 		if (NewCanvasSlot)
+		 		{
+		 			// 최종 이미지의 위치와 크기 설정 (원하는 위치에 맞게 조정 가능)
+		 			//FVector2D Position = CurrentImage->GetCachedGeometry().GetAbsolutePosition();
+		 			FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+		 			FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(120));
+		 			NewCanvasSlot->SetPosition(AdjustedPosition);
+		 			NewCanvasSlot->SetSize(FVector2D(240));
+		 			NewCanvasSlot->SetZOrder(100); // ZOrder를 조정하여 다른 이미지 위에 표시
+		 			//UE_LOG(LogTemp , Log , TEXT("%d"), NewCanvasSlot->GetZOrder());
+		 		}
+		 	}
+		 }
+
 		CurrentImage = nullptr;
 		return FReply::Handled().ReleaseMouseCapture();
 	}

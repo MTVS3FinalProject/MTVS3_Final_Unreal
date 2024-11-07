@@ -39,6 +39,8 @@ public:
 	
 	void SetupDraggableImage(UImage* Image);
 	UImage* CreateDraggableImageCopy(UImage* SourceImage);
+	void SetRenderScale(UImage* Image, const FVector2D& MouseDelta);
+	void SetRenderAngle(UImage* Image, const FVector2D& MouseDelta);
 	
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply NativeOnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
