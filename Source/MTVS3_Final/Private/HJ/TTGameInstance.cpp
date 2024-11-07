@@ -374,6 +374,7 @@ void UTTGameInstance::SetCoin(const int32& _Coin)
 	SetPlayerData(PlayerData);
 }*/
 
+// 삭제 예정
 void UTTGameInstance::SetRemainingTicketCount(const int32& _RemainingTicketCount)
 {
 	PlayerData.remainingTicketCount = _RemainingTicketCount;
