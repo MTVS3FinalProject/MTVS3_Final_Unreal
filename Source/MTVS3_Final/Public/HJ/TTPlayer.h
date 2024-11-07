@@ -394,4 +394,18 @@ private:
 	FTimerHandle StandUpTimerHandle;  // 타이머 핸들
 	
 	void ForceStandUp();
+	
+	
+	//MH
+public:
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	TSubclassOf<class AMH_MinimapActor> MinimapActorFac;
+
+	UPROPERTY()
+	class AMH_MinimapActor* MinimapActor;
+	
+	UFUNCTION()
+	void CreateMinimapActor();
+
 };

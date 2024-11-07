@@ -8,7 +8,6 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMH_MinimapActor::AMH_MinimapActor()
@@ -48,13 +47,12 @@ AMH_MinimapActor::AMH_MinimapActor()
 void AMH_MinimapActor::BeginPlay()
 {
 	Super::BeginPlay();
-
-	Player = UGameplayStatics::GetPlayerCharacter(this , 0);
+	
 	if (Player)
 	{
-		MinimapCameraBoom->AttachToComponent(Player->GetRootComponent() ,
-		                                     FAttachmentTransformRules::KeepRelativeTransform);
-		MinimapSprite->AttachToComponent(Player->GetRootComponent() , FAttachmentTransformRules::KeepRelativeTransform);
+		USpringArmComponent* PlayerCameraBoom = Player->FindComponentByClass<USpringArmComponent>();
+		//MinimapCameraBoom->AttachToComponent(PlayerCameraBoom, FAttachmentTransformRules::KeepRelativeTransform);
+		MinimapSprite->AttachToComponent(PlayerCameraBoom, FAttachmentTransformRules::KeepRelativeTransform);
 	}
 
 	if (MinimapRenderTargetClass)
@@ -85,7 +83,7 @@ void AMH_MinimapActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
 
-	if (MinimapCameraBoom)
+	/*if (MinimapCameraBoom)
 	{
 		MinimapCameraBoom->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
 	}
@@ -93,7 +91,7 @@ void AMH_MinimapActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	if (MinimapSprite)
 	{
 		MinimapSprite->DetachFromComponent(FDetachmentTransformRules::KeepRelativeTransform);
-	}
+	}*/
 }
 
 void AMH_MinimapActor::ApplyMinimap()
@@ -129,5 +127,7 @@ void AMH_MinimapActor::ApplyMinimap()
 void AMH_MinimapActor::InitializeMinimap(ACharacter* LocalPlayer)
 {
 	//비긴플레이에서 플레이어 지정
-	Player = LocalPlayer;
+	
+		Player = LocalPlayer;
+	
 }

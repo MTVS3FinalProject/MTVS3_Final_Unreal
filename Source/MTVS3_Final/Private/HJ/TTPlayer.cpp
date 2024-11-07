@@ -28,6 +28,7 @@
 #include "Components/TextRenderComponent.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_GameWidget.h"
+#include "JMH/MH_MinimapActor.h"
 #include "JMH/PlayerNicknameWidget.h"
 #include "LHM/HM_AimingWidget.h"
 #include "LHM/HM_PuzzlePiece.h"
@@ -82,6 +83,22 @@ void ATTPlayer::BeginPlay()
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 
+	//if (IsLocallyControlled() && !HasAuthority())
+	//{
+	//여기서 미니맵 액터 생성
+	//CreateMinimapActor();
+	if (IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Locally controlled player: Creating Minimap Actor."));
+		CreateMinimapActor();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Non-locally controlled player or server instance."));
+	}
+	//}
+
+	
 	if (!IsLocallyControlled())
 	{
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
@@ -1615,5 +1632,15 @@ void ATTPlayer::MulticastStandUp_Implementation()
 				OtherPlayer->GetMesh()->SetVisibility(true , true); // 로컬 플레이어 시점에서 다시 보이게
 			}
 		}
+	}
+}
+
+//MH
+void ATTPlayer::CreateMinimapActor()
+{
+	MinimapActor = GetWorld()->SpawnActor<AMH_MinimapActor>(MinimapActorFac);
+	if (MinimapActor)
+	{
+		MinimapActor->InitializeMinimap(this);
 	}
 }
