@@ -36,8 +36,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 #pragma region 멀티플레이
-	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
-
 	UPROPERTY(Replicated , BlueprintReadOnly , Category = "TTSettings|State")
 	bool bIsSitting;
 
@@ -49,18 +47,6 @@ public:
 
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastStandUp();
-
-	UFUNCTION(Server , Reliable)
-	void ServerSetNickname(const FString& _Nickname);
-
-	UFUNCTION(NetMulticast , Unreliable)
-	void MulticastSetNickname();
-
-	UFUNCTION(Server , Reliable)
-	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetRandomSeatNumber();
 
 	UFUNCTION(Server, Reliable)
 	void ServerLuckyDrawStart();
@@ -95,15 +81,6 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientShowLuckyDrawInvitation(bool bIsVisible, int32 CompetitionRate);
 
-	UFUNCTION()
-	void OnRep_Nickname();
-	
-	UFUNCTION()
-	void OnRep_RandomSeatNumber();
-
-	UFUNCTION()
-	void OnRep_bIsHost();
-
 	UFUNCTION(Server , Reliable, BlueprintCallable)
 	void ServerTeleportPlayer(bool bIsToConcertHall);
 
@@ -113,9 +90,6 @@ public:
 	// 클라이언트 모두에게 메시를 변경하는 함수
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetNewSkeletalMesh(USkeletalMesh* NewMesh);
-
-	UFUNCTION(Server, Reliable)
-	void ServerSetbIsHost(const bool _bIsHost);
 
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
@@ -188,25 +162,36 @@ public:
 	bool bMuteSoundWhileSitting = false;
 #pragma endregion
 
-#pragma region 플레이어 정보
-	UPROPERTY(/*Replicated*/ReplicatedUsing=OnRep_Nickname , VisibleAnywhere , Category = "TTSettings|UserInfo")
+#pragma region 플레이어 정보 및 복제 설정
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+	
+	UPROPERTY(ReplicatedUsing=OnRep_Nickname , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString Nickname;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetNickname(const FString& _Nickname);
+	UFUNCTION(Server , Reliable)
+	void ServerSetNickname(const FString& _Nickname);
 	FString GetNickname() const { return Nickname; };
+	UFUNCTION()
+	void OnRep_Nickname();
 
 	UPROPERTY(ReplicatedUsing=OnRep_bIsHost, BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	bool bIsHost;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetbIsHost(const bool& _bIsHost);
+	UFUNCTION(Server, Reliable)
+	void ServerSetbIsHost(bool _bIsHost);
 	bool GetbIsHost() const { return bIsHost; };
+	UFUNCTION()
+	void OnRep_bIsHost();
 
-	// 추첨을 시작할 좌석 ID
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	FString LuckyDrawSeatID;
+	UPROPERTY(Replicated , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	int32 AvatarData = 1;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
-	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
+	void SetAvatarData(const int32& _AvatarData);
+	UFUNCTION(Server, Reliable)
+	void ServerSetAvatarData(const int32& _AvatarData);
+	int32 GetAvatarData() const { return AvatarData; }
 
 	// 랜덤으로 배치된 좌석 번호
 	UPROPERTY(ReplicatedUsing=OnRep_RandomSeatNumber , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
@@ -214,12 +199,17 @@ public:
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
 	int32 GetRandomSeatNumber() const { return RandomSeatNumber; }
+	UFUNCTION()
+	void OnRep_RandomSeatNumber();
+	UFUNCTION(Server , Reliable)
+	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
 
-	UPROPERTY(Replicated , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	int32 AvatarData = 1;
+	// 추첨을 시작할 좌석 ID
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString LuckyDrawSeatID;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void SetAvatarData(const int32& _AvatarData);
-	int32 GetAvatarData() const { return AvatarData; }
+	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
+	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 #pragma endregion
 

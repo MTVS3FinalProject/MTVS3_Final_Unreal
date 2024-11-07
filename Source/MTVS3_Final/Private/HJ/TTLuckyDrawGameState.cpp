@@ -2,6 +2,7 @@
 #include "HJ/TTGameInstance.h"
 #include <HJ/TTPlayer.h>
 #include "EngineUtils.h"
+#include "GameFramework/PlayerState.h"
 #include "HJ/LuckyDrawManager.h"
 #include "HJ/TTLuckyDrawGameMode.h"
 #include "JMH/MH_CountDownActor.h"
@@ -39,9 +40,10 @@ void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
 {
     ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
     if (!GameMode) return;
-    for ( TActorIterator<ATTPlayer> It(GetWorld()); It; ++It )
+
+    for (APlayerState* PS : PlayerArray) // 서버 클라이언트를 포함하기 위해 
     {
-        ATTPlayer* TTPlayer = *It;
+        ATTPlayer* TTPlayer = Cast<ATTPlayer>(PS->GetPawn());
         if ( TTPlayer && !TTPlayer->GetbIsHost() && TTPlayer->GetRandomSeatNumber() == 0 )
         {
             TTPlayer->SetRandomSeatNumber(++CurrentSeatNumber);
@@ -52,6 +54,7 @@ void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
                     *TTPlayer->GetNickname() , TTPlayer->GetRandomSeatNumber()));
 
             NewSeatNumber = TTPlayer->GetRandomSeatNumber();
+            // TTPlayer->ClientSetRandomSeatNumber(NewSeatNumber);
 
             if (HasAuthority() && TTPlayer->GameUI) TTPlayer->GameUI->SetTextMyNum(TTPlayer->GetRandomSeatNumber());
             
