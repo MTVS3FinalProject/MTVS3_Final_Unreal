@@ -325,8 +325,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Cheat3;
-	UPROPERTY(VisibleAnywhere , Category = "TTSettings|State")
-	bool bIsCheat3Active;
 	void OnMyActionCheat3(const FInputActionValue& Value);
 
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
@@ -396,4 +394,17 @@ private:
 	FTimerHandle StandUpTimerHandle;  // 타이머 핸들
 	
 	void ForceStandUp();
+	
+	//MH
+public:
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	TSubclassOf<class AMH_MinimapActor> MinimapActorFac;
+
+	UPROPERTY()
+	class AMH_MinimapActor* MinimapActor;
+	
+	UFUNCTION()
+	void CreateMinimapActor();
+
 };

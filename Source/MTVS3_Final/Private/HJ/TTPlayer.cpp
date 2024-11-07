@@ -28,6 +28,7 @@
 #include "Components/TextRenderComponent.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_GameWidget.h"
+#include "JMH/MH_MinimapActor.h"
 #include "JMH/PlayerNicknameWidget.h"
 #include "LHM/HM_AimingWidget.h"
 #include "LHM/HM_PuzzlePiece.h"
@@ -81,7 +82,7 @@ void ATTPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-
+	
 	if (!IsLocallyControlled())
 	{
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
@@ -99,7 +100,9 @@ void ATTPlayer::BeginPlay()
 	}
 	else // 로컬 플레이어일 때
 	{
+		if (HasAuthority()) GI->SetbIsHost(true);
 		SetbIsHost(GI->GetbIsHost());
+		
 		SetAvatarData(GI->GetAvatarData());
 		MulticastSetVisibilityTextRender(false);
 
@@ -139,7 +142,17 @@ void ATTPlayer::BeginPlay()
 			// SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
 			// InitMainUI();
-
+			//미니맵 생성
+			if (IsLocallyControlled())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Locally controlled player: Creating Minimap Actor."));
+				CreateMinimapActor();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Non-locally controlled player or server instance."));
+			}
+			
 			switch (GI->GetLuckyDrawState())
 			{
 			case ELuckyDrawState::Winner:
@@ -1379,9 +1392,9 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
-		bIsCheat3Active = !bIsCheat3Active;
-		if (GI) GI->SetbIsHost(bIsCheat3Active);
-		SetbIsHost(bIsCheat3Active);
+		bIsHost = !bIsHost;
+		if (GI) GI->SetbIsHost(bIsHost);
+		SetbIsHost(bIsHost);
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTLuckyDrawMap"));
@@ -1613,5 +1626,15 @@ void ATTPlayer::MulticastStandUp_Implementation()
 				OtherPlayer->GetMesh()->SetVisibility(true , true); // 로컬 플레이어 시점에서 다시 보이게
 			}
 		}
+	}
+}
+
+//MH
+void ATTPlayer::CreateMinimapActor()
+{
+	MinimapActor = GetWorld()->SpawnActor<AMH_MinimapActor>(MinimapActorFac);
+	if (MinimapActor)
+	{
+		MinimapActor->InitializeMinimap(this);
 	}
 }

@@ -81,6 +81,10 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 	case 1:
 		if (bVisible)
 		{
+			bIsVisible = true;
+			WS_RegisterSwitcher->SetActiveWidgetIndex(1);
+			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
+			
 			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 			if (Local)
 			{
@@ -89,11 +93,14 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 				{
 					PC->SetInputMode(FInputModeUIOnly());
 				}
-			}
+			} 
 		}
 		
 		else if (!bVisible)
 		{
+			bIsVisible = false;
+			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+			
 			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 			if (Local)
 			{
@@ -106,18 +113,8 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 		}
 
 		break;
+		
 	default:
-		if (bVisible)
-		{
-			bIsVisible = true;
-			WS_RegisterSwitcher->SetActiveWidgetIndex(1);
-			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
-		}
-		else if (!bVisible)
-		{
-			bIsVisible = false;
-			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
-		}
 		break;
 	}
 }
