@@ -28,8 +28,9 @@ void UMH_Inventory::OnClicked_PlayerTitle()
 	//칭호
 	SetWidgetSwitcher(0);
 	//현민
-	//여기서 칭호 정보 받아오기
-	//매희 - 셋해주는 함수 만들기
+	//여기서 타이틀 정보 받아오기 -> 구조체에 저장
+	
+	//매희 - 아이템박스에 셋해주는 함수 만들기
 }
 
 void UMH_Inventory::OnClicked_Ticket()
@@ -37,8 +38,9 @@ void UMH_Inventory::OnClicked_Ticket()
 	//티켓
 	SetWidgetSwitcher(1);
 	//현민
-	//여기서 티켓 정보 받아오기
-	//매희 - 셋해주는 함수 만들기
+	//여기서 티켓 정보 받아오기 -> 구조체에 저장
+	
+	//매희 - 아이템박스에 셋해주는 함수 만들기
 }
 
 void UMH_Inventory::OnClicked_Sticker()
@@ -46,8 +48,9 @@ void UMH_Inventory::OnClicked_Sticker()
 	//스티커
 	SetWidgetSwitcher(2);
 	//현민
-	//여기서 스티커 정보 받아오기
-	//매희 - 셋해주는 함수 만들기
+	//여기서 스티커 정보 받아오기 -> 구조체에 저장
+	
+	//매희 - 아이템박스에 셋해주는 함수 만들기
 }
 
 void UMH_Inventory::SetPlayerTitleInfo()

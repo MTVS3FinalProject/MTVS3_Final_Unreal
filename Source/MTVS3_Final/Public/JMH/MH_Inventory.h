@@ -9,6 +9,47 @@
 /**
  * 
  */
+USTRUCT(BlueprintType)
+struct FTitleData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 TitleID;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString TitleName;
+
+	UPROPERTY(BlueprintReadOnly)
+	UTexture2D* TitleImg;
+};
+
+USTRUCT(BlueprintType)
+struct FTicketData
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(BlueprintReadOnly)
+	int32 StickerID;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString StickerScript;
+
+	UPROPERTY(BlueprintReadOnly)
+	UTexture2D* StickerImg;
+};
+
+USTRUCT(BlueprintType)
+struct FStickerData
+{
+	GENERATED_BODY()
+		
+	UPROPERTY(BlueprintReadOnly)
+	FString TicketID;
+
+	UPROPERTY(BlueprintReadOnly)
+	UTexture2D* TicketImage;
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedBack_Inven);
 
@@ -64,8 +105,7 @@ public:
 	class UButton* Btn_02_Sticker;
 	UFUNCTION()
 	void OnClicked_Sticker();
-
-
+	
 	//칭호,티켓,스티커 정보 받아오기
 	UFUNCTION()
 	void SetPlayerTitleInfo();
