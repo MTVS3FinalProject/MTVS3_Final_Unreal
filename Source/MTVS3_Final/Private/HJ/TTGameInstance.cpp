@@ -28,7 +28,15 @@ void UTTGameInstance::Init()
 			this , &UTTGameInstance::OnMyJoinSessionComplete);
 
 		// 방 퇴장 응답
-		SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this , &UTTGameInstance::OnMyDestroySessionComplete);
+		OnDestroySessionCompleteDelegateHandle  = SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this , &UTTGameInstance::OnMyDestroySessionComplete);
+	}
+}
+
+void UTTGameInstance::ClearDestroySessionDelegate()
+{
+	if (SessionInterface.IsValid())
+	{
+		SessionInterface->ClearOnDestroySessionCompleteDelegate_Handle(OnDestroySessionCompleteDelegateHandle);
 	}
 }
 
@@ -298,6 +306,12 @@ void UTTGameInstance::MulticastRPCExitSession_Implementation()
 
 void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSuccessful)
 {
+	if (!IsValid(this))
+	{
+		// 객체가 유효하지 않으므로 종료
+		return;
+	}
+	
 	if ( bWasSuccessful )
 	{
 		UE_LOG(LogTemp , Log , TEXT("Session destroyed: %s") , *SessionName.ToString());
@@ -350,9 +364,15 @@ void UTTGameInstance::SetNickname(const FString& _Nickname)
 	SetPlayerData(PlayerData);
 }
 
-void UTTGameInstance::SetTitle(const FString& _Title)
+void UTTGameInstance::SetTitleName(const FString& _TitleName)
 {
-	PlayerData.title = _Title;
+	PlayerData.titleName = _TitleName;
+	SetPlayerData(PlayerData);
+}
+
+void UTTGameInstance::SetTitleRarity(const FString& _TitleRarity)
+{
+	PlayerData.titleRarity = _TitleRarity;
 	SetPlayerData(PlayerData);
 }
 
@@ -373,12 +393,6 @@ void UTTGameInstance::SetAvatarData(const int32& _AvatarData)
 	PlayerData.avatarData = _AvatarData;
 	SetPlayerData(PlayerData);
 }
-
-// void UTTGameInstance::SetConcertName(const FString& _ConcertName)
-// {
-// 	PlayerData.ConcertName = _ConcertName;
-// 	SetPlayerData(PlayerData);
-// }
 
 void UTTGameInstance::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 {

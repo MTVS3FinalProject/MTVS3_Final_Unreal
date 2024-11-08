@@ -5,9 +5,6 @@
 #include "EngineUtils.h"
 #include "HJ/TTGameInstance.h"
 #include "HJ/TTPlayer.h"
-#include "HJ/TTPlayerState.h"
-#include "JMH/MainWidget.h"
-#include "JMH/MH_TicketingWidget.h"
 #include "LHM/TTPlayerController.h"
 
 void ATTHallGameState::BeginPlay()
@@ -24,6 +21,7 @@ void ATTHallGameState::BeginPlay()
 		{
 			TTPlayer->InitMainUI();
 			TTPlayer->ServerSetNickname(GI->GetNickname());
+			TTPlayer->ServerSetTitleNameAndRarity(GI->GetTitleName(),GI->GetTitleRarity());
 			TTPlayer->SwitchCamera(TTPlayer->bIsThirdPerson);
 		}
 	}
@@ -40,7 +38,7 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 	{
 		ATTPlayer* TTPlayer = *It;
-		if (TTPlayer && TTPlayer->bIsHost)
+		if (TTPlayer && NicknameList.Contains(TTPlayer->GetNickname()))
 		{
 			if (TTPlayer->bIsHost) // 호스트에게는 추첨 시작 시간을 알림
 			{
@@ -72,7 +70,7 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 
 void ATTHallGameState::HideLuckyDrawInvitation(const TArray<FString>& NicknameList , int32 CompetitionRate)
 {
-	if (!GetWorld() || NicknameList.Num() == 0)
+	if (!GetWorld() || !IsValid(this) || NicknameList.Num() == 0)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("GetWorld() is invalid or NicknameList is empty."));
 		return;
