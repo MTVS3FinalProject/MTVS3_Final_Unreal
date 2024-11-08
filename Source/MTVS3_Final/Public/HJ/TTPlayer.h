@@ -206,6 +206,8 @@ public:
 	void SetbIsHost(const bool& _bIsHost);
 	UFUNCTION(Server , Reliable)
 	void ServerSetbIsHost(bool _bIsHost);
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastSetbIsHost(bool _bIsHost);
 	bool GetbIsHost() const { return bIsHost; };
 	UFUNCTION()
 	void OnRep_bIsHost();
@@ -238,7 +240,9 @@ public:
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 #pragma endregion
-
+	UPROPERTY(EditDefaultsOnly)
+	class UCapsuleComponent* CenterCapsuleComp;
+	
 	UPROPERTY(EditDefaultsOnly)
 	class USpringArmComponent* SpringArmComp;
 

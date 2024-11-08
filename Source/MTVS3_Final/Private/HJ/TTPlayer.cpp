@@ -25,6 +25,7 @@
 #include <HJ/HJ_Actor.h>
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
@@ -42,6 +43,11 @@ ATTPlayer::ATTPlayer()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	CenterCapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CenterCapsule"));
+	CenterCapsuleComp->SetupAttachment(RootComponent);
+	CenterCapsuleComp->SetCapsuleHalfHeight(88.0f);
+	CenterCapsuleComp->SetCapsuleRadius(3.0f);
+	
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 50));
@@ -402,6 +408,7 @@ void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
 {
 	bIsHost = _bIsHost;
+	MulticastSetbIsHost(bIsHost);
 
 	if (bIsHost == true)
 	{
@@ -413,15 +420,37 @@ void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
 	}
 }
 
+void ATTPlayer::MulticastSetbIsHost_Implementation(bool _bIsHost)
+{
+	if (bIsHost == true)
+	{
+		GetMesh()->SetOnlyOwnerSee(true);
+		GetCapsuleComponent()->SetOnlyOwnerSee(true);
+		CenterCapsuleComp->SetOnlyOwnerSee(true);
+		NicknameUIComp->SetOnlyOwnerSee(true);
+		TitleUIComp->SetOnlyOwnerSee(true);
+	}
+	else
+	{
+		GetMesh()->SetOnlyOwnerSee(false);
+		GetCapsuleComponent()->SetOnlyOwnerSee(false);
+		CenterCapsuleComp->SetOnlyOwnerSee(false);
+		NicknameUIComp->SetOnlyOwnerSee(false);
+		TitleUIComp->SetOnlyOwnerSee(false);
+	}
+}
+
 void ATTPlayer::OnRep_bIsHost()
 {
 	if (GetbIsHost() == true)
 	{
 		SetNewSkeletalMesh(0);
+		MulticastSetbIsHost(true);
 	}
 	else
 	{
 		SetNewSkeletalMesh(GetAvatarData());
+		MulticastSetbIsHost(false);
 	}
 }
 
