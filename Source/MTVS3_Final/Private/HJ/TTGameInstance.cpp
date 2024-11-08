@@ -350,9 +350,15 @@ void UTTGameInstance::SetNickname(const FString& _Nickname)
 	SetPlayerData(PlayerData);
 }
 
-void UTTGameInstance::SetTitle(const FString& _Title)
+void UTTGameInstance::SetTitleName(const FString& _TitleName)
 {
-	PlayerData.title = _Title;
+	PlayerData.titleName = _TitleName;
+	SetPlayerData(PlayerData);
+}
+
+void UTTGameInstance::SetTitleRarity(const FString& _TitleRarity)
+{
+	PlayerData.titleRarity = _TitleRarity;
 	SetPlayerData(PlayerData);
 }
 
@@ -373,12 +379,6 @@ void UTTGameInstance::SetAvatarData(const int32& _AvatarData)
 	PlayerData.avatarData = _AvatarData;
 	SetPlayerData(PlayerData);
 }
-
-// void UTTGameInstance::SetConcertName(const FString& _ConcertName)
-// {
-// 	PlayerData.ConcertName = _ConcertName;
-// 	SetPlayerData(PlayerData);
-// }
 
 void UTTGameInstance::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 {
