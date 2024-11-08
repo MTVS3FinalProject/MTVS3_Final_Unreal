@@ -26,6 +26,7 @@
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
 #include "Components/TextRenderComponent.h"
+#include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_GameWidget.h"
 #include "JMH/MH_MinimapActor.h"
@@ -60,15 +61,17 @@ ATTPlayer::ATTPlayer()
 	// 머리 본(Bone)에 부착
 	NicknameUIComp->SetupAttachment(GetMesh() , TEXT("head")); // "head" 본에 부착
 
+	TitleUIComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("TitleUI"));
+	// 머리 본(Bone)에 부착
+	TitleUIComp->SetupAttachment(GetMesh() , TEXT("head"));
+
 	TextRenderComp = CreateDefaultSubobject<UTextRenderComponent>(TEXT("RandomSeatNumberComp"));
 	TextRenderComp->SetupAttachment(GetMesh() , TEXT("head"));
 	TextRenderComp->SetVisibility(false);
 
 	// 머리 위로 약간 올리기 위한 위치 조정
-	NicknameUIComp->SetRelativeLocationAndRotation(FVector(30.0f , 0 , 0) , FRotator(0 , 90.0f , -90.0f));
-	// 머리 위로 30 단위 상승
-	/*NicknameUIComp->SetupAttachment(RootComponent);
-	NicknameUIComp->SetRelativeLocation(FVector(0 , 0 , 100));*/
+	NicknameUIComp->SetRelativeLocationAndRotation(FVector(0.46f , -33.0f , -13.0f) , FRotator(75.0f , 270.0f , 180.0f));
+	TitleUIComp->SetRelativeLocationAndRotation(FVector(0.46f , -46.0f , -16.0f) , FRotator(75.0f , 270.0f , 180.0f));
 
 	// 퍼즐
 	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
@@ -89,6 +92,8 @@ void ATTPlayer::BeginPlay()
 		{
 			SetNickname(GetNickname());
 			OnRep_Nickname();
+			SetTitleNameAndRarity(GetTitleName(), GetTitleRarity());
+			OnRep_TitleNameAndRarity();
 		}
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
@@ -112,7 +117,15 @@ void ATTPlayer::BeginPlay()
 
 			// C++ 클래스로 캐스팅하여 접근
 			NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-			NicknameUI->ChangeColorNicknameUI(FColor::Green);
+			NicknameUI->ChangeColorNicknameUI(MyNicknameColor);
+		}
+
+		if (TitleUIFactory)
+		{
+			TitleUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(TitleUIFactory));
+
+			// C++ 클래스로 캐스팅하여 접근
+			TitleUI = Cast<UPlayerTitleWidget>(TitleUIComp->GetWidget());
 		}
 
 		auto* PC = Cast<APlayerController>(Controller);
@@ -138,9 +151,10 @@ void ATTPlayer::BeginPlay()
 		// TTHallMap에서는 ELuckyDrawState에 따라 추첨 관련 UI 표시할지 결정
 		// TTHallMap의 시작은 Plaza(광장)
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
-		{
+		{			
 			// SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
+			SetTitleNameAndRarity(GI->GetTitleName(), GI->GetTitleRarity());
 			// InitMainUI();
 			//미니맵 생성
 			if (IsLocallyControlled())
@@ -220,6 +234,18 @@ void ATTPlayer::Tick(float DeltaTime)
 	case EPlaceState::ConcertHall:
 		OnRep_bIsHost();
 		OnRep_Nickname();
+		OnRep_TitleNameAndRarity();
+
+		if (TitleUIComp && TitleUIComp->GetVisibleFlag())
+		{
+			// P = P0 + vt
+			// 카메라 위치
+			FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
+			// 체력바em와 카메라의 방향 벡터
+			FVector TitleUIDirection = CamLoc - TitleUIComp->GetComponentLocation();
+
+			TitleUIComp->SetWorldRotation(TitleUIDirection.GetSafeNormal().ToOrientationRotator());
+		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		OnRep_RandomSeatNumber();
@@ -336,6 +362,35 @@ void ATTPlayer::OnRep_Nickname()
 	if (NicknameUI)
 	{
 		NicknameUI->UpdateNicknameUI(Nickname);
+	}
+}
+
+void ATTPlayer::SetTitleNameAndRarity(const FString& _TitleName, const FString& _TitleRarity)
+{
+	ServerSetTitleNameAndRarity(_TitleName, _TitleRarity);
+}
+
+void ATTPlayer::ServerSetTitleNameAndRarity_Implementation(const FString& _TitleName, const FString& _TitleRarity)
+{
+	TitleName = _TitleName;
+	TitleRarity = _TitleRarity;
+	OnRep_TitleNameAndRarity();
+}
+
+void ATTPlayer::OnRep_TitleNameAndRarity()
+{
+	// 위젯이 없다면 생성
+	if (!TitleUI && TitleUIFactory)
+	{
+		TitleUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(TitleUIFactory));
+		TitleUI = Cast<UPlayerTitleWidget>(TitleUIComp->GetWidget());
+	}
+
+	// 닉네임 업데이트
+	if (TitleUI)
+	{
+		TitleUI->UpdateTitleNameUI(TitleName);
+		TitleUI->ChangeColorTitleNameUI(TitleRarity);
 	}
 }
 
@@ -1549,6 +1604,8 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	// bIsSitting을 개별 클라이언트에 복제
 	DOREPLIFETIME(ATTPlayer , bIsSitting);
 	DOREPLIFETIME(ATTPlayer , Nickname);
+	DOREPLIFETIME(ATTPlayer , TitleName);
+	DOREPLIFETIME(ATTPlayer , TitleRarity);
 	DOREPLIFETIME(ATTPlayer , RandomSeatNumber);
 	DOREPLIFETIME(ATTPlayer , AvatarData);
 	DOREPLIFETIME(ATTPlayer , bIsHost);
