@@ -41,7 +41,10 @@ struct FPlayerData
 	FString nickname;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	FString title;
+	FString titleName;
+	
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString titleRarity;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString accessToken;
@@ -52,16 +55,13 @@ struct FPlayerData
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	int32 avatarData;
 
-	//UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	//FString ConcertName;
-
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString LuckyDrawSeatID;
 
 	// 기본 생성자
 	FPlayerData()
-		: bIsHost(false) , nickname(TEXT("티케타카")) , accessToken(TEXT("-1")) ,
-		coin(-1) , avatarData(1), /*ConcertName(TEXT("-1")),*/ LuckyDrawSeatID(TEXT("-1"))
+		: bIsHost(false) , nickname(TEXT("Ticketaka")), titleName(TEXT("")), titleRarity(TEXT("Common")), accessToken(TEXT("-1")) ,
+		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1"))
 	{}
 };
 
@@ -78,6 +78,9 @@ public:
 	// 세션 관련 델리게이트
 	FFindSignature OnFindSignatureCompleteDelegate;
 	virtual void Init() override;
+	void ClearDestroySessionDelegate();
+
+	FDelegateHandle OnDestroySessionCompleteDelegateHandle;
 
 # pragma region 세션
 	FString GenerateUniqueSessionName(const FString& SessionNamePrefix);
@@ -136,8 +139,12 @@ public:
 	FString GetNickname() const { return PlayerData.nickname; };
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void SetTitle(const FString& _Title);
-	FString GetTitle() const { return PlayerData.title; };
+	void SetTitleName(const FString& _TitleName);
+	FString GetTitleName() const { return PlayerData.titleName; };
+	
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetTitleRarity(const FString& _TitleRarity);
+	FString GetTitleRarity() const { return PlayerData.titleRarity; };
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetAccessToken(const FString& _AccessToken);
@@ -150,10 +157,6 @@ public:
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetAvatarData(const int32& _AvatarData);
 	int32 GetAvatarData() const { return PlayerData.avatarData; };
-
-	//UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	//void SetConcertName(const FString& _ConcertName);
-	//FString GetConcertName() const { return PlayerData.ConcertName; };
 
 	// 추첨을 시작할 좌석 ID
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")

@@ -91,7 +91,11 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 				APlayerController* PC = Local->GetPlayerController(GetWorld());
 				if (PC)
 				{
-					PC->SetInputMode(FInputModeUIOnly());
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn());
+					if (TTPlayer && TTPlayer->GetbIsHost()==false)
+					{
+						PC->SetInputMode(FInputModeUIOnly());
+					}
 				}
 			} 
 		}
@@ -107,7 +111,11 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 				APlayerController* PC = Local->GetPlayerController(GetWorld());
 				if (PC)
 				{
-					PC->SetInputMode(FInputModeGameAndUI());
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn());
+					if (TTPlayer && TTPlayer->GetbIsHost()==false)
+					{
+						PC->SetInputMode(FInputModeGameAndUI());
+					}
 				}
 			}
 		}

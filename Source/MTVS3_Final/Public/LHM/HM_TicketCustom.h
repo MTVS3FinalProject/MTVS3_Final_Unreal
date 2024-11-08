@@ -12,20 +12,23 @@ class UCanvasPanelSlot;
  * 
  */
 USTRUCT()
-struct FImagePair
+struct FUsedImage
 {
 	GENERATED_BODY()
 
-	UImage* CopiedImage;
-	UImage* OutlineImage;
-	UImage* RenderBtnImage;
+	class UImage* CopiedImage;
+	class UImage* Outline;
+	class UImage* RenderAngle;
+	class UImage* RenderScale;
+	class UImage* Delete;
+    class UOverlay* ImageGroupOverlay; // 그룹화된 이미지 컨테이너
 
 	// 기본 생성자
-	FImagePair() : CopiedImage(nullptr), OutlineImage(nullptr), RenderBtnImage(nullptr) {}
+	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr), ImageGroupOverlay(nullptr) {}
 	
 	// 파라미터가 있는 생성자
-	FImagePair(UImage* InCopiedImage, UImage* InOutlineImage, UImage* InRenderBtnImage)
-		: CopiedImage(InCopiedImage), OutlineImage(InOutlineImage), RenderBtnImage(InRenderBtnImage) {}
+	FUsedImage(UImage* InCopiedImage, UImage* InOutline, UImage* InRenderAngle, UImage* InRenderScale, UImage* InDelete, UOverlay* InOverlay)
+		: CopiedImage(InCopiedImage), Outline(InOutline), RenderAngle(InRenderAngle), RenderScale(InRenderScale), Delete(InDelete), ImageGroupOverlay(InOverlay) {}
 };
 
 UCLASS()
@@ -52,26 +55,26 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UImage* Img_Sticker05;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
-	TArray<FImagePair> Img_CopiedPairs;
+	TArray<FUsedImage> Img_CopiedImgs;
+
+	UPROPERTY()
+	class UImage* CurrentImage;
+	UPROPERTY()
+	class UImage* OriginImage;
 
 	bool bIsDragging;
-	FVector2D DragOffset;
-	FVector2D OriginalPosition;
-	UPROPERTY()
-    class UImage* CurrentImage;
-	UPROPERTY()
-	class UImage* DraggedImageCopy;
-	UPROPERTY()
-	TArray<UImage*> DraggedImageCopies;
-
-	bool bIsRendering;
+	bool bIsRenderingAngle;
+	bool bIsRenderingScale;
+	bool bIsDelete;
+	bool bIsBackground;
 	FVector2D PreviousMousePosition;
+	FVector2D CurrentImageScale;
 	
 	void SetupDraggableImage(UImage* Image);
-	UImage* CreateDraggableImageCopy(UImage* SourceImage);
-	std::pair<UImage*, UImage*> CreateOutlineImageCopy(UImage* SourceImage);
-	void SetRenderScale(UImage* Image, const FVector2D& MouseDelta);
-	void SetRenderAngle(UImage* Image, const FVector2D& MouseDelta);
+	FUsedImage CreateCompleteImageSet(UImage* SourceImage);
+	void SetRenderScale(FUsedImage& ImageSet, const FVector2D& MouseDelta);
+	void SetRenderAngle(FUsedImage& ImageSet, const FVector2D& MouseDelta);
+	void DeleteImage(FUsedImage& ImageSet);
 	
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply NativeOnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;

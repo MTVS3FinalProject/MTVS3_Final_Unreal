@@ -33,7 +33,7 @@ void ATTPlayerController::BeginPlay()
 
 	// 월드에서 ChatManager 액터 찾기
 	TArray<AActor*> FoundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMH_ChatManager::StaticClass(), FoundActors);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld() , AMH_ChatManager::StaticClass() , FoundActors);
 	if (FoundActors.Num() > 0)
 	{
 		ChatManagerInstance = Cast<AMH_ChatManager>(FoundActors[0]);
@@ -42,7 +42,7 @@ void ATTPlayerController::BeginPlay()
 	if (ChatManagerInstance)
 	{
 		// ChatManager의 OnMessageReceived 이벤트를 바인딩
-		ChatManagerInstance->OnMessageReceived.AddDynamic(this, &ATTPlayerController::OnChatMessageReceived);
+		ChatManagerInstance->OnMessageReceived.AddDynamic(this , &ATTPlayerController::OnChatMessageReceived);
 	}
 }
 
@@ -67,7 +67,6 @@ void ATTPlayerController::RequestServerTime()
 	// 서버에서 현재 시간 요청
 	ServerGetCurrentTime();
 }
-
 
 
 void ATTPlayerController::ServerGetCurrentTime_Implementation()
@@ -128,14 +127,15 @@ FString ATTPlayerController::GetSystemTime()
 
 void ATTPlayerController::SetDrawStartTime()
 {
+	UE_LOG(LogTemp , Log , TEXT("ServerSetDrawStartTime"));
 	// 현재 시스템 시간 가져오기
 	FDateTime Now = FDateTime::Now();
 
 	// 현재 시간으로부터 10분 후로 설정
-	//DrawStartTime = Now + FTimespan(0 , 10 , 0); // 10분 후
+	DrawStartTime = Now + FTimespan(0 , 1 , 31); // 1분 30초 후
 
 	// 현재 날짜, 임의로 설정한 추첨 시작 시간
-	DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 20 , 0 , 0);
+	// DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 20 , 0 , 0);
 
 	// DrawStartTime을 원하는 형식으로 변환
 	int32 Hours = DrawStartTime.GetHour();
@@ -178,7 +178,7 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 void ATTPlayerController::ServerSendChatMessage_Implementation(const FString& ServerMessage)
 {
 	// 서버에서 받은 메시지를 모든 클라이언트에게
-	if(ChatManagerInstance)
+	if (ChatManagerInstance)
 	{
 		ChatManagerInstance->SendMessage(ServerMessage);
 	}
@@ -202,6 +202,7 @@ void ATTPlayerController::SendChatMessage(const FString& Message)
 		ChatManagerInstance->SendMessage(Message);
 	}
 }
+
 void ATTPlayerController::OnChatMessageReceived(const FString& Message)
 {
 	ATTPlayer* player = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());

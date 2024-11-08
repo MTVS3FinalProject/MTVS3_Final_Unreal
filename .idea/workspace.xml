@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="a10e683e-c392-4882-954e-f82b9f398606" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/Content/KHJ/Blueprints/BP_HJChair.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/KHJ/Blueprints/BP_HJChair.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/KHJ/Blueprints/BP_HJChair1.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/KHJ/Blueprints/BP_HJChair1.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/KHJ/Blueprints/BP_LDChairs.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/KHJ/Blueprints/BP_LDChairs.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/KHJ/Maps/HJLuckyDrawMap.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/KHJ/Maps/HJLuckyDrawMap.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Ticketaka/TTLuckyDrawMap.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Ticketaka/TTLuckyDrawMap.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/0/0O/GENNV5UBO3XTGZ7WXNTF4V.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/1/VI/6N4SHI8DLMXA1J87RGHKC3.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/2/TI/0PHNHJSZ335AQQI17BTWJF.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/2/XS/CUPHH19GRNMAAPW8PLYZP4.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/3/ZV/R2V2TDZAXXE3ISAWTYMB7D.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/5/9W/WZVFUTX2SES9BDFCPGZWXA.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/5/IO/QJFKEIS0DNR2DZQ0V0O8XY.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/5/KW/M4KN36CH325UQ94PK3J2BS.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/6/3L/XNNWE33YLNGM1LNPE445GJ.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/6/79/Z18ZOTJXY6QJNC47BRFMV9.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/6/H6/EX61HLNZ7XAM7E3ESRZY0N.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/7/8M/U5CYI3JHESONNK9A9S4UWR.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/8/KS/76NEODJCN3FHT88RKGX8W5.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/8/UU/0YSKJWHQFYXXG66OZTXUDP.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/9/11/A9Q5VMJPZ3LZ4Q8CYGBS1C.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/9/WX/5C4LYKIWOFS8076XVU87TN.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/A/P3/ULQS98CKX0A0XK5OY3JIPO.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/B/JB/SVM3NIEAYRF6CFN5CM89IV.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/C/66/MWVK9F6EV2VEZVVW1693TO.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/C/AZ/QWSX8UR0KYDYQWW37A5BZE.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/C/BR/7P4U05ARAVPQT1XSP8VETH.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/E/Q1/F8PAHXB9K0MVC7KOKSLCPH.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/F/0I/P38UHDLFOQDXLP8RONF4NC.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/KHJ/Maps/HJLuckyDrawMap/F/2E/P9PP5DDTS84L8NJNX5KYAN.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/MTVS3_Final.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/MTVS3_Final.sln.DotSettings.user" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ProjectId" id="2oW42y8ac6ntu2daEwf35TKYRf1" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "cidr.known.project.marker": "true"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a10e683e-c392-4882-954e-f82b9f398606" name="Changes" comment="" />
+      <created>1730971795565</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1730971795565</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

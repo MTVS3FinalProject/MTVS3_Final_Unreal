@@ -25,7 +25,9 @@
 #include <HJ/HJ_Actor.h>
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_GameWidget.h"
 #include "JMH/MH_MinimapActor.h"
@@ -41,6 +43,11 @@ ATTPlayer::ATTPlayer()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	CenterCapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CenterCapsule"));
+	CenterCapsuleComp->SetupAttachment(RootComponent);
+	CenterCapsuleComp->SetCapsuleHalfHeight(88.0f);
+	CenterCapsuleComp->SetCapsuleRadius(3.0f);
+	
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 50));
@@ -60,15 +67,17 @@ ATTPlayer::ATTPlayer()
 	// 머리 본(Bone)에 부착
 	NicknameUIComp->SetupAttachment(GetMesh() , TEXT("head")); // "head" 본에 부착
 
+	TitleUIComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("TitleUI"));
+	// 머리 본(Bone)에 부착
+	TitleUIComp->SetupAttachment(GetMesh() , TEXT("head"));
+
 	TextRenderComp = CreateDefaultSubobject<UTextRenderComponent>(TEXT("RandomSeatNumberComp"));
 	TextRenderComp->SetupAttachment(GetMesh() , TEXT("head"));
 	TextRenderComp->SetVisibility(false);
 
 	// 머리 위로 약간 올리기 위한 위치 조정
-	NicknameUIComp->SetRelativeLocationAndRotation(FVector(30.0f , 0 , 0) , FRotator(0 , 90.0f , -90.0f));
-	// 머리 위로 30 단위 상승
-	/*NicknameUIComp->SetupAttachment(RootComponent);
-	NicknameUIComp->SetRelativeLocation(FVector(0 , 0 , 100));*/
+	NicknameUIComp->SetRelativeLocationAndRotation(FVector(0.46f , -33.0f , -13.0f) , FRotator(75.0f , 270.0f , 180.0f));
+	TitleUIComp->SetRelativeLocationAndRotation(FVector(0.46f , -46.0f , -16.0f) , FRotator(75.0f , 270.0f , 180.0f));
 
 	// 퍼즐
 	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
@@ -82,13 +91,15 @@ void ATTPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	
+
 	if (!IsLocallyControlled())
 	{
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
 		{
 			SetNickname(GetNickname());
 			OnRep_Nickname();
+			SetTitleNameAndRarity(GetTitleName(), GetTitleRarity());
+			OnRep_TitleNameAndRarity();
 		}
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
@@ -102,7 +113,7 @@ void ATTPlayer::BeginPlay()
 	{
 		if (HasAuthority()) GI->SetbIsHost(true);
 		SetbIsHost(GI->GetbIsHost());
-		
+
 		SetAvatarData(GI->GetAvatarData());
 		MulticastSetVisibilityTextRender(false);
 
@@ -112,7 +123,15 @@ void ATTPlayer::BeginPlay()
 
 			// C++ 클래스로 캐스팅하여 접근
 			NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-			NicknameUI->ChangeColorNicknameUI(FColor::Green);
+			NicknameUI->ChangeColorNicknameUI(MyNicknameColor);
+		}
+
+		if (TitleUIFactory)
+		{
+			TitleUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(TitleUIFactory));
+
+			// C++ 클래스로 캐스팅하여 접근
+			TitleUI = Cast<UPlayerTitleWidget>(TitleUIComp->GetWidget());
 		}
 
 		auto* PC = Cast<APlayerController>(Controller);
@@ -138,21 +157,22 @@ void ATTPlayer::BeginPlay()
 		// TTHallMap에서는 ELuckyDrawState에 따라 추첨 관련 UI 표시할지 결정
 		// TTHallMap의 시작은 Plaza(광장)
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
-		{
+		{			
 			// SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
+			SetTitleNameAndRarity(GI->GetTitleName(), GI->GetTitleRarity());
 			// InitMainUI();
 			//미니맵 생성
 			if (IsLocallyControlled())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Locally controlled player: Creating Minimap Actor."));
+				UE_LOG(LogTemp , Warning , TEXT("Locally controlled player: Creating Minimap Actor."));
 				CreateMinimapActor();
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Non-locally controlled player or server instance."));
+				UE_LOG(LogTemp , Warning , TEXT("Non-locally controlled player or server instance."));
 			}
-			
+
 			switch (GI->GetLuckyDrawState())
 			{
 			case ELuckyDrawState::Winner:
@@ -178,6 +198,7 @@ void ATTPlayer::BeginPlay()
 		{
 			// SetRandomSeatNumber(GetRandomSeatNumber());
 			SwitchCamera(!bIsThirdPerson);
+			SetRandomSeatNumber(0);
 		}
 
 		// 서브레벨 로드/언로드 시 넣을 코드
@@ -203,7 +224,10 @@ void ATTPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (IsValid(GI) && (EndPlayReason == EEndPlayReason::EndPlayInEditor || EndPlayReason == EEndPlayReason::Quit))
+	{
+		GI->ClearDestroySessionDelegate();
 		GI->ExitSession();
+	}
 }
 
 // Called every frame
@@ -218,9 +242,22 @@ void ATTPlayer::Tick(float DeltaTime)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 		OnRep_bIsHost();
-		OnRep_Nickname(); 
+		OnRep_Nickname();
+		OnRep_TitleNameAndRarity();
+
+		if (TitleUIComp && TitleUIComp->GetVisibleFlag())
+		{
+			// P = P0 + vt
+			// 카메라 위치
+			FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
+			// 체력바em와 카메라의 방향 벡터
+			FVector TitleUIDirection = CamLoc - TitleUIComp->GetComponentLocation();
+
+			TitleUIComp->SetWorldRotation(TitleUIDirection.GetSafeNormal().ToOrientationRotator());
+		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
+		OnRep_bIsHost();
 		OnRep_RandomSeatNumber();
 		break;
 	}
@@ -338,6 +375,35 @@ void ATTPlayer::OnRep_Nickname()
 	}
 }
 
+void ATTPlayer::SetTitleNameAndRarity(const FString& _TitleName, const FString& _TitleRarity)
+{
+	ServerSetTitleNameAndRarity(_TitleName, _TitleRarity);
+}
+
+void ATTPlayer::ServerSetTitleNameAndRarity_Implementation(const FString& _TitleName, const FString& _TitleRarity)
+{
+	TitleName = _TitleName;
+	TitleRarity = _TitleRarity;
+	OnRep_TitleNameAndRarity();
+}
+
+void ATTPlayer::OnRep_TitleNameAndRarity()
+{
+	// 위젯이 없다면 생성
+	if (!TitleUI && TitleUIFactory)
+	{
+		TitleUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(TitleUIFactory));
+		TitleUI = Cast<UPlayerTitleWidget>(TitleUIComp->GetWidget());
+	}
+
+	// 닉네임 업데이트
+	if (TitleUI)
+	{
+		TitleUI->UpdateTitleNameUI(TitleName);
+		TitleUI->ChangeColorTitleNameUI(TitleRarity);
+	}
+}
+
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
 	ServerSetbIsHost(_bIsHost);
@@ -346,6 +412,7 @@ void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
 {
 	bIsHost = _bIsHost;
+	MulticastSetbIsHost(bIsHost);
 
 	if (bIsHost == true)
 	{
@@ -357,15 +424,37 @@ void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
 	}
 }
 
+void ATTPlayer::MulticastSetbIsHost_Implementation(bool _bIsHost)
+{
+	if (bIsHost == true)
+	{
+		GetMesh()->SetOnlyOwnerSee(true);
+		GetCapsuleComponent()->SetOnlyOwnerSee(true);
+		CenterCapsuleComp->SetOnlyOwnerSee(true);
+		NicknameUIComp->SetOnlyOwnerSee(true);
+		TitleUIComp->SetOnlyOwnerSee(true);
+	}
+	else
+	{
+		GetMesh()->SetOnlyOwnerSee(false);
+		GetCapsuleComponent()->SetOnlyOwnerSee(false);
+		CenterCapsuleComp->SetOnlyOwnerSee(false);
+		NicknameUIComp->SetOnlyOwnerSee(false);
+		TitleUIComp->SetOnlyOwnerSee(false);
+	}
+}
+
 void ATTPlayer::OnRep_bIsHost()
 {
 	if (GetbIsHost() == true)
 	{
 		SetNewSkeletalMesh(0);
+		MulticastSetbIsHost(true);
 	}
 	else
 	{
 		SetNewSkeletalMesh(GetAvatarData());
+		MulticastSetbIsHost(false);
 	}
 }
 
@@ -522,9 +611,8 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		GameUI->SetWidgetSwitcher(2); // 우승자 UI 업데이트
 	}
 
-	SetActorLocationAndRotation(FVector(-70.0f , -2640.0f , 628.0f) , FRotator(0.0f , 90.0f , 0.0f));
-	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
-	if (Anim) Anim->PlayDancingMontage();
+	// 서버 RPC, 멀티캐스트 RPC 필요
+	ServerLuckyDrawWin();
 
 	if (LDWinnerLevelSequence)
 	{
@@ -549,9 +637,21 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		}
 
 		FTimerHandle LDWinnerTimerHandle;
-		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 5.0f ,
+		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 6.0f ,
 		                                false);
 	}
+}
+
+void ATTPlayer::ServerLuckyDrawWin_Implementation()
+{
+	MulticastLuckyDrawWin();
+}
+
+void ATTPlayer::MulticastLuckyDrawWin_Implementation()
+{
+	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 490.0f) , FRotator(0.0f , -90.0f , 0.0f));
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if (Anim) Anim->PlayDancingMontage();
 }
 
 void ATTPlayer::ClientLDWinnerExitSession_Implementation()
@@ -598,6 +698,12 @@ void ATTPlayer::MulticastChangeWalkSpeed_Implementation(bool bIsRunning)
 
 void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , int32 CompetitionRate)
 {
+	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
+	if (TTPC)
+	{
+		TTPC->SetDrawStartTime();
+	}
+	
 	bIsDrawSessionInviteVisible = bIsVisible; // 현재 추첨 세션 초대 UI 가시성 상태를 저장
 	UpdateDrawSessionInviteVisibility(CompetitionRate);
 }
@@ -633,11 +739,11 @@ void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI) return;
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if (HttpActor2)
 	{
 		HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
-										   GI->GetAccessToken());
+		                                   GI->GetAccessToken());
 	}
 }
 
@@ -1410,6 +1516,9 @@ void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	if (bIsZoomingIn && bHasPiece)
 	{
 		MyLaunchPiece();
@@ -1430,6 +1539,9 @@ void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	if (bHasPiece && !bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = true;
@@ -1443,6 +1555,9 @@ void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	if (bHasPiece && bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = false;
@@ -1488,12 +1603,11 @@ void ATTPlayer::InitMainUI()
 		PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	ATTPlayerController* MyController = Cast<ATTPlayerController>(GetController());
-	if (MyController)
+	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
+	if (TTPC)
 	{
-		MyController->SetMainUI(MainUI);
-		MyController->SetTicketingUI(TicketingUI);
-		MyController->SetDrawStartTime();
+		TTPC->SetMainUI(MainUI);
+		TTPC->SetTicketingUI(TicketingUI);
 	}
 
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
@@ -1532,6 +1646,8 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	// bIsSitting을 개별 클라이언트에 복제
 	DOREPLIFETIME(ATTPlayer , bIsSitting);
 	DOREPLIFETIME(ATTPlayer , Nickname);
+	DOREPLIFETIME(ATTPlayer , TitleName);
+	DOREPLIFETIME(ATTPlayer , TitleRarity);
 	DOREPLIFETIME(ATTPlayer , RandomSeatNumber);
 	DOREPLIFETIME(ATTPlayer , AvatarData);
 	DOREPLIFETIME(ATTPlayer , bIsHost);

@@ -22,7 +22,7 @@ struct FPlayerScoreInfo
 
 	// 기본 생성자
 	FPlayerScoreInfo()
-		: Player(nullptr), Score(0), Timestamp(FDateTime::Now()) {}
+		: Player(nullptr), Score(0), Timestamp(0) {}
 
 	// 생성자 오버로드: 초기화 시점 설정
 	FPlayerScoreInfo(AActor* InPlayer, int32 InScore)
