@@ -22,13 +22,14 @@ struct FUsedImage
 	class UImage* RenderScale;
 	class UImage* Delete;
     class UOverlay* ImageGroupOverlay; // 그룹화된 이미지 컨테이너
+    class UImage* OriginImage; // 원본 이미지 참조 추가
 
 	// 기본 생성자
-	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr), ImageGroupOverlay(nullptr) {}
+	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr), ImageGroupOverlay(nullptr), OriginImage(nullptr) {}
 	
 	// 파라미터가 있는 생성자
-	FUsedImage(UImage* InCopiedImage, UImage* InOutline, UImage* InRenderAngle, UImage* InRenderScale, UImage* InDelete, UOverlay* InOverlay)
-		: CopiedImage(InCopiedImage), Outline(InOutline), RenderAngle(InRenderAngle), RenderScale(InRenderScale), Delete(InDelete), ImageGroupOverlay(InOverlay) {}
+	FUsedImage(UImage* InCopiedImage, UImage* InOutline, UImage* InRenderAngle, UImage* InRenderScale, UImage* InDelete, UOverlay* InOverlay, UImage* InOriginImage)
+		: CopiedImage(InCopiedImage), Outline(InOutline), RenderAngle(InRenderAngle), RenderScale(InRenderScale), Delete(InDelete), ImageGroupOverlay(InOverlay), OriginImage(InOriginImage) {}
 };
 
 UCLASS()
@@ -59,8 +60,6 @@ public:
 
 	UPROPERTY()
 	class UImage* CurrentImage;
-	UPROPERTY()
-	class UImage* OriginImage;
 
 	bool bIsDragging;
 	bool bIsRenderingAngle;

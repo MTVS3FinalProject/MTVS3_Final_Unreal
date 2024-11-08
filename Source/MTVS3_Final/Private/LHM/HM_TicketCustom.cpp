@@ -168,17 +168,18 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		
 		// Img_CopiedImgs에 추가
-		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay);
+		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage);
 		Img_CopiedImgs.Add(NewImageSet);
 
 		// 디버그 로그
-		UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s"),
+		UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s, OriginImage = %s"),
 			Img_CopiedImgs.Num() - 1,
 			*CopiedImage->GetName(),
 			*OutlineImage->GetName(),
 			*RenderAngleImage->GetName(),
 			*RenderScaleImage->GetName(),
-			*RenderDeleteImage->GetName()
+			*RenderDeleteImage->GetName(),
+			*SourceImage->GetName()
 		);
 		return NewImageSet;
 	}
@@ -192,15 +193,9 @@ void UHM_TicketCustom::SetRenderScale(FUsedImage& ImageSet, const FVector2D& Mou
 		if(ImageSet.CopiedImage)
 		{
 			// 마우스 이동 거리의 크기에 따라 Scale 조정
-			float ScaleFactor = 1.0f + (MouseDelta.X * 0.01f);
-
-			// 초기 스케일을 기준으로 적용하여 누적되지 않도록 설정
-			FVector2D NewScale = FVector2D(1.0f, 1.0f) * ScaleFactor;
-			//FVector2D NewScale = FVector2D(ScaleFactor);
-			ImageSet.ImageGroupOverlay->SetRenderScale(FVector2D(NewScale));
-
-			// 이전 마우스 위치 업데이트
-			PreviousMousePosition = NewScale; // 새로운 마우스 위치로 업데이트
+			//float ScaleFactor = 1.0f + (MouseDelta.X * 0.01f);
+			float ScaleFactor = FMath::Clamp(1.0f + (MouseDelta.X * 0.005f), 0.5f, 5);
+			ImageSet.ImageGroupOverlay->SetRenderScale(FVector2D(ScaleFactor));
 		}	
 	}
 }
@@ -229,10 +224,22 @@ void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet)
 			// ImageGroupOverlay와 그 하위 위젯들을 UI에서 제거
 			ImageSet.ImageGroupOverlay->RemoveFromParent();
 		}
-		OriginImage->SetVisibility(ESlateVisibility::Visible);
+		if (ImageSet.OriginImage)
+		{
+			ImageSet.OriginImage->SetVisibility(ESlateVisibility::Visible);
+		}
+
+		// 구조체의 이미지 포인터를 nullptr로 설정하여 이후 접근 방지
+		ImageSet.CopiedImage = nullptr;
+		ImageSet.Outline = nullptr;
+		ImageSet.RenderAngle = nullptr;
+		ImageSet.RenderScale = nullptr;
+		ImageSet.Delete = nullptr;
+		ImageSet.ImageGroupOverlay = nullptr;
+		ImageSet.OriginImage = nullptr; // 참조 해제
+		
 		bIsDelete = false;
 		CurrentImage = nullptr;
-		OriginImage = nullptr;
 	}
 }
 
@@ -248,7 +255,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 				FGeometry CopiedImageGeometry = Image->GetCachedGeometry();
 				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
-					OriginImage = Image;
+					//OriginImage = Image;
 					Image->SetVisibility(ESlateVisibility::Hidden);
 					
 					// 이미지 복사본 생성 (UOverlay 포함된 ImageSet 생성)
@@ -410,15 +417,17 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	if (bIsRenderingScale && CurrentImage)
 	{
 		FVector2d LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		FVector2D MouseDelta = PreviousMousePosition - LocalMousePosition;
+		//FVector2D MouseDelta = PreviousMousePosition - LocalMousePosition;
+		FVector2D MouseDelta = LocalMousePosition - PreviousMousePosition;
 		
 		for (FUsedImage& ImageSet : Img_CopiedImgs)
 		{
 			if (ImageSet.CopiedImage == CurrentImage)
 			{
 				FVector2D LerpedMousePosition = FMath::Lerp(PreviousMousePosition, MouseDelta, 0.1f);
-				SetRenderScale(ImageSet, MouseDelta - LerpedMousePosition);
-				PreviousMousePosition = LerpedMousePosition;
+				SetRenderScale(ImageSet, LerpedMousePosition);
+				//PreviousMousePosition = LerpedMousePosition;
+				PreviousMousePosition = LocalMousePosition;
 				return FReply::Handled();
 			}
 		}
@@ -455,23 +464,27 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 		bIsDragging = false;
 		bIsRenderingAngle = false;
 		bIsRenderingScale = false;
-		//PreviousMousePosition = FVector2D(0);
+		//bIsDelete = false;
 		
 		for(FUsedImage& ImageSet : Img_CopiedImgs)
 		{
-			if (ImageSet.CopiedImage == CurrentImage)
+			// 이미지가 삭제되지 않았는지 (nullptr가 아닌지) 확인
+			if (ImageSet.CopiedImage && ImageSet.Outline && ImageSet.RenderAngle && ImageSet.RenderScale && ImageSet.Delete)
 			{
-				ImageSet.Outline->SetVisibility(ESlateVisibility::Visible);
-				ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Visible);
-				ImageSet.RenderScale->SetVisibility(ESlateVisibility::Visible);
-				ImageSet.Delete->SetVisibility(ESlateVisibility::Visible);
-			}
-			else
-			{
-				ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
-				ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
-				ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
-				ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
+				if (ImageSet.CopiedImage == CurrentImage)
+				{
+					ImageSet.Outline->SetVisibility(ESlateVisibility::Visible);
+					ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Visible);
+					ImageSet.RenderScale->SetVisibility(ESlateVisibility::Visible);
+					ImageSet.Delete->SetVisibility(ESlateVisibility::Visible);
+				}
+				else
+				{
+					ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
+					ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
+					ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
+					ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
+				}
 			}
 		}
 	}
