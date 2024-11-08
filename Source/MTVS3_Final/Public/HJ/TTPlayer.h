@@ -63,6 +63,12 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ClientLuckyDrawWin();
 
+	UFUNCTION(Server, Reliable)
+	void ServerLuckyDrawWin();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastLuckyDrawWin();
+
 	UFUNCTION(Client, Reliable)
 	void ClientLDWinnerExitSession();
 

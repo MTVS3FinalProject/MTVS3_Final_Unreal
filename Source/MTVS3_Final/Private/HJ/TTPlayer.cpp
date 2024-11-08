@@ -178,6 +178,7 @@ void ATTPlayer::BeginPlay()
 		{
 			// SetRandomSeatNumber(GetRandomSeatNumber());
 			SwitchCamera(!bIsThirdPerson);
+			SetRandomSeatNumber(0);
 		}
 
 		// 서브레벨 로드/언로드 시 넣을 코드
@@ -522,9 +523,8 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		GameUI->SetWidgetSwitcher(2); // 우승자 UI 업데이트
 	}
 
-	SetActorLocationAndRotation(FVector(-70.0f , -2640.0f , 628.0f) , FRotator(0.0f , 90.0f , 0.0f));
-	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
-	if (Anim) Anim->PlayDancingMontage();
+	// 서버 RPC, 멀티캐스트 RPC 필요
+	ServerLuckyDrawWin();
 
 	if (LDWinnerLevelSequence)
 	{
@@ -549,9 +549,21 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		}
 
 		FTimerHandle LDWinnerTimerHandle;
-		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 5.0f ,
+		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 10.0f ,
 		                                false);
 	}
+}
+
+void ATTPlayer::ServerLuckyDrawWin_Implementation()
+{
+	MulticastLuckyDrawWin();
+}
+
+void ATTPlayer::MulticastLuckyDrawWin_Implementation()
+{
+	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 490.0f) , FRotator(0.0f , -90.0f , 0.0f));
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if (Anim) Anim->PlayDancingMontage();
 }
 
 void ATTPlayer::ClientLDWinnerExitSession_Implementation()
