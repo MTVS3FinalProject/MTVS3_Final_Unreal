@@ -1516,6 +1516,9 @@ void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	if (bIsZoomingIn && bHasPiece)
 	{
 		MyLaunchPiece();
@@ -1536,6 +1539,9 @@ void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	if (bHasPiece && !bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = true;
@@ -1549,6 +1555,9 @@ void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	if (bHasPiece && bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = false;
