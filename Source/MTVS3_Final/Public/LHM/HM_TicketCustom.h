@@ -57,16 +57,18 @@ public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
 
-	bool bIsDragging;
-	FVector2D DragOffset;
-	FVector2D OriginalPosition;
 	UPROPERTY()
-    class UImage* CurrentImage;
+	class UImage* CurrentImage;
+	UPROPERTY()
+	class UImage* OriginImage;
 
+	bool bIsDragging;
 	bool bIsRenderingAngle;
 	bool bIsRenderingScale;
 	bool bIsDelete;
+	bool bIsBackground;
 	FVector2D PreviousMousePosition;
+	FVector2D CurrentImageScale;
 	
 	void SetupDraggableImage(UImage* Image);
 	FUsedImage CreateCompleteImageSet(UImage* SourceImage);

@@ -11,6 +11,7 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
+#include "DSP/MidiNoteQuantizer.h"
 
 
 class UOverlay;
@@ -35,6 +36,7 @@ void UHM_TicketCustom::NativeConstruct()
 	bIsRenderingAngle = false;
 	bIsRenderingScale = false;
 	bIsDelete = false;
+	bIsBackground = false;
 	CurrentImage = nullptr;
 
 }
@@ -190,9 +192,15 @@ void UHM_TicketCustom::SetRenderScale(FUsedImage& ImageSet, const FVector2D& Mou
 		if(ImageSet.CopiedImage)
 		{
 			// 마우스 이동 거리의 크기에 따라 Scale 조정
-			float ScaleFactorX = 1.0f + (MouseDelta.X * 0.05f);
-			float ScaleFactorY = 1.0f + (MouseDelta.Y * 0.05f);
-			ImageSet.ImageGroupOverlay->SetRenderScale(FVector2D(ScaleFactorX, ScaleFactorY));
+			float ScaleFactor = 1.0f + (MouseDelta.X * 0.01f);
+
+			// 초기 스케일을 기준으로 적용하여 누적되지 않도록 설정
+			FVector2D NewScale = FVector2D(1.0f, 1.0f) * ScaleFactor;
+			//FVector2D NewScale = FVector2D(ScaleFactor);
+			ImageSet.ImageGroupOverlay->SetRenderScale(FVector2D(NewScale));
+
+			// 이전 마우스 위치 업데이트
+			PreviousMousePosition = NewScale; // 새로운 마우스 위치로 업데이트
 		}	
 	}
 }
@@ -220,18 +228,11 @@ void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet)
 		{
 			// ImageGroupOverlay와 그 하위 위젯들을 UI에서 제거
 			ImageSet.ImageGroupOverlay->RemoveFromParent();
-
-			// FUsedImage 구조체의 모든 포인터를 nullptr로 설정하여 안전하게 초기화
-			ImageSet.CopiedImage = nullptr;
-			ImageSet.Outline = nullptr;
-			ImageSet.RenderAngle = nullptr;
-			ImageSet.RenderScale = nullptr;
-			ImageSet.Delete = nullptr;
-			ImageSet.ImageGroupOverlay = nullptr;
 		}
-
+		OriginImage->SetVisibility(ESlateVisibility::Visible);
 		bIsDelete = false;
 		CurrentImage = nullptr;
+		OriginImage = nullptr;
 	}
 }
 
@@ -247,6 +248,9 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 				FGeometry CopiedImageGeometry = Image->GetCachedGeometry();
 				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
+					OriginImage = Image;
+					Image->SetVisibility(ESlateVisibility::Hidden);
+					
 					// 이미지 복사본 생성 (UOverlay 포함된 ImageSet 생성)
 					FUsedImage ImageSet = CreateCompleteImageSet(Image);
 					if (ImageSet.CopiedImage && ImageSet.ImageGroupOverlay)
@@ -287,7 +291,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
 					bIsDragging = true;
-					CurrentImage = CopiedImg; // 회전값 조정할 이미지를 설정
+					CurrentImage = CopiedImg;
 					
 					FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
 					FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(100));
@@ -326,7 +330,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 				{
 					// RenderAngle이 클릭된 경우 플래그 설정
 					bIsRenderingScale = true;
-					CurrentImage = CopiedImg;; // 회전값 조정할 이미지를 설정
+					CurrentImage = CopiedImg;; // 스케일값 조정할 이미지를 설정
 					PreviousMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
 
 					return FReply::Handled().CaptureMouse(this->TakeWidget());
@@ -346,6 +350,18 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 					return FReply::Handled().CaptureMouse(this->TakeWidget());
 				}
 			}
+
+			// // BackGround 클릭시
+			// if(Img_TicketBackground && Img_TicketBackground->IsVisible() && Img_TicketBackground->GetIsEnabled() == true)
+			// {
+			// 	FGeometry BGGeometry = Img_TicketBackground->GetCachedGeometry();
+			// 	if (BGGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+			// 	{
+			// 		bIsBackground = true;
+			// 		CurrentImage = Img_TicketBackground;
+			// 		return FReply::Handled().CaptureMouse(this->TakeWidget());
+			// 	}
+			// }
 		}
 	}
 	return FReply::Unhandled();
@@ -379,7 +395,7 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	if (bIsRenderingAngle && CurrentImage)
 	{
 		FVector2d LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		FVector2D MouseDelta = LocalMousePosition - PreviousMousePosition;
+		FVector2D MouseDelta = PreviousMousePosition - LocalMousePosition;
 		
 		for (FUsedImage& ImageSet : Img_CopiedImgs)
 		{
@@ -394,14 +410,14 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	if (bIsRenderingScale && CurrentImage)
 	{
 		FVector2d LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		FVector2D MouseDelta = LocalMousePosition - PreviousMousePosition;
+		FVector2D MouseDelta = PreviousMousePosition - LocalMousePosition;
 		
 		for (FUsedImage& ImageSet : Img_CopiedImgs)
 		{
 			if (ImageSet.CopiedImage == CurrentImage)
 			{
-				FVector2D LerpedMousePosition = FMath::Lerp(PreviousMousePosition, LocalMousePosition, 0.1f);
-				SetRenderScale(ImageSet, LocalMousePosition - LerpedMousePosition);
+				FVector2D LerpedMousePosition = FMath::Lerp(PreviousMousePosition, MouseDelta, 0.1f);
+				SetRenderScale(ImageSet, MouseDelta - LerpedMousePosition);
 				PreviousMousePosition = LerpedMousePosition;
 				return FReply::Handled();
 			}
@@ -418,6 +434,17 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 			}
 		}
 	}
+	// if (bIsBackground && CurrentImage)
+	// {
+	// 	if (Img_TicketBackground == CurrentImage)
+	// 	{
+	// 		for(FUsedImage& ImageSet : Img_CopiedImgs)
+	// 		{
+	// 			//
+	// 		}
+	// 		return FReply::Handled();
+	// 	}
+	// }
 	return FReply::Unhandled();
 }
 
@@ -428,6 +455,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 		bIsDragging = false;
 		bIsRenderingAngle = false;
 		bIsRenderingScale = false;
+		//PreviousMousePosition = FVector2D(0);
 		
 		for(FUsedImage& ImageSet : Img_CopiedImgs)
 		{

@@ -689,6 +689,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request, F
 						TicketingUI->SetTextRemainingTicket(RemainingTicket);
 						TicketingUI->SetVisibleSwitcher(false, 1);
 					}
+					if(MainUI) MainUI->SetVisibleCanvas(true);
 				}
 			}
 		}
