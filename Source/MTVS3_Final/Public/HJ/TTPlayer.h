@@ -39,19 +39,19 @@ public:
 	UPROPERTY(Replicated , BlueprintReadOnly , Category = "TTSettings|State")
 	bool bIsSitting;
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetSitting(bool _bIsSitting);
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSitDown();
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastStandUp();
 
 	UFUNCTION(Server , Reliable)
 	void ServerLuckyDrawStart();
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastLuckyDrawStart();
 
 	UFUNCTION(NetMulticast , Reliable)
@@ -78,10 +78,10 @@ public:
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetColorTextRender(FColor NewColor);
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerChangeWalkSpeed(bool bIsRunning);
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastChangeWalkSpeed(bool bIsRunning);
 
 	UFUNCTION(Client , Reliable)

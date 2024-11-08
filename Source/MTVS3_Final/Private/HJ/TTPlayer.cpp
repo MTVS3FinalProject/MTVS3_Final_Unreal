@@ -254,6 +254,7 @@ void ATTPlayer::Tick(float DeltaTime)
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
+		OnRep_bIsHost();
 		OnRep_RandomSeatNumber();
 		break;
 	}
@@ -633,7 +634,7 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		}
 
 		FTimerHandle LDWinnerTimerHandle;
-		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 10.0f ,
+		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 6.0f ,
 		                                false);
 	}
 }

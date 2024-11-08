@@ -11,26 +11,29 @@ void UPlayerTitleWidget::NativeConstruct()
 
 void UPlayerTitleWidget::UpdateTitleNameUI(const FString& _TitleName)
 {
-	FString FormattedTitleName = FString::Printf(TEXT("|%s|"), *_TitleName);
-	Tex_TitleName->SetText(FText::FromString(FormattedTitleName));
+	if (!_TitleName.IsEmpty())
+	{
+		FString FormattedTitleName = FString::Printf(TEXT("|%s|") , *_TitleName);
+		Tex_TitleName->SetText(FText::FromString(FormattedTitleName));
+	}
 }
 
 void UPlayerTitleWidget::ChangeColorTitleNameUI(const FString& _TitleRarity)
 {
 	if (_TitleRarity == "Common")
 	{
-		Tex_TitleName->SetColorAndOpacity(FSlateColor(FColor(111, 111, 111)));
+		Tex_TitleName->SetColorAndOpacity(FSlateColor(FColor(111 , 111 , 111)));
 	}
 	else if (_TitleRarity == "Rare")
 	{
-		Tex_TitleName->SetColorAndOpacity(FSlateColor(FColor(5, 177, 216)));
+		Tex_TitleName->SetColorAndOpacity(FSlateColor(FColor(5 , 177 , 216)));
 	}
 	else if (_TitleRarity == "Unique")
 	{
-		Tex_TitleName->SetColorAndOpacity(FSlateColor(FColor(216, 5, 188)));
+		Tex_TitleName->SetColorAndOpacity(FSlateColor(FColor(216 , 5 , 188)));
 	}
 	else
 	{
-		Tex_TitleName->SetColorAndOpacity(FSlateColor(FColor(111, 111, 111))); // 기본값
+		Tex_TitleName->SetColorAndOpacity(FSlateColor(FColor(111 , 111 , 111))); // 기본값
 	}
 }
