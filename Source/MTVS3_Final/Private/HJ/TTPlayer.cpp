@@ -82,22 +82,6 @@ void ATTPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-
-	//if (IsLocallyControlled() && !HasAuthority())
-	//{
-	//여기서 미니맵 액터 생성
-	//CreateMinimapActor();
-	if (IsLocallyControlled())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Locally controlled player: Creating Minimap Actor."));
-		CreateMinimapActor();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Non-locally controlled player or server instance."));
-	}
-	//}
-
 	
 	if (!IsLocallyControlled())
 	{
@@ -158,7 +142,17 @@ void ATTPlayer::BeginPlay()
 			// SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
 			// InitMainUI();
-
+			//미니맵 생성
+			if (IsLocallyControlled())
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Locally controlled player: Creating Minimap Actor."));
+				CreateMinimapActor();
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Non-locally controlled player or server instance."));
+			}
+			
 			switch (GI->GetLuckyDrawState())
 			{
 			case ELuckyDrawState::Winner:

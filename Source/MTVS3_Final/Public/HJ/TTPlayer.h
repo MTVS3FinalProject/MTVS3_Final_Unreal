@@ -395,7 +395,6 @@ private:
 	
 	void ForceStandUp();
 	
-	
 	//MH
 public:
 
