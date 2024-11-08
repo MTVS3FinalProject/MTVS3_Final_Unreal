@@ -2,11 +2,19 @@
 
 
 #include "LHM/HM_TicketCustom.h"
+
+#include "ViewportWorldInteraction.h"
+#include "Commandlets/WorldPartitionCommandletHelpers.h"
 #include "Components/Image.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "Components/Overlay.h"
+#include "Components/OverlaySlot.h"
+#include "DSP/MidiNoteQuantizer.h"
 
+
+class UOverlay;
 
 void UHM_TicketCustom::NativeConstruct()
 {
@@ -25,9 +33,11 @@ void UHM_TicketCustom::NativeConstruct()
 	SetupDraggableImage(Img_Sticker05);
 	
 	bIsDragging = false;
-	bIsRendering = false;
+	bIsRenderingAngle = false;
+	bIsRenderingScale = false;
+	bIsDelete = false;
+	bIsBackground = false;
 	CurrentImage = nullptr;
-    DraggedImageCopy = nullptr;
 
 }
 
@@ -41,119 +51,189 @@ void UHM_TicketCustom::SetupDraggableImage(UImage* Image)
 	}
 }
 
-UImage* UHM_TicketCustom::CreateDraggableImageCopy(UImage* SourceImage)
+FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 {
-	if(!RootCanvas || !SourceImage) return nullptr;
-
+	if(!RootCanvas || !SourceImage) return FUsedImage();
+	
+	// UOverlay 컨테이너 생성 (이미지 그룹을 관리할 컨테이너)
+	UOverlay* ImageGroupOverlay = NewObject<UOverlay>(this, UOverlay::StaticClass());
+	if (!ImageGroupOverlay) return FUsedImage();
+	
+	// RootCanvas에 UOverlay를 추가하여 CanvasPanelSlot을 얻음
+	UCanvasPanelSlot* GroupSlot = RootCanvas->AddChildToCanvas(ImageGroupOverlay);
+	if (!GroupSlot) return FUsedImage();
+	
 	// 새 이미지 생성
-	UImage* NewImage = NewObject<UImage>(this, UImage::StaticClass());
-	if (!NewImage) return nullptr;
+	UImage* CopiedImage = NewObject<UImage>(this, UImage::StaticClass());
+	UImage* OutlineImage = NewObject<UImage>(this , UImage::StaticClass());
+	UImage* RenderAngleImage = NewObject<UImage>(this , UImage::StaticClass());
+	UImage* RenderScaleImage = NewObject<UImage>(this , UImage::StaticClass());
+	UImage* RenderDeleteImage = NewObject<UImage>(this , UImage::StaticClass());
 
-	// 원본 이미지의 속성 복사
-	UTexture2D* TextureResource = Cast<UTexture2D>(SourceImage->GetBrush().GetResourceObject());
-	if (!TextureResource) return nullptr;
-	
-	NewImage->SetBrushFromTexture(TextureResource);
-	NewImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
-	NewImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
-	NewImage->SetVisibility(ESlateVisibility::Visible);
-	NewImage->bIsVariable = true;
-	NewImage->SetIsEnabled(true);
-
-	// 캔버스 패널 슬롯 설정
-	UCanvasPanelSlot* CanvasSlot = RootCanvas->AddChildToCanvas(NewImage);
-	if (!CanvasSlot) return nullptr;
-	
-	// SourceImage의 위치와 크기 복사
-	UCanvasPanelSlot* SourceSlot = Cast<UCanvasPanelSlot>(SourceImage->Slot);
-	if (SourceSlot)
+	if (CopiedImage && OutlineImage && RenderAngleImage && RenderScaleImage && RenderDeleteImage)
 	{
-		CanvasSlot->SetAutoSize(true);
-		CanvasSlot->SetPosition(SourceSlot->GetPosition());
-		CanvasSlot->SetZOrder(101);
-	}
-	return NewImage;
-}
+		// 원본 이미지의 속성 복사
+		UTexture2D* TextureResource = Cast<UTexture2D>(SourceImage->GetBrush().GetResourceObject());
+		if (TextureResource)
+		{
+			CopiedImage->SetBrushFromTexture(TextureResource);
+			CopiedImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
+			CopiedImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
+			CopiedImage->SetVisibility(ESlateVisibility::Visible);
+			CopiedImage->bIsVariable = true;
+			CopiedImage->SetIsEnabled(true);
+		}
 
-std::pair<UImage*, UImage*> UHM_TicketCustom::CreateOutlineImageCopy(UImage* SourceImage)
-{
-	// 아웃라인, 조정버튼 이미지 생성
-	UImage* OutLineImage = NewObject<UImage>(this , UImage::StaticClass());
-	UImage* RenderBtnImage = NewObject<UImage>(this , UImage::StaticClass());
-	if (OutLineImage && RenderBtnImage)
-	{
 		// 아웃라인, 조정버튼 이미지의 텍스처 설정
-		UTexture2D* TextureResource1 = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
-		                                                                TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_Guide.T_Guide'")));
-		UTexture2D* TextureResource2 = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
-																		TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_Render.T_Render'")));
-		if (TextureResource1, TextureResource2)
+		UTexture2D* OutlineTexture  = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
+		                                                                 TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerOutline.T_StickerOutline'")));
+		UTexture2D* AngleTexture  = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
+		                                                                 TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerAngle.T_StickerAngle'")));
+		UTexture2D* ScaleTexture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
+		                                                                 TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerScale.T_StickerScale'")));
+		UTexture2D* DeleteTexture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
+		                                                                 TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerDelete.T_StickerDelete'")));
+		if (OutlineTexture && AngleTexture && ScaleTexture && DeleteTexture)
 		{
-			OutLineImage->SetBrushFromTexture(TextureResource1);
-			RenderBtnImage->SetBrushFromTexture(TextureResource2);
+			OutlineImage->SetBrushFromTexture(OutlineTexture);
+			RenderAngleImage->SetBrushFromTexture(AngleTexture);
+			RenderScaleImage->SetBrushFromTexture(ScaleTexture);
+			RenderDeleteImage->SetBrushFromTexture(DeleteTexture);
 		}
-
 		// 속성 설정
-		OutLineImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
-		OutLineImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
-		OutLineImage->SetVisibility(ESlateVisibility::Hidden);
-		OutLineImage->bIsVariable = true;
-		OutLineImage->SetIsEnabled(true);
+		OutlineImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
+		RenderAngleImage->SetDesiredSizeOverride(FVector2d(32));
+		RenderScaleImage->SetDesiredSizeOverride(FVector2d(32));
+		RenderDeleteImage->SetDesiredSizeOverride(FVector2d(32));
+		OutlineImage->SetVisibility(ESlateVisibility::Hidden);
+		RenderAngleImage->SetVisibility(ESlateVisibility::Hidden);
+		RenderScaleImage->SetVisibility(ESlateVisibility::Hidden);
+		RenderDeleteImage->SetVisibility(ESlateVisibility::Hidden);
+		OutlineImage->bIsVariable = true;
+		RenderAngleImage->bIsVariable = true;
+		RenderScaleImage->bIsVariable = true;
+		RenderDeleteImage->bIsVariable = true;
+		OutlineImage->SetIsEnabled(true);
+		RenderAngleImage->SetIsEnabled(true);
+		RenderScaleImage->SetIsEnabled(true);
+		RenderDeleteImage->SetIsEnabled(true);
+
+		// UOverlay에 이미지를 자식으로 추가
+		ImageGroupOverlay->AddChildToOverlay(CopiedImage);
+		ImageGroupOverlay->AddChildToOverlay(OutlineImage);
+		ImageGroupOverlay->AddChildToOverlay(RenderAngleImage);
+		ImageGroupOverlay->AddChildToOverlay(RenderScaleImage);
+		ImageGroupOverlay->AddChildToOverlay(RenderDeleteImage);
 		
-		RenderBtnImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
-		RenderBtnImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
-		RenderBtnImage->SetVisibility(ESlateVisibility::Hidden);
-		RenderBtnImage->bIsVariable = true;
-		RenderBtnImage->SetIsEnabled(true);
-
-		if (UCanvasPanelSlot* CurrentImageSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
+		// GroupSlot 설정: 그룹 전체의 위치 및 크기 제어
+		UCanvasPanelSlot* CopiedSlot = Cast<UCanvasPanelSlot>(SourceImage->Slot);
+		if (CopiedSlot)
 		{
-			// OutLineImage를 RootCanvas에 추가
-			UCanvasPanelSlot* NewOutLineSlot = RootCanvas->AddChildToCanvas(OutLineImage);
-			UCanvasPanelSlot* NewRenderBtnSlot = RootCanvas->AddChildToCanvas(RenderBtnImage);
-			if (NewOutLineSlot && NewRenderBtnSlot)
-			{
-				// CurrentImage의 위치와 크기를 NewCanvasSlot에 적용
-				NewOutLineSlot->SetPosition(CurrentImageSlot->GetPosition());
-				NewOutLineSlot->SetSize(CurrentImageSlot->GetSize());
-				NewOutLineSlot->SetZOrder(102); // ZOrder 설정으로 다른 이미지 위에 표시
-				
-				NewRenderBtnSlot->SetPosition(CurrentImageSlot->GetPosition()+ FVector2D(170));
-				NewRenderBtnSlot->SetSize(FVector2D(35));
-				NewRenderBtnSlot->SetZOrder(103);
-			}
+			FVector2D Position = CopiedSlot->GetPosition();
+			GroupSlot->SetPosition(Position);
+			GroupSlot->SetSize(FVector2D(230));
+			GroupSlot->SetAlignment(FVector2d(0.5f));
+			GroupSlot->SetZOrder(100); // 필요 시 ZOrder 조정
 		}
-		Img_CopiedPairs.Add(FImagePair(CurrentImage, OutLineImage, RenderBtnImage));
 
-		// 복사된 이미지 배열 인덱스와 이름 출력
-		if (CurrentImage && OutLineImage && RenderBtnImage)
+		// 각 이미지의 개별 위치와 크기 설정 (중앙을 기준으로 조정)
+		CopiedImage->SetDesiredSizeOverride(FVector2d(193));
+		OutlineImage->SetDesiredSizeOverride(FVector2d(193));
+
+		UOverlaySlot* CopiedImgSlot = Cast<UOverlaySlot>(CopiedImage->Slot);
+		UOverlaySlot* OutlineImgSlot = Cast<UOverlaySlot>(OutlineImage->Slot);
+		UOverlaySlot* AngleImgSlot = Cast<UOverlaySlot>(RenderAngleImage->Slot);
+		UOverlaySlot* ScaleImgSlot = Cast<UOverlaySlot>(RenderScaleImage->Slot);
+		UOverlaySlot* DeleteImgSlot = Cast<UOverlaySlot>(RenderDeleteImage->Slot);
+		if (CopiedImgSlot && OutlineImgSlot && AngleImgSlot && ScaleImgSlot && DeleteImgSlot)
 		{
-			// OriginalImage와 OutlinedImage의 이름과 인덱스 로그 출력
-			UE_LOG(LogTemp, Log, TEXT("Img_CopiedPairs[%d]: CopiedImage = %s, OutlinedImage = %s, RenderBtnImage = %s"),
-				   Img_CopiedPairs.Num() - 1,
-				   *CurrentImage->GetName(),
-				   *OutLineImage->GetName(),
-				   *RenderBtnImage->GetName());
+			// Padding 설정
+			//CopiedImgSlot->SetPadding(FMargin(0));
+			CopiedImgSlot->SetHorizontalAlignment(HAlign_Center);
+			CopiedImgSlot->SetVerticalAlignment(VAlign_Center);
+			OutlineImgSlot->SetHorizontalAlignment(HAlign_Center);
+			OutlineImgSlot->SetVerticalAlignment(VAlign_Center);
+			AngleImgSlot->SetHorizontalAlignment(HAlign_Left);
+			AngleImgSlot->SetVerticalAlignment(VAlign_Top);
+			ScaleImgSlot->SetHorizontalAlignment(HAlign_Right);
+			ScaleImgSlot->SetVerticalAlignment(VAlign_Bottom);
+			DeleteImgSlot->SetHorizontalAlignment(HAlign_Right);
+			DeleteImgSlot->SetVerticalAlignment(VAlign_Top);
 		}
+		
+		CopiedImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		OutlineImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		RenderAngleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		RenderScaleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		
+		// Img_CopiedImgs에 추가
+		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay);
+		Img_CopiedImgs.Add(NewImageSet);
+
+		// 디버그 로그
+		UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s"),
+			Img_CopiedImgs.Num() - 1,
+			*CopiedImage->GetName(),
+			*OutlineImage->GetName(),
+			*RenderAngleImage->GetName(),
+			*RenderScaleImage->GetName(),
+			*RenderDeleteImage->GetName()
+		);
+		return NewImageSet;
 	}
-	return std::make_pair(OutLineImage, RenderBtnImage);
+	return FUsedImage();  // 실패 시 기본값 반환
 }
 
-void UHM_TicketCustom::SetRenderScale(UImage* Image, const FVector2D& MouseDelta)
+void UHM_TicketCustom::SetRenderScale(FUsedImage& ImageSet, const FVector2D& MouseDelta)
 {
-	// 마우스 이동 거리의 크기에 따라 Sclae 조정
-	// 임의 조절 비율 0.01
-	float ScaleFactor = 1 + MouseDelta.Y * 0.01f;
-	Image->SetRenderScale(FVector2D(ScaleFactor, ScaleFactor));
+	if(bIsRenderingScale)
+	{
+		if(ImageSet.CopiedImage)
+		{
+			// 마우스 이동 거리의 크기에 따라 Scale 조정
+			float ScaleFactor = 1.0f + (MouseDelta.X * 0.01f);
+
+			// 초기 스케일을 기준으로 적용하여 누적되지 않도록 설정
+			FVector2D NewScale = FVector2D(1.0f, 1.0f) * ScaleFactor;
+			//FVector2D NewScale = FVector2D(ScaleFactor);
+			ImageSet.ImageGroupOverlay->SetRenderScale(FVector2D(NewScale));
+
+			// 이전 마우스 위치 업데이트
+			PreviousMousePosition = NewScale; // 새로운 마우스 위치로 업데이트
+		}	
+	}
 }
 
-void UHM_TicketCustom::SetRenderAngle(UImage* Image, const FVector2D& MouseDelta)
+void UHM_TicketCustom::SetRenderAngle(FUsedImage& ImageSet, const FVector2D& MouseDelta)
 {
-	// 마우스 이동에 따라 회전 각도 조정
-	// 임의 조절 비율 0.5
-	float AngleDelta = MouseDelta.X * 0.5f;
-	float CurrentAngle = Image->GetRenderTransformAngle();
-	Image->SetRenderTransformAngle(CurrentAngle + AngleDelta);
+	if(bIsRenderingAngle)
+	{
+		if (ImageSet.CopiedImage)
+		{
+			// 마우스 이동에 따라 회전 각도 조정
+			// 임의 조절 비율 0.5
+			float AngleDelta = MouseDelta.X * 0.5f;
+			float CurrentImageAngle = ImageSet.ImageGroupOverlay->GetRenderTransformAngle();
+			ImageSet.ImageGroupOverlay->SetRenderTransformAngle(CurrentImageAngle + AngleDelta);
+		}	
+	}
+}
+
+void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet)
+{
+	if (bIsDelete)
+	{
+		if (ImageSet.ImageGroupOverlay)
+		{
+			// ImageGroupOverlay와 그 하위 위젯들을 UI에서 제거
+			ImageSet.ImageGroupOverlay->RemoveFromParent();
+		}
+		OriginImage->SetVisibility(ESlateVisibility::Visible);
+		bIsDelete = false;
+		CurrentImage = nullptr;
+		OriginImage = nullptr;
+	}
 }
 
 FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
@@ -165,31 +245,30 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 		{
 			if (Image && Image->IsVisible() && Image->GetIsEnabled() == true)
 			{
-				FGeometry ImageGeometry = Image->GetCachedGeometry();
-				if (ImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+				FGeometry CopiedImageGeometry = Image->GetCachedGeometry();
+				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
-					// 이미지 복사본 생성
-					DraggedImageCopy = CreateDraggableImageCopy(Image);
-					if (DraggedImageCopy)
+					OriginImage = Image;
+					Image->SetVisibility(ESlateVisibility::Hidden);
+					
+					// 이미지 복사본 생성 (UOverlay 포함된 ImageSet 생성)
+					FUsedImage ImageSet = CreateCompleteImageSet(Image);
+					if (ImageSet.CopiedImage && ImageSet.ImageGroupOverlay)
 					{
 						bIsDragging = true;
-						CurrentImage = DraggedImageCopy;
-                        
-						// 초기 위치 설정
+						CurrentImage = ImageSet.CopiedImage;
+
+						// 마우스 위치 계산
 						FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-						FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f, 86.5f));
+						FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(100));
 
-						if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
+						// UOverlay의 CanvasPanelSlot 위치를 설정
+						UCanvasPanelSlot* GroupSlot = Cast<UCanvasPanelSlot>(ImageSet.ImageGroupOverlay->Slot);
+						if (GroupSlot)
 						{
-							CanvasSlot->SetSize(FVector2D(193,193));
-							CanvasSlot->SetPosition(AdjustedPosition);
-							CanvasSlot->SetZOrder(100);
-						}
-
-						// 아웃라인 생성
-						if (CurrentImage)
-						{
-							CreateOutlineImageCopy(CurrentImage);
+							GroupSlot->SetPosition(AdjustedPosition);
+							GroupSlot->SetSize(FVector2D(230));  // 그룹 전체 크기 설정
+							GroupSlot->SetZOrder(110);
 						}
 						return FReply::Handled().CaptureMouse(this->TakeWidget());
 					}
@@ -197,59 +276,92 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 			}
 		}
 		// 복사본 이미지 클릭 처리
-		for(const FImagePair& ImagePair : Img_CopiedPairs)
+		for(const FUsedImage& ImageSet : Img_CopiedImgs)
 		{
-			UImage* Copied = ImagePair.CopiedImage;
-			UImage* Outline = ImagePair.OutlineImage;
-			UImage* RenderBtn = ImagePair.RenderBtnImage;
-
-			// RenderBtn이 클릭되었는지 확인
-			if (RenderBtn && RenderBtn->IsVisible() && RenderBtn->GetIsEnabled())
-			{
-				FGeometry RenderBtnGeometry = RenderBtn->GetCachedGeometry();
-				if (RenderBtnGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
-				{
-					// RenderBtn이 클릭된 경우에만 SetRenderScale, SetRenderAngle 호출
-					//SetRenderScale(Copied); // 또는 RenderBtn으로 변경 가능
-					//SetRenderAngle(Copied); // 또는 RenderBtn으로 변경 가능
-					//return FReply::Handled();
-				}
-			}
+			UImage* CopiedImg = ImageSet.CopiedImage;
+			UImage* Outline = ImageSet.Outline;
+			UImage* Angle = ImageSet.RenderAngle;
+			UImage* Scale = ImageSet.RenderScale;
+			UImage* Delete = ImageSet.Delete;
+			
 			// CopiedImage가 클릭되었는지 확인
-			if (Copied && Copied->IsVisible() && Copied->GetIsEnabled() == true)
+			if (CopiedImg && CopiedImg->IsVisible() && CopiedImg->GetIsEnabled() == true)
 			{
-				FGeometry ImageGeometry = Copied->GetCachedGeometry();
-				if (ImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+				FGeometry CopiedImageGeometry = CopiedImg->GetCachedGeometry();
+				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
 					bIsDragging = true;
-					CurrentImage = Copied;
+					CurrentImage = CopiedImg;
 					
 					FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-					FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f));
-					
-					if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(CurrentImage->Slot))
+					FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(100));
+					// UOverlay의 CanvasPanelSlot 위치를 설정
+					UCanvasPanelSlot* GroupSlot = Cast<UCanvasPanelSlot>(ImageSet.ImageGroupOverlay->Slot);
+					if (GroupSlot)
 					{
-						CanvasSlot->SetSize(FVector2D(193));
-						CanvasSlot->SetPosition(AdjustedPosition);
-						CanvasSlot->SetZOrder(104);
-						
-						if(UCanvasPanelSlot* OutlineSlot = Cast<UCanvasPanelSlot>(Outline->Slot))
-						{
-							OutlineSlot->SetSize(FVector2D(193));
-							OutlineSlot->SetPosition(AdjustedPosition);
-							OutlineSlot->SetZOrder(105);
-						}
-						if(UCanvasPanelSlot* RenderBtnSlot = Cast<UCanvasPanelSlot>(RenderBtn->Slot))
-						{
-							RenderBtnSlot->SetSize(FVector2D(35));
-							RenderBtnSlot->SetPosition(AdjustedPosition + FVector2D(170));
-							RenderBtnSlot->SetZOrder(106);
-							UE_LOG(LogTemp , Log , TEXT("RenderBtn X :%f, Y:%f"),RenderBtnSlot->GetPosition().X, RenderBtnSlot->GetPosition().Y);
-						}
+						GroupSlot->SetPosition(AdjustedPosition);
+						GroupSlot->SetSize(FVector2D(230));  // 그룹 전체 크기 설정
+						GroupSlot->SetZOrder(110);
 					}
 					return FReply::Handled().CaptureMouse(this->TakeWidget());
 				}
 			}
+
+			// RenderAngle이 클릭되었는지 확인
+			if (Angle && Angle->IsVisible() && Angle->GetIsEnabled())
+			{
+				FGeometry AngleGeometry = Angle->GetCachedGeometry();
+				if (AngleGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+				{
+					// RenderAngle이 클릭된 경우 플래그 설정
+					bIsRenderingAngle = true;
+					CurrentImage = CopiedImg;; // 회전값 조정할 이미지를 설정
+					PreviousMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+
+					return FReply::Handled().CaptureMouse(this->TakeWidget());
+				}
+			}
+
+			// RenderScale이 클릭되었는지 확인
+			if (Scale && Scale->IsVisible() && Scale->GetIsEnabled())
+			{
+				FGeometry ScaleGeometry = Scale->GetCachedGeometry();
+				if (ScaleGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+				{
+					// RenderAngle이 클릭된 경우 플래그 설정
+					bIsRenderingScale = true;
+					CurrentImage = CopiedImg;; // 스케일값 조정할 이미지를 설정
+					PreviousMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+
+					return FReply::Handled().CaptureMouse(this->TakeWidget());
+				}
+			}
+
+			// Delete가 클릭되었는지 확인
+			if (Delete && Delete->IsVisible() && Delete->GetIsEnabled())
+			{
+				FGeometry DeleteGeometry = Delete->GetCachedGeometry();
+				if (DeleteGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+				{
+					// Delete가 클릭된 경우 플래그 설정
+					bIsDelete = true;
+					CurrentImage = CopiedImg;; // 삭제할 이미지를 설정
+					
+					return FReply::Handled().CaptureMouse(this->TakeWidget());
+				}
+			}
+
+			// // BackGround 클릭시
+			// if(Img_TicketBackground && Img_TicketBackground->IsVisible() && Img_TicketBackground->GetIsEnabled() == true)
+			// {
+			// 	FGeometry BGGeometry = Img_TicketBackground->GetCachedGeometry();
+			// 	if (BGGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+			// 	{
+			// 		bIsBackground = true;
+			// 		CurrentImage = Img_TicketBackground;
+			// 		return FReply::Handled().CaptureMouse(this->TakeWidget());
+			// 	}
+			// }
 		}
 	}
 	return FReply::Unhandled();
@@ -261,53 +373,107 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	{
 		// 마우스의 현재 위치를 로컬 좌표로 변환
 		FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(86.5f));
+		FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(100));
 
-		// Img_CopiedPairs 배열에서 CurrentImage와 매칭되는 쌍을 찾음
-		for (FImagePair& ImagePair : Img_CopiedPairs)
+		// Img_CopiedImgs 배열에서 CurrentImage와 매칭되는 쌍을 찾음
+		for (FUsedImage& ImageSet : Img_CopiedImgs)
 		{
-			if (ImagePair.CopiedImage == CurrentImage)
+			if (ImageSet.CopiedImage == CurrentImage)
 			{
-				// 캔버스 슬롯의 위치 직접 업데이트
-				UCanvasPanelSlot* CopiedSlot = Cast<UCanvasPanelSlot>(ImagePair.CopiedImage->Slot);
-				UCanvasPanelSlot* OutlineSlot = Cast<UCanvasPanelSlot>(ImagePair.OutlineImage->Slot);
-				UCanvasPanelSlot* RenderBtnSlot = Cast<UCanvasPanelSlot>(ImagePair.RenderBtnImage->Slot);
-				if (CopiedSlot && OutlineSlot && RenderBtnSlot)
+				// UOverlay의 CanvasPanelSlot 위치를 설정
+				UCanvasPanelSlot* GroupSlot = Cast<UCanvasPanelSlot>(ImageSet.ImageGroupOverlay->Slot);
+				if (GroupSlot)
 				{
-					CopiedSlot->SetPosition(AdjustedPosition);
-					OutlineSlot->SetPosition(AdjustedPosition);
-					RenderBtnSlot->SetPosition(AdjustedPosition+ FVector2D(170));
+					GroupSlot->SetPosition(AdjustedPosition);
+					GroupSlot->SetSize(FVector2D(230));  // 그룹 전체 크기 설정
+					GroupSlot->SetZOrder(110);
 				}
 			}
 		}
-
 		return FReply::Handled();
 	}
+	if (bIsRenderingAngle && CurrentImage)
+	{
+		FVector2d LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+		FVector2D MouseDelta = PreviousMousePosition - LocalMousePosition;
+		
+		for (FUsedImage& ImageSet : Img_CopiedImgs)
+		{
+			if (ImageSet.CopiedImage == CurrentImage)
+			{
+				SetRenderAngle(ImageSet, MouseDelta);
+				PreviousMousePosition = LocalMousePosition;
+				return FReply::Handled();
+			}
+		}
+	}
+	if (bIsRenderingScale && CurrentImage)
+	{
+		FVector2d LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
+		FVector2D MouseDelta = PreviousMousePosition - LocalMousePosition;
+		
+		for (FUsedImage& ImageSet : Img_CopiedImgs)
+		{
+			if (ImageSet.CopiedImage == CurrentImage)
+			{
+				FVector2D LerpedMousePosition = FMath::Lerp(PreviousMousePosition, MouseDelta, 0.1f);
+				SetRenderScale(ImageSet, MouseDelta - LerpedMousePosition);
+				PreviousMousePosition = LerpedMousePosition;
+				return FReply::Handled();
+			}
+		}
+	}
+	if (bIsDelete && CurrentImage)
+	{
+		for (FUsedImage& ImageSet : Img_CopiedImgs)
+		{
+			if (ImageSet.CopiedImage == CurrentImage)
+			{
+				DeleteImage(ImageSet);
+				return FReply::Handled();
+			}
+		}
+	}
+	// if (bIsBackground && CurrentImage)
+	// {
+	// 	if (Img_TicketBackground == CurrentImage)
+	// 	{
+	// 		for(FUsedImage& ImageSet : Img_CopiedImgs)
+	// 		{
+	// 			//
+	// 		}
+	// 		return FReply::Handled();
+	// 	}
+	// }
 	return FReply::Unhandled();
 }
 
 FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
 {
-	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton && bIsDragging)
+	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
 		bIsDragging = false;
-
-		for(FImagePair& ImagePair : Img_CopiedPairs)
+		bIsRenderingAngle = false;
+		bIsRenderingScale = false;
+		//PreviousMousePosition = FVector2D(0);
+		
+		for(FUsedImage& ImageSet : Img_CopiedImgs)
 		{
-			if (ImagePair.CopiedImage == CurrentImage)
+			if (ImageSet.CopiedImage == CurrentImage)
 			{
-				ImagePair.OutlineImage->SetVisibility(ESlateVisibility::Visible);
-				ImagePair.RenderBtnImage->SetVisibility(ESlateVisibility::Visible);
+				ImageSet.Outline->SetVisibility(ESlateVisibility::Visible);
+				ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Visible);
+				ImageSet.RenderScale->SetVisibility(ESlateVisibility::Visible);
+				ImageSet.Delete->SetVisibility(ESlateVisibility::Visible);
 			}
 			else
 			{
-				ImagePair.OutlineImage->SetVisibility(ESlateVisibility::Hidden);
-				ImagePair.RenderBtnImage->SetVisibility(ESlateVisibility::Hidden);
+				ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
+				ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
+				ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
+				ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
 			}
 		}
-		
-		CurrentImage = nullptr;
-		return FReply::Handled().ReleaseMouseCapture();
 	}
 	return FReply::Unhandled();
 }
