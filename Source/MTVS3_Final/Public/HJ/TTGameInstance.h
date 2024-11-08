@@ -41,27 +41,27 @@ struct FPlayerData
 	FString nickname;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString titleName;
+	
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString titleRarity;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString accessToken;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	int32 coin;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	int32 remainingTicketCount;
-
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	int32 avatarData;
-
-	//UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	//FString ConcertName;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString LuckyDrawSeatID;
 
 	// 기본 생성자
 	FPlayerData()
-		: bIsHost(false) , nickname(TEXT("티케타카")) , accessToken(TEXT("-1")) ,
-		coin(-1) , remainingTicketCount(-1) , avatarData(-1), /*ConcertName(TEXT("-1")),*/ LuckyDrawSeatID(TEXT("-1"))
+		: bIsHost(false) , nickname(TEXT("반희수")), titleName(TEXT("뉴진스 매니저")), titleRarity(TEXT("Rare")), accessToken(TEXT("-1")) ,
+		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1"))
 	{}
 };
 
@@ -112,6 +112,7 @@ public:
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|State")
 	EPlaceState PlaceState = EPlaceState::Plaza;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")
 	void SetPlaceState(EPlaceState NextPlaceState);
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")
 	EPlaceState GetPlaceState() const { return PlaceState; }
@@ -121,7 +122,7 @@ public:
 	void SetLuckyDrawState(ELuckyDrawState NextLuckyDrawState);
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")
 	ELuckyDrawState GetLuckyDrawState() const { return LuckyDrawState; }
-
+	
 #pragma region Getter 및 Setter 함수
 	FPlayerData GetPlayerData() const { return PlayerData; };
 	void SetPlayerData(const FPlayerData& NewPlayerData) { PlayerData = NewPlayerData; };
@@ -135,28 +136,24 @@ public:
 	FString GetNickname() const { return PlayerData.nickname; };
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetTitleName(const FString& _TitleName);
+	FString GetTitleName() const { return PlayerData.titleName; };
+	
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetTitleRarity(const FString& _TitleRarity);
+	FString GetTitleRarity() const { return PlayerData.titleRarity; };
+
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetAccessToken(const FString& _AccessToken);
 	FString GetAccessToken() const { return PlayerData.accessToken; };
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetCoin(const int32& _Coin);
-	/*UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void AddCoin(int32 _Coin);*/
 	int32 GetCoin() const { return PlayerData.coin; };
-
-	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void SetRemainingTicketCount(const int32& _RemainingTicketCount);
-	/*UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void UseRemainingTicket(int32 UsedTicketCount);*/
-	int32 GetRemainingTicketCount() const { return PlayerData.remainingTicketCount; };
 
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetAvatarData(const int32& _AvatarData);
 	int32 GetAvatarData() const { return PlayerData.avatarData; };
-
-	//UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	//void SetConcertName(const FString& _ConcertName);
-	//FString GetConcertName() const { return PlayerData.ConcertName; };
 
 	// 추첨을 시작할 좌석 ID
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")

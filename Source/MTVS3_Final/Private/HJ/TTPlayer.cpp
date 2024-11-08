@@ -26,8 +26,10 @@
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
 #include "Components/TextRenderComponent.h"
+#include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_GameWidget.h"
+#include "JMH/MH_MinimapActor.h"
 #include "JMH/PlayerNicknameWidget.h"
 #include "LHM/HM_AimingWidget.h"
 #include "LHM/HM_PuzzlePiece.h"
@@ -59,15 +61,17 @@ ATTPlayer::ATTPlayer()
 	// 머리 본(Bone)에 부착
 	NicknameUIComp->SetupAttachment(GetMesh() , TEXT("head")); // "head" 본에 부착
 
+	TitleUIComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("TitleUI"));
+	// 머리 본(Bone)에 부착
+	TitleUIComp->SetupAttachment(GetMesh() , TEXT("head"));
+
 	TextRenderComp = CreateDefaultSubobject<UTextRenderComponent>(TEXT("RandomSeatNumberComp"));
 	TextRenderComp->SetupAttachment(GetMesh() , TEXT("head"));
 	TextRenderComp->SetVisibility(false);
 
 	// 머리 위로 약간 올리기 위한 위치 조정
-	NicknameUIComp->SetRelativeLocationAndRotation(FVector(30.0f , 0 , 0) , FRotator(0 , 90.0f , -90.0f));
-	// 머리 위로 30 단위 상승
-	/*NicknameUIComp->SetupAttachment(RootComponent);
-	NicknameUIComp->SetRelativeLocation(FVector(0 , 0 , 100));*/
+	NicknameUIComp->SetRelativeLocationAndRotation(FVector(0.46f , -33.0f , -13.0f) , FRotator(75.0f , 270.0f , 180.0f));
+	TitleUIComp->SetRelativeLocationAndRotation(FVector(0.46f , -46.0f , -16.0f) , FRotator(75.0f , 270.0f , 180.0f));
 
 	// 퍼즐
 	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
@@ -87,16 +91,24 @@ void ATTPlayer::BeginPlay()
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
 		{
 			SetNickname(GetNickname());
+			OnRep_Nickname();
+			SetTitleNameAndRarity(GetTitleName(), GetTitleRarity());
+			OnRep_TitleNameAndRarity();
 		}
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
 			SetRandomSeatNumber(GetRandomSeatNumber());
+			OnRep_RandomSeatNumber();
 		}
 		SetbIsHost(GetbIsHost());
+		SetAvatarData(GetAvatarData());
 	}
-	else
+	else // 로컬 플레이어일 때
 	{
+		if (HasAuthority()) GI->SetbIsHost(true);
 		SetbIsHost(GI->GetbIsHost());
+
+		SetAvatarData(GI->GetAvatarData());
 		MulticastSetVisibilityTextRender(false);
 
 		if (NicknameUIFactory)
@@ -105,7 +117,15 @@ void ATTPlayer::BeginPlay()
 
 			// C++ 클래스로 캐스팅하여 접근
 			NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-			NicknameUI->ChangeColorNicknameUI(FColor::Green);
+			NicknameUI->ChangeColorNicknameUI(MyNicknameColor);
+		}
+
+		if (TitleUIFactory)
+		{
+			TitleUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(TitleUIFactory));
+
+			// C++ 클래스로 캐스팅하여 접근
+			TitleUI = Cast<UPlayerTitleWidget>(TitleUIComp->GetWidget());
 		}
 
 		auto* PC = Cast<APlayerController>(Controller);
@@ -131,10 +151,21 @@ void ATTPlayer::BeginPlay()
 		// TTHallMap에서는 ELuckyDrawState에 따라 추첨 관련 UI 표시할지 결정
 		// TTHallMap의 시작은 Plaza(광장)
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
-		{
-			SwitchCamera(bIsThirdPerson);
+		{			
+			// SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
+			SetTitleNameAndRarity(GI->GetTitleName(), GI->GetTitleRarity());
 			// InitMainUI();
+			//미니맵 생성
+			if (IsLocallyControlled())
+			{
+				UE_LOG(LogTemp , Warning , TEXT("Locally controlled player: Creating Minimap Actor."));
+				CreateMinimapActor();
+			}
+			else
+			{
+				UE_LOG(LogTemp , Warning , TEXT("Non-locally controlled player or server instance."));
+			}
 
 			switch (GI->GetLuckyDrawState())
 			{
@@ -159,8 +190,9 @@ void ATTPlayer::BeginPlay()
 		}
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
-			SetRandomSeatNumber(GetRandomSeatNumber());
+			// SetRandomSeatNumber(GetRandomSeatNumber());
 			SwitchCamera(!bIsThirdPerson);
+			SetRandomSeatNumber(0);
 		}
 
 		// 서브레벨 로드/언로드 시 넣을 코드
@@ -170,25 +202,55 @@ void ATTPlayer::BeginPlay()
 		//	}
 		//}
 	}
-	
+
 	// ====================퍼즐====================
 	bReplicates = true;
-	
+
 	if (FPSCameraComp)
 	{
 		DefaultFOV = FPSCameraComp->FieldOfView;
 	}
 }
 
-void ATTPlayer::PossessedBy(AController* NewController)
+void ATTPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::PossessedBy(NewController);
+	Super::EndPlay(EndPlayReason);
+
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (IsValid(GI) && (EndPlayReason == EEndPlayReason::EndPlayInEditor || EndPlayReason == EEndPlayReason::Quit))
+		GI->ExitSession();
 }
 
 // Called every frame
 void ATTPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// 동기화 지연 있어서 Tick에 추가
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	switch (GI->GetPlaceState())
+	{
+	case EPlaceState::Plaza:
+	case EPlaceState::ConcertHall:
+		OnRep_bIsHost();
+		OnRep_Nickname();
+		OnRep_TitleNameAndRarity();
+
+		if (TitleUIComp && TitleUIComp->GetVisibleFlag())
+		{
+			// P = P0 + vt
+			// 카메라 위치
+			FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
+			// 체력바em와 카메라의 방향 벡터
+			FVector TitleUIDirection = CamLoc - TitleUIComp->GetComponentLocation();
+
+			TitleUIComp->SetWorldRotation(TitleUIDirection.GetSafeNormal().ToOrientationRotator());
+		}
+		break;
+	case EPlaceState::LuckyDrawRoom:
+		OnRep_RandomSeatNumber();
+		break;
+	}
 
 	if (NicknameUIComp && NicknameUIComp->GetVisibleFlag())
 	{
@@ -203,13 +265,13 @@ void ATTPlayer::Tick(float DeltaTime)
 	}
 
 	PrintStateLog();
-	
+
 	// ====================퍼즐====================
 	APlayerController* PC = Cast<APlayerController>(GetController());
 
-	if(PC && PC->IsLocalController())
+	if (PC && PC->IsLocalController())
 	{
-		if(!bHasPiece)
+		if (!bHasPiece)
 		{
 			FTransform ttt = FTransform(GetControlRotation());
 			Direction = ttt.TransformVector(Direction);
@@ -217,7 +279,7 @@ void ATTPlayer::Tick(float DeltaTime)
 			AddMovementInput(Direction , 1);
 			Direction = FVector::ZeroVector;
 		}
-		else if(bHasPiece)
+		else if (bHasPiece)
 		{
 			if (PC && PC->IsLocalController())
 			{
@@ -226,7 +288,7 @@ void ATTPlayer::Tick(float DeltaTime)
 				if (!bIsThirdPerson) // 1인칭
 				{
 					// Set the actor's rotation to match the camera's rotation
-					FRotator NewRotation = FRotator(0.0f, ControlRotation.Yaw, 0.0f);
+					FRotator NewRotation = FRotator(0.0f , ControlRotation.Yaw , 0.0f);
 					SetActorRotation(NewRotation);
 
 					// 서버에 회전 값 전달
@@ -236,7 +298,7 @@ void ATTPlayer::Tick(float DeltaTime)
 
 				// Calculate movement direction based on camera rotation
 				Direction = FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::Y) * Direction.Y +
-							FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X) * Direction.X;
+					FRotationMatrix(ControlRotation).GetUnitAxis(EAxis::X) * Direction.X;
 
 				AddMovementInput(Direction);
 				Direction = FVector::ZeroVector;
@@ -278,55 +340,99 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ATTPlayer::SetNickname(const FString& _Nickname)
 {
-	Nickname = _Nickname;
-
-	if (NicknameUIFactory)
-	{
-		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
-
-		// C++ 클래스로 캐스팅하여 접근
-		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-		NicknameUI->UpdateNicknameUI(Nickname);
-	}
-
-	if (IsLocallyControlled())
-	{
-		ServerSetNickname(_Nickname);
-
-		/*FTimerHandle ServerSetNicknameTimerHandle;
-		GetWorldTimerManager().SetTimer(ServerSetNicknameTimerHandle , [this, _Nickname]()
-		{
-			ServerSetNickname(_Nickname);
-		} , 0.5f , false);*/
-	}
+	ServerSetNickname(_Nickname);
 }
 
 void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
 {
 	Nickname = _Nickname;
-	UE_LOG(LogTemp , Warning , TEXT("ServerSetNickname: %s") , *GetNickname());
-	MulticastSetNickname();
-	
-	/*FTimerHandle SetNicknameTimerHandle;
-	GetWorldTimerManager().SetTimer(SetNicknameTimerHandle , this , &ATTPlayer::MulticastSetNickname , 1.5f , false);*/
+	OnRep_Nickname();
 }
 
-void ATTPlayer::MulticastSetNickname_Implementation()
+void ATTPlayer::OnRep_Nickname()
 {
+	// 위젯이 없다면 생성
+	if (!NicknameUI && NicknameUIFactory)
+	{
+		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
+		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
+	}
+
+	// 닉네임 업데이트
 	if (NicknameUI)
 	{
-		UE_LOG(LogTemp , Warning , TEXT("MulticastSetNickname: %s") , *GetNickname());
-		NicknameUI->UpdateNicknameUI(GetNickname());
+		NicknameUI->UpdateNicknameUI(Nickname);
+	}
+}
+
+void ATTPlayer::SetTitleNameAndRarity(const FString& _TitleName, const FString& _TitleRarity)
+{
+	ServerSetTitleNameAndRarity(_TitleName, _TitleRarity);
+}
+
+void ATTPlayer::ServerSetTitleNameAndRarity_Implementation(const FString& _TitleName, const FString& _TitleRarity)
+{
+	TitleName = _TitleName;
+	TitleRarity = _TitleRarity;
+	OnRep_TitleNameAndRarity();
+}
+
+void ATTPlayer::OnRep_TitleNameAndRarity()
+{
+	// 위젯이 없다면 생성
+	if (!TitleUI && TitleUIFactory)
+	{
+		TitleUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(TitleUIFactory));
+		TitleUI = Cast<UPlayerTitleWidget>(TitleUIComp->GetWidget());
+	}
+
+	// 닉네임 업데이트
+	if (TitleUI)
+	{
+		TitleUI->UpdateTitleNameUI(TitleName);
+		TitleUI->ChangeColorTitleNameUI(TitleRarity);
 	}
 }
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
-	/*if (HasAuthority())
-	{
-		bIsHost = _bIsHost;
-	}*/
+	ServerSetbIsHost(_bIsHost);
+}
+
+void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
+{
 	bIsHost = _bIsHost;
+
+	if (bIsHost == true)
+	{
+		ServerSetNewSkeletalMesh(0);
+	}
+	else
+	{
+		ServerSetNewSkeletalMesh(GetAvatarData());
+	}
+}
+
+void ATTPlayer::OnRep_bIsHost()
+{
+	if (GetbIsHost() == true)
+	{
+		SetNewSkeletalMesh(0);
+	}
+	else
+	{
+		SetNewSkeletalMesh(GetAvatarData());
+	}
+}
+
+void ATTPlayer::SetAvatarData(const int32& _AvatarData)
+{
+	ServerSetAvatarData(_AvatarData);
+}
+
+void ATTPlayer::ServerSetAvatarData_Implementation(const int32& _AvatarData)
+{
+	AvatarData = _AvatarData;
 }
 
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
@@ -340,69 +446,89 @@ void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 
 void ATTPlayer::SetRandomSeatNumber(const int32& _RandomSeatNumber)
 {
-	RandomSeatNumber = _RandomSeatNumber;
-
-	if (NicknameUIFactory)
+	if (HasAuthority())
 	{
-		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
-
-		// C++ 클래스로 캐스팅하여 접근
-		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
-		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
-		UE_LOG(LogTemp , Warning , TEXT("SetRandomSeatNumber: %d") , GetRandomSeatNumber());
+		RandomSeatNumber = _RandomSeatNumber;
+		OnRep_RandomSeatNumber();
 	}
-
-	ServerSetRandomSeatNumber(RandomSeatNumber);
+	else
+	{
+		ServerSetRandomSeatNumber(_RandomSeatNumber);
+	}
 }
 
 void ATTPlayer::ServerSetRandomSeatNumber_Implementation(const int32& _RandomSeatNumber)
 {
 	RandomSeatNumber = _RandomSeatNumber;
-	UE_LOG(LogTemp , Warning , TEXT("ServerSetRandomSeatNumber_Implementation: %d") , GetRandomSeatNumber());
-
-	MulticastSetRandomSeatNumber();
-	
-	/*FTimerHandle SetRandomSeatNumberTimerHandle;
-	// 1.5
-	GetWorldTimerManager().SetTimer(SetRandomSeatNumberTimerHandle , this , &ATTPlayer::MulticastSetRandomSeatNumber ,
-	                                1.5f , false);*/
-}
-
-void ATTPlayer::OnRep_Nickname()
-{
-	if (NicknameUI)
-	{
-		NicknameUI->UpdateNicknameUI(GetNickname());
-		UE_LOG(LogTemp, Warning, TEXT("NicknameUI: %s"), *GetNickname());
-	}
 }
 
 void ATTPlayer::OnRep_RandomSeatNumber()
 {
+	if (!NicknameUI && NicknameUIFactory)
+	{
+		NicknameUIComp->SetWidgetClass(TSubclassOf<UUserWidget>(NicknameUIFactory));
+		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
+	}
+
+	// 닉네임UI, TextRenderComp 업데이트
 	if (NicknameUI)
 	{
 		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		UE_LOG(LogTemp, Warning, TEXT("OnRep_RandomSeatNumber: %d"), GetRandomSeatNumber());
+		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
+	}
+}
+
+void ATTPlayer::ServerSetNewSkeletalMesh_Implementation(const int32& _AvatarData)
+{
+	USkeletalMesh* Avatar1Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar2Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar3Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar4Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* ManagerMesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/KHJ/Assets/SM_Manager.SM_Manager'"));
+
+	switch (_AvatarData)
+	{
+	case 1:
+		if (Avatar1Mesh) MulticastSetNewSkeletalMesh(Avatar1Mesh);
+		break;
+	case 2:
+		if (Avatar2Mesh) MulticastSetNewSkeletalMesh(Avatar2Mesh);
+		break;
+	case 3:
+		if (Avatar3Mesh) MulticastSetNewSkeletalMesh(Avatar3Mesh);
+		break;
+	case 4:
+		if (Avatar4Mesh) MulticastSetNewSkeletalMesh(Avatar4Mesh);
+		break;
+	default:
+		if (ManagerMesh) MulticastSetNewSkeletalMesh(ManagerMesh);
+		break;
+	}
+}
+
+void ATTPlayer::MulticastSetNewSkeletalMesh_Implementation(USkeletalMesh* NewMesh)
+{
+	if (NewMesh)
+	{
+		GetMesh()->SetSkeletalMesh(NewMesh);
 	}
 }
 
 void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 {
-	FVector TargetLocation = bIsToConcertHall ? FVector(19, -4962, 516) : FVector(20680, 6260, 3092);
-	FRotator TargetRotation = bIsToConcertHall ? FRotator(0, 90, 0) : FRotator(0, 170, 0);
+	FVector TargetLocation = bIsToConcertHall ? FVector(19 , -4962 , 516) : FVector(20680 , 6260 , 3092);
+	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , 170 , 0);
 
-	TeleportTo(TargetLocation, TargetRotation);
-}
-
-void ATTPlayer::MulticastSetRandomSeatNumber_Implementation()
-{
-	TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
-	if (NicknameUI)
-	{
-		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		UE_LOG(LogTemp , Warning , TEXT("Multicast RandomSeatNumber: %d") , GetRandomSeatNumber());
-	}
+	TeleportTo(TargetLocation , TargetRotation);
 }
 
 void ATTPlayer::ServerLuckyDrawStart_Implementation()
@@ -452,9 +578,8 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		GameUI->SetWidgetSwitcher(2); // 우승자 UI 업데이트
 	}
 
-	SetActorLocationAndRotation(FVector(-70.0f , -2640.0f , 628.0f) , FRotator(0.0f , 90.0f , 0.0f));
-	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
-	if (Anim) Anim->PlayDancingMontage();
+	// 서버 RPC, 멀티캐스트 RPC 필요
+	ServerLuckyDrawWin();
 
 	if (LDWinnerLevelSequence)
 	{
@@ -479,9 +604,21 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		}
 
 		FTimerHandle LDWinnerTimerHandle;
-		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 5.0f ,
+		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 10.0f ,
 		                                false);
 	}
+}
+
+void ATTPlayer::ServerLuckyDrawWin_Implementation()
+{
+	MulticastLuckyDrawWin();
+}
+
+void ATTPlayer::MulticastLuckyDrawWin_Implementation()
+{
+	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 490.0f) , FRotator(0.0f , -90.0f , 0.0f));
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if (Anim) Anim->PlayDancingMontage();
 }
 
 void ATTPlayer::ClientLDWinnerExitSession_Implementation()
@@ -526,32 +663,54 @@ void ATTPlayer::MulticastChangeWalkSpeed_Implementation(bool bIsRunning)
 	}
 }
 
-void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible, int32 CompetitionRate)
+void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , int32 CompetitionRate)
 {
+	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
+	if (TTPC)
+	{
+		TTPC->SetDrawStartTime();
+	}
+	
 	bIsDrawSessionInviteVisible = bIsVisible; // 현재 추첨 세션 초대 UI 가시성 상태를 저장
 	UpdateDrawSessionInviteVisibility(CompetitionRate);
 }
 
 void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 {
-	// if (!bIsHoldingCube) // 큐브를 들고 있지 않은 경우에만 UI 표시
-	if (bIsDrawSessionInviteVisible)
+	if (!bHasPiece && bIsDrawSessionInviteVisible)
 	{
+		// 큐브를 들고 있지 않고 초대 UI가 보이는 상태
+		// 티켓팅 UI 표시, 메인 UI 숨기기
 		if (MainUI) MainUI->SetVisibleCanvas(false);
 		if (TicketingUI)
 		{
-			TicketingUI->SetVisibleSwitcher(true, 1);
+			TicketingUI->SetVisibleSwitcher(true , 1);
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 		}
 	}
 	else
 	{
+		// 큐브를 들고 있거나 초대 UI가 안 보이는 상태
+		// 메인 UI 표시, 티켓팅 UI 숨기기
 		if (MainUI) MainUI->SetVisibleCanvas(true);
 		if (TicketingUI)
 		{
-			TicketingUI->SetVisibleSwitcher(false, 1);
+			TicketingUI->SetVisibleSwitcher(false , 1);
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 		}
+	}
+}
+
+void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
+{
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI) return;
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
+		                                   GI->GetAccessToken());
 	}
 }
 
@@ -563,17 +722,17 @@ void ATTPlayer::MyTakePiece()
 	if (!PC) return;
 
 	FVector2D MousePosition;
-	if (PC->GetMousePosition(MousePosition.X, MousePosition.Y))
+	if (PC->GetMousePosition(MousePosition.X , MousePosition.Y))
 	{
 		// 마우스 위치를 월드 위치(Start)와 방향(Direction)으로 변환
-		FVector Start, Dir;
-		PC->DeprojectScreenPositionToWorld(MousePosition.X, MousePosition.Y, Start, Dir);
+		FVector Start , Dir;
+		PC->DeprojectScreenPositionToWorld(MousePosition.X , MousePosition.Y , Start , Dir);
 
 		float TraceDistance = 1000.0f;
 		FVector End = Start + (Dir * TraceDistance);
 
 		FHitResult HitResult;
-		FCollisionQueryParams TraceParams(FName(TEXT("MouseTrace")), true, this);
+		FCollisionQueryParams TraceParams(FName(TEXT("MouseTrace")) , true , this);
 		TraceParams.bReturnPhysicalMaterial = false;
 		TraceParams.AddIgnoredActor(this);
 
@@ -584,7 +743,7 @@ void ATTPlayer::MyTakePiece()
 		if (bHit && HitResult.GetComponent())
 		{
 			AHM_PuzzlePiece* HitPiece = Cast<AHM_PuzzlePiece>(HitResult.GetActor());
-			if(HitPiece)
+			if (HitPiece)
 			{
 				UStaticMeshComponent* HitComponent = Cast<UStaticMeshComponent>(HitResult.GetComponent());
 				if (HitComponent && HitPiece->GetAllPieces().Contains(HitComponent))
@@ -594,20 +753,21 @@ void ATTPlayer::MyTakePiece()
 					{
 						for (int32 i = 1; i <= 9; ++i)
 						{
-							FString TagName = FString::Printf(TEXT("Piece%d"), i);
+							FString TagName = FString::Printf(TEXT("Piece%d") , i);
 							if (HitComponent->ComponentHasTag(FName(*TagName)))
 							{
-								GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Orange,
-																 FString::Printf(TEXT("Found piece with tag: %s"), *TagName));
+								GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Orange ,
+								                                 FString::Printf(
+									                                 TEXT("Found piece with tag: %s") , *TagName));
 								TargetPieceComp = HitComponent;
 
 								// 서버로 소유 요청을 보냄
-								ServerRPCTakePiece(HitPiece, TargetPieceComp);
+								ServerRPCTakePiece(HitPiece , TargetPieceComp);
 								break;
 							}
 						}
 					}
-					if(PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+					if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
 				}
 			}
 		}
@@ -616,7 +776,7 @@ void ATTPlayer::MyTakePiece()
 
 void ATTPlayer::MyReleasePiece()
 {
-	if ( false == bHasPiece || false == IsLocallyControlled() )
+	if (false == bHasPiece || false == IsLocallyControlled())
 		return;
 	else
 	{
@@ -626,7 +786,7 @@ void ATTPlayer::MyReleasePiece()
 
 void ATTPlayer::MyLaunchPiece()
 {
-	if ( false == bHasPiece || false == IsLocallyControlled() )
+	if (false == bHasPiece || false == IsLocallyControlled())
 		return;
 	else
 	{
@@ -640,41 +800,43 @@ void ATTPlayer::ZoomIn()
 	{
 		// 기존 타이머가 있다면 종료
 		GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
-		
+
 		bIsZoomingIn = true;
-		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
+		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle , [this]()
 		{
-			float NewFOV = FMath::FInterpTo(FPSCameraComp->FieldOfView, ZoomedFOV, GetWorld()->GetDeltaSeconds(), ZoomDuration);
+			float NewFOV = FMath::FInterpTo(FPSCameraComp->FieldOfView , ZoomedFOV , GetWorld()->GetDeltaSeconds() ,
+			                                ZoomDuration);
 			FPSCameraComp->SetFieldOfView(NewFOV);
 
-			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, ZoomedFOV, 0.1f))
+			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView , ZoomedFOV , 0.1f))
 			{
 				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
 				//bIsZoomingIn = true; // 줌 인 상태로 고정
 			}
-		}, 0.01f, true);
+		} , 0.01f , true);
 	}
 }
 
 void ATTPlayer::ZoomOut()
 {
-	if(FPSCameraComp)
+	if (FPSCameraComp)
 	{
 		// 기존 타이머가 있다면 종료
 		GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
-		
+
 		bIsZoomingIn = false;
-		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle, [this]()
+		GetWorld()->GetTimerManager().SetTimer(ZoomTimerHandle , [this]()
 		{
-			float NewFOV = FMath::FInterpTo(FPSCameraComp->FieldOfView, DefaultFOV, GetWorld()->GetDeltaSeconds(), ZoomDuration);
+			float NewFOV = FMath::FInterpTo(FPSCameraComp->FieldOfView , DefaultFOV , GetWorld()->GetDeltaSeconds() ,
+			                                ZoomDuration);
 			FPSCameraComp->SetFieldOfView(NewFOV);
 
-			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView, DefaultFOV, 0.1f))
+			if (FMath::IsNearlyEqual(FPSCameraComp->FieldOfView , DefaultFOV , 0.1f))
 			{
 				GetWorld()->GetTimerManager().ClearTimer(ZoomTimerHandle);
 				//bIsZoomingIn = false; // 줌 아웃 상태로 고정
 			}
-		}, 0.01f, true);
+		} , 0.01f , true);
 	}
 }
 
@@ -682,18 +844,18 @@ void ATTPlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 {
 	if (!PieceComp) return;
 	SwitchCameraOnPiece(false);
-	
+
 	// 클라이언트와 서버 모두에서 실행될 회전 로직
 	APlayerController* PC = Cast<APlayerController>(GetController());
 	if (PC && PC->IsLocalController())
 	{
 		FRotator ControlRotation = PC->GetControlRotation();
 		// 캐릭터의 회전을 카메라 회전과 동기화
-		SetActorRotation(FRotator(0.0f, ControlRotation.Yaw, 0.0f));
+		SetActorRotation(FRotator(0.0f , ControlRotation.Yaw , 0.0f));
 		PC->SetViewTargetWithBlend(this);
 	}
-	
-	if(PieceComp)
+
+	if (PieceComp)
 	{
 		PieceComp->SetSimulatePhysics(false);
 		PieceComp->SetEnableGravity(false);
@@ -716,7 +878,7 @@ void ATTPlayer::DetachPiece(UStaticMeshComponent* PieceComp)
 {
 	if (!PieceComp) return;
 	SwitchCameraOnPiece(true);
-	
+
 	PieceComp->SetSimulatePhysics(true);
 	PieceComp->SetEnableGravity(true);
 	PieceComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -738,7 +900,7 @@ void ATTPlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 	PieceComp->SetEnableGravity(true);
 	PieceComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	PieceComp->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-	
+
 	PieceComp->SetCollisionProfileName(TEXT("PuzzlePiece"));
 	PieceComp->SetNotifyRigidBodyCollision(true);
 	PieceComp->SetGenerateOverlapEvents(true);
@@ -746,7 +908,7 @@ void ATTPlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 	FVector LaunchDirection = FPSCameraComp->GetForwardVector();
 	float LaunchSpeed = 6000.0f;
 	FVector LaunchVelocity = LaunchDirection * LaunchSpeed;
-	PieceComp->AddImpulse(LaunchVelocity, NAME_None, true);
+	PieceComp->AddImpulse(LaunchVelocity , NAME_None , true);
 
 	if (HasAuthority())
 	{
@@ -755,11 +917,11 @@ void ATTPlayer::LaunchPiece(UStaticMeshComponent* PieceComp)
 	TargetPieceComp = nullptr;
 }
 
-void ATTPlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceActor, UStaticMeshComponent* PieceComp)
+void ATTPlayer::ServerRPCTakePiece_Implementation(AHM_PuzzlePiece* pieceActor , UStaticMeshComponent* PieceComp)
 {
 	if (!HasAuthority() || !pieceActor || !PieceComp || pieceActor->IsComponentOwned(PieceComp)) return;
-	
-	pieceActor->SetComponentOwner(PieceComp,this);
+
+	pieceActor->SetComponentOwner(PieceComp , this);
 	PickupPieceActor = pieceActor;
 	TargetPieceComp = PieceComp;
 	bHasPiece = true;
@@ -799,8 +961,8 @@ void ATTPlayer::ServerRPCLaunchPiece_Implementation()
 	if (bHasPiece && TargetPieceComp && PickupPieceActor)
 	{
 		// 피스의 마지막 소유자를 현재 소유자로 설정
-		PickupPieceActor->LastOwners.Add(TargetPieceComp, this);
-		
+		PickupPieceActor->LastOwners.Add(TargetPieceComp , this);
+
 		bHasPiece = false;
 		PickupPieceActor->ClearComponentOwner(TargetPieceComp);
 		MulticastRPCLaunchPiece(TargetPieceComp);
@@ -827,7 +989,7 @@ void ATTPlayer::ServerRPCUpdateRotation_Implementation(const FRotator& NewRotati
 
 void ATTPlayer::ServerRPCUpdateFPSCameraRotation_Implementation(const FRotator& FPSCameraNewRotation)
 {
-	if(FPSCameraComp)
+	if (FPSCameraComp)
 	{
 		FPSCameraComp->SetWorldRotation(FPSCameraNewRotation);
 	}
@@ -864,7 +1026,7 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 		FPSCameraComp->SetActive(false);
 		TPSCameraComp->SetActive(true);
 		NicknameUIComp->SetOwnerNoSee(false);
-		
+
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		// 플레이어의 회전 방향과 카메라 정렬
 		if (PC && PC->IsLocalController())
@@ -898,15 +1060,15 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 void ATTPlayer::SwitchCameraOnPiece(bool _bIsThirdPerson)
 {
 	bIsThirdPerson = _bIsThirdPerson;
-	
+
 	APlayerController* PC = Cast<APlayerController>(GetController());
-	if(!PC || !PC->IsLocalController()) return;
-	
+	if (!PC || !PC->IsLocalController()) return;
+
 	if (bIsThirdPerson) // 3인칭 모드
 	{
 		PC->bShowMouseCursor = true;
 		PC->SetInputMode(FInputModeGameAndUI());
-		
+
 		GetMesh()->SetOwnerNoSee(false);
 		FPSCameraComp->SetActive(false);
 		TPSCameraComp->SetActive(true);
@@ -921,44 +1083,79 @@ void ATTPlayer::SwitchCameraOnPiece(bool _bIsThirdPerson)
 		NicknameUIComp->SetOwnerNoSee(true);
 		GetMesh()->SetOwnerNoSee(true);
 
-		if(!bHasPiece)
+		if (!bHasPiece)
 		{
 			if (PC && PC->IsLocalController())
 			{
 				// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
 				GetMesh()->SetOwnerNoSee(true);
-			
+
 				// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
 				FRotator ControlRotation = GetActorRotation();
 				PC->SetControlRotation(ControlRotation);
-			
+
 				PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
 			}
 		}
-		else if(bHasPiece)
+		else if (bHasPiece)
 		{
 			// 마우스 커서 숨기기 및 게임 모드 설정
 			PC->bShowMouseCursor = false;
 			PC->SetInputMode(FInputModeGameOnly());
-			
-			FRotator NewRotation = FRotator(0.0f, GetControlRotation().Yaw, 0.0f);
+
+			FRotator NewRotation = FRotator(0.0f , GetControlRotation().Yaw , 0.0f);
 			SetActorRotation(FRotator(NewRotation));
 			PC->SetViewTargetWithBlend(this);
 
 			// 서버에 회전 값 전달
 			ServerRPCUpdateRotation(NewRotation);
 			ServerRPCUpdateFPSCameraRotation(PC->GetControlRotation());
-			
+
 			// 마우스 감도 설정
 			if (APlayerCameraManager* CameraMgr = PC->PlayerCameraManager)
 			{
 				CameraMgr->ViewPitchMin = -20.0f;
 				CameraMgr->ViewPitchMax = 50.0f;
 			}
-			
 		}
 	}
-		
+}
+
+void ATTPlayer::SetNewSkeletalMesh(const int32& _AvatarData)
+{
+	USkeletalMesh* Avatar1Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar2Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar3Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* Avatar4Mesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT(
+			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
+	USkeletalMesh* ManagerMesh = LoadObject<USkeletalMesh>(
+		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/KHJ/Assets/SM_Manager.SM_Manager'"));
+
+	switch (_AvatarData)
+	{
+	case 1:
+		if (Avatar1Mesh) GetMesh()->SetSkeletalMesh(Avatar1Mesh);
+		break;
+	case 2:
+		if (Avatar2Mesh) GetMesh()->SetSkeletalMesh(Avatar2Mesh);
+		break;
+	case 3:
+		if (Avatar3Mesh) GetMesh()->SetSkeletalMesh(Avatar3Mesh);
+		break;
+	case 4:
+		if (Avatar4Mesh) GetMesh()->SetSkeletalMesh(Avatar4Mesh);
+		break;
+	default:
+		if (ManagerMesh) GetMesh()->SetSkeletalMesh(ManagerMesh);
+		break;
+	}
 }
 
 void ATTPlayer::OnMyActionMove(const FInputActionValue& Value)
@@ -987,8 +1184,8 @@ void ATTPlayer::OnMyActionLook(const FInputActionValue& Value)
 		AddControllerPitchInput(-v.Y);
 		AddControllerYawInput(v.X);
 	}
-	
-	if ( !bIsThirdPerson && bHasPiece )
+
+	if (!bIsThirdPerson && bHasPiece)
 	{
 		AddControllerPitchInput(-v.Y);
 		AddControllerYawInput(v.X);
@@ -1091,7 +1288,11 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("SelectConcert")))
 	{
 		MainUI->SetWidgetSwitcher(5);
-		HttpActor2->ReqGetConcertInfo(GI->GetAccessToken(), this);
+		HttpActor2->ReqGetConcertInfo(GI->GetAccessToken() , this);
+	}
+	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Customizing")))
+	{
+		// 티켓 커스터마이징 액터 상호작용 시 UI 표시
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
@@ -1148,6 +1349,7 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
 	}
+	if (MainUI) MainUI->ShowChatUI();
 }
 
 void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
@@ -1184,20 +1386,12 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 			if (bIsCheat1Active)
 			{
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1"));
-
-				AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-				if (HttpActor2)
-				{
-					HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
-					                                   GI->GetAccessToken());
-				}
+				ServerNoticeLucyDrawStart();
 
 				// MainUI 숨기기
 				MainUI->SetVisibleCanvas(false);
 				// 좌석 경쟁 UI 표시
 				TicketingUI->SetVisibleSwitcher(true , 1);
-				
 			}
 			else
 			{
@@ -1211,7 +1405,16 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
-		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap(Nothing)"));
+		if (GetbIsHost())
+		{
+			if (GI)
+			{
+				GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
+				GI->SwitchSession(EPlaceState::Plaza);
+				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap(Switch Session)"));
+			}
+		}
+		else UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap(Nothing)"));
 	/*GI->SwitchSession(EPlaceState::Plaza);
 	GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
 	bIsCheat1Active = !bIsCheat1Active;*/
@@ -1237,7 +1440,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 		if (GetbIsHost() || HasAuthority())
 		{
 			GI->SetLuckyDrawState(ELuckyDrawState::Winner);
-			
+
 			// 추첨 당첨 UI 표시
 			MainUI->SetWidgetSwitcher(1);
 
@@ -1262,9 +1465,9 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
-		bIsCheat3Active = !bIsCheat3Active;
-		GI->SetbIsHost(bIsCheat3Active);
-		SetbIsHost(bIsCheat3Active);
+		bIsHost = !bIsHost;
+		if (GI) GI->SetbIsHost(bIsHost);
+		SetbIsHost(bIsHost);
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTLuckyDrawMap"));
@@ -1283,16 +1486,16 @@ void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 	if (bIsZoomingIn && bHasPiece)
 	{
 		MyLaunchPiece();
-		if(AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
-		if(PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
+		if (AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
+		if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
-	else if(bHasPiece)
+	else if (bHasPiece)
 	{
 		MyReleasePiece();
-		if(PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
+		if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 	//else if(!bIsZoomingIn && !bHasPiece)
-	else if(!bHasPiece)
+	else if (!bHasPiece)
 	{
 		MyTakePiece();
 	}
@@ -1300,7 +1503,7 @@ void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 {
-	if ( bHasPiece && !bIsZoomingIn && !bIsThirdPerson )
+	if (bHasPiece && !bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = true;
 		if (AimingUI)
@@ -1313,7 +1516,7 @@ void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 {
-	if ( bHasPiece && bIsZoomingIn && !bIsThirdPerson )
+	if (bHasPiece && bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = false;
 		if (AimingUI)
@@ -1345,25 +1548,24 @@ void ATTPlayer::InitMainUI()
 	}
 
 	AimingUI = Cast<UHM_AimingWidget>(CreateWidget(GetWorld() , AimingUIFactory));
-	if ( AimingUI )
+	if (AimingUI)
 	{
 		AimingUI->AddToViewport();
 		AimingUI->SetVisibility(ESlateVisibility::Hidden);
 	}
-	
+
 	PuzzleUI = Cast<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
-	if ( PuzzleUI )
+	if (PuzzleUI)
 	{
 		PuzzleUI->AddToViewport();
 		PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	ATTPlayerController* MyController = Cast<ATTPlayerController>(GetController());
-	if (MyController)
+	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
+	if (TTPC)
 	{
-		MyController->SetMainUI(MainUI);
-		MyController->SetTicketingUI(TicketingUI);
-		MyController->SetDrawStartTime();
+		TTPC->SetMainUI(MainUI);
+		TTPC->SetTicketingUI(TicketingUI);
 	}
 
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
@@ -1378,7 +1580,7 @@ void ATTPlayer::InitMainUI()
 void ATTPlayer::InitGameUI()
 {
 	SetTextMyNum();
-	
+
 	/*FTimerHandle SetTextMyNumTimerHandle;
 	GetWorldTimerManager().SetTimer(SetTextMyNumTimerHandle , this , &ATTPlayer::SetTextMyNum , 4.0f , false);*/
 }
@@ -1402,14 +1604,18 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	// bIsSitting을 개별 클라이언트에 복제
 	DOREPLIFETIME(ATTPlayer , bIsSitting);
 	DOREPLIFETIME(ATTPlayer , Nickname);
+	DOREPLIFETIME(ATTPlayer , TitleName);
+	DOREPLIFETIME(ATTPlayer , TitleRarity);
 	DOREPLIFETIME(ATTPlayer , RandomSeatNumber);
+	DOREPLIFETIME(ATTPlayer , AvatarData);
+	DOREPLIFETIME(ATTPlayer , bIsHost);
 
 	// 퍼즐
-	DOREPLIFETIME(ATTPlayer, bHasPiece);
-	DOREPLIFETIME(ATTPlayer, bIsZoomingIn);
-	DOREPLIFETIME(ATTPlayer, PickupPieceActor);
-	DOREPLIFETIME(ATTPlayer, TargetPieceComp);
-	DOREPLIFETIME(ATTPlayer, TargetPieceTransform);
+	DOREPLIFETIME(ATTPlayer , bHasPiece);
+	DOREPLIFETIME(ATTPlayer , bIsZoomingIn);
+	DOREPLIFETIME(ATTPlayer , PickupPieceActor);
+	DOREPLIFETIME(ATTPlayer , TargetPieceComp);
+	DOREPLIFETIME(ATTPlayer , TargetPieceTransform);
 }
 
 void ATTPlayer::ForceStandUp()
@@ -1494,5 +1700,15 @@ void ATTPlayer::MulticastStandUp_Implementation()
 				OtherPlayer->GetMesh()->SetVisibility(true , true); // 로컬 플레이어 시점에서 다시 보이게
 			}
 		}
+	}
+}
+
+//MH
+void ATTPlayer::CreateMinimapActor()
+{
+	MinimapActor = GetWorld()->SpawnActor<AMH_MinimapActor>(MinimapActorFac);
+	if (MinimapActor)
+	{
+		MinimapActor->InitializeMinimap(this);
 	}
 }

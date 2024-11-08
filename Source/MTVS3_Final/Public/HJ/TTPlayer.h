@@ -22,7 +22,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void PossessedBy(AController* NewController) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	void UpdateNicknameUI();
 
@@ -36,8 +36,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 #pragma region 멀티플레이
-	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
-
 	UPROPERTY(Replicated , BlueprintReadOnly , Category = "TTSettings|State")
 	bool bIsSitting;
 
@@ -51,39 +49,33 @@ public:
 	void MulticastStandUp();
 
 	UFUNCTION(Server , Reliable)
-	void ServerSetNickname(const FString& _Nickname);
-
-	UFUNCTION(NetMulticast , Unreliable)
-	void MulticastSetNickname();
-
-	UFUNCTION(Server , Reliable)
-	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastSetRandomSeatNumber();
-
-	UFUNCTION(Server, Reliable)
 	void ServerLuckyDrawStart();
 
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastLuckyDrawStart();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastMovePlayerToChair(const FTransform& TargetTransform);
 
-	UFUNCTION(Client, Reliable)
+	UFUNCTION(Client , Reliable)
 	void ClientLuckyDrawLose();
-	
-	UFUNCTION(Client, Reliable)
+
+	UFUNCTION(Client , Reliable)
 	void ClientLuckyDrawWin();
 
-	UFUNCTION(Client, Reliable)
+	UFUNCTION(Server , Reliable)
+	void ServerLuckyDrawWin();
+
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastLuckyDrawWin();
+
+	UFUNCTION(Client , Reliable)
 	void ClientLDWinnerExitSession();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetVisibilityTextRender(bool bIsVisible);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetColorTextRender(FColor NewColor);
 
 	UFUNCTION(Server , Unreliable)
@@ -92,31 +84,35 @@ public:
 	UFUNCTION(NetMulticast , Unreliable)
 	void MulticastChangeWalkSpeed(bool bIsRunning);
 
-	UFUNCTION(Client, Reliable)
-	void ClientShowLuckyDrawInvitation(bool bIsVisible, int32 CompetitionRate);
+	UFUNCTION(Client , Reliable)
+	void ClientShowLuckyDrawInvitation(bool bIsVisible , int32 CompetitionRate);
 
-	UFUNCTION()
-	void OnRep_Nickname();
-	
-	UFUNCTION()
-	void OnRep_RandomSeatNumber();
-
-	UFUNCTION(Server , Reliable, BlueprintCallable)
+	UFUNCTION(Server , Reliable , BlueprintCallable)
 	void ServerTeleportPlayer(bool bIsToConcertHall);
+
+	UFUNCTION(Server , Reliable)
+	void ServerSetNewSkeletalMesh(const int32& _AvatarData);
+
+	UFUNCTION(Server , Reliable)
+	void ServerNoticeLucyDrawStart();
+
+	// 클라이언트 모두에게 메시를 변경하는 함수
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastSetNewSkeletalMesh(USkeletalMesh* NewMesh);
 
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
 
 	// ====================퍼즐====================
-	UPROPERTY(Replicated, VisibleAnywhere , Category = Piece)
+	UPROPERTY(Replicated , VisibleAnywhere , Category = Piece)
 	bool bHasPiece = false;
-	UPROPERTY(Replicated, VisibleAnywhere , Category = Piece)
+	UPROPERTY(Replicated , VisibleAnywhere , Category = Piece)
 	class UStaticMeshComponent* TargetPieceComp;
-	UPROPERTY(Replicated, VisibleAnywhere , Category = Piece)
+	UPROPERTY(Replicated , VisibleAnywhere , Category = Piece)
 	FTransform TargetPieceTransform;
-	UPROPERTY(Replicated, VisibleAnywhere , Category = Piece)
+	UPROPERTY(Replicated , VisibleAnywhere , Category = Piece)
 	bool bIsZoomingIn = false;
-	
+
 	// 피스 조각 잡기와 놓기 던지기 기능
 	void MyTakePiece();
 	void MyReleasePiece();
@@ -124,33 +120,33 @@ public:
 
 	void ZoomIn();
 	void ZoomOut();
-	
+
 	void AttachPiece(UStaticMeshComponent* PieceComp);
 	void DetachPiece(UStaticMeshComponent* PieceComp);
 	void LaunchPiece(UStaticMeshComponent* PieceComp);
-	
-	UFUNCTION(Server, Reliable)	// 피스 잡기 RPC
-	void ServerRPCTakePiece(AHM_PuzzlePiece* pieceActor, UStaticMeshComponent* PieceComp);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(Server , Reliable) // 피스 잡기 RPC
+	void ServerRPCTakePiece(AHM_PuzzlePiece* pieceActor , UStaticMeshComponent* PieceComp);
+
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastRPCTakePiece(UStaticMeshComponent* PieceComp);
-	
-	UFUNCTION(Server, Reliable) // 피스 놓기 RPC
+
+	UFUNCTION(Server , Reliable) // 피스 놓기 RPC
 	void ServerRPCReleasePiece();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastRPCReleasePiece(UStaticMeshComponent* PieceComp);
-	
-	UFUNCTION(Server, Reliable) // 피스 던지기 RPC
+
+	UFUNCTION(Server , Reliable) // 피스 던지기 RPC
 	void ServerRPCLaunchPiece();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastRPCLaunchPiece(UStaticMeshComponent* PieceComp);
-	
-	UFUNCTION(Server, Reliable) // 캐릭터 회전값 RPC
+
+	UFUNCTION(Server , Reliable) // 캐릭터 회전값 RPC
 	void ServerRPCUpdateRotation(const FRotator& NewRotation);
-	
-	UFUNCTION(Server, Reliable) // FPS카메라 회전값 RPC
+
+	UFUNCTION(Server , Reliable) // FPS카메라 회전값 RPC
 	void ServerRPCUpdateFPSCameraRotation(const FRotator& FPSCameraNewRotation);
 
 #pragma endregion
@@ -159,6 +155,9 @@ public:
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Debug")
 	bool bShowDebug = true;
 	void PrintStateLog();
+
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category="TTSettings|Custom")
+	FColor MyNicknameColor;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
 	float WalkSpeed = 500.0f;
@@ -169,21 +168,67 @@ public:
 	float MaxSittingDuration = 15.0f;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
-	bool bHideOtherPlayersWhileSitting = true;
+	bool bHideOtherPlayersWhileSitting = false;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
+	bool bMuteSoundWhileSitting = false;
 #pragma endregion
 
-#pragma region 플레이어 정보
-	UPROPERTY(/*Replicated*/ReplicatedUsing=OnRep_Nickname , VisibleAnywhere , Category = "TTSettings|UserInfo")
+#pragma region 플레이어 정보 및 복제 설정
+	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+
+	UPROPERTY(ReplicatedUsing=OnRep_Nickname , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString Nickname;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetNickname(const FString& _Nickname);
+	UFUNCTION(Server , Reliable)
+	void ServerSetNickname(const FString& _Nickname);
 	FString GetNickname() const { return Nickname; };
+	UFUNCTION()
+	void OnRep_Nickname();
 
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(ReplicatedUsing=OnRep_TitleNameAndRarity , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString TitleName;
+	UPROPERTY(Replicated , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString TitleRarity;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetTitleNameAndRarity(const FString& _TitleName , const FString& _TitleRarity);
+	UFUNCTION(Server , Reliable)
+	void ServerSetTitleNameAndRarity(const FString& _TitleName , const FString& _TitleRarity);
+	FString GetTitleName() const { return TitleName; };
+	FString GetTitleRarity() const { return TitleRarity; };
+	UFUNCTION()
+	void OnRep_TitleNameAndRarity();
+
+	UPROPERTY(ReplicatedUsing=OnRep_bIsHost , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	bool bIsHost;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetbIsHost(const bool& _bIsHost);
+	UFUNCTION(Server , Reliable)
+	void ServerSetbIsHost(bool _bIsHost);
 	bool GetbIsHost() const { return bIsHost; };
+	UFUNCTION()
+	void OnRep_bIsHost();
+
+	UPROPERTY(Replicated , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	int32 AvatarData = 1;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetAvatarData(const int32& _AvatarData);
+	UFUNCTION(Server , Reliable)
+	void ServerSetAvatarData(const int32& _AvatarData);
+	int32 GetAvatarData() const { return AvatarData; }
+
+	// 랜덤으로 배치된 좌석 번호
+	UPROPERTY(ReplicatedUsing=OnRep_RandomSeatNumber , BlueprintReadWrite , VisibleAnywhere ,
+		Category = "TTSettings|UserInfo")
+	int32 RandomSeatNumber = 0;
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
+	int32 GetRandomSeatNumber() const { return RandomSeatNumber; }
+	UFUNCTION()
+	void OnRep_RandomSeatNumber();
+	UFUNCTION(Server , Reliable)
+	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
 
 	// 추첨을 시작할 좌석 ID
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
@@ -192,12 +237,6 @@ public:
 	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
-	// 랜덤으로 배치된 좌석 번호
-	UPROPERTY(/*Replicated*/ReplicatedUsing=OnRep_RandomSeatNumber , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	int32 RandomSeatNumber = -1;
-	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void SetRandomSeatNumber(const int32& _RandomSeatNumber);
-	int32 GetRandomSeatNumber() const { return RandomSeatNumber; }
 #pragma endregion
 
 	UPROPERTY(EditDefaultsOnly)
@@ -214,31 +253,33 @@ public:
 	void SwitchCamera(bool _bIsThirdPerson);
 	void SwitchCameraOnPiece(bool _bIsThirdPerson);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sequences")
+	UPROPERTY(EditAnywhere , BlueprintReadWrite , Category = "TTSettings|Sequences")
 	TObjectPtr<class ULevelSequence> LDWinnerLevelSequence;
 
 	UPROPERTY(Transient)
 	class ULevelSequencePlayer* SequencePlayer;
 
+	void SetNewSkeletalMesh(const int32& _AvatarData);
+
 	// ====================퍼즐====================
 	// 잡은 피스 조각의 참조
 	UPROPERTY(Replicated)
 	class AHM_PuzzlePiece* PickupPieceActor;
-	
+
 	// 피스 조각을 잡았을 때 위치
-	UPROPERTY(EditDefaultsOnly, Category = Piece)
+	UPROPERTY(EditDefaultsOnly , Category = Piece)
 	class USceneComponent* HandComp;
 
 	// 피스 조각과의 거리 제한
-	UPROPERTY(EditDefaultsOnly, Category = Piece)
+	UPROPERTY(EditDefaultsOnly , Category = Piece)
 	float PickupDistance = 300;
 
 	// 피스 잡은 상태에서 줌인
 	float DefaultFOV; // 기본 시야각
-	float ZoomedFOV = 60.0f;  // 줌인 목표 시야각
+	float ZoomedFOV = 60.0f; // 줌인 목표 시야각
 	float ZoomDuration = 10.f; // 보간 속도
-	FTimerHandle ZoomTimerHandle;   // 줌 타이머 핸들
-	
+	FTimerHandle ZoomTimerHandle; // 줌 타이머 핸들
+
 #pragma region 입력
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputMappingContext* IMC_TTPlayer;
@@ -307,8 +348,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Cheat3;
-	UPROPERTY(VisibleAnywhere , Category = "TTSettings|State")
-	bool bIsCheat3Active;
 	void OnMyActionCheat3(const FInputActionValue& Value);
 
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
@@ -318,7 +357,7 @@ public:
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Piece;
 	void OnMyActionPickupPiece(const FInputActionValue& Value);
-	
+
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Zoom;
 	void OnMyActionZoomInPiece(const FInputActionValue& Value);
@@ -348,8 +387,14 @@ public:
 	class UPlayerNicknameWidget* NicknameUI;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	class UWidgetComponent* TitleUIComp;
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UPlayerTitleWidget> TitleUIFactory;
+	class UPlayerTitleWidget* TitleUI;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	class UTextRenderComponent* TextRenderComp;
-	
+
 	void InitMainUI();
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
@@ -361,12 +406,12 @@ public:
 	TSubclassOf<class UHM_AimingWidget> AimingUIFactory;
 	UPROPERTY()
 	class UHM_AimingWidget* AimingUI;
-	
+
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UHM_PuzzleWidget> PuzzleUIFactory;
 	UPROPERTY()
 	class UHM_PuzzleWidget* PuzzleUI;
-	
+
 	void InitGameUI();
 	void SetTextMyNum();
 
@@ -375,7 +420,18 @@ public:
 #pragma endregion
 
 private:
-	FTimerHandle StandUpTimerHandle;  // 타이머 핸들
-	
+	FTimerHandle StandUpTimerHandle; // 타이머 핸들
+
 	void ForceStandUp();
+
+	//MH
+public:
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	TSubclassOf<class AMH_MinimapActor> MinimapActorFac;
+
+	UPROPERTY()
+	class AMH_MinimapActor* MinimapActor;
+
+	UFUNCTION()
+	void CreateMinimapActor();
 };

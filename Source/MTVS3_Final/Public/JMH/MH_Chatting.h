@@ -32,14 +32,18 @@ public:
 	class UButton* Btn_Send;
 	UFUNCTION()
 	void OnClickedSendBtn();
-	
-	//엔터키 한번 더 누르면 입력 내보냄
 
 	UFUNCTION()
 	void AddChatMessage(const FString& Message);
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<class UMH_Message> MessageWidget;
+
+	UPROPERTY()
+	class AMH_ChatManager* ChatManagerInstance;
+
+	UPROPERTY()
+	class ATTPlayerController* ChatPlayerControllerInstance;
 	
 protected:
 	

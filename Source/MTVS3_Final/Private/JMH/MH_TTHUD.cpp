@@ -7,10 +7,8 @@
 #include "Components/ScrollBox.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MainWidget.h"
-#include "JMH/MH_ChatManager.h"
 #include "JMH/MH_Chatting.h"
 #include "JMH/MH_Message.h"
-#include "Kismet/GameplayStatics.h"
 
 void AMH_TTHUD::PostInitializeComponents()
 {
