@@ -82,7 +82,7 @@ void ATTPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	
+
 	if (!IsLocallyControlled())
 	{
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
@@ -102,7 +102,7 @@ void ATTPlayer::BeginPlay()
 	{
 		if (HasAuthority()) GI->SetbIsHost(true);
 		SetbIsHost(GI->GetbIsHost());
-		
+
 		SetAvatarData(GI->GetAvatarData());
 		MulticastSetVisibilityTextRender(false);
 
@@ -145,14 +145,14 @@ void ATTPlayer::BeginPlay()
 			//미니맵 생성
 			if (IsLocallyControlled())
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Locally controlled player: Creating Minimap Actor."));
+				UE_LOG(LogTemp , Warning , TEXT("Locally controlled player: Creating Minimap Actor."));
 				CreateMinimapActor();
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Non-locally controlled player or server instance."));
+				UE_LOG(LogTemp , Warning , TEXT("Non-locally controlled player or server instance."));
 			}
-			
+
 			switch (GI->GetLuckyDrawState())
 			{
 			case ELuckyDrawState::Winner:
@@ -219,7 +219,7 @@ void ATTPlayer::Tick(float DeltaTime)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 		OnRep_bIsHost();
-		OnRep_Nickname(); 
+		OnRep_Nickname();
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		OnRep_RandomSeatNumber();
@@ -610,6 +610,12 @@ void ATTPlayer::MulticastChangeWalkSpeed_Implementation(bool bIsRunning)
 
 void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , int32 CompetitionRate)
 {
+	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
+	if (TTPC)
+	{
+		TTPC->SetDrawStartTime();
+	}
+	
 	bIsDrawSessionInviteVisible = bIsVisible; // 현재 추첨 세션 초대 UI 가시성 상태를 저장
 	UpdateDrawSessionInviteVisibility(CompetitionRate);
 }
@@ -645,11 +651,11 @@ void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI) return;
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if (HttpActor2)
 	{
 		HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
-										   GI->GetAccessToken());
+		                                   GI->GetAccessToken());
 	}
 }
 
@@ -1500,12 +1506,11 @@ void ATTPlayer::InitMainUI()
 		PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	ATTPlayerController* MyController = Cast<ATTPlayerController>(GetController());
-	if (MyController)
+	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
+	if (TTPC)
 	{
-		MyController->SetMainUI(MainUI);
-		MyController->SetTicketingUI(TicketingUI);
-		MyController->SetDrawStartTime();
+		TTPC->SetMainUI(MainUI);
+		TTPC->SetTicketingUI(TicketingUI);
 	}
 
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
