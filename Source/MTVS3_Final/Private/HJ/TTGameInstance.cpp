@@ -28,7 +28,15 @@ void UTTGameInstance::Init()
 			this , &UTTGameInstance::OnMyJoinSessionComplete);
 
 		// 방 퇴장 응답
-		SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this , &UTTGameInstance::OnMyDestroySessionComplete);
+		OnDestroySessionCompleteDelegateHandle  = SessionInterface->OnDestroySessionCompleteDelegates.AddUObject(this , &UTTGameInstance::OnMyDestroySessionComplete);
+	}
+}
+
+void UTTGameInstance::ClearDestroySessionDelegate()
+{
+	if (SessionInterface.IsValid())
+	{
+		SessionInterface->ClearOnDestroySessionCompleteDelegate_Handle(OnDestroySessionCompleteDelegateHandle);
 	}
 }
 
@@ -298,6 +306,12 @@ void UTTGameInstance::MulticastRPCExitSession_Implementation()
 
 void UTTGameInstance::OnMyDestroySessionComplete(FName SessionName , bool bWasSuccessful)
 {
+	if (!IsValid(this))
+	{
+		// 객체가 유효하지 않으므로 종료
+		return;
+	}
+	
 	if ( bWasSuccessful )
 	{
 		UE_LOG(LogTemp , Log , TEXT("Session destroyed: %s") , *SessionName.ToString());

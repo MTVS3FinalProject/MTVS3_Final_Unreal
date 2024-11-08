@@ -78,6 +78,9 @@ public:
 	// 세션 관련 델리게이트
 	FFindSignature OnFindSignatureCompleteDelegate;
 	virtual void Init() override;
+	void ClearDestroySessionDelegate();
+
+	FDelegateHandle OnDestroySessionCompleteDelegateHandle;
 
 # pragma region 세션
 	FString GenerateUniqueSessionName(const FString& SessionNamePrefix);

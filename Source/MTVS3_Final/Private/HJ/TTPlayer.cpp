@@ -224,7 +224,10 @@ void ATTPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (IsValid(GI) && (EndPlayReason == EEndPlayReason::EndPlayInEditor || EndPlayReason == EEndPlayReason::Quit))
+	{
+		GI->ClearDestroySessionDelegate();
 		GI->ExitSession();
+	}
 }
 
 // Called every frame
