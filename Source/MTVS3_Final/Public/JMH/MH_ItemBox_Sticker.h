@@ -9,6 +9,9 @@
 /**
  * 
  */
+
+//struct FTitleItemData;
+
 UCLASS()
 class MTVS3_FINAL_API UMH_ItemBox_Sticker : public UUserWidget
 {
@@ -23,8 +26,8 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UButton* Btn_Item_Sticker;
 
-	UFUNCTION()
-	void SetStickerData(int32 StickerID, FString StickerScript, UTexture2D* StickerImg);
+	//UFUNCTION()
+	//void SetStickerData(const FStickerItemData& InStickerData);
 
 	
 	UFUNCTION()

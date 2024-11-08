@@ -12,10 +12,10 @@ void UMH_ItemBox_Ticket::NativeConstruct()
 	Btn_Item_Ticket->OnClicked.AddDynamic(this,&UMH_ItemBox_Ticket::OnClickedTicketBtn);
 }
 
-void UMH_ItemBox_Ticket::SetTicketData(FString TicketID, UTexture2D* TicketImage)
-{
+//void UMH_ItemBox_Ticket::SetTicketData(const FTicketItemData& InTicketData)
+//{
 	
-}
+//}
 
 void UMH_ItemBox_Ticket::OnClickedTicketBtn()
 {

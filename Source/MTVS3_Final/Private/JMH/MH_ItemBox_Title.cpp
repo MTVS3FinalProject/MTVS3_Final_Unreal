@@ -13,14 +13,24 @@ void UMH_ItemBox_Title::NativeConstruct()
 	
 }
 
-void UMH_ItemBox_Title::SetTitleData(int32 TitleID, FString TitleName, UTexture2D* TitleImg)
-{
+//void UMH_ItemBox_Title::SetTitleData(const FTitleItemData& InTitleData)
+//{
 
 
 	
-}
+//}
 
 void UMH_ItemBox_Title::OnClickedTitleBtn()
 {
 	
 }
+
+FReply UMH_ItemBox_Title::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
+	// 더블 클릭 이벤트가 발생했을 때 델리게이트 호출
+	OnDoubleClicked.Broadcast();
+
+	return FReply::Handled();
+}
+

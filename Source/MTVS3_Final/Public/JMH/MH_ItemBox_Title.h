@@ -10,6 +10,8 @@
  * 
  */
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDoubleClicked);
+
 UCLASS()
 class MTVS3_FINAL_API UMH_ItemBox_Title : public UUserWidget
 {
@@ -24,10 +26,19 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UButton* Btn_Item_Title;
 
-	UFUNCTION()
-	void SetTitleData(int32 TitleID, FString TitleName, UTexture2D* TitleImg);
+	//UFUNCTION()
+	//void SetTitleData(const FTitleItemData& InTitleData);
 
 	UFUNCTION()
 	void OnClickedTitleBtn();
+
+public:
+	// 더블 클릭 델리게이트 선언
+	UPROPERTY(BlueprintAssignable, Category="Events")
+	FOnDoubleClicked OnDoubleClicked;
+
+	// 더블 클릭 이벤트 함수 오버라이드
+
+	virtual FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent);
 	
 };

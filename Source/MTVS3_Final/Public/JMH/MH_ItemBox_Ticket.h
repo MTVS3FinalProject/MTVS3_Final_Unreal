@@ -24,8 +24,8 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UButton* Btn_Item_Ticket;
 
-	UFUNCTION()
-	void SetTicketData(FString TicketID, UTexture2D* TicketImage);
+	//UFUNCTION()
+	//void SetTicketData(const FTicketItemData& InTicketData);
 	
 	UFUNCTION()
 	void OnClickedTicketBtn();

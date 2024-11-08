@@ -13,11 +13,11 @@ void UMH_ItemBox_Sticker::NativeConstruct()
 	
 }
 
-void UMH_ItemBox_Sticker::SetStickerData(int32 StickerID, FString StickerScript, UTexture2D* StickerImg)
-{
+//void UMH_ItemBox_Sticker::SetStickerData(const FStickerItemData& InStickerData)
+//{
 	//티켓 아이디, 이미지,
 	//티켓 아이디에서 티켓 정보 String 가져와서 info창에 띄우기
-}
+//}
 
 void UMH_ItemBox_Sticker::OnClickedStickerBtn()
 {
