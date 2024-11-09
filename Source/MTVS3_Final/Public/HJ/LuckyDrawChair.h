@@ -32,7 +32,13 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* MeshComp;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UNiagaraComponent* NiagaraComp;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
 	float SeatOffset = 30.0;
 	FTransform GetSittingTransform();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void ThrowChair();
 };

@@ -3,6 +3,7 @@
 
 #include "HJ/LuckyDrawChair.h"
 #include "Components/BoxComponent.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 ALuckyDrawChair::ALuckyDrawChair()
@@ -18,6 +19,9 @@ ALuckyDrawChair::ALuckyDrawChair()
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
 	MeshComp->SetupAttachment(RootComponent);
+
+	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComp"));
+	NiagaraComp->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned

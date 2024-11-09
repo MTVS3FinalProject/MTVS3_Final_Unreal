@@ -577,6 +577,9 @@ void ATTPlayer::MulticastLuckyDrawStart_Implementation()
 {
 	// InitGameUI();
 	SwitchCamera(!bIsThirdPerson);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Anim)
 	{
@@ -592,6 +595,7 @@ void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& Targ
 
 void ATTPlayer::ClientLuckyDrawLose_Implementation()
 {
+	PlayChairGoingUpCameraShake();
 	if (GameUI)
 	{
 		GameUI->HideWidget();

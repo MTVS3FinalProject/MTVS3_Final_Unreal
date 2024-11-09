@@ -59,6 +59,9 @@ public:
 
 	UFUNCTION(Client , Reliable)
 	void ClientLuckyDrawLose();
+	
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void PlayChairGoingUpCameraShake();
 
 	UFUNCTION(Client , Reliable)
 	void ClientLuckyDrawWin();
