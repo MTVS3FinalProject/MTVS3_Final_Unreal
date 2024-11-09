@@ -17,13 +17,13 @@ struct FUsedImage
 {
 	GENERATED_BODY()
 
-	class UImage* CopiedImage;
-	class UImage* Outline;
-	class UImage* RenderAngle;
-	class UImage* RenderScale;
-	class UImage* Delete;
+	UImage* CopiedImage;
+	UImage* Outline;
+	UImage* RenderAngle;
+	UImage* RenderScale;
+	UImage* Delete;
     class UOverlay* ImageGroupOverlay; // 그룹화된 이미지 컨테이너
-    class UImage* OriginImage; // 원본 이미지 참조 추가
+    UImage* OriginImage; // 원본 이미지 참조 추가
 
 	// 기본 생성자
 	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr), ImageGroupOverlay(nullptr), OriginImage(nullptr) {}
@@ -42,9 +42,21 @@ class MTVS3_FINAL_API UHM_TicketCustom : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	
 	UPROPERTY()
 	class UCanvasPanel* RootCanvas;
 
+//테스트
+	
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_TicketBackground;
+	
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_TicketInfo;
+	
+
+	
 #pragma region Origin Variable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UImage* Img_Sticker01;
@@ -110,12 +122,12 @@ protected:
 #pragma region FinalTicket Save
 
 	// 최종 이미지 위젯 참조
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Final Display")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_FinalTicket> FinalTicketWidget;
 	
 	class UHM_FinalTicket* FinalTicketUI; // 티켓 위젯 참조
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ticket Background")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_TicketBG> TicketBGWidget; // 배경 티켓 위젯 클래스 참조
 
 	class UHM_TicketBG* TicketBGUI; // 배경 티켓 위젯 인스턴스
