@@ -4,56 +4,118 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interfaces/IHttpRequest.h"
 #include "HM_HTTPActor_Inven.generated.h"
-/*
-USTRUCT(BlueprintType)
-struct FTitleItemData
+
+USTRUCT()
+struct FTitles
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly)
-	int32 TitleID;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString TitleName;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString TitleScript;
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Titles")
+	int32 titleId;
+    
+	UPROPERTY(VisibleAnywhere, Category = "Default|Titles")
+	FString titleName;
 	
-	UPROPERTY(BlueprintReadOnly)
-	FString TitleRarity;
-
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, Category = "Default|Titles")
+	FString titleScript;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Titles")
+	FString titleRarity;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Titles")
 	bool bIsEquipped;
-};
-
-USTRUCT(BlueprintType)
-struct FTicketItemData
-{
-	GENERATED_BODY()
 	
-	UPROPERTY(BlueprintReadOnly)
-	int32 StickerID;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString StickerScript;
-
-	UPROPERTY(BlueprintReadOnly)
-	UTexture2D* StickerImg;
+	FTitles()
+		: titleId(0)
+		, titleName(TEXT(""))
+		, titleScript(TEXT(""))
+		, titleRarity(TEXT(""))
+		, bIsEquipped(false)
+	{}
+	// 매개 변수를 받는 생성자
+	FTitles(int32 InId, const FString& InName, const FString& InScript, const FString& InRarity, bool InEquipped)
+		: titleId(InId)
+		, titleName(InName)
+		, titleScript(InScript)
+		, titleRarity(InRarity)
+		, bIsEquipped(InEquipped)
+	{}
 };
 
-USTRUCT(BlueprintType)
-struct FStickerItemData
+USTRUCT()
+struct FStickers
 {
 	GENERATED_BODY()
-		
-	UPROPERTY(BlueprintReadOnly)
-	FString TicketID;
 
-	UPROPERTY(BlueprintReadOnly)
-	UTexture2D* TicketImage;
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	int32 stickerId;
+
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	FString stickerName;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	FString stickerScript;
+
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	FString stickerRarity;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	UTexture2D* stickerImage;
+	
+	FStickers()
+		: stickerId(0)
+		, stickerName(TEXT(""))
+		, stickerScript(TEXT(""))
+		, stickerRarity(TEXT(""))
+		, stickerImage(nullptr)
+	{}
+	// 매개 변수를 받는 생성자
+	FStickers(int32 InId, const FString& InName, const FString& InScript, const FString& InRarity, UTexture2D* InImage)
+		: stickerId(InId)
+		, stickerName(InName)
+		, stickerScript(InScript)
+		, stickerRarity(InRarity)
+		, stickerImage(InImage)
+	{}
 };
-*/
+
+USTRUCT()
+struct FTickets
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	int32 tickerId;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	FString concertName;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	FString seatInfo;
+
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	UTexture2D* tickerImage;
+	
+	FTickets()
+		: tickerId(0)
+		, concertName(TEXT(""))
+		, seatInfo(TEXT(""))
+		, tickerImage(nullptr)
+	{}
+	// 매개 변수를 받는 생성자
+	FTickets(int32 InId, const FString& InConcertNam, const FString& InSeatInfo, UTexture2D* InImage)
+		: tickerId(InId)
+		, concertName(InConcertNam)
+		, seatInfo(InSeatInfo)
+		, tickerImage(InImage)
+	{}
+};
+
 UCLASS()
 class MTVS3_FINAL_API AHM_HTTPActor_Inven : public AActor
 {
@@ -71,23 +133,61 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-public:
-	
-	// 서버로 인벤토리 데이터 요청
-	void RequestInventoryData();
+#pragma region UI & URL
+	UPROPERTY()
+	class UMainWidget* MainUI;
+	void SetMainUI(UMainWidget* InMainUI);
 
+	const FString _url = "https://ticketaka.shop/api";
+#pragma endregion
+
+#pragma region FTitles/FStickers/FTickets Getter & Setter Methods
+	TArray<FTitles> TitleItems;
+	TArray<FStickers> StickerItems;
+	TArray<FTickets> TicketItems;
+	
 	// 인벤토리 데이터를 가져오는 함수
-	//const TArray<FTitleItemData>& GetTitleItems() const { return TitleItems; }
-	//const TArray<FTicketItemData>& GetTicketItems() const { return TicketItems; }
-	//const TArray<FStickerItemData>& GetStickerItems() const { return StickerItems; }
-
-	// 데이터 저장용 TArray
-//	TArray<FTitleItemData> TitleItems;
-	//TArray<FTicketItemData> TicketItems;
-	//TArray<FStickerItemData> StickerItems;
+	TArray<FTitles>& GetTitleItems() { return TitleItems; }
+	void SetTitleItems(TArray<FTitles>& NewTitleItems ) { TitleItems = NewTitleItems; };
+	TArray<FStickers>& GetStickerItems() { return StickerItems; }
+	void SetStickerItems(TArray<FStickers>& NewStickerItems ) { StickerItems = NewStickerItems; };
+	TArray<FTickets>& GetTicketItems() { return TicketItems; }
+	void SetTicketItems(TArray<FTickets>& NewTicketItems ) { TicketItems = NewTicketItems; };
+#pragma endregion
 	
-	// 서버 응답 처리 함수
-	void OnInventoryDataReceived(const FString& JsonResponse);
-
+	// 인벤토리 정보 요청
+	void ReqGetInventoryData(FString AccessToken);
 	
+	// 인벤토리 정보 요청에 대한 응답
+	void OnResGetInventoryData(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// Puzzle 결과, Sticker 획득 요청
+	void ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken);
+
+	// Puzzle 결과, Sticker 획득 요청에 대한 응답
+	void OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
+	// 커스텀 티켓 저장 요청
+	void ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken);
+
+	// 커스텀 티켓 저장 요청에 대한 응답
+	//void OnReqPostSaveCustomTicket(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
+	// 배경 생성 요청
+	void ReqGetBackground(FString AccessToken);
+
+	// 배경 생성 요청에 대한 응답
+	void OnReqGetBackground(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
+	// My 커스텀 티켓 목록 조회 요청
+	void ReqGetCustomTicketList(FString AccessToken);
+
+	// My 커스텀 티켓 목록 조회 요청에 대한 응답
+	void OnReqGetCustomTicketList(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
+	// 티켓 커스텀 제작 입장 요청
+	void ReqPostEnterTicketCustomization(FString AccessToken);
+	
+	// 티켓 커스텀 제작 입장 요청에 대한 응답
+	void OnReqPostEnterTicketCustomization(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 };
