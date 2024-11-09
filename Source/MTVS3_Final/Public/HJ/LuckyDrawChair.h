@@ -24,6 +24,9 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditDefaultsOnly)
+	class USceneComponent* SceneComp;
+	
+	UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* BoxComp;
 
 	UPROPERTY(EditDefaultsOnly)
