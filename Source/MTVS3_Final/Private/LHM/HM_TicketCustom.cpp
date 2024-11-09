@@ -3,17 +3,18 @@
 
 #include "LHM/HM_TicketCustom.h"
 
-#include "ViewportWorldInteraction.h"
-#include "Commandlets/WorldPartitionCommandletHelpers.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/Image.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
-#include "DSP/MidiNoteQuantizer.h"
+#include "LHM/HM_FinalTicket.h"
+#include "LHM/HM_TicketBG.h"
 
 
+class FWidgetRenderer;
 class UOverlay;
 
 void UHM_TicketCustom::NativeConstruct()
@@ -38,7 +39,15 @@ void UHM_TicketCustom::NativeConstruct()
 	bIsDelete = false;
 	bIsBackground = false;
 	CurrentImage = nullptr;
-
+	
+	if (FinalTicketWidget)
+	{
+		FinalTicketUI = CreateWidget<UHM_FinalTicket>(GetWorld(), FinalTicketWidget);
+	}
+	if (TicketBGWidget)
+	{
+		TicketBGUI = CreateWidget<UHM_TicketBG>(GetWorld(), TicketBGWidget);
+	}
 }
 
 void UHM_TicketCustom::SetupDraggableImage(UImage* Image)
@@ -79,9 +88,7 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			CopiedImage->SetBrushFromTexture(TextureResource);
 			CopiedImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
 			CopiedImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
-			CopiedImage->SetVisibility(ESlateVisibility::Visible);
-			CopiedImage->bIsVariable = true;
-			CopiedImage->SetIsEnabled(true);
+			SetupDraggableImage(CopiedImage);
 		}
 
 		// 아웃라인, 조정버튼 이미지의 텍스처 설정
@@ -139,7 +146,7 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		// 각 이미지의 개별 위치와 크기 설정 (중앙을 기준으로 조정)
 		CopiedImage->SetDesiredSizeOverride(FVector2d(193));
 		OutlineImage->SetDesiredSizeOverride(FVector2d(193));
-
+		
 		UOverlaySlot* CopiedImgSlot = Cast<UOverlaySlot>(CopiedImage->Slot);
 		UOverlaySlot* OutlineImgSlot = Cast<UOverlaySlot>(OutlineImage->Slot);
 		UOverlaySlot* AngleImgSlot = Cast<UOverlaySlot>(RenderAngleImage->Slot);
@@ -168,18 +175,19 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		
 		// Img_CopiedImgs에 추가
-		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay);
+		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage);
 		Img_CopiedImgs.Add(NewImageSet);
 
 		// 디버그 로그
-		UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s"),
-			Img_CopiedImgs.Num() - 1,
-			*CopiedImage->GetName(),
-			*OutlineImage->GetName(),
-			*RenderAngleImage->GetName(),
-			*RenderScaleImage->GetName(),
-			*RenderDeleteImage->GetName()
-		);
+		// UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s, OriginImage = %s"),
+		// 	Img_CopiedImgs.Num() - 1,
+		// 	*CopiedImage->GetName(),
+		// 	*OutlineImage->GetName(),
+		// 	*RenderAngleImage->GetName(),
+		// 	*RenderScaleImage->GetName(),
+		// 	*RenderDeleteImage->GetName(),
+		// 	*SourceImage->GetName()
+		//);
 		return NewImageSet;
 	}
 	return FUsedImage();  // 실패 시 기본값 반환
@@ -192,15 +200,9 @@ void UHM_TicketCustom::SetRenderScale(FUsedImage& ImageSet, const FVector2D& Mou
 		if(ImageSet.CopiedImage)
 		{
 			// 마우스 이동 거리의 크기에 따라 Scale 조정
-			float ScaleFactor = 1.0f + (MouseDelta.X * 0.01f);
-
-			// 초기 스케일을 기준으로 적용하여 누적되지 않도록 설정
-			FVector2D NewScale = FVector2D(1.0f, 1.0f) * ScaleFactor;
-			//FVector2D NewScale = FVector2D(ScaleFactor);
-			ImageSet.ImageGroupOverlay->SetRenderScale(FVector2D(NewScale));
-
-			// 이전 마우스 위치 업데이트
-			PreviousMousePosition = NewScale; // 새로운 마우스 위치로 업데이트
+			//float ScaleFactor = 1.0f + (MouseDelta.X * 0.01f);
+			float ScaleFactor = FMath::Clamp(1.0f + (MouseDelta.X * 0.005f), 0.5f, 5);
+			ImageSet.ImageGroupOverlay->SetRenderScale(FVector2D(ScaleFactor));
 		}	
 	}
 }
@@ -220,19 +222,87 @@ void UHM_TicketCustom::SetRenderAngle(FUsedImage& ImageSet, const FVector2D& Mou
 	}
 }
 
-void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet)
+void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet, int32 Index)
 {
-	if (bIsDelete)
+	if (Img_CopiedImgs.IsValidIndex(Index)) // 인덱스가 유효한지 확인
 	{
-		if (ImageSet.ImageGroupOverlay)
+		FUsedImage& ImageSet = Img_CopiedImgs[Index];
+
+		if (bIsDelete)
 		{
-			// ImageGroupOverlay와 그 하위 위젯들을 UI에서 제거
-			ImageSet.ImageGroupOverlay->RemoveFromParent();
+			if (ImageSet.ImageGroupOverlay)
+			{
+				// ImageGroupOverlay와 그 하위 위젯들을 UI에서 제거
+				ImageSet.ImageGroupOverlay->RemoveFromParent();
+			}
+			if (ImageSet.OriginImage)
+			{
+				ImageSet.OriginImage->SetVisibility(ESlateVisibility::Visible);
+			}
+
+			// 구조체의 이미지 포인터를 nullptr로 설정하여 이후 접근 방지
+			ImageSet.CopiedImage = nullptr;
+			ImageSet.Outline = nullptr;
+			ImageSet.RenderAngle = nullptr;
+			ImageSet.RenderScale = nullptr;
+			ImageSet.Delete = nullptr;
+			ImageSet.ImageGroupOverlay = nullptr;
+			ImageSet.OriginImage = nullptr; // 참조 해제
+
+			// 배열에서 해당 인덱스 제거
+			Img_CopiedImgs.RemoveAt(Index);
+            
+			// 필요한 경우 로그 출력
+			UE_LOG(LogTemp, Log, TEXT("Deleted ImageSet at index: %d"), Index);
 		}
-		OriginImage->SetVisibility(ESlateVisibility::Visible);
-		bIsDelete = false;
-		CurrentImage = nullptr;
-		OriginImage = nullptr;
+
+		bIsDelete = false; // 삭제 플래그 초기화
+		CurrentImage = nullptr; // 현재 이미지 초기화
+	}
+	// if (bIsDelete)
+	// {
+	// 	if (ImageSet.ImageGroupOverlay)
+	// 	{
+	// 		// ImageGroupOverlay와 그 하위 위젯들을 UI에서 제거
+	// 		ImageSet.ImageGroupOverlay->RemoveFromParent();
+	// 	}
+	// 	if (ImageSet.OriginImage)
+	// 	{
+	// 		ImageSet.OriginImage->SetVisibility(ESlateVisibility::Visible);
+	// 	}
+	//
+	// 	// 구조체의 이미지 포인터를 nullptr로 설정하여 이후 접근 방지
+	// 	ImageSet.CopiedImage = nullptr;
+	// 	ImageSet.Outline = nullptr;
+	// 	ImageSet.RenderAngle = nullptr;
+	// 	ImageSet.RenderScale = nullptr;
+	// 	ImageSet.Delete = nullptr;
+	// 	ImageSet.ImageGroupOverlay = nullptr;
+	// 	ImageSet.OriginImage = nullptr; // 참조 해제
+	// 	
+	// 	bIsDelete = false;
+	// 	CurrentImage = nullptr;
+	// }
+}
+
+void UHM_TicketCustom::AddImageSetToFinalTicketUI(const FUsedImage& ImageSet)
+{
+	// FinalTicketUI의 Overlay를 찾는 예시
+	UOverlay* TargetOverlay = Cast<UOverlay>(TicketBGUI->GetWidgetFromName(TEXT("Overlay_TicketBG")));
+	if (TargetOverlay)
+	{
+		UE_LOG(LogTemp , Log , TEXT("TargetOverlay"));
+		TargetOverlay->AddChild(ImageSet.ImageGroupOverlay);
+    
+		// 위치와 크기 설정
+		UOverlaySlot* OverlaySlot = Cast<UOverlaySlot>(ImageSet.ImageGroupOverlay->Slot);
+		if (OverlaySlot)
+		{
+			UE_LOG(LogTemp , Log , TEXT("OverlaySlot"));
+			OverlaySlot->SetHorizontalAlignment(HAlign_Center);
+			OverlaySlot->SetVerticalAlignment(VAlign_Center);
+			// 추가적인 속성 설정 가능
+		}
 	}
 }
 
@@ -248,7 +318,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 				FGeometry CopiedImageGeometry = Image->GetCachedGeometry();
 				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
-					OriginImage = Image;
+					//OriginImage = Image;
 					Image->SetVisibility(ESlateVisibility::Hidden);
 					
 					// 이미지 복사본 생성 (UOverlay 포함된 ImageSet 생성)
@@ -410,26 +480,38 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	if (bIsRenderingScale && CurrentImage)
 	{
 		FVector2d LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		FVector2D MouseDelta = PreviousMousePosition - LocalMousePosition;
+		//FVector2D MouseDelta = PreviousMousePosition - LocalMousePosition;
+		FVector2D MouseDelta = LocalMousePosition - PreviousMousePosition;
 		
 		for (FUsedImage& ImageSet : Img_CopiedImgs)
 		{
 			if (ImageSet.CopiedImage == CurrentImage)
 			{
 				FVector2D LerpedMousePosition = FMath::Lerp(PreviousMousePosition, MouseDelta, 0.1f);
-				SetRenderScale(ImageSet, MouseDelta - LerpedMousePosition);
-				PreviousMousePosition = LerpedMousePosition;
+				SetRenderScale(ImageSet, LerpedMousePosition);
+				//PreviousMousePosition = LerpedMousePosition;
+				PreviousMousePosition = LocalMousePosition;
 				return FReply::Handled();
 			}
 		}
 	}
 	if (bIsDelete && CurrentImage)
 	{
-		for (FUsedImage& ImageSet : Img_CopiedImgs)
+		// for (FUsedImage& ImageSet : Img_CopiedImgs)
+		// {
+		// 	if (ImageSet.CopiedImage == CurrentImage)
+		// 	{
+		// 		DeleteImage(ImageSet);
+		// 		return FReply::Handled();
+		// 	}
+		// }
+		for (int32 Index = 0; Index < Img_CopiedImgs.Num(); ++Index) // 인덱스를 추적
 		{
+			FUsedImage& ImageSet = Img_CopiedImgs[Index];
+
 			if (ImageSet.CopiedImage == CurrentImage)
 			{
-				DeleteImage(ImageSet);
+				DeleteImage(ImageSet, Index); // 인덱스를 파라미터로 넘김
 				return FReply::Handled();
 			}
 		}
@@ -455,25 +537,30 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 		bIsDragging = false;
 		bIsRenderingAngle = false;
 		bIsRenderingScale = false;
-		//PreviousMousePosition = FVector2D(0);
+		//bIsDelete = false;
 		
 		for(FUsedImage& ImageSet : Img_CopiedImgs)
 		{
-			if (ImageSet.CopiedImage == CurrentImage)
+			// 이미지가 삭제되지 않았는지 (nullptr가 아닌지) 확인
+			if (ImageSet.CopiedImage && ImageSet.Outline && ImageSet.RenderAngle && ImageSet.RenderScale && ImageSet.Delete)
 			{
-				ImageSet.Outline->SetVisibility(ESlateVisibility::Visible);
-				ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Visible);
-				ImageSet.RenderScale->SetVisibility(ESlateVisibility::Visible);
-				ImageSet.Delete->SetVisibility(ESlateVisibility::Visible);
-			}
-			else
-			{
-				ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
-				ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
-				ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
-				ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
+				if (ImageSet.CopiedImage == CurrentImage)
+				{
+					ImageSet.Outline->SetVisibility(ESlateVisibility::Visible);
+					ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Visible);
+					ImageSet.RenderScale->SetVisibility(ESlateVisibility::Visible);
+					ImageSet.Delete->SetVisibility(ESlateVisibility::Visible);
+				}
+				else
+				{
+					ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
+					ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
+					ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
+					ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
+				}
 			}
 		}
+		return FReply::Handled().ReleaseMouseCapture();
 	}
 	return FReply::Unhandled();
 }
@@ -490,7 +577,27 @@ void UHM_TicketCustom::OnClickedResetTicketImageButton()
 
 void UHM_TicketCustom::OnClickedSaveButton()
 {
-	// 티켓 최종 이미지 서버에 보내기
+	for (FUsedImage& ImageSet : Img_CopiedImgs)
+	{
+		if (ImageSet.CopiedImage && ImageSet.Outline && ImageSet.RenderAngle && ImageSet.RenderScale && ImageSet.Delete)
+		{
+			//AddImageSetToFinalTicketUI(ImageSet);
+			UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s="),
+			Img_CopiedImgs.Num() - 1,
+			*ImageSet.CopiedImage->GetName(),
+			*ImageSet.Outline->GetName(),
+			*ImageSet.RenderAngle->GetName(),
+			*ImageSet.RenderScale->GetName(),
+			*ImageSet.Delete->GetName()
+			);
+		}
+	}
+	
+	if (FinalTicketUI)
+	{
+		FinalTicketUI->AddToViewport();
+		FinalTicketUI->CaptureAndDisplayTicketBackground();
+	}
 }
 
 void UHM_TicketCustom::OnClickedExitButton()
