@@ -8,7 +8,8 @@
 void UMH_ItemBox_Title::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
+	Btn_Item_Title->OnClicked.AddDynamic(this,&UMH_ItemBox_Title::OnClickedTitle);
 }
 
 //void UMH_ItemBox_Title::SetTitleData(const FTitleItemData& InTitleData)

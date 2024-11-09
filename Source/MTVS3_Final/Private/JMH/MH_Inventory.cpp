@@ -26,11 +26,15 @@ void UMH_Inventory::NativeConstruct()
 	Btn_01_Ticket->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket);
 	Btn_02_Sticker->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker);
 	Btn_Back_Inven->OnClicked.AddDynamic(this , &UMH_Inventory::CloseBtn_Inven);
+	
+	Btn_Title_yes->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteYesBtn);
+	Btn_Title_no->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteNoBtn);
 
 	//test
 	Btn_Title_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Title_Test);
 	Btn_Ticket_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket_Test);
 	Btn_Sticker_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker_Test);
+
 }
 
 void UMH_Inventory::SetWidgetSwitcher(int32 num)
@@ -48,17 +52,6 @@ void UMH_Inventory::HideTitleWin()
 	Can_TitleWin->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void UMH_Inventory::OnClickedTilteYesBtn()
-{
-	//클릭한 타이틀 장착 -> 클릭한 타이틀이 뭔지 저장할 변수 만들기
-	//SetPlayerTitle();
-}
-
-void UMH_Inventory::OnClickedTilteNoBtn()
-{
-	//창 지우기
-	HideTitleWin();
-}
 
 void UMH_Inventory::InitializeTabs()
 {/*
@@ -141,6 +134,7 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickerItemData>& Sticke
 	}
 }*/
 
+
 void UMH_Inventory::OnClicked_PlayerTitle()
 {
 	//타이틀
@@ -158,7 +152,6 @@ void UMH_Inventory::OnClicked_Sticker()
 	//스티커
 	SetWidgetSwitcher(2);
 }
-
 void UMH_Inventory::SetPlayerTitleInfo()
 {
 	//WBP_ItemBox에 타이틀 텍스트 넣어서(매개변수 1. Text or Image) 저장
@@ -209,6 +202,46 @@ void UMH_Inventory::ShowInfoWin()
 	//호버된 위치에서 떠야하는데? 정해진 버튼 위치에서 오른쪽 아래로 떠야겠다
 }
 
+void UMH_Inventory::OnClickedTilteYesBtn()
+{
+	//클릭한 타이틀 장착 -> 클릭한 타이틀이 뭔지 저장할 변수 만들기
+	//SetPlayerTitle();
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("2222!"));
+	if (SelectedTitle == CurrentTitle)
+	{
+		return;
+	}
+	
+	if (SelectedTitle)
+	{
+		// 이전에 선택된 아이템에서 프레임 제거
+		RemoveFrame();
+		//타이틀을 제거하시겠습니까? 창 뜨기
+		//플레이어한테 칭호 해제
+	}
+	
+	SelectedTitle = CurrentTitle;
+
+	if (SelectedTitle)
+	{
+		// 현재 선택된 아이템에 프레임 추가
+		AddFrame(CurrentTitle);
+		// 프레임 위치 업데이트
+		SetFramePosition(CurrentTitle);
+
+		//플레이어한테 칭호 해제
+	}
+	
+	OnClickedTilteNoBtn();
+}
+
+void UMH_Inventory::OnClickedTilteNoBtn()
+{
+	//창 지우기
+	HideTitleWin();
+}
+
 //이걸 타이틀 장착하시겠습니까? -> 네 위치로 옮기기
 /*
 void UMH_Inventory::HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem)
@@ -239,31 +272,43 @@ void UMH_Inventory::HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem)
 	}
 }*/
 
+//1.타이틀버튼 누름
+void UMH_Inventory::OnClickedTitleBtn(UMH_ItemBox_Title* ClickedItem)
+{
+	//2.타이틀을 적용하시겠습니까? 창뜸
+	CurrentTitle = ClickedItem;
+	ShowTitleWin();
+}
+
 void UMH_Inventory::AddFrame(UMH_ItemBox_Title* ClickedItem)
 {
 	// 프레임 위치를 업데이트하며 보이도록 설정
 	SetFramePosition(ClickedItem);
 }
 
-void UMH_Inventory::RemoveFrame(UMH_ItemBox_Title* ClickedItem)
-{
-	if (Img_Frame && ClickedItem)
-	{
-		// 클릭된 아이템의 위치를 가져와 프레임 위치 설정
-		FVector2D ItemPosition = ClickedItem->GetCachedGeometry().GetAbsolutePosition();
-		Img_Frame->SetRenderTranslation(ItemPosition);
-
-		// 프레임을 표시
-		Img_Frame->SetVisibility(ESlateVisibility::Visible);
-	}
-}
-
-void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
+void UMH_Inventory::RemoveFrame()
 {
 	// 프레임을 숨김
 	if (Img_Frame)
 	{
 		Img_Frame->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
+{
+	if (Img_Frame && ClickedItem)
+	{
+		// 클릭된 아이템의 위치를 가져와 프레임 위치 설정
+		FVector2D InventoryPosition = this->GetCachedGeometry().GetAbsolutePosition();
+		FVector2D ItemPosition = ClickedItem->GetCachedGeometry().GetAbsolutePosition();
+		
+		FVector2D RelativePosition = ItemPosition - InventoryPosition;
+		Img_Frame->SetRenderTranslation(RelativePosition);
+		
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("3333!"));
+		// 프레임을 표시
+		Img_Frame->SetVisibility(ESlateVisibility::Visible);
 	}
 }
 
@@ -277,7 +322,7 @@ void UMH_Inventory::OnClicked_Title_Test()
 		ItemBox_Title->Text_Title->SetText(FText::FromString(FString::Printf(TEXT("%02d") , Counter_Title)));
 		//ItemBox_Title->SetTitleData(ItemData); // 타이틀 데이터를 설정
 
-		//ItemBox_Title->OnDoubleClicked.AddDynamic(this,&UMH_Inventory::HandleItemDoubleClicked);
+		ItemBox_Title->OnClickedTitleBtn.AddDynamic(this,&UMH_Inventory::OnClickedTitleBtn);
 		Hori_InvenBox_00_Title->AddChild(ItemBox_Title);
 	}
 }

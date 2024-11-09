@@ -34,9 +34,9 @@ void UHM_MainBarWidget::NativeConstruct()
 
 	SetVisibleSwitcher(false);
 
-	if (WBP_inventory)
+	if (WBP_inventoryUI)
 	{
-		WBP_inventory->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::CloseAllCategory);
+		WBP_inventoryUI->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::CloseAllCategory);
 	}
 }
 

@@ -72,6 +72,9 @@ public:
 	UFUNCTION()
 	void InitializeTabs();
 
+	UPROPERTY()
+	class UMH_ItemBox_Title* CurrentTitle;
+
 /*
 	//텝 초기화 함수들
 	UFUNCTION()
@@ -136,6 +139,9 @@ public:
 	//타이틀 박스 더블클릭시
 	//UFUNCTION()
 	//void HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem);
+
+	UFUNCTION()
+	void OnClickedTitleBtn(UMH_ItemBox_Title* ClickedItem);
 	
 	//타이틀에 프레임 적용
 	UPROPERTY(meta = (BindWidget))
@@ -144,7 +150,7 @@ public:
 	UFUNCTION()
 	void AddFrame(UMH_ItemBox_Title* ClickedItem);
 	UFUNCTION()
-	void RemoveFrame(UMH_ItemBox_Title* ClickedItem);
+	void RemoveFrame();
 	UFUNCTION()
 	void SetFramePosition(UMH_ItemBox_Title* ClickedItem);
 

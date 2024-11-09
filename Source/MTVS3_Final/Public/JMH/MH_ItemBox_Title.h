@@ -11,7 +11,7 @@
  */
 
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDoubleClicked, UMH_ItemBox_Title*, ClickedItem);
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedTitleBtn);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickedTitleBtn, UMH_ItemBox_Title*, ClickedItem);
 
 UCLASS()
 class MTVS3_FINAL_API UMH_ItemBox_Title : public UUserWidget
@@ -32,23 +32,21 @@ public:
 
 	//UFUNCTION()
 	//void SetTitleData(const FTitleItemData& InTitleData);
-/*
+	UPROPERTY(BlueprintAssignable, Category="Events")
+	FOnClickedTitleBtn OnClickedTitleBtn;
+
 	UFUNCTION()
 	void OnClickedTitle()
 	{
-		OnClickedTitleBtn.Broadcast();
-	}*/
+		OnClickedTitleBtn.Broadcast(this);
+	}
 
 public:
 	// 더블 클릭 델리게이트 선언
 	//UPROPERTY(BlueprintAssignable, Category="Events")
 	//FOnDoubleClicked OnDoubleClicked;
 
-	//UPROPERTY(BlueprintAssignable, Category="Events")
-	//FOnClickedTitleBtn OnClickedTitleBtn;
-
 	// 더블 클릭 이벤트 함수 오버라이드
-
 	//virtual FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent);
 	
 };
