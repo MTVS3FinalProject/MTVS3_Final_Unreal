@@ -26,6 +26,9 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UButton* Btn_Item_Sticker;
 
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Text_Sticker;
+
 	//UFUNCTION()
 	//void SetStickerData(const FStickerItemData& InStickerData);
 

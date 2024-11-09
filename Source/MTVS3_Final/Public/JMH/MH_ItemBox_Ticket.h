@@ -24,6 +24,9 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UButton* Btn_Item_Ticket;
 
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Text_Ticket;
+
 	//UFUNCTION()
 	//void SetTicketData(const FTicketItemData& InTicketData);
 	

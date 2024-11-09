@@ -4,8 +4,10 @@
 #include "JMH/MH_Inventory.h"
 
 #include "Components/Button.h"
+#include "Components/CanvasPanel.h"
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 #include "JMH/MH_ItemBox_Sticker.h"
 #include "JMH/MH_ItemBox_Ticket.h"
@@ -19,11 +21,16 @@ void UMH_Inventory::NativeConstruct()
 	Super::NativeConstruct();
 	//칭호에서 시작
 	OnClicked_PlayerTitle();
-
+	//InitializeTabs();
 	Btn_00_PlayerTitle->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_PlayerTitle);
 	Btn_01_Ticket->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket);
 	Btn_02_Sticker->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker);
 	Btn_Back_Inven->OnClicked.AddDynamic(this , &UMH_Inventory::CloseBtn_Inven);
+
+	//test
+	Btn_Title_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Title_Test);
+	Btn_Ticket_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket_Test);
+	Btn_Sticker_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker_Test);
 }
 
 void UMH_Inventory::SetWidgetSwitcher(int32 num)
@@ -31,12 +38,34 @@ void UMH_Inventory::SetWidgetSwitcher(int32 num)
 	WS_InvenWidgetSwitcher->SetActiveWidgetIndex(num);
 }
 
-void UMH_Inventory::InitializeTabs()
+void UMH_Inventory::ShowTitleWin()
 {
+	Can_TitleWin->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UMH_Inventory::HideTitleWin()
+{
+	Can_TitleWin->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UMH_Inventory::OnClickedTilteYesBtn()
+{
+	//클릭한 타이틀 장착 -> 클릭한 타이틀이 뭔지 저장할 변수 만들기
+	//SetPlayerTitle();
+}
+
+void UMH_Inventory::OnClickedTilteNoBtn()
+{
+	//창 지우기
+	HideTitleWin();
+}
+
+void UMH_Inventory::InitializeTabs()
+{/*
 	//데이터들이 저장될 HTTPInvenActor에서 정보 TArray로 받아오기
 	AHM_HTTPActor_Inven* HTTP_Inven = Cast<AHM_HTTPActor_Inven>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HTTPActor_Inven::StaticClass()));
-	if(!HTTP_Inven)
+	if (!HTTP_Inven)
 	{
 		return;
 	}
@@ -59,10 +88,10 @@ void UMH_Inventory::InitializeTabs()
 		{
 			InitializeStickerTabs(StickerItems);
 		}
-	}
+	}*/
 }
 
-
+/*
 void UMH_Inventory::InitializeTitleTabs(const TArray<FTitleItemData>& TitleItem)
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
@@ -110,11 +139,11 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickerItemData>& Sticke
 			Hori_InvenBox_02_Sticker->AddChild(ItemBox_Sticker);
 		}
 	}
-}
+}*/
 
 void UMH_Inventory::OnClicked_PlayerTitle()
 {
-	//칭호
+	//타이틀
 	SetWidgetSwitcher(0);
 }
 
@@ -180,9 +209,11 @@ void UMH_Inventory::ShowInfoWin()
 	//호버된 위치에서 떠야하는데? 정해진 버튼 위치에서 오른쪽 아래로 떠야겠다
 }
 
+//이걸 타이틀 장착하시겠습니까? -> 네 위치로 옮기기
+/*
 void UMH_Inventory::HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem)
 {
-	
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("2222!"));
 	if (SelectedTitle)
 	{
 		// 이전에 선택된 아이템에서 프레임 제거
@@ -194,7 +225,7 @@ void UMH_Inventory::HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem)
 	{
 		return;
 	}
-	
+
 	SelectedTitle = ClickedItem;
 
 	if (SelectedTitle)
@@ -206,7 +237,7 @@ void UMH_Inventory::HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem)
 
 		//플레이어한테 칭호 해제
 	}
-}
+}*/
 
 void UMH_Inventory::AddFrame(UMH_ItemBox_Title* ClickedItem)
 {
@@ -233,5 +264,48 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 	if (Img_Frame)
 	{
 		Img_Frame->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UMH_Inventory::OnClicked_Title_Test()
+{
+	//타이틀 호리젠탈에 아이템 박스 넣어주기.
+	UMH_ItemBox_Title* ItemBox_Title = CreateWidget<UMH_ItemBox_Title>(this , TitleItemBoxFac);
+	if (ItemBox_Title)
+	{
+		Counter_Title++;
+		ItemBox_Title->Text_Title->SetText(FText::FromString(FString::Printf(TEXT("%02d") , Counter_Title)));
+		//ItemBox_Title->SetTitleData(ItemData); // 타이틀 데이터를 설정
+
+		//ItemBox_Title->OnDoubleClicked.AddDynamic(this,&UMH_Inventory::HandleItemDoubleClicked);
+		Hori_InvenBox_00_Title->AddChild(ItemBox_Title);
+	}
+}
+
+void UMH_Inventory::OnClicked_Ticket_Test()
+{
+	///티켓 호리젠탈에 아이템 박스 넣어주기.
+
+	UMH_ItemBox_Ticket* ItemBox_Ticket = CreateWidget<UMH_ItemBox_Ticket>(this , TicketItemBoxFac);
+	if (ItemBox_Ticket)
+	{
+		Counter_Ticket++;
+		ItemBox_Ticket->Text_Ticket->SetText(FText::FromString(FString::Printf(TEXT("%02d") , Counter_Ticket)));
+		//ItemBox_Ticket->SetTicketData(ItemData); // 타이틀 데이터를 설정
+		Hori_InvenBox_01_Ticket->AddChild(ItemBox_Ticket);
+	}
+}
+
+void UMH_Inventory::OnClicked_Sticker_Test()
+{
+	//스티커 호리젠탈에 아이템 박스 넣어주기.
+
+	UMH_ItemBox_Sticker* ItemBox_Sticker = CreateWidget<UMH_ItemBox_Sticker>(this , StickerItemBoxFac);
+	if (ItemBox_Sticker)
+	{
+		Counter_Sticker++;
+		ItemBox_Sticker->Text_Sticker->SetText(FText::FromString(FString::Printf(TEXT("%02d") , Counter_Sticker)));
+		//ItemBox_Sticker->SetStickerData(ItemData); // 타이틀 데이터를 설정
+		Hori_InvenBox_02_Sticker->AddChild(ItemBox_Sticker);
 	}
 }

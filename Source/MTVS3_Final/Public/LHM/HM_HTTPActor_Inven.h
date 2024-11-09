@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "HM_HTTPActor_Inven.generated.h"
-
+/*
 USTRUCT(BlueprintType)
 struct FTitleItemData
 {
@@ -53,7 +53,7 @@ struct FStickerItemData
 	UPROPERTY(BlueprintReadOnly)
 	UTexture2D* TicketImage;
 };
-
+*/
 UCLASS()
 class MTVS3_FINAL_API AHM_HTTPActor_Inven : public AActor
 {
@@ -77,15 +77,17 @@ public:
 	void RequestInventoryData();
 
 	// 인벤토리 데이터를 가져오는 함수
-	const TArray<FTitleItemData>& GetTitleItems() const { return TitleItems; }
-	const TArray<FTicketItemData>& GetTicketItems() const { return TicketItems; }
-	const TArray<FStickerItemData>& GetStickerItems() const { return StickerItems; }
+	//const TArray<FTitleItemData>& GetTitleItems() const { return TitleItems; }
+	//const TArray<FTicketItemData>& GetTicketItems() const { return TicketItems; }
+	//const TArray<FStickerItemData>& GetStickerItems() const { return StickerItems; }
 
 	// 데이터 저장용 TArray
-	TArray<FTitleItemData> TitleItems;
-	TArray<FTicketItemData> TicketItems;
-	TArray<FStickerItemData> StickerItems;
+//	TArray<FTitleItemData> TitleItems;
+	//TArray<FTicketItemData> TicketItems;
+	//TArray<FStickerItemData> StickerItems;
 	
 	// 서버 응답 처리 함수
 	void OnInventoryDataReceived(const FString& JsonResponse);
+
+	
 };
