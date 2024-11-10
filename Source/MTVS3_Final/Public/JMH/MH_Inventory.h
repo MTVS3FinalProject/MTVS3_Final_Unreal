@@ -20,13 +20,13 @@ class MTVS3_FINAL_API UMH_Inventory : public UUserWidget
 public:
 	FOnClickedBack_Inven OnClickedBack_InvenBtn;
 
-	bool bIsCollectionBookVisible = false;
+	bool bIsInvenVisible = false;
 
 	UFUNCTION()
 	void CloseBtn_Inven()
 	{
 		//상태 바꿔주고
-		bIsCollectionBookVisible = !bIsCollectionBookVisible;
+		bIsInvenVisible = !bIsInvenVisible;
 		//끄기
 		OnClickedBack_InvenBtn.Broadcast();
 	}
@@ -53,11 +53,18 @@ public:
 
 	//타이틀을 장착하시겠습니까?
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UCanvasPanel* Can_TitleWin;
+	class UCanvasPanel* Can_TitleEquipWin;
+	//타이틀을 해제하시겠습니까?
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_TitleUnequipWin;
 	UFUNCTION()
-	void ShowTitleWin();
+	void ShowTitleEquipWin();
 	UFUNCTION()
 	void HideTitleWin();
+	UFUNCTION()
+	void ShowTitleUnequipWin();
+	UFUNCTION()
+	void HideTitleUnequipWin();
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Title_yes;
@@ -67,6 +74,15 @@ public:
 	class UButton* Btn_Title_no;
 	UFUNCTION()
 	void OnClickedTilteNoBtn();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Title_yes2;
+	UFUNCTION()
+	void OnClickedTilteYes2Btn();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Title_no2;
+	UFUNCTION()
+	void OnClickedTilteNo2Btn();
 
 	//처음 인벤토리 접속 할 때 아이템 데이터 받아오기
 	UFUNCTION()

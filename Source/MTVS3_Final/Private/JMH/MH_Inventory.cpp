@@ -26,9 +26,13 @@ void UMH_Inventory::NativeConstruct()
 	Btn_01_Ticket->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket);
 	Btn_02_Sticker->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker);
 	Btn_Back_Inven->OnClicked.AddDynamic(this , &UMH_Inventory::CloseBtn_Inven);
-	
+
+	//타이틀 장착?
 	Btn_Title_yes->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteYesBtn);
 	Btn_Title_no->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteNoBtn);
+	//타이틀 해제?
+	Btn_Title_yes2->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteYes2Btn);
+	Btn_Title_no2->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteNo2Btn);
 
 	//test
 	Btn_Title_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Title_Test);
@@ -42,14 +46,24 @@ void UMH_Inventory::SetWidgetSwitcher(int32 num)
 	WS_InvenWidgetSwitcher->SetActiveWidgetIndex(num);
 }
 
-void UMH_Inventory::ShowTitleWin()
+void UMH_Inventory::ShowTitleEquipWin()
 {
-	Can_TitleWin->SetVisibility(ESlateVisibility::Visible);
+	Can_TitleEquipWin->SetVisibility(ESlateVisibility::Visible);
 }
-
 void UMH_Inventory::HideTitleWin()
 {
-	Can_TitleWin->SetVisibility(ESlateVisibility::Hidden);
+	Can_TitleEquipWin->SetVisibility(ESlateVisibility::Hidden);
+}
+
+
+void UMH_Inventory::ShowTitleUnequipWin()
+{
+	Can_TitleUnequipWin->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UMH_Inventory::HideTitleUnequipWin()
+{
+	Can_TitleUnequipWin->SetVisibility(ESlateVisibility::Hidden);
 }
 
 
@@ -206,8 +220,7 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 {
 	//클릭한 타이틀 장착 -> 클릭한 타이틀이 뭔지 저장할 변수 만들기
 	//SetPlayerTitle();
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("2222!"));
+	
 	if (SelectedTitle == CurrentTitle)
 	{
 		return;
@@ -242,42 +255,36 @@ void UMH_Inventory::OnClickedTilteNoBtn()
 	HideTitleWin();
 }
 
-//이걸 타이틀 장착하시겠습니까? -> 네 위치로 옮기기
-/*
-void UMH_Inventory::HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem)
+void UMH_Inventory::OnClickedTilteYes2Btn()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("2222!"));
-	if (SelectedTitle)
-	{
-		// 이전에 선택된 아이템에서 프레임 제거
-		RemoveFrame(SelectedTitle);
-		//플레이어한테 타이틀 적용
-	}
+	//칭호 해제하기
+	
+	SelectedTitle = nullptr;
+	CurrentTitle = nullptr;
+	//프레임 삭제
+	RemoveFrame();
+	HideTitleUnequipWin();
+	
+}
 
-	if (SelectedTitle == ClickedItem)
-	{
-		return;
-	}
-
-	SelectedTitle = ClickedItem;
-
-	if (SelectedTitle)
-	{
-		// 현재 선택된 아이템에 프레임 추가
-		AddFrame(SelectedTitle);
-		// 프레임 위치 업데이트
-		SetFramePosition(SelectedTitle);
-
-		//플레이어한테 칭호 해제
-	}
-}*/
+void UMH_Inventory::OnClickedTilteNo2Btn()
+{
+	//아니오
+	HideTitleUnequipWin();
+}
 
 //1.타이틀버튼 누름
 void UMH_Inventory::OnClickedTitleBtn(UMH_ItemBox_Title* ClickedItem)
 {
 	//2.타이틀을 적용하시겠습니까? 창뜸
+	if(CurrentTitle==ClickedItem)
+	{
+		//칭호를 해제하시겠습니까?
+		ShowTitleUnequipWin();
+		return;
+	}
 	CurrentTitle = ClickedItem;
-	ShowTitleWin();
+	ShowTitleEquipWin();
 }
 
 void UMH_Inventory::AddFrame(UMH_ItemBox_Title* ClickedItem)
@@ -299,16 +306,22 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 {
 	if (Img_Frame && ClickedItem)
 	{
-		// 클릭된 아이템의 위치를 가져와 프레임 위치 설정
-		FVector2D InventoryPosition = this->GetCachedGeometry().GetAbsolutePosition();
-		FVector2D ItemPosition = ClickedItem->GetCachedGeometry().GetAbsolutePosition();
+		// 인벤토리 위젯과 클릭된 아이템의 절대 좌표를 가져옵니다.
+		FGeometry InventoryGeometry = this->GetCachedGeometry();
+		FGeometry ItemGeometry = ClickedItem->GetCachedGeometry();
+
+		// 아이템 버튼의 크기를 구해 중심점을 계산합니다.
+		FVector2D ItemSize = ItemGeometry.GetLocalSize();
+		FVector2D ItemCenterPosition = ItemGeometry.GetAbsolutePosition() + (ItemSize * 0.5f);
+
+		// 버튼의 중심점을 인벤토리 위젯 내의 상대 위치로 변환
+		FVector2D RelativeCenterPosition = InventoryGeometry.AbsoluteToLocal(ItemCenterPosition);
+
+		// Img_Frame의 위치를 버튼 중심점으로 설정
+		Img_Frame->SetRenderTranslation(RelativeCenterPosition);
 		
-		FVector2D RelativePosition = ItemPosition - InventoryPosition;
-		Img_Frame->SetRenderTranslation(RelativePosition);
-		
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("3333!"));
 		// 프레임을 표시
-		Img_Frame->SetVisibility(ESlateVisibility::Visible);
+		Img_Frame->SetVisibility(ESlateVisibility::HitTestInvisible);
 	}
 }
 

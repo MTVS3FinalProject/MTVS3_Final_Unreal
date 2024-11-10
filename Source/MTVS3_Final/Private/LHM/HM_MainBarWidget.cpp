@@ -7,6 +7,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "HJ/TTGameInstance.h"
 #include "JMH/MH_Inventory.h"
+#include "JMH/MH_NoticeWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
 
@@ -37,6 +38,11 @@ void UHM_MainBarWidget::NativeConstruct()
 	if (WBP_inventoryUI)
 	{
 		WBP_inventoryUI->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::CloseAllCategory);
+	}
+
+	if(WBP_NoticeUI)
+	{
+		WBP_NoticeUI->OnClickedBack_NoticeBtn.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
 	}
 }
 
