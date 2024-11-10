@@ -10,8 +10,10 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
+#include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_FinalTicket.h"
+#include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_TicketBG.h"
 #include "LHM/HM_TicketSceneCapture2D.h"
 
@@ -588,9 +590,30 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 	return FReply::Unhandled();
 }
 
+void UHM_TicketCustom::SetBackgroundImg(UTexture2D* newTexture)
+{
+	Img_TicketBackground->SetBrushFromTexture(newTexture);
+}
+
+void UHM_TicketCustom::SetStickersImg(UTexture2D* newTexture1, UTexture2D* newTexture2, UTexture2D* newTexture3, UTexture2D* newTexture4, UTexture2D* newTexture5)
+{
+	Img_Sticker01->SetBrushFromTexture(newTexture1);
+	Img_Sticker02->SetBrushFromTexture(newTexture2);
+	Img_Sticker03->SetBrushFromTexture(newTexture3);
+	Img_Sticker04->SetBrushFromTexture(newTexture4);
+	Img_Sticker05->SetBrushFromTexture(newTexture5);
+}
+
 void UHM_TicketCustom::OnClickedResetBackgroundButton()
 {
 	// 배경 이미지 리셋 통신 요청
+	auto* GI = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	auto* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if(HttpActor3)
+	{
+		HttpActor3->ReqGetBackground(GI->GetAccessToken());
+	}
 }
 
 void UHM_TicketCustom::OnClickedResetTicketImageButton()

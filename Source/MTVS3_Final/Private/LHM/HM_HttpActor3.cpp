@@ -3,11 +3,13 @@
 
 #include "LHM/HM_HttpActor3.h"
 #include "HttpModule.h"
+#include "ImageUtils.h"
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
 #include "JMH/MainWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
+#include "LHM/HM_TicketCustom.h"
 
 // Sets default values
 AHM_HttpActor3::AHM_HttpActor3()
@@ -22,6 +24,10 @@ void AHM_HttpActor3::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (TicketCustomWidget)
+	{
+		TicketCustomUI = CreateWidget<UHM_TicketCustom>(GetWorld(), TicketCustomWidget);
+	}
 }
 
 // Called every frame
@@ -159,7 +165,7 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 							TempTicketItems.Add(NewTickets);
 							
 							UE_LOG(LogTemp , Log , TEXT("Tickets Info | Id: %d, Name: %s, Seat: %s") ,
-								   NewTickets.tickerId ,
+								   NewTickets.ticketId ,
 								   *NewTickets.concertName ,
 								   *NewTickets.seatInfo );
 						}
@@ -219,8 +225,7 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 	Request->ProcessRequest();
 }
 
-void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request, FHttpResponsePtr Response,
-	bool bWasSuccessful)
+void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
@@ -289,9 +294,9 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<in
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.tickerId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
 	Request->SetURL(FormattedUrl);
-	Request->SetVerb(TEXT("GET"));
+	Request->SetVerb(TEXT("POST"));
 
 	// 헤더 설정
 	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
@@ -317,6 +322,33 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<in
 	Request->ProcessRequest();
 }
 
+void AHM_HttpActor3::OnReqPostSaveCustomTicket(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				if ( ResponseObject.IsValid() )
+				{
+					// 티켓 저장 성공처리
+				}
+			}
+		}
+	}
+}
+
 void AHM_HttpActor3::ReqGetBackground(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -328,7 +360,7 @@ void AHM_HttpActor3::ReqGetBackground(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.tickerId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -345,5 +377,203 @@ void AHM_HttpActor3::ReqGetBackground(FString AccessToken)
 
 void AHM_HttpActor3::OnReqGetBackground(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				if ( ResponseObject.IsValid() )
+				{
+					// 받아올 정보 추출
+					int32 _BackgroundId = ResponseObject->GetIntegerField(TEXT("backgroundId"));
+					SetBackgroundId(_BackgroundId);
+					UE_LOG(LogTemp , Log , TEXT("backgroundId : %d"), GetBackgroundId());
+
+					// Base64로 인코딩된 이미지 데이터 추출
+					FString Base64Image = ResponseObject->GetStringField(TEXT("backgroundImage"));
+					TArray<uint8> ImageData;
+					FBase64::Decode(Base64Image , ImageData);
+
+					// 텍스처로 변환
+					UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+					if ( Texture )
+					{
+						if ( TicketCustomUI )
+						{
+							TicketCustomUI->SetBackgroundImg(Texture);
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
+					}
+				}
+			}
+		}
+	}
+}
+
+void AHM_HttpActor3::ReqGetCustomTicketList(FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	FTickets Tickets;
 	
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets") , *_url);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnReqGetCustomTicketList);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor3::OnReqGetCustomTicketList(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+					TSharedPtr<FJsonObject> CustomTicketListObject = ResponseObject->GetObjectField(TEXT("ticketDTOList"));
+					if ( CustomTicketListObject.IsValid() )
+					{
+						int32 TicketId = CustomTicketListObject->GetIntegerField(TEXT("ticketId"));
+						FString SeatInfo = CustomTicketListObject->GetStringField(TEXT("seatInfo"));
+						UE_LOG(LogTemp , Log , TEXT("TicketId: %d, SeatInfo: %s") , TicketId , *SeatInfo);
+					}
+					
+					TSharedPtr<FJsonObject> ConcertInfoObject = ResponseObject->GetObjectField(TEXT("concertInfo"));
+					if ( ConcertInfoObject.IsValid() )
+					{
+						FString ConcertName = CustomTicketListObject->GetStringField(TEXT("concertName"));
+						int32 Year = CustomTicketListObject->GetIntegerField(TEXT("year"));
+						int32 Month = CustomTicketListObject->GetIntegerField(TEXT("month"));
+						int32 Day = CustomTicketListObject->GetIntegerField(TEXT("day"));
+						FString Time = CustomTicketListObject->GetStringField(TEXT("time"));
+						UE_LOG(LogTemp , Log , TEXT("ConcertName: %s, Date: %d-%d-%d-%s") , *ConcertName, Year, Month, Day, *Time);
+					}
+				}
+			}
+		}
+	}
+}
+
+void AHM_HttpActor3::ReqPostEnterTicketCustomization(FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+
+	FTickets Tickets;
+	
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, Tickets.ticketId);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnReqPostEnterTicketCustomization);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor3::OnReqPostEnterTicketCustomization(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if ( ResponseObject.IsValid() )
+				{
+						int32 DailyBackgroundRefreshCount = ResponseObject->GetIntegerField(TEXT("dailyBackgroundRefreshCount"));
+						UE_LOG(LogTemp , Log , TEXT("DailyBackgroundRefreshCount: %d") , DailyBackgroundRefreshCount);
+					
+					TSharedPtr<FJsonObject> StickerListObject = ResponseObject->GetObjectField(TEXT("stickerDTOList"));
+					if ( StickerListObject.IsValid() )
+					{
+						int32 StickerId = StickerListObject->GetIntegerField(TEXT("stickerId"));
+						UE_LOG(LogTemp , Log , TEXT("StickerId: %d") , StickerId);
+
+						// Base64로 인코딩된 이미지 데이터 추출
+						FString Base64Image = StickerListObject->GetStringField(TEXT("stickerImage"));
+						TArray<uint8> ImageData;
+						FBase64::Decode(Base64Image , ImageData);
+
+						// 텍스처로 변환
+						UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+						if ( Texture )
+						{
+							if ( TicketCustomUI )
+							{
+								//TicketCustomUI->SetStickersImg(Texture1, Texture2, Texture3, Texture4, Texture5);
+								UE_LOG(LogTemp , Warning , TEXT("Success to create texture from image data."));
+							}
+						}
+						else
+						{
+							UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
+						}
+					}
+				}
+			}
+		}
+	}
 }

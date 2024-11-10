@@ -69,7 +69,7 @@ void UMH_Chatting::AddChatMessage(const FString& Message)
 		MessageUI->SetChatMessage(Message);
 		Scroll_Chat->AddChild(MessageUI);
 		Scroll_Chat->ScrollToEnd();
-		Scroll_Chat->bAnimateWheelScrolling = true;
+		//Scroll_Chat->bAnimateWheelScrolling = true;
 	}
 }
 

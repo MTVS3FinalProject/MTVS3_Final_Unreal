@@ -90,7 +90,7 @@ struct FTickets
 
 public:
 	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
-	int32 tickerId;
+	int32 ticketId;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
 	FString concertName;
@@ -99,20 +99,20 @@ public:
 	FString seatInfo;
 
 	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
-	UTexture2D* tickerImage;
+	UTexture2D* ticketImage;
 	
 	FTickets()
-		: tickerId(0)
+		: ticketId(0)
 		, concertName(TEXT(""))
 		, seatInfo(TEXT(""))
-		, tickerImage(nullptr)
+		, ticketImage(nullptr)
 	{}
 	// 매개 변수를 받는 생성자
 	FTickets(int32 InId, const FString& InConcertNam, const FString& InSeatInfo, UTexture2D* InImage)
-		: tickerId(InId)
+		: ticketId(InId)
 		, concertName(InConcertNam)
 		, seatInfo(InSeatInfo)
-		, tickerImage(InImage)
+		, ticketImage(InImage)
 	{}
 };
 
@@ -135,14 +135,18 @@ public:
 
 	
 #pragma region UI & URL
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	class UMainWidget* MainUI;
 	void SetMainUI(UMainWidget* InMainUI);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UHM_TicketCustom> TicketCustomWidget;
+	class UHM_TicketCustom* TicketCustomUI;
 
 	const FString _url = "https://ticketaka.shop/api";
 #pragma endregion
 
-#pragma region FTitles/FStickers/FTickets Getter & Setter Methods
+#pragma region FTitles/FStickers/FTickets/BackgroundId Getter & Setter Methods
 	TArray<FTitles> TitleItems;
 	TArray<FStickers> StickerItems;
 	TArray<FTickets> TicketItems;
@@ -154,41 +158,35 @@ public:
 	void SetStickerItems(TArray<FStickers>& NewStickerItems ) { StickerItems = NewStickerItems; };
 	TArray<FTickets>& GetTicketItems() { return TicketItems; }
 	void SetTicketItems(TArray<FTickets>& NewTicketItems ) { TicketItems = NewTicketItems; };
+
+	UPROPERTY(VisibleAnywhere, Category = "Default|params")
+	int32 BackgroundId;
+	int32 GetBackgroundId() const { return BackgroundId; }
+	void SetBackgroundId(int32 _BackgroundId) { BackgroundId = _BackgroundId; }
+	
 #pragma endregion
 	
 	// 인벤토리 정보 요청
 	void ReqGetInventoryData(FString AccessToken);
-	
-	// 인벤토리 정보 요청에 대한 응답
 	void OnResGetInventoryData(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// Puzzle 결과, Sticker 획득 요청
 	void ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken);
-
-	// Puzzle 결과, Sticker 획득 요청에 대한 응답
 	void OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 커스텀 티켓 저장 요청
 	void ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken);
-
-	// 커스텀 티켓 저장 요청에 대한 응답
-	//void OnReqPostSaveCustomTicket(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void OnReqPostSaveCustomTicket(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 배경 생성 요청
 	void ReqGetBackground(FString AccessToken);
-
-	// 배경 생성 요청에 대한 응답
 	void OnReqGetBackground(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// My 커스텀 티켓 목록 조회 요청
 	void ReqGetCustomTicketList(FString AccessToken);
-
-	// My 커스텀 티켓 목록 조회 요청에 대한 응답
 	void OnReqGetCustomTicketList(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 티켓 커스텀 제작 입장 요청
 	void ReqPostEnterTicketCustomization(FString AccessToken);
-	
-	// 티켓 커스텀 제작 입장 요청에 대한 응답
 	void OnReqPostEnterTicketCustomization(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 };

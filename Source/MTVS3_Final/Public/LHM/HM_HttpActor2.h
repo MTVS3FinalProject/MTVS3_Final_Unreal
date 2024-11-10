@@ -317,48 +317,34 @@ public:
 
 #pragma region HTTP : Entry Concert
 	// 콘서트 정보 요청
-	void ReqGetConcertInfo(FString AccessToken, ATTPlayer* TTPlayer);
 	class ATTPlayer* TargetPlayer;
-
-    // 콘서트 정보 요청에 대한 응답
+	void ReqGetConcertInfo(FString AccessToken, ATTPlayer* TTPlayer);
     void OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
     
     // 공연장 입장 요청
 	void ReqGetConcertEntry(FString AccessToken);
-
-	// 공연장 입장 요청에 대한 응답
 	void OnResGetConcertEntry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 #pragma endregion
 
 #pragma region HTTP : Register Seat
 	// 좌석 조회 요청
 	void ReqGetSeatRegistrationInquiry(FString SeatId , FString AccessToken); // int32 SeatId 로 변경해야함
-
-	// 좌석 조회 요청에 대한 응답
 	void OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 접수 요청
 	void ReqGetRegisterSeat(FString SeatId , FString AccessToken);  // int32 SeatId 로 변경해야함
-
-	// 좌석 접수 요청에 대한 응답
 	void OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
     // 내가 접수한 좌석 조회 요청 => 알림창에서(?) 접수한 좌석 조회할 때
     void ReqGetMyRegisteredSeat(FString AccessToken);
-
-    // 내가 접수한 좌석 조회 요청에 대한 응답
     void OnResGetMyRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 취소 요청1
 	void ReqDeleteCancelRegisteredSeat(FString SeatId , FString AccessToken); // int32 SeatId 로 변경해야함
-
-	// 좌석 취소 요청에 대한 응답1
 	void OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 취소 요청2
 	void ReqDeleteCancelRegisteredSeat2(FString SeatId , FString AccessToken); // int32 SeatId 로 변경해야함
-
-	// 좌석 취소 요청에 대한 응답2
 	void OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 #pragma endregion
@@ -366,14 +352,10 @@ public:
 #pragma region HTTP : Lucky Drawing
 	// 추첨 시작 알림 요청
 	void ReqPostNoticeGameStart(FString SeatId , FString AccessToken); // int32 SeatId 로 변경해야함
-
-	// 추첨 시작 알림 요청에 대한 응답
 	void OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 좌석 게임 결과 요청
 	void ReqPostGameResult(FString SeatId , FString AccessToken); // int32 SeatId 로 변경해야함
-
-    // 좌석 게임 결과 요청에 대한 응답
     void OnResPostGameResult(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 #pragma endregion
@@ -381,32 +363,22 @@ public:
 #pragma region HTTP : Seat payment
 	// 결제시 회원 인증용 QR 요청
 	void ReqGetMemberAuthQR(FString AccessToken);
-
-	// 결제시 회원 인증용 QR 요청에 대한 응답
 	void OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 결제시 회원 인증 사진 업로드 확인
 	void ReqGetPostConfirmMemberPhoto(FString AccessToken);
-
-	// 결제시 회원 인증 사진 업로드 확인에 대한 응답
 	void OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 예매자 정보 입력 요청
 	void ReqPostReservationinfo(FText UserName, FText UserPhoneNum , FText UserAddress1 , FText UserAddress2 , FString AccessToken);
-
-	// 예매자 정보 입력 요청에 대한 응답
 	void OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 결제 요청
 	void ReqPostPaymentSeat(int32 SeatId, FString AccessToken);
-
-	// 좌석 결제 요청에 대한 응답
 	void OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 예매 정보 불러오기 요청
 	void ReqGetReservationInfo(FString AccessToken);
-
-	// 예매 정보 불러오기 요청에 대한 응답
 	void OnResGetReservationInfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 #pragma endregion

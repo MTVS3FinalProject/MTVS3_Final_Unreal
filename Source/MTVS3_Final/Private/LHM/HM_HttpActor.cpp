@@ -406,8 +406,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
                             UE_LOG(LogTemp, Log, TEXT("AvatarData: %d"), PlayerData.avatarData);
                             UE_LOG(LogTemp, Log, TEXT("TitleName: %s"), *PlayerData.titleName);
                             UE_LOG(LogTemp, Log, TEXT("TitleRarity: %s"), *PlayerData.titleRarity);
-                            UE_LOG(LogTemp, Log, TEXT("AvatarData: %d"), PlayerData.avatarData);
-                            UE_LOG(LogTemp, Log, TEXT("AvatarData: %s"), *PlayerData.LuckyDrawSeatID);
+                            UE_LOG(LogTemp, Log, TEXT("LuckyDrawSeatID: %s"), *PlayerData.LuckyDrawSeatID);
                             UE_LOG(LogTemp, Log, TEXT("AccessToken: %s"), *PlayerData.accessToken);
 
                             // 세션 입장
