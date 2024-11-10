@@ -44,20 +44,13 @@ public:
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
+#pragma region Origin Variable & Custom Properties
 	UPROPERTY()
 	class UCanvasPanel* RootCanvas;
-
-//테스트
-	
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_TicketBackground;
-	
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_TicketInfo;
-	
-
-	
-#pragma region Origin Variable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UImage* Img_Sticker01;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
@@ -70,9 +63,7 @@ public:
 	class UImage* Img_Sticker05;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
-#pragma endregion
-
-#pragma region Custom Properties
+	
 	// 드래그 앤 드롭, 회전, 크기조정, 삭제
 	UPROPERTY()
 	class UImage* CurrentImage;
@@ -96,6 +87,12 @@ public:
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply NativeOnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply NativeOnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
+	
+	UFUNCTION()
+	void SetBackgroundImg(UTexture2D* newTexture);
+	UFUNCTION()
+	void SetStickersImg(UTexture2D* newTexture1, UTexture2D* newTexture2, UTexture2D* newTexture3, UTexture2D* newTexture4, UTexture2D* newTexture5);
+	
 #pragma endregion
 	
 #pragma region Button Functions
@@ -119,18 +116,16 @@ public:
 #pragma endregion
 
 protected:
-#pragma region FinalTicket Save
+#pragma region UI : FinalTicket Save
 
 	// 최종 이미지 위젯 참조
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_FinalTicket> FinalTicketWidget;
-	
-	class UHM_FinalTicket* FinalTicketUI; // 티켓 위젯 참조
+	class UHM_FinalTicket* FinalTicketUI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UHM_TicketBG> TicketBGWidget; // 배경 티켓 위젯 클래스 참조
-
-	class UHM_TicketBG* TicketBGUI; // 배경 티켓 위젯 인스턴스
+	TSubclassOf<class UHM_TicketBG> TicketBGWidget;
+	class UHM_TicketBG* TicketBGUI;
 	
 #pragma endregion
 };
