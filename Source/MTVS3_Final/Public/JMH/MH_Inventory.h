@@ -193,10 +193,13 @@ public:
 	int32 Counter_Sticker = 1;
 
 	UPROPERTY()
-	class UOverlaySlot* FrameSlot;
+	class UOverlaySlot* CurItemSlot;
 
 	UPROPERTY()
 	class UOverlay* OverlayTitle;
+
+	UPROPERTY()
+	TMap<UMH_ItemBox_Title*, UOverlaySlot*> OverlaySlotMap;
 	
 	
 };

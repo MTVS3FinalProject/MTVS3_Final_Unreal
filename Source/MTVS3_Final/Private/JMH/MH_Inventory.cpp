@@ -309,23 +309,24 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 {
 	if (Img_Frame && ClickedItem)
 	{
-		//부모의 오버레이 찾아오기.
-		UOverlaySlot* ParentOverlay = Cast<UOverlaySlot>(ClickedItem->GetParent());
-		if (ParentOverlay)
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SetFrame111!"));
+		/*CurItemSlot = ClickedItem->GetParent()
+		if (ItemSlot)
 		{
-			// 프레임이 오버레이에 이미 추가되어 있지 않다면 추가합니다.
-			//if (!ParentOverlay->HasChild(Img_Frame))
-			//{
-			//	ParentOverlay->AddChild(Img_Frame);
-			//}
-
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SetFrame222!"));
+			ItemSlot = OverlayTitle->AddChildToOverlay(Img_Frame);
+			if (ItemSlot)
+			{
+				ItemSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+				//ItemSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);
+			}
 			// Img_Frame의 크기를 부모 오버레이 크기에 맞추기
 			Img_Frame->SetRenderScale(FVector2D(1.0f , 1.0f));
 			Img_Frame->SetRenderTransformPivot(FVector2D(0.5f , 0.5f));
 
 			// 프레임을 표시
 			Img_Frame->SetVisibility(ESlateVisibility::HitTestInvisible);
-		}
+		}*/
 	}
 }
 
@@ -339,12 +340,22 @@ void UMH_Inventory::OnClicked_Title_Test()
 	{
 		Counter_Title++;
 		ItemBox_Title->Text_Title->SetText(FText::FromString(FString::Printf(TEXT("%02d") , Counter_Title)));
-		//ItemBox_Title->SetTitleData(ItemData); // 타이틀 데이터를 설정
 		ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
 		if (OverlayTitle)
 		{
+			// Overlay에 ItemBox_Title 추가
+			UOverlaySlot* ItemSlot = OverlayTitle->AddChildToOverlay(ItemBox_Title);
+			if (ItemSlot)
+			{
+				ItemSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+				ItemSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);
+
+				// 아이템 박스와 오버레이 슬롯을 매핑하여 저장
+				OverlaySlotMap.Add(ItemBox_Title, ItemSlot); 
+			}
+			
 			OverlayTitle->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-			//아이쳄박스의 크기에 맞춘 오버레이 생성
+			//아이템박스의 크기에 맞춘 오버레이 생성
 			OverlayTitle->AddChild(ItemBox_Title);
 			Hori_InvenBox_00_Title->AddChild(OverlayTitle);
 		}
