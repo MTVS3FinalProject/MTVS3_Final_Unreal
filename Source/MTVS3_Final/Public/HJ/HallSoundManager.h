@@ -23,4 +23,18 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
+	class USoundCue* ConcertBGMCue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
+	USoundAttenuation* ConcertAttenuation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
+	FVector ConcertBGMLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
+	bool bPlayConcertBGM = true;
+
+	UFUNCTION(BlueprintCallable, Category = "TTSettings|Sound")
+	void PlayConcertBGM();
 };

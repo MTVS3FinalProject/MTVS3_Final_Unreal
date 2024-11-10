@@ -13,6 +13,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
+ATTLuckyDrawGameState::ATTLuckyDrawGameState()
+{
+	
+}
+
 void ATTLuckyDrawGameState::BeginPlay()
 {
 	Super::BeginPlay();
@@ -201,6 +206,11 @@ void ATTLuckyDrawGameState::OnRep_NewSeatNumber()
 	}
 }
 
+void ATTLuckyDrawGameState::MulticastPlayRouletteEndSound_Implementation()
+{
+	UGameplayStatics::PlaySound2D(GetWorld(), RouletteEndSound);
+}
+
 void ATTLuckyDrawGameState::MulticastShowOnlyNumPlayers_Implementation()
 {
 	if (GameUI)
@@ -217,6 +227,8 @@ void ATTLuckyDrawGameState::MulticastUpdatePlayerNumUI_Implementation(int32 Play
 
 void ATTLuckyDrawGameState::EliminatePlayers()
 {
+	MulticastPlayRouletteEndSound();
+	
 	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
 	if (!GameMode) return;
 	if (CurrentRound > 0 && GameMode->EliminatedPlayersPerRound.Num() >= CurrentRound)
@@ -312,16 +324,38 @@ void ATTLuckyDrawGameState::StartRounds(int32 InTotalRounds)
 
 void ATTLuckyDrawGameState::StartNextRound()
 {
-	FTimerHandle LuckyDrawLoseTimerHandle;
-	GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle , this , &ATTLuckyDrawGameState::EliminatePlayers , 4.5f ,
-	                                false);
-
+	// FTimerHandle LuckyDrawLoseTimerHandle;
+	// GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle , this , &ATTLuckyDrawGameState::EliminatePlayers , 4.5f ,
+	//                                 false);
+	//
+	// if (CurrentRound >= TotalRounds)
+	// {
+	// 	FTimerHandle RouletteTimerHandle;
+	// 	GetWorldTimerManager().SetTimer(RouletteTimerHandle , this , &ATTLuckyDrawGameState::EndRounds , 8.0f , false);
+	// 	return;
+	// }
+	// Clear any existing EliminatePlayers timer
+	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
+    
 	if (CurrentRound >= TotalRounds)
 	{
+		// Set final elimination timer and end game
+		GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle, this, 
+			&ATTLuckyDrawGameState::EliminatePlayers, 4.5f, false);
 		FTimerHandle RouletteTimerHandle;
-		GetWorldTimerManager().SetTimer(RouletteTimerHandle , this , &ATTLuckyDrawGameState::EndRounds , 8.0f , false);
+		GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, 
+			&ATTLuckyDrawGameState::EndRounds, 8.0f, false);
 		return;
 	}
+
+	// Set timer for next elimination
+	GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle, this, 
+		&ATTLuckyDrawGameState::EliminatePlayers, 4.5f, false);
+
+	// Set timer for next roulette round
+	float Delay = (CurrentRound == 0) ? 0.5f : 10.0f;
+	GetWorldTimerManager().SetTimer(RoundTimerHandle, this, 
+		&ATTLuckyDrawGameState::PlayRoulette, Delay, false);
 
 	/*ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
 	if (!GameMode) return;
@@ -339,8 +373,8 @@ void ATTLuckyDrawGameState::StartNextRound()
 
 
 	// 첫 라운드는 즉시 시작, 이후 라운드는 7초 딜레이
-	float Delay = (CurrentRound == 0) ? 0.5f : 10.0f;
-	GetWorldTimerManager().SetTimer(RoundTimerHandle , this , &ATTLuckyDrawGameState::PlayRoulette , Delay , false);
+	// float Delay = (CurrentRound == 0) ? 0.5f : 10.0f;
+	// GetWorldTimerManager().SetTimer(RoundTimerHandle , this , &ATTLuckyDrawGameState::PlayRoulette , Delay , false);
 }
 
 void ATTLuckyDrawGameState::PlayRoulette()

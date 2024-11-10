@@ -154,6 +154,15 @@ public:
 
 #pragma endregion
 
+#pragma region 사운드
+	UFUNCTION(BlueprintCallable, Category = "TTSettings|Sound")
+	void PlayConertBGM();
+	void PlayConcertBGMAfterDelay();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
+	class USoundBase* LuckyDrawWinnerSound;
+#pragma endregion
+	
 #pragma region 개인 설정
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Debug")
 	bool bShowDebug = true;

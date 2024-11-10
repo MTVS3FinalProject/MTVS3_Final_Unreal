@@ -10,6 +10,7 @@
  *
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRequestMovePlayersToChairs);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRoundEndDelegate);
 
 UCLASS()
@@ -18,21 +19,23 @@ class MTVS3_FINAL_API ATTLuckyDrawGameState : public AGameState
 	GENERATED_BODY()
 
 protected:
+	ATTLuckyDrawGameState();
+	
 	virtual void BeginPlay() override;
 
 	// GameUI 초기화 상태를 추적하는 변수 추가
 	bool bIsGameUIInitialized = false;
-	
+
 public:
 #pragma region UI
-	UPROPERTY(EditAnywhere, Category = "Defalut|UI")
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UMH_GameWidget> GameUIFactory;
 	UPROPERTY()
 	class UMH_GameWidget* GameUI;
 #pragma endregion
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable , Category = "Events")
 	FOnRequestMovePlayersToChairs OnRequestMovePlayersToChairs;
-	
+
 	void AssignSeatNumber(APlayerState* PlayerState);
 	void StartLuckyDraw();
 
@@ -43,12 +46,12 @@ public:
 
 	UPROPERTY(ReplicatedUsing=OnRep_NewSeatNumber)
 	int32 NewSeatNumber = -1;
-	
+
 	void StartRounds(int32 InTotalRounds);
 	void StartNextRound();
 
 	void PlayRoulette();
-	
+
 	void StartPlayRoulette();
 
 	void EndRounds();
@@ -61,32 +64,42 @@ public:
 
 	UFUNCTION()
 	void OnRep_NewSeatNumber();
-	
-	UFUNCTION(NetMulticast, Reliable)
+
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastUpdatePlayerNumUI(int32 PlayerNum);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastHideGameUI();
-	
-	UFUNCTION(NetMulticast, Reliable)
+
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastUpdateRouletteUI(int32 Player , int32 Rule , int32 Result);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastStartLuckyDraw();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastPlayRouletteAnimation();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastEndRounds();
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastShowOnlyNumPlayers();
-	
 #pragma endregion
 
+#pragma region 사운드
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
+	class USoundBase* RouletteEndSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
+	USoundAttenuation* LuckyDrawAttenuation;
+	
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastPlayRouletteEndSound();
+#pragma endregion 
 private:
 	int32 TotalRounds;
 	int32 CurrentRound;
 	FTimerHandle RoundTimerHandle;
+	FTimerHandle LuckyDrawLoseTimerHandle;
 };
