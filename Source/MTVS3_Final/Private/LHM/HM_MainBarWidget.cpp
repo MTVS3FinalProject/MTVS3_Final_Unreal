@@ -7,11 +7,10 @@
 #include "Components/WidgetSwitcher.h"
 #include "HJ/TTGameInstance.h"
 #include "JMH/MH_Inventory.h"
+#include "JMH/MH_NoticeWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
-
-class UTTGameInstance;
-class AHM_HttpActor2;
+#include "LHM/HM_HttpActor3.h"
 
 void UHM_MainBarWidget::NativeConstruct()
 {
@@ -34,9 +33,14 @@ void UHM_MainBarWidget::NativeConstruct()
 
 	SetVisibleSwitcher(false);
 
-	if (WBP_inventory)
+	if (WBP_inventoryUI)
 	{
-		WBP_inventory->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::CloseAllCategory);
+		WBP_inventoryUI->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::CloseAllCategory);
+	}
+
+	if(WBP_NoticeUI)
+	{
+		WBP_NoticeUI->OnClickedBack_NoticeBtn.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
 	}
 }
 
@@ -236,6 +240,7 @@ void UHM_MainBarWidget::OnClickedHttpTest01()
 	if (!GI && !HttpActor2) return;
 
 	// 내가 접수한 좌석 조회 요청(인벤토리?)
+	UE_LOG(LogTemp , Log , TEXT("내가 접수한 좌석 조회 요청"));
 	HttpActor2->ReqGetMyRegisteredSeat(GI->GetAccessToken());
 }
 
@@ -246,6 +251,7 @@ void UHM_MainBarWidget::OnClickedHttpTest02()
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI && !HttpActor2) return;
 	// 예매 티켓 정보 불러오기 요청
+	UE_LOG(LogTemp , Log , TEXT("예매 티켓 정보 불러오기 요청"));
 	HttpActor2->ReqGetReservationInfo(GI->GetAccessToken());
 }
 
@@ -256,6 +262,73 @@ void UHM_MainBarWidget::OnClickedHttpTest03()
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI && !HttpActor2) return;
 	// 좌석 결제 요청
+	UE_LOG(LogTemp , Log , TEXT("좌석 결제 요청"));
 	HttpActor2->ReqPostPaymentSeat(HttpActor2->GetMyReceptionSeatId() , GI->GetAccessToken());
+}
+
+void UHM_MainBarWidget::OnClickedHttpTest04()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// 인벤토리 정보 요청
+	UE_LOG(LogTemp , Log , TEXT("인벤토리 정보 요청"));
+	HttpActor3->ReqGetInventoryData(GI->GetAccessToken());
+}
+
+void UHM_MainBarWidget::OnClickedHttpTest05()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// Puzzle 결과, Sticker 획득 요청
+	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
+	HttpActor3->ReqPostPuzzleResultAndGetSticker(1, GI->GetAccessToken());
+}
+
+void UHM_MainBarWidget::OnClickedHttpTest06()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// 커스텀 티켓 저장 요청
+	UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 요청"));
+	//HttpActor3->ReqPostSaveCustomTicket(, GI->GetAccessToken());
+}
+
+void UHM_MainBarWidget::OnClickedHttpTest07()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// 배경 생성 요청
+	UE_LOG(LogTemp , Log , TEXT("배경 생성 요청"));
+	HttpActor3->ReqGetBackground(GI->GetAccessToken());
+}
+
+void UHM_MainBarWidget::OnClickedHttpTest08()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// My 커스텀 티켓 목록 조회 요청
+	UE_LOG(LogTemp , Log , TEXT("My 커스텀 티켓 목록 조회 요청"));
+	HttpActor3->ReqGetCustomTicketList(GI->GetAccessToken());
+}
+
+void UHM_MainBarWidget::OnClickedHttpTest09()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// 티켓 커스텀 제작 입장 요청
+	UE_LOG(LogTemp , Log , TEXT("티켓 커스텀 제작 입장 요청"));
+	HttpActor3->ReqPostEnterTicketCustomization(GI->GetAccessToken());
 }
 #pragma endregion

@@ -300,6 +300,8 @@ void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr R
 
 				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
+
+				// 에러메세지 반영해주는 UI SetText 함수 호출하기
 			}
 			else
 			{
@@ -328,7 +330,7 @@ void AHM_HttpActor::ReqPostLogin(FText Email , FText Password)
 
 	// 서버 URL 설정
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/auth/login") , *_url); // signin으로 바꿔야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/auth/login") , *_url); // signin으로 바꿔야함?
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
@@ -397,17 +399,15 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 
                             // GameInstance에 PlayerData 설정
                             GI->SetPlayerData(PlayerData);
-
-                            // 디버그 메시지 출력
-                            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, FString::Printf(TEXT("Nickname: %s"), *PlayerData.nickname));
-                            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, FString::Printf(TEXT("Coin: %d"), PlayerData.coin));
-                            GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Green, FString::Printf(TEXT("AvatarData: %d"), PlayerData.avatarData));
                             
                             // 로그 출력
-                            UE_LOG(LogTemp, Log, TEXT("Nickname: %s"), *GI->GetNickname());
-                            UE_LOG(LogTemp, Log, TEXT("Coin: %d"), GI->GetCoin());
-                            UE_LOG(LogTemp, Log, TEXT("AvatarData: %d"), GI->GetAvatarData());
-                            UE_LOG(LogTemp, Log, TEXT("AccessToken: %s"), *GI->GetAccessToken());
+                            UE_LOG(LogTemp, Log, TEXT("Nickname: %s"), *PlayerData.nickname);
+                            UE_LOG(LogTemp, Log, TEXT("Coin: %d"), PlayerData.coin);
+                            UE_LOG(LogTemp, Log, TEXT("AvatarData: %d"), PlayerData.avatarData);
+                            UE_LOG(LogTemp, Log, TEXT("TitleName: %s"), *PlayerData.titleName);
+                            UE_LOG(LogTemp, Log, TEXT("TitleRarity: %s"), *PlayerData.titleRarity);
+                            UE_LOG(LogTemp, Log, TEXT("LuckyDrawSeatID: %s"), *PlayerData.LuckyDrawSeatID);
+                            UE_LOG(LogTemp, Log, TEXT("AccessToken: %s"), *PlayerData.accessToken);
 
                             // 세션 입장
                             StartUI->GoToLobby();

@@ -16,21 +16,34 @@ class MTVS3_FINAL_API UHM_FinalTicket : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
+
+	UPROPERTY()
+	class UCanvasPanel* RootCanvas;
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_FinalTicket; // 캡처 결과를 표시할 이미지
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_FinalTicketInfo; // 캡처 결과를 표시할 이미지
+	
+	FVector2d CaptureSize;
+
 	
 	// 배경 티켓 이미지를 캡처하고 DisplayImage에 표시하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Capture")
 	void CaptureAndDisplayTicketBackground();
 
-protected:
-	UPROPERTY(meta = (BindWidget))
-	class UImage* Img_FinalTicket; // 캡처 결과를 표시할 이미지
+	FTimerHandle CaptureTimerHandle;
+	void LogWidgetHierarchy(UWidget* Widget, int32 Depth = 0);
+	void ExecuteCapture();
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UHM_TicketCustom> TicketCutomWidget; // 배경 티켓 위젯 클래스 참조
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ticket Background")
+	class UHM_TicketCustom* TicketCutomUI; // 배경 티켓 위젯 인스턴스
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_TicketBG> TicketBGWidget; // 배경 티켓 위젯 클래스 참조
 
 	class UHM_TicketBG* TicketBGUI; // 배경 티켓 위젯 인스턴스
-
-	FVector2d CaptureSize;
 
 private:
 	class UTexture2D* ConvertRenderTargetToTexture(UObject* WorldContextObject, UTextureRenderTarget2D* RenderTarget);

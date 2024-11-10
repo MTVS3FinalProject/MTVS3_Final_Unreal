@@ -15,6 +15,7 @@ class MTVS3_FINAL_API UHM_TicketBG : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+	virtual void NativeConstruct() override;
 	
 	UPROPERTY()
 	class UCanvasPanel* RootCanvas;
@@ -28,9 +29,5 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UOverlay* Overlay_TicketBG;
 
-#pragma region FinalTicket Save
-#pragma endregion
 
-private:
-	virtual void NativeConstruct() override;
 };

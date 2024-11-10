@@ -331,7 +331,7 @@ void ATTLuckyDrawGameState::StartNextRound()
 
 	// GameUI에 룰렛 정보를 반영
 	if (GameUI)
-	{
+	{ 
 	    GameUI->SetTextroulette1(FString::FromInt(Info.Player));
 	    GameUI->SetTextroulette2(static_cast<int32>(Info.Rule));
 	    GameUI->SetTextroulette3(static_cast<int32>(Info.Result));

@@ -23,7 +23,10 @@ public:
 	class UWidgetSwitcher* WS_Bar;
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UMH_Inventory* WBP_inventory;
+	class UMH_Inventory* WBP_inventoryUI;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UMH_NoticeWidget* WBP_NoticeUI;
 
 	UFUNCTION()
 	void SetVisibleSwitcher(bool bVisible);
@@ -120,5 +123,29 @@ public:
 	class UButton* Btn_HttpTest03;
 	UFUNCTION()
 	void OnClickedHttpTest03();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_HttpTest04;
+	UFUNCTION()
+	void OnClickedHttpTest04();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_HttpTest05;
+	UFUNCTION()
+	void OnClickedHttpTest05();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_HttpTest06;
+	UFUNCTION()
+	void OnClickedHttpTest06();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_HttpTest07;
+	UFUNCTION()
+	void OnClickedHttpTest07();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_HttpTest08;
+	UFUNCTION()
+	void OnClickedHttpTest08();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_HttpTest09;
+	UFUNCTION()
+	void OnClickedHttpTest09();
 #pragma endregion
 };
