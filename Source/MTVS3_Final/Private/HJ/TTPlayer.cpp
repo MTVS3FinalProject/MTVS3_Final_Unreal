@@ -25,6 +25,7 @@
 #include <HJ/HJ_Actor.h>
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
@@ -42,6 +43,11 @@ ATTPlayer::ATTPlayer()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	CenterCapsuleComp = CreateDefaultSubobject<UCapsuleComponent>(TEXT("CenterCapsule"));
+	CenterCapsuleComp->SetupAttachment(RootComponent);
+	CenterCapsuleComp->SetCapsuleHalfHeight(88.0f);
+	CenterCapsuleComp->SetCapsuleRadius(3.0f);
+	
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 50));
@@ -218,7 +224,10 @@ void ATTPlayer::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (IsValid(GI) && (EndPlayReason == EEndPlayReason::EndPlayInEditor || EndPlayReason == EEndPlayReason::Quit))
+	{
+		GI->ClearDestroySessionDelegate();
 		GI->ExitSession();
+	}
 }
 
 // Called every frame
@@ -248,6 +257,7 @@ void ATTPlayer::Tick(float DeltaTime)
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
+		OnRep_bIsHost();
 		OnRep_RandomSeatNumber();
 		break;
 	}
@@ -402,6 +412,7 @@ void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
 {
 	bIsHost = _bIsHost;
+	MulticastSetbIsHost(bIsHost);
 
 	if (bIsHost == true)
 	{
@@ -413,15 +424,37 @@ void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
 	}
 }
 
+void ATTPlayer::MulticastSetbIsHost_Implementation(bool _bIsHost)
+{
+	if (bIsHost == true)
+	{
+		GetMesh()->SetOnlyOwnerSee(true);
+		GetCapsuleComponent()->SetOnlyOwnerSee(true);
+		CenterCapsuleComp->SetOnlyOwnerSee(true);
+		NicknameUIComp->SetOnlyOwnerSee(true);
+		TitleUIComp->SetOnlyOwnerSee(true);
+	}
+	else
+	{
+		GetMesh()->SetOnlyOwnerSee(false);
+		GetCapsuleComponent()->SetOnlyOwnerSee(false);
+		CenterCapsuleComp->SetOnlyOwnerSee(false);
+		NicknameUIComp->SetOnlyOwnerSee(false);
+		TitleUIComp->SetOnlyOwnerSee(false);
+	}
+}
+
 void ATTPlayer::OnRep_bIsHost()
 {
 	if (GetbIsHost() == true)
 	{
 		SetNewSkeletalMesh(0);
+		MulticastSetbIsHost(true);
 	}
 	else
 	{
 		SetNewSkeletalMesh(GetAvatarData());
+		MulticastSetbIsHost(false);
 	}
 }
 
@@ -544,6 +577,9 @@ void ATTPlayer::MulticastLuckyDrawStart_Implementation()
 {
 	// InitGameUI();
 	SwitchCamera(!bIsThirdPerson);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Anim)
 	{
@@ -559,6 +595,7 @@ void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& Targ
 
 void ATTPlayer::ClientLuckyDrawLose_Implementation()
 {
+	PlayChairGoingUpCameraShake();
 	if (GameUI)
 	{
 		GameUI->HideWidget();
@@ -604,7 +641,7 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		}
 
 		FTimerHandle LDWinnerTimerHandle;
-		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 10.0f ,
+		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 6.0f ,
 		                                false);
 	}
 }
@@ -1483,6 +1520,9 @@ void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	if (bIsZoomingIn && bHasPiece)
 	{
 		MyLaunchPiece();
@@ -1503,6 +1543,9 @@ void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	if (bHasPiece && !bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = true;
@@ -1516,6 +1559,9 @@ void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	if (bHasPiece && bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = false;

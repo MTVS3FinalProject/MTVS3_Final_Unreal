@@ -38,7 +38,7 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 	{
 		ATTPlayer* TTPlayer = *It;
-		if (TTPlayer && TTPlayer->bIsHost)
+		if (TTPlayer && NicknameList.Contains(TTPlayer->GetNickname()))
 		{
 			if (TTPlayer->bIsHost) // 호스트에게는 추첨 시작 시간을 알림
 			{
@@ -70,7 +70,7 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 
 void ATTHallGameState::HideLuckyDrawInvitation(const TArray<FString>& NicknameList , int32 CompetitionRate)
 {
-	if (!GetWorld() || NicknameList.Num() == 0)
+	if (!GetWorld() || !IsValid(this) || NicknameList.Num() == 0)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("GetWorld() is invalid or NicknameList is empty."));
 		return;

@@ -39,19 +39,19 @@ public:
 	UPROPERTY(Replicated , BlueprintReadOnly , Category = "TTSettings|State")
 	bool bIsSitting;
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerSetSitting(bool _bIsSitting);
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSitDown();
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastStandUp();
 
 	UFUNCTION(Server , Reliable)
 	void ServerLuckyDrawStart();
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastLuckyDrawStart();
 
 	UFUNCTION(NetMulticast , Reliable)
@@ -59,6 +59,9 @@ public:
 
 	UFUNCTION(Client , Reliable)
 	void ClientLuckyDrawLose();
+	
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void PlayChairGoingUpCameraShake();
 
 	UFUNCTION(Client , Reliable)
 	void ClientLuckyDrawWin();
@@ -78,10 +81,10 @@ public:
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetColorTextRender(FColor NewColor);
 
-	UFUNCTION(Server , Unreliable)
+	UFUNCTION(Server , Reliable)
 	void ServerChangeWalkSpeed(bool bIsRunning);
 
-	UFUNCTION(NetMulticast , Unreliable)
+	UFUNCTION(NetMulticast , Reliable)
 	void MulticastChangeWalkSpeed(bool bIsRunning);
 
 	UFUNCTION(Client , Reliable)
@@ -206,6 +209,8 @@ public:
 	void SetbIsHost(const bool& _bIsHost);
 	UFUNCTION(Server , Reliable)
 	void ServerSetbIsHost(bool _bIsHost);
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastSetbIsHost(bool _bIsHost);
 	bool GetbIsHost() const { return bIsHost; };
 	UFUNCTION()
 	void OnRep_bIsHost();
@@ -238,7 +243,9 @@ public:
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 #pragma endregion
-
+	UPROPERTY(EditDefaultsOnly)
+	class UCapsuleComponent* CenterCapsuleComp;
+	
 	UPROPERTY(EditDefaultsOnly)
 	class USpringArmComponent* SpringArmComp;
 

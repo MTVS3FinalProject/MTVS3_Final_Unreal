@@ -60,7 +60,7 @@ struct FPlayerData
 
 	// 기본 생성자
 	FPlayerData()
-		: bIsHost(false) , nickname(TEXT("반희수")), titleName(TEXT("뉴진스 매니저")), titleRarity(TEXT("Rare")), accessToken(TEXT("-1")) ,
+		: bIsHost(false) , nickname(TEXT("Ticketaka")), titleName(TEXT("")), titleRarity(TEXT("Common")), accessToken(TEXT("-1")) ,
 		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1"))
 	{}
 };
@@ -78,6 +78,9 @@ public:
 	// 세션 관련 델리게이트
 	FFindSignature OnFindSignatureCompleteDelegate;
 	virtual void Init() override;
+	void ClearDestroySessionDelegate();
+
+	FDelegateHandle OnDestroySessionCompleteDelegateHandle;
 
 # pragma region 세션
 	FString GenerateUniqueSessionName(const FString& SessionNamePrefix);
