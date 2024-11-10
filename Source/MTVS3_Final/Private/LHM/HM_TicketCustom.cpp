@@ -10,10 +10,15 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
+#include "HJ/TTGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 #include "LHM/HM_FinalTicket.h"
+#include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_TicketBG.h"
+#include "LHM/HM_TicketSceneCapture2D.h"
 
 
+class AHM_TicketSceneCapture2D;
 class FWidgetRenderer;
 class UOverlay;
 
@@ -44,10 +49,33 @@ void UHM_TicketCustom::NativeConstruct()
 	{
 		FinalTicketUI = CreateWidget<UHM_FinalTicket>(GetWorld(), FinalTicketWidget);
 	}
-	if (TicketBGWidget)
+	
+	if( Img_TicketBackground && Img_TicketInfo )
 	{
-		TicketBGUI = CreateWidget<UHM_TicketBG>(GetWorld(), TicketBGWidget);
+		// 에디터에서 설정된 위치와 크기 사용
+		UCanvasPanelSlot* BackgroundSlot = Cast<UCanvasPanelSlot>(Img_TicketBackground->Slot);
+		UCanvasPanelSlot* InfoSlot = Cast<UCanvasPanelSlot>(Img_TicketInfo->Slot);
+		
+		if (BackgroundSlot)
+		{
+			BackgroundSlot->SetSize(FVector2D(844, 500));
+			BackgroundSlot->SetPosition(FVector2D(-340,-30));
+			BackgroundSlot->SetAlignment(FVector2d(0.5));
+		}
+
+		if (InfoSlot)
+		{
+			InfoSlot->SetSize(FVector2D(436, 500));
+			InfoSlot->SetPosition(FVector2D(300, -30));
+			InfoSlot->SetAlignment(FVector2d(0.5));
+		}
 	}
+}
+
+void UHM_TicketCustom::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry , InDeltaTime);
+	
 }
 
 void UHM_TicketCustom::SetupDraggableImage(UImage* Image)
@@ -177,7 +205,7 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		// Img_CopiedImgs에 추가
 		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage);
 		Img_CopiedImgs.Add(NewImageSet);
-
+		
 		// 디버그 로그
 		// UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s, OriginImage = %s"),
 		// 	Img_CopiedImgs.Num() - 1,
@@ -226,7 +254,7 @@ void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet, int32 Index)
 {
 	if (Img_CopiedImgs.IsValidIndex(Index)) // 인덱스가 유효한지 확인
 	{
-		FUsedImage& ImageSet = Img_CopiedImgs[Index];
+		ImageSet = Img_CopiedImgs[Index];
 
 		if (bIsDelete)
 		{
@@ -247,63 +275,58 @@ void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet, int32 Index)
 			ImageSet.RenderScale = nullptr;
 			ImageSet.Delete = nullptr;
 			ImageSet.ImageGroupOverlay = nullptr;
-			ImageSet.OriginImage = nullptr; // 참조 해제
+			ImageSet.OriginImage = nullptr;
 
 			// 배열에서 해당 인덱스 제거
 			Img_CopiedImgs.RemoveAt(Index);
             
-			// 필요한 경우 로그 출력
 			UE_LOG(LogTemp, Log, TEXT("Deleted ImageSet at index: %d"), Index);
 		}
 
-		bIsDelete = false; // 삭제 플래그 초기화
-		CurrentImage = nullptr; // 현재 이미지 초기화
+		bIsDelete = false;
+		CurrentImage = nullptr;
 	}
-	// if (bIsDelete)
-	// {
-	// 	if (ImageSet.ImageGroupOverlay)
-	// 	{
-	// 		// ImageGroupOverlay와 그 하위 위젯들을 UI에서 제거
-	// 		ImageSet.ImageGroupOverlay->RemoveFromParent();
-	// 	}
-	// 	if (ImageSet.OriginImage)
-	// 	{
-	// 		ImageSet.OriginImage->SetVisibility(ESlateVisibility::Visible);
-	// 	}
-	//
-	// 	// 구조체의 이미지 포인터를 nullptr로 설정하여 이후 접근 방지
-	// 	ImageSet.CopiedImage = nullptr;
-	// 	ImageSet.Outline = nullptr;
-	// 	ImageSet.RenderAngle = nullptr;
-	// 	ImageSet.RenderScale = nullptr;
-	// 	ImageSet.Delete = nullptr;
-	// 	ImageSet.ImageGroupOverlay = nullptr;
-	// 	ImageSet.OriginImage = nullptr; // 참조 해제
-	// 	
-	// 	bIsDelete = false;
-	// 	CurrentImage = nullptr;
-	// }
 }
 
 void UHM_TicketCustom::AddImageSetToFinalTicketUI(const FUsedImage& ImageSet)
 {
-	// FinalTicketUI의 Overlay를 찾는 예시
-	UOverlay* TargetOverlay = Cast<UOverlay>(TicketBGUI->GetWidgetFromName(TEXT("Overlay_TicketBG")));
-	if (TargetOverlay)
-	{
-		UE_LOG(LogTemp , Log , TEXT("TargetOverlay"));
-		TargetOverlay->AddChild(ImageSet.ImageGroupOverlay);
+	// RootCanvas에 추가
+	RootCanvas->AddChild(ImageSet.CopiedImage);
     
-		// 위치와 크기 설정
-		UOverlaySlot* OverlaySlot = Cast<UOverlaySlot>(ImageSet.ImageGroupOverlay->Slot);
-		if (OverlaySlot)
-		{
-			UE_LOG(LogTemp , Log , TEXT("OverlaySlot"));
-			OverlaySlot->SetHorizontalAlignment(HAlign_Center);
-			OverlaySlot->SetVerticalAlignment(VAlign_Center);
-			// 추가적인 속성 설정 가능
-		}
-	}
+	// 이미지 그룹 및 모든 자식들의 가시성 설정
+	//ImageSet.ImageGroupOverlay->SetVisibility(ESlateVisibility::Visible);
+    
+	// if (UPanelWidget* Panel = Cast<UPanelWidget>(ImageSet.ImageGroupOverlay))
+	// {
+	// 	for (int32 i = 0; i < Panel->GetChildrenCount(); ++i)
+	// 	{
+	// 		if (UWidget* Child = Panel->GetChildAt(i))
+	// 		{
+	// 			Child->SetVisibility(ESlateVisibility::Visible);
+	// 			UE_LOG(LogTemp, Log, TEXT("Child widget %s visibility set to Visible"), *Child->GetName());
+	// 		}
+	// 	}
+	// }
+
+	// //슬롯 설정
+	// if (UCanvasPanelSlot* OverlaySlot = Cast<UCanvasPanelSlot>(ImageSet.ImageGroupOverlay->Slot))
+	// {
+	// 	// 원본 위치와 크기 보존
+	// 	//FVector2D Position = ImageSet.ImageGroupOverlay->GetCachedGeometry().GetAbsolutePosition();
+	// 	FVector2D Size = ImageSet.ImageGroupOverlay->GetDesiredSize();
+ //        
+	// 	if (Size.IsZero())
+	// 	{
+	// 		Size = FVector2D(230.0f, 230.0f); // 기본 크기
+	// 	}
+ //        
+	// 	OverlaySlot->SetSize(Size);
+	// 	OverlaySlot->SetPosition(FVector2D(600, 400));
+	// 	OverlaySlot->SetZOrder(130);
+ //        
+	// 	UE_LOG(LogTemp, Log, TEXT("Set slot properties - Position: X%f Y%f, Size: %s"),
+	// 		OverlaySlot->GetPosition().X,OverlaySlot->GetPosition().Y, *Size.ToString());
+	// }
 }
 
 FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
@@ -349,7 +372,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 		for(const FUsedImage& ImageSet : Img_CopiedImgs)
 		{
 			UImage* CopiedImg = ImageSet.CopiedImage;
-			UImage* Outline = ImageSet.Outline;
+			//UImage* Outline = ImageSet.Outline;
 			UImage* Angle = ImageSet.RenderAngle;
 			UImage* Scale = ImageSet.RenderScale;
 			UImage* Delete = ImageSet.Delete;
@@ -560,14 +583,37 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 				}
 			}
 		}
+
+		
 		return FReply::Handled().ReleaseMouseCapture();
 	}
 	return FReply::Unhandled();
 }
 
+void UHM_TicketCustom::SetBackgroundImg(UTexture2D* newTexture)
+{
+	Img_TicketBackground->SetBrushFromTexture(newTexture);
+}
+
+void UHM_TicketCustom::SetStickersImg(UTexture2D* newTexture1, UTexture2D* newTexture2, UTexture2D* newTexture3, UTexture2D* newTexture4, UTexture2D* newTexture5)
+{
+	Img_Sticker01->SetBrushFromTexture(newTexture1);
+	Img_Sticker02->SetBrushFromTexture(newTexture2);
+	Img_Sticker03->SetBrushFromTexture(newTexture3);
+	Img_Sticker04->SetBrushFromTexture(newTexture4);
+	Img_Sticker05->SetBrushFromTexture(newTexture5);
+}
+
 void UHM_TicketCustom::OnClickedResetBackgroundButton()
 {
 	// 배경 이미지 리셋 통신 요청
+	auto* GI = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	auto* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if(HttpActor3)
+	{
+		HttpActor3->ReqGetBackground(GI->GetAccessToken());
+	}
 }
 
 void UHM_TicketCustom::OnClickedResetTicketImageButton()
@@ -582,6 +628,7 @@ void UHM_TicketCustom::OnClickedSaveButton()
 		if (ImageSet.CopiedImage && ImageSet.Outline && ImageSet.RenderAngle && ImageSet.RenderScale && ImageSet.Delete)
 		{
 			//AddImageSetToFinalTicketUI(ImageSet);
+			
 			UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s="),
 			Img_CopiedImgs.Num() - 1,
 			*ImageSet.CopiedImage->GetName(),
@@ -592,12 +639,40 @@ void UHM_TicketCustom::OnClickedSaveButton()
 			);
 		}
 	}
-	
+	AHM_TicketSceneCapture2D* SceneCaptureActor = Cast<AHM_TicketSceneCapture2D>(
+			UGameplayStatics::GetActorOfClass(GetWorld(), AHM_TicketSceneCapture2D::StaticClass())
+		);
+
 	if (FinalTicketUI)
 	{
-		FinalTicketUI->AddToViewport();
+		ForceLayoutPrepass();
+		Invalidate(EInvalidateWidget::Layout | EInvalidateWidget::Paint);
+		InvalidateLayoutAndVolatility();
+		RebuildWidget();
+		GetWorld()->FlushLevelStreaming(); // 레이아웃 즉시 적용
+		//SynchronizeProperties()
+		//FlushRenderingCommands();
+		
+		if (TSharedPtr<SWidget> MySlateWidget = GetCachedWidget())
+		{
+			MySlateWidget->SlatePrepass();
+		}
+		
 		FinalTicketUI->CaptureAndDisplayTicketBackground();
+		FinalTicketUI->AddToViewport();
+		this->SetVisibility(ESlateVisibility::Hidden);
 	}
+	
+	// if(SceneCaptureActor)
+	// {
+	// 	SceneCaptureActor->CaptureUsingSceneCapture();
+	// 	
+	// 	if (FinalTicketUI)
+	// 	{
+	// 		FinalTicketUI->AddToViewport();
+	// 		this->SetVisibility(ESlateVisibility::Hidden);
+	// 	}
+	// }
 }
 
 void UHM_TicketCustom::OnClickedExitButton()

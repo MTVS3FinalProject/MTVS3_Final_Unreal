@@ -23,7 +23,10 @@ public:
 	class UWidgetSwitcher* WS_Bar;
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UMH_Inventory* WBP_inventory;
+	class UMH_Inventory* WBP_inventoryUI;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UMH_NoticeWidget* WBP_NoticeUI;
 
 	UFUNCTION()
 	void SetVisibleSwitcher(bool bVisible);
