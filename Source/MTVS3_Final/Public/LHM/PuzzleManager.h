@@ -68,6 +68,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Puzzle")
 	void SortAndUpdateRanking();
 
+	// 퍼즐 게임 종료
+	UFUNCTION(BlueprintCallable, Category = "Puzzle")
+	void GameOver();
+
 public:
 	TMap<UStaticMeshComponent*, int32> Pieces;
 
@@ -77,4 +81,7 @@ public:
 
 	// 플레이어 점수 정보를 저장할 배열
 	TArray<FPlayerScoreInfo> PlayerScoresInfo;
+
+private:
+	bool bPuzzleCompleted = false;
 };

@@ -22,15 +22,24 @@ void UHM_PuzzleWidget::NativeConstruct()
 	TextPieces[6] = Text_Piece7;
 	TextPieces[7] = Text_Piece8;
 	TextPieces[8] = Text_Piece9;
+
+	// TextPlayerScore 포인터 배열로 초기화
+	TextPlayerScores[0] = Text_Player1Score;
+	TextPlayerScores[1] = Text_Player2Score;
+	TextPlayerScores[2] = Text_Player3Score;
+	TextPlayerScores[3] = Text_Player4Score;
+	TextPlayerScores[4] = Text_Player5Score; 
+	TextPlayerScores[5] = Text_Player6Score;
+	TextPlayerScores[6] = Text_Player7Score;
+	TextPlayerScores[7] = Text_Player8Score;
+	TextPlayerScores[8] = Text_Player9Score;
 	
-	//InitializeTextBlocks();
 	InitializePuzzlePieces();
 	
 }
 
 void UHM_PuzzleWidget::InitializeTextBlocks()
 {
-	
 	// TextPlayerScore 포인터 배열로 초기화
 	TextPlayerScores[0] = Text_Player1Score;
 	TextPlayerScores[1] = Text_Player2Score;
@@ -85,7 +94,6 @@ void UHM_PuzzleWidget::UpdatePlayerScores(const TArray<FPlayerScoreInfo>& Player
 	for (int32 Index = 0; Index < PlayerScoresInfo.Num(); Index++)
 	{
 		if(TextPlayerScores[Index] == nullptr) UE_LOG(LogTemp, Log, TEXT("TextPlayerScores[%d] is null!!"), Index);
-
 		
 		if (Index < 9 && TextPlayerScores[Index]) // 최대 9명까지 표시
 		{
@@ -97,7 +105,7 @@ void UHM_PuzzleWidget::UpdatePlayerScores(const TArray<FPlayerScoreInfo>& Player
                 *TimeString);
 
 			TextPlayerScores[Index]->SetText(FText::FromString(ScoreText));
-			UE_LOG(LogTemp, Log, TEXT("Successfully set text for player : %s"), *ScoreText);
+			UE_LOG(LogTemp , Log , TEXT("Successfully set text for player : %s") , *ScoreText);
 		}
 	}
 }
