@@ -12,7 +12,7 @@
 #include "JMH/MH_ItemBox_Sticker.h"
 #include "JMH/MH_ItemBox_Ticket.h"
 #include "JMH/MH_ItemBox_Title.h"
-#include "LHM/HM_HTTPActor_Inven.h"
+#include "LHM/HM_HttpActor3.h"
 #include "Kismet/GameplayStatics.h"
 
 
@@ -70,8 +70,8 @@ void UMH_Inventory::HideTitleUnequipWin()
 void UMH_Inventory::InitializeTabs()
 {/*
 	//데이터들이 저장될 HTTPInvenActor에서 정보 TArray로 받아오기
-	AHM_HTTPActor_Inven* HTTP_Inven = Cast<AHM_HTTPActor_Inven>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HTTPActor_Inven::StaticClass()));
+	AHM_HttpActor3* HTTP_Inven = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 	if (!HTTP_Inven)
 	{
 		return;
