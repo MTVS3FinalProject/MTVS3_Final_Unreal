@@ -7,6 +7,8 @@
 #include "Components/CanvasPanel.h"
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
+#include "Components/Overlay.h"
+#include "Components/OverlaySlot.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 #include "JMH/MH_ItemBox_Sticker.h"
@@ -28,17 +30,16 @@ void UMH_Inventory::NativeConstruct()
 	Btn_Back_Inven->OnClicked.AddDynamic(this , &UMH_Inventory::CloseBtn_Inven);
 
 	//타이틀 장착?
-	Btn_Title_yes->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteYesBtn);
-	Btn_Title_no->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteNoBtn);
+	Btn_Title_yes->OnClicked.AddDynamic(this , &UMH_Inventory::OnClickedTilteYesBtn);
+	Btn_Title_no->OnClicked.AddDynamic(this , &UMH_Inventory::OnClickedTilteNoBtn);
 	//타이틀 해제?
-	Btn_Title_yes2->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteYes2Btn);
-	Btn_Title_no2->OnClicked.AddDynamic(this, &UMH_Inventory::OnClickedTilteNo2Btn);
+	Btn_Title_yes2->OnClicked.AddDynamic(this , &UMH_Inventory::OnClickedTilteYes2Btn);
+	Btn_Title_no2->OnClicked.AddDynamic(this , &UMH_Inventory::OnClickedTilteNo2Btn);
 
 	//test
 	Btn_Title_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Title_Test);
 	Btn_Ticket_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket_Test);
 	Btn_Sticker_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker_Test);
-
 }
 
 void UMH_Inventory::SetWidgetSwitcher(int32 num)
@@ -50,6 +51,7 @@ void UMH_Inventory::ShowTitleEquipWin()
 {
 	Can_TitleEquipWin->SetVisibility(ESlateVisibility::Visible);
 }
+
 void UMH_Inventory::HideTitleWin()
 {
 	Can_TitleEquipWin->SetVisibility(ESlateVisibility::Hidden);
@@ -68,34 +70,35 @@ void UMH_Inventory::HideTitleUnequipWin()
 
 
 void UMH_Inventory::InitializeTabs()
-{/*
-	//데이터들이 저장될 HTTPInvenActor에서 정보 TArray로 받아오기
-	AHM_HttpActor3* HTTP_Inven = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-	if (!HTTP_Inven)
-	{
-		return;
-	}
-	if (HTTP_Inven)
-	{
-		// 받은 데이터가 비어 있지 않은지 확인
-		const TArray<FTitleItemData>& TitleItems = HTTP_Inven->GetTitleItems();
-		const TArray<FTicketItemData>& TicketItems = HTTP_Inven->GetTicketItems();
-		const TArray<FStickerItemData>& StickerItems = HTTP_Inven->GetStickerItems();
-
-		if (TitleItems.Num() > 0)
+{
+	/*
+		//데이터들이 저장될 HTTPInvenActor에서 정보 TArray로 받아오기
+		AHM_HttpActor3* HTTP_Inven = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (!HTTP_Inven)
 		{
-			InitializeTitleTabs(TitleItems);
+			return;
 		}
-		if (TicketItems.Num() > 0)
+		if (HTTP_Inven)
 		{
-			InitializeTicketTabs(TicketItems);
-		}
-		if (StickerItems.Num() > 0)
-		{
-			InitializeStickerTabs(StickerItems);
-		}
-	}*/
+			// 받은 데이터가 비어 있지 않은지 확인
+			const TArray<FTitleItemData>& TitleItems = HTTP_Inven->GetTitleItems();
+			const TArray<FTicketItemData>& TicketItems = HTTP_Inven->GetTicketItems();
+			const TArray<FStickerItemData>& StickerItems = HTTP_Inven->GetStickerItems();
+	
+			if (TitleItems.Num() > 0)
+			{
+				InitializeTitleTabs(TitleItems);
+			}
+			if (TicketItems.Num() > 0)
+			{
+				InitializeTicketTabs(TicketItems);
+			}
+			if (StickerItems.Num() > 0)
+			{
+				InitializeStickerTabs(StickerItems);
+			}
+		}*/
 }
 
 /*
@@ -166,6 +169,7 @@ void UMH_Inventory::OnClicked_Sticker()
 	//스티커
 	SetWidgetSwitcher(2);
 }
+
 void UMH_Inventory::SetPlayerTitleInfo()
 {
 	//WBP_ItemBox에 타이틀 텍스트 넣어서(매개변수 1. Text or Image) 저장
@@ -220,12 +224,12 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 {
 	//클릭한 타이틀 장착 -> 클릭한 타이틀이 뭔지 저장할 변수 만들기
 	//SetPlayerTitle();
-	
+
 	if (SelectedTitle == CurrentTitle)
 	{
 		return;
 	}
-	
+
 	if (SelectedTitle)
 	{
 		// 이전에 선택된 아이템에서 프레임 제거
@@ -233,7 +237,7 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 		//타이틀을 제거하시겠습니까? 창 뜨기
 		//플레이어한테 칭호 해제
 	}
-	
+
 	SelectedTitle = CurrentTitle;
 
 	if (SelectedTitle)
@@ -245,7 +249,7 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 
 		//플레이어한테 칭호 해제
 	}
-	
+
 	OnClickedTilteNoBtn();
 }
 
@@ -258,13 +262,12 @@ void UMH_Inventory::OnClickedTilteNoBtn()
 void UMH_Inventory::OnClickedTilteYes2Btn()
 {
 	//칭호 해제하기
-	
+
 	SelectedTitle = nullptr;
 	CurrentTitle = nullptr;
 	//프레임 삭제
 	RemoveFrame();
 	HideTitleUnequipWin();
-	
 }
 
 void UMH_Inventory::OnClickedTilteNo2Btn()
@@ -277,7 +280,7 @@ void UMH_Inventory::OnClickedTilteNo2Btn()
 void UMH_Inventory::OnClickedTitleBtn(UMH_ItemBox_Title* ClickedItem)
 {
 	//2.타이틀을 적용하시겠습니까? 창뜸
-	if(CurrentTitle==ClickedItem)
+	if (CurrentTitle == ClickedItem)
 	{
 		//칭호를 해제하시겠습니까?
 		ShowTitleUnequipWin();
@@ -306,22 +309,23 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 {
 	if (Img_Frame && ClickedItem)
 	{
-		// 인벤토리 위젯과 클릭된 아이템의 절대 좌표를 가져옵니다.
-		FGeometry InventoryGeometry = this->GetCachedGeometry();
-		FGeometry ItemGeometry = ClickedItem->GetCachedGeometry();
+		//부모의 오버레이 찾아오기.
+		UOverlaySlot* ParentOverlay = Cast<UOverlaySlot>(ClickedItem->GetParent());
+		if (ParentOverlay)
+		{
+			// 프레임이 오버레이에 이미 추가되어 있지 않다면 추가합니다.
+			if (!ParentOverlay->HasChild(Img_Frame))
+			{
+				ParentOverlay->AddChild(Img_Frame);
+			}
 
-		// 아이템 버튼의 크기를 구해 중심점을 계산합니다.
-		FVector2D ItemSize = ItemGeometry.GetLocalSize();
-		FVector2D ItemCenterPosition = ItemGeometry.GetAbsolutePosition() + (ItemSize * 0.5f);
+			// Img_Frame의 크기를 부모 오버레이 크기에 맞추기
+			Img_Frame->SetRenderScale(FVector2D(1.0f , 1.0f));
+			Img_Frame->SetRenderTransformPivot(FVector2D(0.5f , 0.5f));
 
-		// 버튼의 중심점을 인벤토리 위젯 내의 상대 위치로 변환
-		FVector2D RelativeCenterPosition = InventoryGeometry.AbsoluteToLocal(ItemCenterPosition);
-
-		// Img_Frame의 위치를 버튼 중심점으로 설정
-		Img_Frame->SetRenderTranslation(RelativeCenterPosition);
-		
-		// 프레임을 표시
-		Img_Frame->SetVisibility(ESlateVisibility::HitTestInvisible);
+			// 프레임을 표시
+			Img_Frame->SetVisibility(ESlateVisibility::HitTestInvisible);
+		}
 	}
 }
 
@@ -329,14 +333,21 @@ void UMH_Inventory::OnClicked_Title_Test()
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
 	UMH_ItemBox_Title* ItemBox_Title = CreateWidget<UMH_ItemBox_Title>(this , TitleItemBoxFac);
+	OverlayTitle = NewObject<UOverlay>(this);
+	
 	if (ItemBox_Title)
 	{
 		Counter_Title++;
 		ItemBox_Title->Text_Title->SetText(FText::FromString(FString::Printf(TEXT("%02d") , Counter_Title)));
 		//ItemBox_Title->SetTitleData(ItemData); // 타이틀 데이터를 설정
-
-		ItemBox_Title->OnClickedTitleBtn.AddDynamic(this,&UMH_Inventory::OnClickedTitleBtn);
-		Hori_InvenBox_00_Title->AddChild(ItemBox_Title);
+		ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
+		if (OverlayTitle)
+		{
+			OverlayTitle->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+			//아이쳄박스의 크기에 맞춘 오버레이 생성
+			OverlayTitle->AddChild(ItemBox_Title);
+			Hori_InvenBox_00_Title->AddChild(OverlayTitle);
+		}
 	}
 }
 

@@ -191,6 +191,12 @@ public:
 	int32 Counter_Title = 1;
 	int32 Counter_Ticket = 1;
 	int32 Counter_Sticker = 1;
+
+	UPROPERTY()
+	class UOverlaySlot* FrameSlot;
+
+	UPROPERTY()
+	class UOverlay* OverlayTitle;
 	
 	
 };
