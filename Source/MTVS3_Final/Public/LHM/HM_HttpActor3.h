@@ -165,7 +165,8 @@ public:
 	void SetBackgroundId(int32 _BackgroundId) { BackgroundId = _BackgroundId; }
 	
 #pragma endregion
-	
+
+#pragma region HTTP Methods
 	// 인벤토리 정보 요청
 	void ReqGetInventoryData(FString AccessToken);
 	void OnResGetInventoryData(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
@@ -189,4 +190,5 @@ public:
 	// 티켓 커스텀 제작 입장 요청
 	void ReqPostEnterTicketCustomization(FString AccessToken);
 	void OnReqPostEnterTicketCustomization(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+#pragma endregion
 };

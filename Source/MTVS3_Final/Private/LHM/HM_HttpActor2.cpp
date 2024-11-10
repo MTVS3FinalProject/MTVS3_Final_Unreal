@@ -562,7 +562,7 @@ void AHM_HttpActor2::OnResGetMyRegisteredSeat(FHttpRequestPtr Request , FHttpRes
 	}
 }
 
-// 좌석 취소 요청
+// 좌석 취소 요청1
 void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat(FString SeatId , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -588,7 +588,7 @@ void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat(FString SeatId , FString Acce
 	Request->ProcessRequest();
 }
 
-// 좌석 취소 요청에 대한 응답
+// 좌석 취소 요청에 대한 응답1
 void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -632,6 +632,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 	}
 }
 
+// 좌석 취소 요청2
 void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat2(FString SeatId, FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -657,8 +658,8 @@ void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat2(FString SeatId, FString Acce
 	Request->ProcessRequest();
 }
 
-void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request, FHttpResponsePtr Response,
-	bool bWasSuccessful)
+// 좌석 취소 요청에 대한 응답2
+void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
