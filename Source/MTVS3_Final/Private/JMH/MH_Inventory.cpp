@@ -314,10 +314,10 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 		if (ParentOverlay)
 		{
 			// 프레임이 오버레이에 이미 추가되어 있지 않다면 추가합니다.
-			if (!ParentOverlay->HasChild(Img_Frame))
-			{
-				ParentOverlay->AddChild(Img_Frame);
-			}
+			//if (!ParentOverlay->HasChild(Img_Frame))
+			//{
+			//	ParentOverlay->AddChild(Img_Frame);
+			//}
 
 			// Img_Frame의 크기를 부모 오버레이 크기에 맞추기
 			Img_Frame->SetRenderScale(FVector2D(1.0f , 1.0f));
