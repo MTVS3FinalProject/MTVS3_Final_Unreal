@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/IHttpRequest.h"
-#include "HM_HTTPActor_Inven.generated.h"
+#include "HM_HttpActor3.generated.h"
 
 USTRUCT()
 struct FTitles
@@ -117,14 +117,14 @@ public:
 };
 
 UCLASS()
-class MTVS3_FINAL_API AHM_HTTPActor_Inven : public AActor
+class MTVS3_FINAL_API AHM_HttpActor3 : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AHM_HTTPActor_Inven();
-	
+	AHM_HttpActor3();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -133,6 +133,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	
 #pragma region UI & URL
 	UPROPERTY()
 	class UMainWidget* MainUI;

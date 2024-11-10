@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "LHM/HM_HTTPActor_Inven.h"
+#include "LHM/HM_HttpActor3.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
@@ -9,38 +9,35 @@
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
 
-class AHM_HttpActor2;
-class UMainWidget;
 // Sets default values
-AHM_HTTPActor_Inven::AHM_HTTPActor_Inven()
+AHM_HttpActor3::AHM_HttpActor3()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	
+
 }
 
-
 // Called when the game starts or when spawned
-void AHM_HTTPActor_Inven::BeginPlay()
+void AHM_HttpActor3::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
 // Called every frame
-void AHM_HTTPActor_Inven::Tick(float DeltaTime)
+void AHM_HttpActor3::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
 // 전달받은 MainUI 참조 저장
-void AHM_HTTPActor_Inven::SetMainUI(UMainWidget* InMainUI)
+void AHM_HttpActor3::SetMainUI(UMainWidget* InMainUI)
 {
 	MainUI = InMainUI;
 }
 
-void AHM_HTTPActor_Inven::ReqGetInventoryData(FString AccessToken)
+void AHM_HttpActor3::ReqGetInventoryData(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -58,13 +55,13 @@ void AHM_HTTPActor_Inven::ReqGetInventoryData(FString AccessToken)
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HTTPActor_Inven::OnResGetInventoryData);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetInventoryData);
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
-void AHM_HTTPActor_Inven::OnResGetInventoryData(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
@@ -183,7 +180,7 @@ void AHM_HTTPActor_Inven::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRe
 	}
 }
 
-void AHM_HTTPActor_Inven::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken)
+void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken)
 {
 	
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
@@ -216,13 +213,13 @@ void AHM_HTTPActor_Inven::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString A
 	Request->SetContentAsString(ContentString);
 	
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HTTPActor_Inven::OnResPostPuzzleResultAndGetSticker);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker);
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
-void AHM_HTTPActor_Inven::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request, FHttpResponsePtr Response,
+void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request, FHttpResponsePtr Response,
 	bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -281,7 +278,7 @@ void AHM_HTTPActor_Inven::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Req
 	}
 }
 
-void AHM_HTTPActor_Inven::ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
+void AHM_HttpActor3::ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -314,13 +311,13 @@ void AHM_HTTPActor_Inven::ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArr
 	Request->SetContentAsString(ContentString);
 	
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HTTPActor_Inven::OnReqGetBackground);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnReqGetBackground);
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
-void AHM_HTTPActor_Inven::ReqGetBackground(FString AccessToken)
+void AHM_HttpActor3::ReqGetBackground(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -340,15 +337,13 @@ void AHM_HTTPActor_Inven::ReqGetBackground(FString AccessToken)
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HTTPActor_Inven::OnReqGetBackground);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnReqGetBackground);
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
-void AHM_HTTPActor_Inven::OnReqGetBackground(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void AHM_HttpActor3::OnReqGetBackground(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	
 }
-
-
