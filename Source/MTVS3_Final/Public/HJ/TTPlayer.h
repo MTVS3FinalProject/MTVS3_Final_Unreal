@@ -103,6 +103,12 @@ public:
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetNewSkeletalMesh(USkeletalMesh* NewMesh);
 
+	UFUNCTION(Server , Reliable)
+	void ServerPlayEmojiAnim(const int32& EmojiNum);
+
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastPlayEmojiAnim(const int32& EmojiNum);
+
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
 

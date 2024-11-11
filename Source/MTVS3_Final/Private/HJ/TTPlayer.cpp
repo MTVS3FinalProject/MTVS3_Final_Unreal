@@ -778,6 +778,20 @@ void ATTPlayer::PlayConcertBGMAfterDelay()
 	}
 }
 
+void ATTPlayer::ServerPlayEmojiAnim_Implementation(const int32& EmojiNum)
+{
+	MulticastPlayEmojiAnim(EmojiNum);
+}
+
+void ATTPlayer::MulticastPlayEmojiAnim_Implementation(const int32& EmojiNum)
+{
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if (Anim)
+	{
+		Anim->PlayEmojiMontage(EmojiNum);
+	}
+}
+
 void ATTPlayer::MyTakePiece()
 {
 	ZoomOut();
