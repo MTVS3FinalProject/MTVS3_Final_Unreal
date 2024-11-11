@@ -122,10 +122,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_FinalTicket> FinalTicketWidget;
 	class UHM_FinalTicket* FinalTicketUI;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UHM_TicketBG> TicketBGWidget;
-	class UHM_TicketBG* TicketBGUI;
 	
 #pragma endregion
 };

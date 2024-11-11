@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "LHM/HM_FinalTicket.h"
@@ -41,11 +41,6 @@ void UHM_FinalTicket::NativeConstruct()
     			InfoSlot->SetAlignment(FVector2d(0.5));
     		}
     	}
-
-	if (TicketBGWidget)
-	{
-		TicketBGUI = CreateWidget<UHM_TicketBG>(GetWorld(), TicketBGWidget);
-	}
 	
 	if (TicketCutomWidget)
 	{
@@ -53,53 +48,12 @@ void UHM_FinalTicket::NativeConstruct()
 	}
 }
 
-void UHM_FinalTicket::CaptureAndDisplayTicketBackground()
+void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _TicketCutomUI)
 {
 	// 캡쳐 전에 모든 위젯의 상태를 로깅
 	UE_LOG(LogTemp, Log, TEXT("Starting capture process..."));
-	LogWidgetHierarchy(TicketCutomUI);
 
-	// 타이머를 사용하여 캡쳐 지연
-	GetWorld()->GetTimerManager().SetTimer(
-		CaptureTimerHandle,
-		this,
-		&UHM_FinalTicket::ExecuteCapture,
-		0.2f,  // 0.2초로 증가
-		false
-	);
-}
-
-void UHM_FinalTicket::LogWidgetHierarchy(UWidget* Widget, int32 Depth)
-{
-	if (!Widget) return;
-
-	FString Indent;
-	for (int32 i = 0; i < Depth; ++i)
-	{
-		Indent += TEXT("  ");
-	}
-
-	UE_LOG(LogTemp, Log, TEXT("%s%s (Visibility: %d)"), 
-		*Indent, 
-		*Widget->GetName(), 
-		static_cast<int32>(Widget->GetVisibility()));
-
-	if (UPanelWidget* Panel = Cast<UPanelWidget>(Widget))
-	{
-		for (int32 i = 0; i < Panel->GetChildrenCount(); ++i)
-		{
-			if (UWidget* Child = Panel->GetChildAt(i))
-			{
-				LogWidgetHierarchy(Child, Depth + 1);
-			}
-		}
-	}
-}
-
-void UHM_FinalTicket::ExecuteCapture()
-{
-	// 모든 자식 위젯을 강제로 다시 그리도록 합니다
-	//ForceLayoutPrepass();
+	this->TicketCutomUI = _TicketCutomUI;
 	
 	// FWidgetRenderer 생성
 	TSharedPtr<FWidgetRenderer> WidgetRenderer = MakeShareable(new FWidgetRenderer(true));
@@ -118,7 +72,7 @@ void UHM_FinalTicket::ExecuteCapture()
 	RenderTarget->UpdateResource();
 	
 	// ImgTicketBackgroundWidgetInstance 캡처
-	WidgetRenderer->DrawWidget(RenderTarget, TicketCutomUI->TakeWidget(), CaptureSize, 5.0f); //Deltatime
+	WidgetRenderer->DrawWidget(RenderTarget, TicketCutomUI->TakeWidget(), CaptureSize, 1.0f);
 
 	// Render Target을 UTexture2D로 변환
 	UTexture2D* CapturedTexture = ConvertRenderTargetToTexture(this, RenderTarget);
