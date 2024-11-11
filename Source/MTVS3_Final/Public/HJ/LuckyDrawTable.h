@@ -37,4 +37,7 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void SetColorRed();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void SetColorBlack();
 };
