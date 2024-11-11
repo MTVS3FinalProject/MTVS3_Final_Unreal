@@ -6,6 +6,12 @@
 #include "Components/CanvasPanel.h"
 #include "Components/Image.h"
 
+void UMH_EmojiImg::NativeConstruct()
+{
+	Super::NativeConstruct();
+	HideCanvas();
+}
+
 void UMH_EmojiImg::SetMaterial(UMaterialInterface* NewAnim)
 {
 	Img_Emoji->SetBrushFromMaterial(NewAnim);
@@ -21,13 +27,13 @@ void UMH_EmojiImg::AnimMaterialSwitcher(int32 num)
 	case 2 : SetMaterial(KissAnim);
 		break;
 
-	case 3 : SetMaterial(HappyAnim);
+	case 3 : SetMaterial(LoveAnim);
 		break;
 
-	case 4 : SetMaterial(HappyAnim);
+	case 4 : SetMaterial(SadAnim);
 		break;
 		
-	case 5 : SetMaterial(HappyAnim);
+	case 5 : SetMaterial(SurprisedAnim);
 		break;
 
 		default: break;

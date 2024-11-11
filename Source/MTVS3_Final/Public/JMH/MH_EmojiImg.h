@@ -15,7 +15,7 @@ class MTVS3_FINAL_API UMH_EmojiImg : public UUserWidget
 	GENERATED_BODY()
 
 public:
-
+	virtual void NativeConstruct() override;
 	//Visible 여부 결정할 캔버스
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	class UCanvasPanel* Can_Emoji;
