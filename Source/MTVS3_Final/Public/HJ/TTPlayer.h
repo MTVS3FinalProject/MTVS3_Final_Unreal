@@ -156,7 +156,7 @@ public:
 
 #pragma region 사운드
 	UFUNCTION(BlueprintCallable, Category = "TTSettings|Sound")
-	void PlayConertBGM();
+	void PlayConcertBGM();
 	void PlayConcertBGMAfterDelay();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")

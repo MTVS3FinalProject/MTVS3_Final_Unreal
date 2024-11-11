@@ -754,7 +754,7 @@ void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
 	}
 }
 
-void ATTPlayer::PlayConertBGM()
+void ATTPlayer::PlayConcertBGM()
 {
 	FTimerHandle TimerHandle;
     

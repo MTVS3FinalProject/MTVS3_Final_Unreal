@@ -190,6 +190,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 		if ( Response->GetResponseCode() == 200 )
 		{
 			TargetPlayer->ServerTeleportPlayer(true);
+			TargetPlayer->PlayConcertBGM();
 			GI->SetPlaceState(EPlaceState::ConcertHall);
 			
 			// JSON 응답 파싱
