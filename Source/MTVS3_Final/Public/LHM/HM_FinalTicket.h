@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -29,21 +29,11 @@ public:
 	
 	// 배경 티켓 이미지를 캡처하고 DisplayImage에 표시하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Capture")
-	void CaptureAndDisplayTicketBackground();
-
-	FTimerHandle CaptureTimerHandle;
-	void LogWidgetHierarchy(UWidget* Widget, int32 Depth = 0);
-	void ExecuteCapture();
+	void CaptureAndDisplayTicketBackground(class UHM_TicketCustom* _TicketCutomUI);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_TicketCustom> TicketCutomWidget; // 배경 티켓 위젯 클래스 참조
-
 	class UHM_TicketCustom* TicketCutomUI; // 배경 티켓 위젯 인스턴스
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UHM_TicketBG> TicketBGWidget; // 배경 티켓 위젯 클래스 참조
-
-	class UHM_TicketBG* TicketBGUI; // 배경 티켓 위젯 인스턴스
 
 private:
 	class UTexture2D* ConvertRenderTargetToTexture(UObject* WorldContextObject, UTextureRenderTarget2D* RenderTarget);

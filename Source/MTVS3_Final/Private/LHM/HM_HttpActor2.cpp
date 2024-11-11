@@ -1108,7 +1108,6 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					{
 						GI->SetCoin(UserCoin);
 					}
-
 					//SetSeatInfo(SeatInfo);
 					//SetSeatPrice(SeatPrice);
 					
