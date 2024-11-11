@@ -335,7 +335,7 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 					}
 				}
 			}
-			// Img_Frame의 크기를 부모 오버레이 크기에 맞추기
+					// Img_Frame의 크기를 부모 오버레이 크기에 맞추기
 			Img_Frame->SetRenderScale(FVector2D(1.0f , 1.0f));
 			Img_Frame->SetRenderTransformPivot(FVector2D(0.5f , 0.5f));
 
