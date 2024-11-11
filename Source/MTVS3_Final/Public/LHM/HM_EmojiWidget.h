@@ -30,6 +30,9 @@ public:
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton* Btn_Emotion4;
 
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_Emotion5;
+
 	UFUNCTION()
 	void OnClickedEmotion1Bun();
 	
@@ -41,4 +44,13 @@ public:
 	
 	UFUNCTION()
 	void OnClickedEmotion4Bun();
+	
+	UFUNCTION()
+	void OnClickedEmotion5Bun();
+
+	UFUNCTION()
+	void HideEmojiWidget();
+
+	UPROPERTY()
+	bool bIsEmojiAnimating = false;
 };

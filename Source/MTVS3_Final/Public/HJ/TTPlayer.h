@@ -103,6 +103,12 @@ public:
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetNewSkeletalMesh(USkeletalMesh* NewMesh);
 
+	UFUNCTION(Server , Reliable)
+	void ServerPlayEmojiAnim(const int32& EmojiNum);
+
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastPlayEmojiAnim(const int32& EmojiNum);
+
 	// UFUNCTION()
 	// void OnRep_RandomSeatNumber();
 
@@ -450,4 +456,13 @@ public:
 
 	UFUNCTION()
 	void CreateMinimapActor();
+	
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	class UWidgetComponent*  EmojiComp;
+	
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UMH_EmojiImg> EmojiFac;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	class UMH_EmojiImg* EmojiWidget;
 };

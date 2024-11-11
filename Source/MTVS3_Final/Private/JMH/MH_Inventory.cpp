@@ -309,24 +309,39 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 {
 	if (Img_Frame && ClickedItem)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SetFrame111!"));
-		/*CurItemSlot = ClickedItem->GetParent()
-		if (ItemSlot)
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SetFrame111!"));
+
+		if (UOverlaySlot** FoundSlot = OverlaySlotMap.Find(ClickedItem))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("SetFrame222!"));
-			ItemSlot = OverlayTitle->AddChildToOverlay(Img_Frame);
-			if (ItemSlot)
+			UOverlaySlot* OverlaySlot = *FoundSlot;
+			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SetFrame222!"));
+			if (OverlaySlot)
 			{
-				ItemSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
-				//ItemSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);
+				UOverlay* ParentOverlay = Cast<UOverlay>(OverlaySlot->Parent);
+				if (ParentOverlay)
+				{
+					// Img_Frame이 이미 추가된 상태라면 이동만 하고, 그렇지 않으면 추가
+					if (!ParentOverlay->HasChild(Img_Frame))
+					{
+						ParentOverlay->AddChildToOverlay(Img_Frame);
+					}
+
+					// 중앙 정렬 설정
+					UOverlaySlot* FrameSlot = Cast<UOverlaySlot>(Img_Frame->Slot);
+					if (FrameSlot)
+					{
+						FrameSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+						FrameSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);
+					}
+				}
 			}
-			// Img_Frame의 크기를 부모 오버레이 크기에 맞추기
+					// Img_Frame의 크기를 부모 오버레이 크기에 맞추기
 			Img_Frame->SetRenderScale(FVector2D(1.0f , 1.0f));
 			Img_Frame->SetRenderTransformPivot(FVector2D(0.5f , 0.5f));
 
 			// 프레임을 표시
 			Img_Frame->SetVisibility(ESlateVisibility::HitTestInvisible);
-		}*/
+		}
 	}
 }
 
@@ -334,8 +349,8 @@ void UMH_Inventory::OnClicked_Title_Test()
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
 	UMH_ItemBox_Title* ItemBox_Title = CreateWidget<UMH_ItemBox_Title>(this , TitleItemBoxFac);
-	OverlayTitle = NewObject<UOverlay>(this);
-	
+	UOverlay* OverlayTitle = NewObject<UOverlay>(this);
+
 	if (ItemBox_Title)
 	{
 		Counter_Title++;
@@ -351,12 +366,10 @@ void UMH_Inventory::OnClicked_Title_Test()
 				ItemSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);
 
 				// 아이템 박스와 오버레이 슬롯을 매핑하여 저장
-				OverlaySlotMap.Add(ItemBox_Title, ItemSlot); 
+				OverlaySlotMap.Add(ItemBox_Title , ItemSlot);
 			}
-			
-			OverlayTitle->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-			//아이템박스의 크기에 맞춘 오버레이 생성
-			OverlayTitle->AddChild(ItemBox_Title);
+
+			OverlayTitle->SetRenderTransformPivot(FVector2D(0.5f , 0.5f));
 			Hori_InvenBox_00_Title->AddChild(OverlayTitle);
 		}
 	}

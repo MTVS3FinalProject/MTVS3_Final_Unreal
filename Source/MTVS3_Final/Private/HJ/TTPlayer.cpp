@@ -30,6 +30,7 @@
 #include "HJ/HallSoundManager.h"
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
+#include "JMH/MH_EmojiImg.h"
 #include "JMH/MH_GameWidget.h"
 #include "JMH/MH_MinimapActor.h"
 #include "JMH/PlayerNicknameWidget.h"
@@ -84,6 +85,11 @@ ATTPlayer::ATTPlayer()
 	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
 	HandComp->SetupAttachment(FPSCameraComp);
 	HandComp->SetRelativeLocation(FVector(120 , 0 , -40));
+
+	//MH
+	EmojiComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("EmojiWidget"));
+	EmojiComp->SetupAttachment(CenterCapsuleComp);
+	
 }
 
 // Called when the game starts or when spawned
@@ -775,6 +781,20 @@ void ATTPlayer::PlayConcertBGMAfterDelay()
 	if (HallSoundManager) 
 	{
 		HallSoundManager->PlayConcertBGM();
+	}
+}
+
+void ATTPlayer::ServerPlayEmojiAnim_Implementation(const int32& EmojiNum)
+{
+	MulticastPlayEmojiAnim(EmojiNum);
+}
+
+void ATTPlayer::MulticastPlayEmojiAnim_Implementation(const int32& EmojiNum)
+{
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if (Anim)
+	{
+		Anim->PlayEmojiMontage(EmojiNum);
 	}
 }
 
