@@ -168,7 +168,7 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			FVector2D Position = CopiedSlot->GetPosition();
 			GroupSlot->SetPosition(Position);
 			GroupSlot->SetSize(FVector2D(230));
-			//GroupSlot->SetAlignment(FVector2d(0.5f));
+			GroupSlot->SetAlignment(FVector2d(0.5f));
 			GroupSlot->SetZOrder(100); // 필요 시 ZOrder 조정
 		}
 
@@ -564,7 +564,7 @@ void UHM_TicketCustom::OnClickedResetBackgroundButton()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 	if(HttpActor3)
 	{
-		HttpActor3->ReqGetBackground(GI->GetAccessToken());
+		HttpActor3->ReqPostBackground(GI->GetAccessToken());
 	}
 }
 
@@ -614,9 +614,11 @@ void UHM_TicketCustom::OnClickedSaveButton()
 
 	if (FinalTicketUI && this)
 	{
+		Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
 		FinalTicketUI->CaptureAndDisplayTicketBackground(this);
 		FinalTicketUI->AddToViewport();
 		this->SetVisibility(ESlateVisibility::Hidden);
+		
 	}
 }
 

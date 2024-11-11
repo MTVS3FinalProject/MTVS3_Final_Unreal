@@ -30,6 +30,12 @@ void UHM_MainBarWidget::NativeConstruct()
 	Btn_HttpTest01->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest01);
 	Btn_HttpTest02->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest02);
 	Btn_HttpTest03->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest03);
+	Btn_HttpTest04->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest04);
+	Btn_HttpTest05->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest05);
+	Btn_HttpTest06->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest06);
+	Btn_HttpTest07->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest07);
+	Btn_HttpTest08->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest08);
+	Btn_HttpTest09->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedHttpTest09);
 
 	SetVisibleSwitcher(false);
 
@@ -296,7 +302,7 @@ void UHM_MainBarWidget::OnClickedHttpTest06()
 	if (!GI && !HttpActor3) return;
 	// 커스텀 티켓 저장 요청
 	UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 요청"));
-	//HttpActor3->ReqPostSaveCustomTicket(, GI->GetAccessToken());
+	//HttpActor3->ReqPostSaveCustomTicket(, HttpActor3->GetStickerIds, HttpActor3->GetBackgroundId(),GI->GetAccessToken());
 }
 
 void UHM_MainBarWidget::OnClickedHttpTest07()
@@ -307,7 +313,7 @@ void UHM_MainBarWidget::OnClickedHttpTest07()
 	if (!GI && !HttpActor3) return;
 	// 배경 생성 요청
 	UE_LOG(LogTemp , Log , TEXT("배경 생성 요청"));
-	HttpActor3->ReqGetBackground(GI->GetAccessToken());
+	HttpActor3->ReqPostBackground(GI->GetAccessToken());
 }
 
 void UHM_MainBarWidget::OnClickedHttpTest08()
@@ -329,6 +335,6 @@ void UHM_MainBarWidget::OnClickedHttpTest09()
 	if (!GI && !HttpActor3) return;
 	// 티켓 커스텀 제작 입장 요청
 	UE_LOG(LogTemp , Log , TEXT("티켓 커스텀 제작 입장 요청"));
-	HttpActor3->ReqPostEnterTicketCustomization(GI->GetAccessToken());
+	HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
 }
 #pragma endregion

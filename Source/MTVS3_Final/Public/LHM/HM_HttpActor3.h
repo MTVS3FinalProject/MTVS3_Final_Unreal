@@ -7,6 +7,13 @@
 #include "Interfaces/IHttpRequest.h"
 #include "HM_HttpActor3.generated.h"
 
+UENUM(BlueprintType)
+enum class EImageType : uint8
+{
+	StickerImage,
+	TicketImage,
+	BackgroundImage,
+};
 USTRUCT()
 struct FTitles
 {
@@ -64,17 +71,17 @@ public:
 	FString stickerRarity;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
-	UTexture2D* stickerImage;
+	FString stickerImage;
 	
 	FStickers()
 		: stickerId(0)
 		, stickerName(TEXT(""))
 		, stickerScript(TEXT(""))
 		, stickerRarity(TEXT(""))
-		, stickerImage(nullptr)
+		, stickerImage(TEXT(""))
 	{}
 	// 매개 변수를 받는 생성자
-	FStickers(int32 InId, const FString& InName, const FString& InScript, const FString& InRarity, UTexture2D* InImage)
+	FStickers(int32 InId, const FString& InName, const FString& InScript, const FString& InRarity, const FString& InImage)
 		: stickerId(InId)
 		, stickerName(InName)
 		, stickerScript(InScript)
@@ -99,16 +106,16 @@ public:
 	FString seatInfo;
 
 	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
-	UTexture2D* ticketImage;
+	FString ticketImage;
 	
 	FTickets()
 		: ticketId(0)
 		, concertName(TEXT(""))
 		, seatInfo(TEXT(""))
-		, ticketImage(nullptr)
+		, ticketImage(TEXT(""))
 	{}
 	// 매개 변수를 받는 생성자
-	FTickets(int32 InId, const FString& InConcertNam, const FString& InSeatInfo, UTexture2D* InImage)
+	FTickets(int32 InId, const FString& InConcertNam, const FString& InSeatInfo, const FString& InImage)
 		: ticketId(InId)
 		, concertName(InConcertNam)
 		, seatInfo(InSeatInfo)
@@ -159,6 +166,17 @@ public:
 	TArray<FTickets>& GetTicketItems() { return TicketItems; }
 	void SetTicketItems(TArray<FTickets>& NewTicketItems ) { TicketItems = NewTicketItems; };
 
+	// 스티커 아이디 리스트를 가져오는 함수
+	TArray<int32> GetStickerIds() const
+	{
+		TArray<int32> StickerIds;
+		for (const FStickers& Sticker : StickerItems)
+		{
+			StickerIds.Add(Sticker.stickerId);
+		}
+		return StickerIds;
+	}
+
 	UPROPERTY(VisibleAnywhere, Category = "Default|params")
 	int32 BackgroundId;
 	int32 GetBackgroundId() const { return BackgroundId; }
@@ -166,6 +184,15 @@ public:
 	
 #pragma endregion
 
+#pragma region Image URL Data
+	void DownloadImageFromURL(const FString& ImageURL);
+	void OnImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	UTexture2D* LoadTextureFromData(const TArray<uint8>& ImageData);
+
+	// 현재 진행 중인 다운로드 요청 관리
+	TMap<EImageType, FHttpRequestPtr> ActiveRequests;
+#pragma endregion
+	
 #pragma region HTTP Methods
 	// 인벤토리 정보 요청
 	void ReqGetInventoryData(FString AccessToken);
@@ -176,19 +203,19 @@ public:
 	void OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 커스텀 티켓 저장 요청
-	void ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken);
-	void OnReqPostSaveCustomTicket(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken);
+	void OnResPostSaveCustomTicket(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 배경 생성 요청
-	void ReqGetBackground(FString AccessToken);
-	void OnReqGetBackground(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void ReqPostBackground(FString AccessToken);
+	void OnResPostBackground(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// My 커스텀 티켓 목록 조회 요청
 	void ReqGetCustomTicketList(FString AccessToken);
-	void OnReqGetCustomTicketList(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void OnResGetCustomTicketList(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 티켓 커스텀 제작 입장 요청
-	void ReqPostEnterTicketCustomization(FString AccessToken);
-	void OnReqPostEnterTicketCustomization(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	void ReqGetEnterTicketCustomization(FString AccessToken);
+	void OnResGetEnterTicketCustomization(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 #pragma endregion
 };
