@@ -435,6 +435,29 @@ void ATTLuckyDrawGameState::EndRounds()
 			break;
 		}
 	}
+
+	// 모든 테이블을 검정색으로 설정하고 텍스트 초기화
+	ALDTableManager* TableManager = Cast<ALDTableManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), ALDTableManager::StaticClass()));
+    
+	if (TableManager)
+	{
+		TArray<UChildActorComponent*> TableComponents;
+		TableManager->GetComponents(TableComponents);
+
+		for (UChildActorComponent* TableComponent : TableComponents)
+		{
+			ALuckyDrawTable* Table = Cast<ALuckyDrawTable>(TableComponent->GetChildActor());
+			if (Table)
+			{
+				Table->SetColorBlack(); // 테이블 색상을 검정색으로 설정
+				Table->MulticastSetTextRender(FText::FromString(TEXT(" "))); // 텍스트 초기화
+			}
+		}
+	}
+
+	// 좌석 번호 초기화
+	CurrentSeatNumber = 0;
 }
 
 void ATTLuckyDrawGameState::MulticastEndRounds_Implementation()
