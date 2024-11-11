@@ -689,7 +689,7 @@ void ATTPlayer::ClientLDWinnerExitSession_Implementation()
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI)
 	{
-		GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
+		GI->SetLuckyDrawState(ELuckyDrawState::Winner);
 		GI->SwitchSession(EPlaceState::Plaza);
 	}
 }
