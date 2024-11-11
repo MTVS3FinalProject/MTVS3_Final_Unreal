@@ -547,6 +547,16 @@ void UHM_TicketCustom::SetBackgroundImg(UTexture2D* newTexture)
 	Img_TicketBackground->SetBrushFromTexture(newTexture);
 }
 
+void UHM_TicketCustom::SetStickerImage(UTexture2D* Texture)
+{
+	Img_Sticker01->SetBrushFromTexture(Texture);
+	Img_Sticker02->SetBrushFromTexture(Texture);
+	Img_Sticker03->SetBrushFromTexture(Texture);
+	Img_Sticker04->SetBrushFromTexture(Texture);
+	Img_Sticker05->SetBrushFromTexture(Texture);
+	UE_LOG(LogTemp , Log , TEXT("SetStickerImage"));
+}
+
 void UHM_TicketCustom::SetStickersImg(UTexture2D* newTexture1, UTexture2D* newTexture2, UTexture2D* newTexture3, UTexture2D* newTexture4, UTexture2D* newTexture5)
 {
 	Img_Sticker01->SetBrushFromTexture(newTexture1);

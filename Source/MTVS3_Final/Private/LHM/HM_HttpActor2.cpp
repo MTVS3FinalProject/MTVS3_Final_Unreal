@@ -14,6 +14,7 @@
 #include "GameFramework/PlayerState.h"
 #include "HJ/TTHallGameState.h"
 #include "JMH/MainWidget.h"
+#include "LHM/HM_HttpActor3.h"
 
 // Sets default values
 AHM_HttpActor2::AHM_HttpActor2()
@@ -105,15 +106,10 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 					for ( const TSharedPtr<FJsonValue>& ConcertValue : ConcertList )
 					{
 						TSharedPtr<FJsonObject> ConcertObject = ConcertValue->AsObject();
-						
-						// ConcertObject를 JSON 문자열로 변환
-						FString ConcertJsonString;
-						TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ConcertJsonString);
-						FJsonSerializer::Serialize(ConcertObject.ToSharedRef() , Writer);
 
 						// JSON 문자열을 FConcertInfo 구조체로 변환
 						FConcertInfo NewConcertInfo;
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(ConcertJsonString , &NewConcertInfo , 0 , 0))
+						if (FJsonObjectConverter::JsonObjectToUStruct(ConcertObject.ToSharedRef() , &NewConcertInfo , 0 , 0))
 						{
 							SetConcertInfo(NewConcertInfo);
 							
@@ -212,15 +208,10 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					TicketingUI->SetTextRemainingTicket(RemainingTickets);
 					MainUI->SetTextRemainingTicket(RemainingTickets);
 					UE_LOG(LogTemp, Log, TEXT("RemainingTicketCount: %d"), RemainingTickets);
-
-					// 1. FConcertInfo
-					FString ConcertJsonString;
-					TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ConcertJsonString);
-					FJsonSerializer::Serialize(ResponseObject.ToSharedRef() , Writer);
 					
 					// JSON 문자열을 FConcertInfo 구조체로 변환
 					FConcertInfo NewConcertInfo;
-					if (FJsonObjectConverter::JsonObjectStringToUStruct(ConcertJsonString , &NewConcertInfo , 0 , 0))
+					if (FJsonObjectConverter::JsonObjectToUStruct(ResponseObject.ToSharedRef() , &NewConcertInfo , 0 , 0))
 					{
 						SetConcertInfo(NewConcertInfo);
 						
@@ -232,6 +223,21 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							   NewConcertInfo.concertTime.month ,
 							   NewConcertInfo.concertTime.day ,
 							   *NewConcertInfo.concertTime.time);
+
+						if (MainUI && MainUI->GetBuyTicketWidget())
+						{
+							MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
+									NewConcertInfo.concertName ,
+									NewConcertInfo.concertTime.year ,
+									NewConcertInfo.concertTime.month ,
+									NewConcertInfo.concertTime.day ,
+									NewConcertInfo.concertTime.time);
+							MainUI->BuyTicketWidget->SetTextConcertName(NewConcertInfo.concertName);
+						}
+						if(TicketingUI)
+						{
+							TicketingUI->SetConcertInfo(NewConcertInfo.concertName, NewConcertInfo.concertTime.year ,NewConcertInfo.concertTime.month ,NewConcertInfo.concertTime.day ,NewConcertInfo.concertTime.time);
+						}
 					}
 
 					// 2. FSeatsList 구조체로 좌석 정보 파싱
@@ -242,13 +248,8 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					{
 						FAvailableSeats AvailableSeat;
 						TSharedPtr<FJsonObject> AvailbleObject = AvailbleValue->AsObject();
-						
-						// ConcertObject를 JSON 문자열로 변환
-						FString AvailbleJsonString;
-						TSharedRef<TJsonWriter<>> AvailableWriter  = TJsonWriterFactory<>::Create(&AvailbleJsonString);
-						FJsonSerializer::Serialize(AvailbleObject.ToSharedRef() , AvailableWriter);
 
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(AvailbleJsonString , &AvailableSeat , 0 , 0))
+						if (FJsonObjectConverter::JsonObjectToUStruct(AvailbleObject.ToSharedRef() , &AvailableSeat , 0 , 0))
 						{
 							NewSeatsList.availableSeats.Add(AvailableSeat);
 							UE_LOG(LogTemp , Log , TEXT("Available Seat | ID: %d, Name: %s, DrawingTime: %s")
@@ -263,13 +264,8 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					{
 						FReceptionSeats ReceptionSeat;
 						TSharedPtr<FJsonObject> ReceptionObject = ReceptionValue->AsObject();
-						
-						// ConcertObject를 JSON 문자열로 변환
-						FString ReceptionJsonString;
-						TSharedRef<TJsonWriter<>> ReceptionWriter  = TJsonWriterFactory<>::Create(&ReceptionJsonString);
-						FJsonSerializer::Serialize(ReceptionObject.ToSharedRef() , ReceptionWriter);
 
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(ReceptionJsonString , &ReceptionSeat , 0 , 0))
+						if (FJsonObjectConverter::JsonObjectToUStruct(ReceptionObject.ToSharedRef() , &ReceptionSeat , 0 , 0))
 						{
 							NewSeatsList.receptionSeats.Add(ReceptionSeat);
 							UE_LOG(LogTemp , Log , TEXT("Reception Seat | ID: %d, Name: %s, DrawingTime: %s")
@@ -295,9 +291,6 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 // 좌석 조회 요청
 void AHM_HttpActor2::ReqGetSeatRegistrationInquiry(FString SeatId , FString AccessToken)
 {
-
-	// ChairTag랑 FAvailableSeats의 SeatName과 비교해서 같으면 해당 SeatName의 SeatId를 매개변수로 받아서 url에 Set해주기
-	
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
@@ -305,7 +298,7 @@ void AHM_HttpActor2::ReqGetSeatRegistrationInquiry(FString SeatId , FString Acce
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d") , GetConcertId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -401,7 +394,7 @@ void AHM_HttpActor2::ReqGetRegisterSeat(FString SeatId , FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/reception") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2/reception") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -530,14 +523,9 @@ void AHM_HttpActor2::OnResGetMyRegisteredSeat(FHttpRequestPtr Request , FHttpRes
 					{
 						TSharedPtr<FJsonObject> MySeatObject = MySeatValue->AsObject();
 						
-						// MySeatObject를 JSON 문자열로 변환
-						FString MySeatJsonString;
-						TSharedRef<TJsonWriter<>> MySeatWriter  = TJsonWriterFactory<>::Create(&MySeatJsonString);
-						FJsonSerializer::Serialize(MySeatObject.ToSharedRef() , MySeatWriter);
-
 						// JSON 문자열을 FMyReceptionSeatInfo 구조체로 변환
 						FMyReceptionSeats NewMySeatInfo;
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(MySeatJsonString , &NewMySeatInfo , 0 , 0))
+						if (FJsonObjectConverter::JsonObjectToUStruct(MySeatObject.ToSharedRef() , &NewMySeatInfo , 0 , 0))
 						{
 							SetMyReceptionSeats(NewMySeatInfo);
 							// 변환된 NewMySeatInfo 구조체에 대한 디버그 메시지 출력
@@ -575,7 +563,7 @@ void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat(FString SeatId , FString Acce
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d") , *_url, GetConcertId(), GetMyReceptionSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("DELETE"));
 
@@ -717,7 +705,7 @@ void AHM_HttpActor2::ReqPostNoticeGameStart(FString SeatId , FString AccessToken
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/drawing") , *_url, GetConcertId(), GetMyReceptionSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/drawing") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2/drawing") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -806,7 +794,7 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/result") , *_url, GetConcertId(), GetMyReceptionSeatId()); 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/result") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2/result") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1142,7 +1130,7 @@ void AHM_HttpActor2::ReqPostPaymentSeat(int32 SeatId , FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/payment") , *_url, GetConcertId(), GetMyReceptionSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/payment") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2/payment") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1191,6 +1179,7 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					FString UserName = ResponseObject->GetStringField(TEXT("userName"));
 					FString UserPhoneNum = ResponseObject->GetStringField(TEXT("userPhoneNumber"));
 					FString UserAddress = ResponseObject->GetStringField(TEXT("userAddress"));
+					int32 TicketId = ResponseObject->GetIntegerField(TEXT("ticketId"));
 
 					UE_LOG(LogTemp , Log , TEXT("SeatId : %s") , *SeatId);
 					UE_LOG(LogTemp , Log , TEXT("SeatInfo : %s") , *SeatInfo);
@@ -1200,6 +1189,7 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					UE_LOG(LogTemp , Log , TEXT("UserName : %s") , *UserName);
 					UE_LOG(LogTemp , Log , TEXT("UserPhoneNum : %s") , *UserPhoneNum);
 					UE_LOG(LogTemp , Log , TEXT("UserAddress : %s") , *UserAddress);
+					UE_LOG(LogTemp , Log , TEXT("UserAddress : %d") , TicketId);
 
 					if ( TTPlayer && GI )
 					{
@@ -1213,6 +1203,10 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 						MainUI->BuyTicketWidget->SetTextUserName(UserName);
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(8);
 					}
+
+					FTickets Ticket;
+					Ticket.ticketId = TicketId;
+					UE_LOG(LogTemp , Log , TEXT("FTickets.ticketId: %d"),Ticket.ticketId);
 				}
 			}
 		}
@@ -1387,6 +1381,7 @@ void AHM_HttpActor2::OnResPostCheatPaymentSeat(FHttpRequestPtr Request, FHttpRes
 					FString UserName = ResponseObject->GetStringField(TEXT("userName"));
 					FString UserPhoneNum = ResponseObject->GetStringField(TEXT("userPhoneNumber"));
 					FString UserAddress = ResponseObject->GetStringField(TEXT("userAddress"));
+					int32 TicketId = ResponseObject->GetIntegerField(TEXT("ticketId"));
 
 					UE_LOG(LogTemp , Log , TEXT("SeatId : %s") , *SeatId);
 					UE_LOG(LogTemp , Log , TEXT("SeatInfo : %s") , *SeatInfo);
@@ -1396,6 +1391,7 @@ void AHM_HttpActor2::OnResPostCheatPaymentSeat(FHttpRequestPtr Request, FHttpRes
 					UE_LOG(LogTemp , Log , TEXT("UserName : %s") , *UserName);
 					UE_LOG(LogTemp , Log , TEXT("UserPhoneNum : %s") , *UserPhoneNum);
 					UE_LOG(LogTemp , Log , TEXT("UserAddress : %s") , *UserAddress);
+					UE_LOG(LogTemp , Log , TEXT("TicketId : %d") , TicketId);
 
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();

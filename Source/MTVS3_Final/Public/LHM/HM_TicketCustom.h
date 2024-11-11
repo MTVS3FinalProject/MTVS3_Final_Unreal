@@ -91,6 +91,7 @@ public:
 	UFUNCTION()
 	void SetBackgroundImg(UTexture2D* newTexture);
 	UFUNCTION()
+	void SetStickerImage(UTexture2D* Texture);
 	void SetStickersImg(UTexture2D* newTexture1, UTexture2D* newTexture2, UTexture2D* newTexture3, UTexture2D* newTexture4, UTexture2D* newTexture5);
 	
 #pragma endregion
