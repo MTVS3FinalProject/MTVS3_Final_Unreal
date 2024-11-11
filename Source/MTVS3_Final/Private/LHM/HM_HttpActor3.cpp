@@ -3,7 +3,11 @@
 
 #include "LHM/HM_HttpActor3.h"
 #include "HttpModule.h"
+#include "IImageWrapper.h"
 #include "ImageUtils.h"
+#include "IImageWrapperModule.h"
+#include "Async/Async.h"
+#include "Engine/Texture2D.h"
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
 #include "JMH/MainWidget.h"
@@ -41,6 +45,75 @@ void AHM_HttpActor3::Tick(float DeltaTime)
 void AHM_HttpActor3::SetMainUI(UMainWidget* InMainUI)
 {
 	MainUI = InMainUI;
+}
+
+void AHM_HttpActor3::DownloadImageFromURL(const FString& ImageURL)
+{
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnImageDownloaded);
+	HttpRequest->SetURL(ImageURL);
+	HttpRequest->SetVerb(TEXT("GET"));
+	
+	HttpRequest->ProcessRequest();
+}
+
+void AHM_HttpActor3::OnImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
+	{
+		TArray<uint8> ImageData = Response->GetContent();
+		UTexture2D* Texture = LoadTextureFromData(ImageData);
+
+		if (Texture && TicketCustomUI)
+		{
+			// 이미지가 성공적으로 다운로드 및 텍스처로 변환되었을 때 UI에 적용
+			TicketCustomUI->SetBackgroundImg(Texture);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to create texture from image data."));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to download image from URL."));
+	}
+}
+
+
+UTexture2D* AHM_HttpActor3::LoadTextureFromData(const TArray<uint8>& ImageData)
+{
+	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::JPEG);
+
+	if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(ImageData.GetData(), ImageData.Num()))
+	{
+		TArray<uint8> RawData;
+		if (ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData))
+		{
+			// 텍스처 생성
+			UTexture2D* Texture = UTexture2D::CreateTransient(
+				ImageWrapper->GetWidth(), 
+				ImageWrapper->GetHeight(), 
+				PF_B8G8R8A8
+			);
+
+			if (Texture)
+			{
+				// 텍스처 데이터 설정
+				void* TextureData = Texture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
+				FMemory::Memcpy(TextureData, RawData.GetData(), RawData.Num());
+				Texture->GetPlatformData()->Mips[0].BulkData.Unlock();
+
+				// 텍스처 리소스 업데이트
+				Texture->UpdateResource();
+				return Texture;
+			}
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Failed to create texture from image data."));
+	return nullptr;
 }
 
 // 인벤토리 정보 요청
@@ -138,11 +211,12 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 							// 변환된 FTitles 구조체를 임시 배열에 추가
 							TempStickerItems.Add(NewStikers);
 							
-							UE_LOG(LogTemp , Log , TEXT("Stikers Info | Id: %d, Name: %s, Script: %s, Rarity: %s") ,
+							UE_LOG(LogTemp , Log , TEXT("Stikers Info | Id: %d, Name: %s, Script: %s, Rarity: %s, StickerImg: %s") ,
 								   NewStikers.stickerId ,
 								   *NewStikers.stickerName ,
 								   *NewStikers.stickerScript ,
-								   *NewStikers.stickerRarity );
+								   *NewStikers.stickerRarity ,
+								   *NewStikers.stickerImage );
 						}
 					}
 					SetStickerItems(TempStickerItems);
@@ -166,10 +240,11 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 							// 변환된 FTitles 구조체를 임시 배열에 추가
 							TempTicketItems.Add(NewTickets);
 							
-							UE_LOG(LogTemp , Log , TEXT("Tickets Info | Id: %d, Name: %s, Seat: %s") ,
+							UE_LOG(LogTemp , Log , TEXT("Tickets Info | Id: %d, Name: %s, Seat: %s, TicketImg: %s") ,
 								   NewTickets.ticketId ,
 								   *NewTickets.concertName ,
-								   *NewTickets.seatInfo );
+								   *NewTickets.seatInfo ,
+								   *NewTickets.ticketImage );
 						}
 					}
 					SetTicketItems(TempTicketItems);
@@ -290,7 +365,7 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request,
 }
 
 // 커스텀 티켓 저장 요청
-void AHM_HttpActor3::ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
+void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -309,28 +384,39 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<in
 	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
-	// 전달 데이터 (JSON)
+	// ImageData를 Base64로 인코딩
+	FString Base64Image = FBase64::Encode(ImageData);
+
+	// JSON 데이터 작성
 	FString ContentString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
-	//Writer->WriteValue(TEXT("customTicketImage") , CustomTicket);
-	//Writer->WriteValue(TEXT("stickerIdList") , StickerList);
-	//Writer->WriteValue(TEXT("backgroundId") , BackGroundId);
+	Writer->WriteValue(TEXT("customTicketImage"), Base64Image);  // Base64로 인코딩된 이미지
+	Writer->WriteValue(TEXT("backgroundId"), BackGroundId);       // 배경 ID
+
+	// StickerList를 JSON 배열로 작성
+	Writer->WriteArrayStart(TEXT("stickerIdList"));
+	for (int32 StickerId : StickerList)
+	{
+		Writer->WriteValue(StickerId);
+	}
+	Writer->WriteArrayEnd();
+
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
 	// 요청 본문에 JSON 데이터를 설정
 	Request->SetContentAsString(ContentString);
-	
-	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnReqGetBackground);
+
+	// 응답받을 함수 연결
+	Request->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnResPostBackground);
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
 // 커스텀 티켓 저장 요청에 대한 응답
-void AHM_HttpActor3::OnReqPostSaveCustomTicket(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void AHM_HttpActor3::OnResPostSaveCustomTicket(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
@@ -358,7 +444,7 @@ void AHM_HttpActor3::OnReqPostSaveCustomTicket(FHttpRequestPtr Request, FHttpRes
 }
 
 // 배경 생성 요청
-void AHM_HttpActor3::ReqGetBackground(FString AccessToken)
+void AHM_HttpActor3::ReqPostBackground(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -378,14 +464,14 @@ void AHM_HttpActor3::ReqGetBackground(FString AccessToken)
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnReqGetBackground);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostBackground);
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
 // 배경 생성 요청에 대한 응답
-void AHM_HttpActor3::OnReqGetBackground(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void AHM_HttpActor3::OnResPostBackground(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
@@ -407,27 +493,19 @@ void AHM_HttpActor3::OnReqGetBackground(FHttpRequestPtr Request, FHttpResponsePt
 				{
 					// 받아올 정보 추출
 					int32 _BackgroundId = ResponseObject->GetIntegerField(TEXT("backgroundId"));
+					FString ImageURL = ResponseObject->GetStringField(TEXT("backgroundImage"));
 					SetBackgroundId(_BackgroundId);
-					UE_LOG(LogTemp , Log , TEXT("backgroundId : %d"), GetBackgroundId());
+					UE_LOG(LogTemp , Log , TEXT("BackgroundId : %d"), GetBackgroundId());
+					UE_LOG(LogTemp , Log , TEXT("BackgroundImageURL : %s"), *ImageURL);
 
-					// Base64로 인코딩된 이미지 데이터 추출
-					FString Base64Image = ResponseObject->GetStringField(TEXT("backgroundImage"));
-					TArray<uint8> ImageData;
-					FBase64::Decode(Base64Image , ImageData);
-
-					// 텍스처로 변환
-					UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-					if ( Texture )
-					{
-						if ( TicketCustomUI )
-						{
-							TicketCustomUI->SetBackgroundImg(Texture);
-						}
-					}
-					else
-					{
-						UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
-					}
+					
+					// // 이미지 URL 추출
+					// FString ImageURL = ResponseObject->GetStringField(TEXT("backgroundImage"));
+					// if (!ImageURL.IsEmpty())
+					// {
+					// 	// URL로 이미지 다운로드
+					// 	DownloadImageFromURL(ImageURL);
+					// }
 				}
 			}
 		}
@@ -455,14 +533,14 @@ void AHM_HttpActor3::ReqGetCustomTicketList(FString AccessToken)
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnReqGetCustomTicketList);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetCustomTicketList);
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
 // My 커스텀 티켓 목록 조회 요청에 대한 응답
-void AHM_HttpActor3::OnReqGetCustomTicketList(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void AHM_HttpActor3::OnResGetCustomTicketList(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
@@ -508,7 +586,7 @@ void AHM_HttpActor3::OnReqGetCustomTicketList(FHttpRequestPtr Request, FHttpResp
 }
 
 // 티켓 커스텀 제작 입장 요청
-void AHM_HttpActor3::ReqPostEnterTicketCustomization(FString AccessToken)
+void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -528,14 +606,14 @@ void AHM_HttpActor3::ReqPostEnterTicketCustomization(FString AccessToken)
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnReqPostEnterTicketCustomization);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetEnterTicketCustomization);
 
 	// 요청 전송
 	Request->ProcessRequest();
 }
 
 // 티켓 커스텀 제작 입장 요청에 대한 응답
-void AHM_HttpActor3::OnReqPostEnterTicketCustomization(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{

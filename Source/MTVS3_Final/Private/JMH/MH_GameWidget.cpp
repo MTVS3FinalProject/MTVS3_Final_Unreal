@@ -47,7 +47,7 @@ void UMH_GameWidget::SetTextCountDown(FString CountDownTime)
 void UMH_GameWidget::SetTextroulette1(FString roulette1)
 {
 	//룰렛1
-	Text_roulette1->SetText(FText::FromString(roulette1));
+	Text_roulette1->SetText(FText::FromString(roulette1 + TEXT("번")));
 }
 
 void UMH_GameWidget::SetTextroulette2(int32 roulette2)
@@ -56,19 +56,19 @@ void UMH_GameWidget::SetTextroulette2(int32 roulette2)
 	switch (roulette2)
 	{
 	case 0 :
-		Text_roulette2->SetText(FText::FromString(TEXT("과(와) 같은 열만")));
+		Text_roulette2->SetText(FText::FromString(TEXT("과 같은 열")));
 		break;
 		
 	case 1 :
-		Text_roulette2->SetText(FText::FromString(TEXT("과(와) 같은 행만")));
+		Text_roulette2->SetText(FText::FromString(TEXT("과 같은 행")));
 		break;
 		
 	case 2 :
-		Text_roulette2->SetText(FText::FromString(TEXT("과(와) 같은 열 제외")));
+		Text_roulette2->SetText(FText::FromString(TEXT("과 다른 열")));
 		break;
 		
 	case 3 :
-		Text_roulette2->SetText(FText::FromString(TEXT("과(와) 같은 행 제외")));
+		Text_roulette2->SetText(FText::FromString(TEXT("과 다른 행")));
 		break;
 
 	case 4 :

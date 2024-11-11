@@ -25,11 +25,14 @@ public:
 	class UImage* Img_FinalTicketInfo; // 캡처 결과를 표시할 이미지
 	
 	FVector2d CaptureSize;
-
 	
 	// 배경 티켓 이미지를 캡처하고 DisplayImage에 표시하는 함수
-	UFUNCTION(BlueprintCallable, Category = "Capture")
+	UFUNCTION()
 	void CaptureAndDisplayTicketBackground(class UHM_TicketCustom* _TicketCutomUI);
+
+	// 텍스쳐를 PNG데이터로 변환하는 함수
+	UFUNCTION()
+	TArray<uint8> ConvertTextureToPNG(UTextureRenderTarget2D* RenderTarget);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_TicketCustom> TicketCutomWidget; // 배경 티켓 위젯 클래스 참조
