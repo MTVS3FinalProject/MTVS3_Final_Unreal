@@ -29,7 +29,7 @@ public:
 	
 	// 배경 티켓 이미지를 캡처하고 DisplayImage에 표시하는 함수
 	UFUNCTION(BlueprintCallable, Category = "Capture")
-	void CaptureAndDisplayTicketBackground(class UHM_TicketCustom* TicketCutomUI);
+	void CaptureAndDisplayTicketBackground(class UHM_TicketCustom* _TicketCutomUI);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_TicketCustom> TicketCutomWidget; // 배경 티켓 위젯 클래스 참조

@@ -136,8 +136,17 @@ void UMH_BuyTicketWidget::OnClickedConfirm02_1Button()
 
 void UMH_BuyTicketWidget::OnClickedRecentAddress()
 {
-	//현민
-	//최근 배송지 불러와서 셋해주기? 프로토 끝나고 고고링
+	//현민 : 주소 서버에 전달(예매자 정보랑 같이 한번에 넘길지? 따로 넘길지?)
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		if (HttpActor2)
+		{
+			HttpActor2->ReqGetReservationInfo(gi->GetAccessToken());
+		}
+	}
 }
 
 // HTTP : 회원 인증 QR 요청(메인으로 이사가야함)
@@ -323,8 +332,8 @@ void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if (HttpActor2)
 		{
-			//HttpActor2->ReqPostPaymentSeat(gi->GetConcertName() , HttpActor2->GetMySeatId() , gi->GetAccessToken());
-			HttpActor2->ReqPostCheatPaymentSeat(gi->GetAccessToken());
+			HttpActor2->ReqPostPaymentSeat(1, gi->GetAccessToken());
+			//HttpActor2->ReqPostCheatPaymentSeat(gi->GetAccessToken());
 			// ReqPostCheatPaymentSeat 개발자키 프로토시연용
 		}
 		//현민 결제 성공하면 SetWidgetSwitcher(8);로 /

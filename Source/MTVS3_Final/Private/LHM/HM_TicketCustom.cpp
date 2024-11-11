@@ -27,6 +27,7 @@ void UHM_TicketCustom::NativeConstruct()
 	Super::NativeConstruct();
 	
 	Btn_ResetBackground->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedResetBackgroundButton);
+	Btn_ResetTicketImage->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedResetTicketImageButton);
 	Btn_Save->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedSaveButton);
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
 
@@ -58,15 +59,15 @@ void UHM_TicketCustom::NativeConstruct()
 		
 		if (BackgroundSlot)
 		{
-			BackgroundSlot->SetSize(FVector2D(844, 500));
-			BackgroundSlot->SetPosition(FVector2D(-340,-30));
+			BackgroundSlot->SetSize(FVector2D(888, 504));
+			BackgroundSlot->SetPosition(FVector2D(-388.0,-30));
 			BackgroundSlot->SetAlignment(FVector2d(0.5));
 		}
 
 		if (InfoSlot)
 		{
-			InfoSlot->SetSize(FVector2D(436, 500));
-			InfoSlot->SetPosition(FVector2D(300, -30));
+			InfoSlot->SetSize(FVector2D(436, 504));
+			InfoSlot->SetPosition(FVector2D(274, -30));
 			InfoSlot->SetAlignment(FVector2d(0.5));
 		}
 	}
@@ -167,7 +168,7 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			FVector2D Position = CopiedSlot->GetPosition();
 			GroupSlot->SetPosition(Position);
 			GroupSlot->SetSize(FVector2D(230));
-			GroupSlot->SetAlignment(FVector2d(0.5f));
+			//GroupSlot->SetAlignment(FVector2d(0.5f));
 			GroupSlot->SetZOrder(100); // 필요 시 ZOrder 조정
 		}
 
@@ -196,11 +197,11 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			DeleteImgSlot->SetVerticalAlignment(VAlign_Top);
 		}
 		
-		CopiedImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		OutlineImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		RenderAngleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		RenderScaleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		//CopiedImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		//OutlineImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		//RenderAngleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		//RenderScaleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		//RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		
 		// Img_CopiedImgs에 추가
 		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage);
@@ -479,14 +480,6 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	}
 	if (bIsDelete && CurrentImage)
 	{
-		// for (FUsedImage& ImageSet : Img_CopiedImgs)
-		// {
-		// 	if (ImageSet.CopiedImage == CurrentImage)
-		// 	{
-		// 		DeleteImage(ImageSet);
-		// 		return FReply::Handled();
-		// 	}
-		// }
 		for (int32 Index = 0; Index < Img_CopiedImgs.Num(); ++Index) // 인덱스를 추적
 		{
 			FUsedImage& ImageSet = Img_CopiedImgs[Index];
@@ -578,6 +571,28 @@ void UHM_TicketCustom::OnClickedResetBackgroundButton()
 void UHM_TicketCustom::OnClickedResetTicketImageButton()
 {
 	// 티켓 이미지 전체 초기화
+	for (int32 Index = 0; Index < Img_CopiedImgs.Num(); ++Index) // 인덱스를 추적
+	{
+		FUsedImage& ImageSet = Img_CopiedImgs[Index];
+
+		// ImageGroupOverlay와 그 하위 위젯들을 UI에서 제거
+		ImageSet.ImageGroupOverlay->RemoveFromParent();
+		ImageSet.OriginImage->SetVisibility(ESlateVisibility::Visible);
+		
+		// 구조체의 이미지 포인터를 nullptr로 설정하여 이후 접근 방지
+		ImageSet.CopiedImage = nullptr;
+		ImageSet.Outline = nullptr;
+		ImageSet.RenderAngle = nullptr;
+		ImageSet.RenderScale = nullptr;
+		ImageSet.Delete = nullptr;
+		ImageSet.ImageGroupOverlay = nullptr;
+		ImageSet.OriginImage = nullptr;
+
+		// 배열에서 해당 인덱스 제거
+		Img_CopiedImgs.RemoveAt(Index);
+            
+		UE_LOG(LogTemp, Log, TEXT("Deleted ImageSet at index: %d"), Index);
+	}
 }
 
 void UHM_TicketCustom::OnClickedSaveButton()
@@ -597,19 +612,8 @@ void UHM_TicketCustom::OnClickedSaveButton()
 		}
 	}
 
-	if (FinalTicketUI)
+	if (FinalTicketUI && this)
 	{
-		ForceLayoutPrepass();
-		Invalidate(EInvalidateWidget::Layout | EInvalidateWidget::Paint);
-		InvalidateLayoutAndVolatility();
-		RebuildWidget();
-		GetWorld()->FlushLevelStreaming(); // 레이아웃 즉시 적용
-		
-		if (TSharedPtr<SWidget> MySlateWidget = GetCachedWidget())
-		{
-			MySlateWidget->SlatePrepass();
-		}
-		
 		FinalTicketUI->CaptureAndDisplayTicketBackground(this);
 		FinalTicketUI->AddToViewport();
 		this->SetVisibility(ESlateVisibility::Hidden);

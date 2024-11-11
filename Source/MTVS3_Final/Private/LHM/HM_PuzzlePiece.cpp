@@ -157,7 +157,7 @@ bool AHM_PuzzlePiece::AreAllPiecesDestroyed() const
 {
 	for (UStaticMeshComponent* MeshComponent : PieceMeshes)
 	{
-		if (MeshComponent && MeshComponent->IsValidLowLevel() && !MeshComponent->IsPendingKillEnabled())
+		if (MeshComponent && MeshComponent->IsValidLowLevel() && !MeshComponent->IsGarbageEliminationEnabled())
 		{
 			// 하나라도 살아있으면 false 반환
 			return false;
