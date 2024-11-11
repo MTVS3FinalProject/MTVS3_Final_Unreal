@@ -58,6 +58,9 @@ public:
 
 	// void InitializePieces();
     void InitializeRandomSetting();
+
+	// 모든 피스가 파괴된 상태
+	bool AreAllPiecesDestroyed() const;
 	
 	// --------------- Multiplayer 요소들 ---------------
 	

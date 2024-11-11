@@ -27,6 +27,7 @@
 #include "LevelSequencePlayer.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "HJ/HallSoundManager.h"
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_GameWidget.h"
@@ -615,6 +616,8 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		GameUI->SetWidgetSwitcher(2); // 우승자 UI 업데이트
 	}
 
+	UGameplayStatics::PlaySound2D(GetWorld(), LuckyDrawWinnerSound);
+
 	// 서버 RPC, 멀티캐스트 RPC 필요
 	ServerLuckyDrawWin();
 
@@ -748,6 +751,30 @@ void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
 	{
 		HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
 		                                   GI->GetAccessToken());
+	}
+}
+
+void ATTPlayer::PlayConcertBGM()
+{
+	FTimerHandle TimerHandle;
+    
+	GetWorldTimerManager().SetTimer(
+		TimerHandle, 
+		this, 
+		&ATTPlayer::PlayConcertBGMAfterDelay, 
+		0.3f,
+		false    // 반복 실행 안 함
+	);
+}
+
+void ATTPlayer::PlayConcertBGMAfterDelay()
+{
+	AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+    
+	if (HallSoundManager) 
+	{
+		HallSoundManager->PlayConcertBGM();
 	}
 }
 
@@ -1031,6 +1058,11 @@ void ATTPlayer::ServerRPCUpdateFPSCameraRotation_Implementation(const FRotator& 
 		FPSCameraComp->SetWorldRotation(FPSCameraNewRotation);
 	}
 }
+
+// void ATTPlayer::ClientPlayRouletteEndSound_Implementation()
+// {
+// 	UGameplayStatics::PlaySoundAtLocation(this, RouletteEndSound, GetActorLocation(), 0.75f, 1.0f, 0.0f, LuckyDrawAttenuation);
+// }
 
 void ATTPlayer::PrintStateLog()
 {

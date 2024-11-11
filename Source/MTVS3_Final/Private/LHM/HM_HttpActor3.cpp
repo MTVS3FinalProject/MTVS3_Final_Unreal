@@ -43,6 +43,7 @@ void AHM_HttpActor3::SetMainUI(UMainWidget* InMainUI)
 	MainUI = InMainUI;
 }
 
+// 인벤토리 정보 요청
 void AHM_HttpActor3::ReqGetInventoryData(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -67,6 +68,7 @@ void AHM_HttpActor3::ReqGetInventoryData(FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// 인벤토리 정보 요청에 대한 응답
 void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -186,9 +188,9 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 	}
 }
 
+// Puzzle 결과, Sticker 획득 요청
 void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken)
 {
-	
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	
@@ -225,6 +227,7 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 	Request->ProcessRequest();
 }
 
+// Puzzle 결과, Sticker 획득 요청에 대한 응답
 void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -283,6 +286,7 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request,
 	}
 }
 
+// 커스텀 티켓 저장 요청
 void AHM_HttpActor3::ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -322,6 +326,7 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(UTexture2D* CustomTicket, TArray<in
 	Request->ProcessRequest();
 }
 
+// 커스텀 티켓 저장 요청에 대한 응답
 void AHM_HttpActor3::OnReqPostSaveCustomTicket(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -349,6 +354,7 @@ void AHM_HttpActor3::OnReqPostSaveCustomTicket(FHttpRequestPtr Request, FHttpRes
 	}
 }
 
+// 배경 생성 요청
 void AHM_HttpActor3::ReqGetBackground(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -375,6 +381,7 @@ void AHM_HttpActor3::ReqGetBackground(FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// 배경 생성 요청에 대한 응답
 void AHM_HttpActor3::OnReqGetBackground(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -424,6 +431,7 @@ void AHM_HttpActor3::OnReqGetBackground(FHttpRequestPtr Request, FHttpResponsePt
 	}
 }
 
+// My 커스텀 티켓 목록 조회 요청
 void AHM_HttpActor3::ReqGetCustomTicketList(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -450,6 +458,7 @@ void AHM_HttpActor3::ReqGetCustomTicketList(FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// My 커스텀 티켓 목록 조회 요청에 대한 응답
 void AHM_HttpActor3::OnReqGetCustomTicketList(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -495,6 +504,7 @@ void AHM_HttpActor3::OnReqGetCustomTicketList(FHttpRequestPtr Request, FHttpResp
 	}
 }
 
+// 티켓 커스텀 제작 입장 요청
 void AHM_HttpActor3::ReqPostEnterTicketCustomization(FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -521,8 +531,8 @@ void AHM_HttpActor3::ReqPostEnterTicketCustomization(FString AccessToken)
 	Request->ProcessRequest();
 }
 
-void AHM_HttpActor3::OnReqPostEnterTicketCustomization(FHttpRequestPtr Request, FHttpResponsePtr Response,
-	bool bWasSuccessful)
+// 티켓 커스텀 제작 입장 요청에 대한 응답
+void AHM_HttpActor3::OnReqPostEnterTicketCustomization(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
