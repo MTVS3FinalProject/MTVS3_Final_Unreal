@@ -262,6 +262,18 @@ void ATTPlayer::Tick(float DeltaTime)
 
 			TitleUIComp->SetWorldRotation(TitleUIDirection.GetSafeNormal().ToOrientationRotator());
 		}
+
+		if (EmojiComp && EmojiComp->GetVisibleFlag())
+		{
+			// P = P0 + vt
+			// 카메라 위치
+			FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
+			// 체력바em와 카메라의 방향 벡터
+			FVector EmojiUIDirection = CamLoc - EmojiComp->GetComponentLocation();
+
+			EmojiComp->SetWorldRotation(EmojiUIDirection.GetSafeNormal().ToOrientationRotator());
+		}
+		
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		OnRep_bIsHost();
@@ -1225,7 +1237,7 @@ void ATTPlayer::SetNewSkeletalMesh(const int32& _AvatarData)
 		nullptr , TEXT(
 			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
 	USkeletalMesh* ManagerMesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/KHJ/Assets/SM_Manager.SM_Manager'"));
+		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn.SKM_Quinn'"));
 
 	switch (_AvatarData)
 	{
@@ -1444,7 +1456,7 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 {
 	bIsMapActive = !bIsMapActive;
-	if (!IsLocallyControlled()) return;
+	if (!IsLocallyControlled() || !WorldMapUI) return;
 
 	if (bIsMapActive)
 	{
