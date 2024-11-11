@@ -9,6 +9,7 @@
 #include "HJ/TTGameInstance.h"
 #include "ImageUtils.h"
 #include "JsonObjectConverter.h"
+#include "Components/EditableText.h"
 #include "JMH/MH_BuyTicketWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "HJ/TTHallGameState.h"
@@ -1278,6 +1279,11 @@ void AHM_HttpActor2::OnResGetReservationInfo(FHttpRequestPtr Request, FHttpRespo
 					FString UserAddress1 = ResponseObject->GetStringField(TEXT("userAddress1"));
 					FString UserAddress2 = ResponseObject->GetStringField(TEXT("userAddress2"));
 
+					FText usename = FText::FromString(UserName);
+					FText phonenumber = FText::FromString(UserPhoneNum);
+					FText address1 = FText::FromString(UserAddress1);
+					FText address2 = FText::FromString(UserAddress2);
+					
 					UE_LOG(LogTemp , Log , TEXT("UserName : %s") , *UserName);
 					UE_LOG(LogTemp , Log , TEXT("UserPhoneNum : %s") , *UserPhoneNum);
 					UE_LOG(LogTemp , Log , TEXT("UserAddress1 : %s") , *UserAddress1);
@@ -1286,10 +1292,10 @@ void AHM_HttpActor2::OnResGetReservationInfo(FHttpRequestPtr Request, FHttpRespo
 					// 배송지 정보 불러오기
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						//MainUI->BuyTicketWidget->
-						//MainUI->BuyTicketWidget->
-						//MainUI->BuyTicketWidget->
-						//MainUI->BuyTicketWidget->
+						MainUI->BuyTicketWidget->EText_Name->SetText(usename);
+						MainUI->BuyTicketWidget->EText_PhoneNum->SetText(phonenumber);
+						MainUI->BuyTicketWidget->EText_Address1->SetText(address1);
+						MainUI->BuyTicketWidget->EText_Address2->SetText(address2);
 					}
 				}
 			}

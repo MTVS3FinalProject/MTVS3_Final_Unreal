@@ -3,18 +3,18 @@
 
 #include "LHM/HM_FinalTicket.h"
 
+#include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
-#include "Components/Overlay.h"
+#include "HJ/TTGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
+#include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_TicketBG.h"
 #include "LHM/HM_TicketCustom.h"
 #include "Slate/WidgetRenderer.h"
-
-class AHM_TicketSceneCapture2D;
-class UCanvasPanelSlot;
-class FWidgetRenderer;
 
 void UHM_FinalTicket::NativeConstruct()
 {
@@ -83,17 +83,49 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 			CapturedTexture->UpdateResource(); // 리소스 업데이트
 
 			// Img_FinalTicket에 캡처된 텍스처 표시
-			if (Img_FinalTicket)
+			if (TicketCutomUI && Img_FinalTicket)
 			{
 				FSlateBrush Brush;
 				Brush.SetResourceObject(CapturedTexture);
-				if(TicketCutomUI)
-				{
-					Img_FinalTicket->SetBrush(Brush);
-				}
+
+				// 최종 티켓 이미지에 반영
+				Img_FinalTicket->SetBrush(Brush);
+
+				// 서버에 커스텀 티켓 저장 요청
+				AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+				UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+				if (!GI && !HttpActor3) return;
+				TArray<uint8> ImageData = ConvertTextureToPNG(RenderTarget);
+				//HttpActor3->ReqPostSaveCustomTicket(ImageData ,  , HttpActor3->GetBackgroundId() , GI->GetAccessToken());
+				
 			}
 		}	
 	}
+}
+
+TArray<uint8> UHM_FinalTicket::ConvertTextureToPNG(UTextureRenderTarget2D* RenderTarget)
+{
+	TArray<uint8> PNGData;
+	if (!RenderTarget) return PNGData;
+
+	// Render Target의 리소스를 가져옴
+	FTextureRenderTargetResource* RenderTargetResource = RenderTarget->GameThread_GetRenderTargetResource();
+
+	// 픽셀 데이터를 FColor 형식의 배열에 읽어옴
+	TArray<FColor> Bitmap;
+	RenderTargetResource->ReadPixels(Bitmap);
+
+	// 이미지 래퍼 모듈을 사용해 PNG 형식으로 변환
+	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
+
+	if (ImageWrapper.IsValid() && ImageWrapper->SetRaw(Bitmap.GetData(), Bitmap.Num() * sizeof(FColor), RenderTarget->SizeX, RenderTarget->SizeY, ERGBFormat::BGRA, 8))
+	{
+		PNGData = ImageWrapper->GetCompressed(100);  // 압축 레벨 100으로 PNG로 변환
+	}
+
+	return PNGData;
 }
 
 UTexture2D* UHM_FinalTicket::ConvertRenderTargetToTexture(UObject* WorldContextObject,

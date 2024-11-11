@@ -190,15 +190,18 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 					}
 
 					// 맞춘 피스는 제거
-					const TArray<UStaticMeshComponent*>& PiecesArray = PuzzlePiece->GetAllPieces();
-					for(UStaticMeshComponent* Piece : PiecesArray)
+					if(HasAuthority())
 					{
-						if(Piece && Piece->ComponentTags.Num() > 0 &&
-						   Piece->ComponentTags[0].ToString() == ActualTag)
+						const TArray<UStaticMeshComponent*>& PiecesArray = PuzzlePiece->GetAllPieces();
+						for(UStaticMeshComponent* Piece : PiecesArray)
 						{
-							Piece->DestroyComponent();
-							break;
-						}
+							if(Piece && Piece->ComponentTags.Num() > 0 &&
+							   Piece->ComponentTags[0].ToString() == ActualTag)
+							{
+								Piece->DestroyComponent();
+								break;
+							}
+						}	
 					}
 				}
 				break;
