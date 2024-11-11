@@ -21,8 +21,8 @@ public:
 	class UCanvasPanel* Can_Emoji;
 	
 	//이모티콘이 나타날 이미지
-	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	class UImage* IMG_Emoji;
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_Emoji;
 	
 	//애니메이션 머티리얼
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="EmojiAnim")
@@ -41,10 +41,19 @@ public:
 	UMaterialInterface* SurprisedAnim;
 
 	UFUNCTION()
-	void SetAnimMaterial(UMaterialInterface* NewAnim);
+	void SetMaterial(UMaterialInterface* NewAnim);
+	
+	UFUNCTION()
+	void AnimMaterialSwitcher(int32 num);
 	
 	UFUNCTION()
 	void ShowCanvas();
 	UFUNCTION()
 	void HideCanvas();
+
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* EmojiVisibleAnim;
+	
+	UFUNCTION(Blueprintable)
+	void PlayAnim();
 };

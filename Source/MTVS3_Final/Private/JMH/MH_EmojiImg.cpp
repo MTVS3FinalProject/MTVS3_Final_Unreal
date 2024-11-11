@@ -6,17 +6,46 @@
 #include "Components/CanvasPanel.h"
 #include "Components/Image.h"
 
-void UMH_EmojiImg::SetAnimMaterial(UMaterialInterface* NewAnim)
+void UMH_EmojiImg::SetMaterial(UMaterialInterface* NewAnim)
 {
-	IMG_Emoji->SetBrushFromMaterial(NewAnim);
+	Img_Emoji->SetBrushFromMaterial(NewAnim);
+}
+
+void UMH_EmojiImg::AnimMaterialSwitcher(int32 num)
+{
+	switch (num)
+	{
+	case 1 : SetMaterial(HappyAnim);
+		break;
+
+	case 2 : SetMaterial(KissAnim);
+		break;
+
+	case 3 : SetMaterial(HappyAnim);
+		break;
+
+	case 4 : SetMaterial(HappyAnim);
+		break;
+		
+	case 5 : SetMaterial(HappyAnim);
+		break;
+
+		default: break;
+	}
 }
 
 void UMH_EmojiImg::ShowCanvas()
 {
+	PlayAnim();
 	Can_Emoji->SetVisibility(ESlateVisibility::HitTestInvisible);
 }
 
 void UMH_EmojiImg::HideCanvas()
 {
 	Can_Emoji->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UMH_EmojiImg::PlayAnim()
+{
+	PlayAnimation(EmojiVisibleAnim);
 }

@@ -450,4 +450,13 @@ public:
 
 	UFUNCTION()
 	void CreateMinimapActor();
+	
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	class UWidgetComponent*  EmojiComp;
+	
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UMH_EmojiImg> EmojiFac;
+
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
+	class UMH_EmojiImg* EmojiWidget;
 };
