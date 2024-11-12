@@ -43,7 +43,6 @@ void UMH_Chatting::OnClickedSendBtn()
 			// PlayerController의 서버 함수 호출
 			ChatPlayerControllerInstance->ServerSendChatMessage(Message);
 			
-			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("111"));
 			// 인풋모드 변경
 			FInputModeGameAndUI InputMode;
 			ChatPlayerControllerInstance->SetInputMode(InputMode);

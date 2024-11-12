@@ -38,6 +38,8 @@ void UHM_EmojiWidget::OnClickedEmotion1Bun()
 				EmojiWidget->PlayAnim();
 				bIsEmojiAnimating = true;
 
+				Player->ServerPlayEmojiAnim(1);
+
 				//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UHM_EmojiWidget::HideEmojiWidget ,
@@ -67,6 +69,7 @@ void UHM_EmojiWidget::OnClickedEmotion2Bun()
 				// PlayAnim 함수 호출
 				EmojiWidget->PlayAnim();
 				bIsEmojiAnimating = true;
+				Player->ServerPlayEmojiAnim(2);
 				//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UHM_EmojiWidget::HideEmojiWidget ,
@@ -96,6 +99,7 @@ void UHM_EmojiWidget::OnClickedEmotion3Bun()
 				// PlayAnim 함수 호출
 				EmojiWidget->PlayAnim();
 				bIsEmojiAnimating = true;
+				Player->ServerPlayEmojiAnim(3);
 				//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UHM_EmojiWidget::HideEmojiWidget ,
@@ -124,6 +128,7 @@ void UHM_EmojiWidget::OnClickedEmotion4Bun()
 				// PlayAnim 함수 호출
 				EmojiWidget->PlayAnim();
 				bIsEmojiAnimating = true;
+				Player->ServerPlayEmojiAnim(4);
 				//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UHM_EmojiWidget::HideEmojiWidget ,
@@ -152,6 +157,7 @@ void UHM_EmojiWidget::OnClickedEmotion5Bun()
 				// PlayAnim 함수 호출
 				EmojiWidget->PlayAnim();
 				bIsEmojiAnimating = true;
+				Player->ServerPlayEmojiAnim(5);
 				//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UHM_EmojiWidget::HideEmojiWidget ,
