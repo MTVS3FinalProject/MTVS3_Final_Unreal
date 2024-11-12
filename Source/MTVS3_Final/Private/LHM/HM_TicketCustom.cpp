@@ -10,17 +10,15 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
+#include "Components/ScrollBox.h"
+#include "Components/Spacer.h"
+#include "Components/VerticalBox.h"
+#include "Components/VerticalBoxSlot.h"
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_FinalTicket.h"
 #include "LHM/HM_HttpActor3.h"
-#include "LHM/HM_TicketBG.h"
-#include "LHM/HM_TicketSceneCapture2D.h"
 
-
-class AHM_TicketSceneCapture2D;
-class FWidgetRenderer;
-class UOverlay;
 
 void UHM_TicketCustom::NativeConstruct()
 {
@@ -30,14 +28,18 @@ void UHM_TicketCustom::NativeConstruct()
 	Btn_ResetTicketImage->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedResetTicketImageButton);
 	Btn_Save->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedSaveButton);
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
+	Btn_HttpTest01->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest01);
+	Btn_HttpTest02->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest02);
+	Btn_HttpTest03->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest03);
+	Btn_HttpTest04->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest04);
 
 	RootCanvas = Cast<UCanvasPanel>(GetRootWidget());
 	
-	SetupDraggableImage(Img_Sticker01);
-	SetupDraggableImage(Img_Sticker02);
-	SetupDraggableImage(Img_Sticker03);
-	SetupDraggableImage(Img_Sticker04);
-	SetupDraggableImage(Img_Sticker05);
+	// SetupDraggableImage(Img_Sticker01);
+	// SetupDraggableImage(Img_Sticker02);
+	// SetupDraggableImage(Img_Sticker03);
+	// SetupDraggableImage(Img_Sticker04);
+	// SetupDraggableImage(Img_Sticker05);
 	
 	bIsDragging = false;
 	bIsRenderingAngle = false;
@@ -45,6 +47,18 @@ void UHM_TicketCustom::NativeConstruct()
 	bIsDelete = false;
 	bIsBackground = false;
 	CurrentImage = nullptr;
+
+	if (!ScrollBox_Stickers || !VerticalBox_Stickers)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ScrollBox or VerticalBox is not bound in widget blueprint"));
+		return;
+	}
+
+	// 스크롤박스 설정
+	ScrollBox_Stickers->SetScrollBarVisibility(ESlateVisibility::Visible);
+	ScrollBox_Stickers->SetAnimateWheelScrolling(true);
+	ScrollBox_Stickers->SetAllowOverscroll(true);
+	
 	
 	if (FinalTicketWidget)
 	{
@@ -79,15 +93,15 @@ void UHM_TicketCustom::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 	
 }
 
-void UHM_TicketCustom::SetupDraggableImage(UImage* Image)
-{
-	if (Image)
-	{
-		Image->SetVisibility(ESlateVisibility::Visible);
-		Image->bIsVariable = true;
-		Image->SetIsEnabled(true);
-	}
-}
+// void UHM_TicketCustom::SetupDraggableImage(UImage* Image)
+// {
+// 	if (Image)
+// 	{
+// 		Image->SetVisibility(ESlateVisibility::Visible);
+// 		Image->bIsVariable = true;
+// 		Image->SetIsEnabled(true);
+// 	}
+// }
 
 FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 {
@@ -117,7 +131,9 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			CopiedImage->SetBrushFromTexture(TextureResource);
 			CopiedImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
 			CopiedImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
-			SetupDraggableImage(CopiedImage);
+			CopiedImage->SetVisibility(ESlateVisibility::Visible);
+			CopiedImage->bIsVariable = true;
+			CopiedImage->SetIsEnabled(true);
 		}
 
 		// 아웃라인, 조정버튼 이미지의 텍스처 설정
@@ -207,16 +223,6 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage);
 		Img_CopiedImgs.Add(NewImageSet);
 		
-		// 디버그 로그
-		// UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s, OriginImage = %s"),
-		// 	Img_CopiedImgs.Num() - 1,
-		// 	*CopiedImage->GetName(),
-		// 	*OutlineImage->GetName(),
-		// 	*RenderAngleImage->GetName(),
-		// 	*RenderScaleImage->GetName(),
-		// 	*RenderDeleteImage->GetName(),
-		// 	*SourceImage->GetName()
-		//);
 		return NewImageSet;
 	}
 	return FUsedImage();  // 실패 시 기본값 반환
@@ -293,8 +299,8 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 {
 	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
-		TArray<UImage*> Img_Stickers {Img_Sticker01, Img_Sticker02, Img_Sticker03, Img_Sticker04, Img_Sticker05};
-		for (UImage* Image : Img_Stickers)
+		//TArray<UImage*> Img_Stickers {Img_Sticker01, Img_Sticker02, Img_Sticker03, Img_Sticker04, Img_Sticker05};
+		for (UImage* Image : StickerImages)
 		{
 			if (Image && Image->IsVisible() && Image->GetIsEnabled() == true)
 			{
@@ -545,25 +551,100 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 void UHM_TicketCustom::SetBackgroundImg(UTexture2D* newTexture)
 {
 	Img_TicketBackground->SetBrushFromTexture(newTexture);
+	UE_LOG(LogTemp , Log , TEXT("SetBackgroundImg"));
 }
 
-void UHM_TicketCustom::SetStickerImage(UTexture2D* Texture)
+void UHM_TicketCustom::SetStickersImgs(UTexture2D* Texture, int32 ImageIndex)
 {
-	Img_Sticker01->SetBrushFromTexture(Texture);
-	Img_Sticker02->SetBrushFromTexture(Texture);
-	Img_Sticker03->SetBrushFromTexture(Texture);
-	Img_Sticker04->SetBrushFromTexture(Texture);
-	Img_Sticker05->SetBrushFromTexture(Texture);
-	UE_LOG(LogTemp , Log , TEXT("SetStickerImage"));
+	if (ImageIndex >= 0 && ImageIndex < StickerImages.Num() && Texture)
+    {
+        if (UImage* ImageWidget = StickerImages[ImageIndex])
+        {
+            ImageWidget->SetBrushFromTexture(Texture);
+            UE_LOG(LogTemp, Log, TEXT("Set Sticker Image for index: %d"), ImageIndex);
+        	
+        	ImageWidget->SetVisibility(ESlateVisibility::Visible);
+        	ImageWidget->InvalidateLayoutAndVolatility();
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Invalid image index or texture: %d"), ImageIndex);
+    }
 }
 
-void UHM_TicketCustom::SetStickersImg(UTexture2D* newTexture1, UTexture2D* newTexture2, UTexture2D* newTexture3, UTexture2D* newTexture4, UTexture2D* newTexture5)
+void UHM_TicketCustom::InitializeStickerImages(int32 Count)
 {
-	Img_Sticker01->SetBrushFromTexture(newTexture1);
-	Img_Sticker02->SetBrushFromTexture(newTexture2);
-	Img_Sticker03->SetBrushFromTexture(newTexture3);
-	Img_Sticker04->SetBrushFromTexture(newTexture4);
-	Img_Sticker05->SetBrushFromTexture(newTexture5);
+	// 기존 스티커 제거
+	if( VerticalBox_Stickers == nullptr )
+	{
+		UE_LOG(LogTemp, Error, TEXT("VerticalBox is null"));
+		return;
+	}
+	if( VerticalBox_Stickers )
+	{
+		VerticalBox_Stickers->ClearChildren();
+		StickerImages.Empty();
+	}
+	
+	// 새로운 이미지 위젯 생성
+	for (int32 i = 0; i < Count; i++)
+	{
+		UImage* NewImage = CreateImageWidget(i);
+		if (NewImage)
+		{
+			// 이미지를 버티컬박스에 추가
+			UVerticalBoxSlot* ImageSlot = VerticalBox_Stickers->AddChildToVerticalBox(NewImage);
+			if (ImageSlot)
+			{
+				// 이미지 슬롯 설정
+				//ImageSlot->SetHorizontalAlignment(HAlign_Center);
+				ImageSlot->SetVerticalAlignment(VAlign_Center);
+			}
+            
+			StickerImages.Add(NewImage);
+			
+			// 마지막 이미지가 아닌 경우에만 스페이서 추가
+			if (i < Count - 1)
+			{
+				USpacer* Spacer = CreateSpacerWidget();
+				if (Spacer)
+				{
+					UVerticalBoxSlot* SpacerSlot = VerticalBox_Stickers->AddChildToVerticalBox(Spacer);
+					if (SpacerSlot)
+					{
+						SpacerSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic)); // 크기 규칙 설정
+					}
+				}
+			}
+		}
+	}
+	SetVisibility(ESlateVisibility::Visible);
+}
+
+UImage* UHM_TicketCustom::CreateImageWidget(int32 Index)
+{
+	UImage* NewImage = NewObject<UImage>(this, FName(*FString::Printf(TEXT("StickerImage_%d"), Index)));
+    if (NewImage)
+    {
+        // 이미지 기본 설정
+        FSlateBrush Brush;
+        Brush.DrawAs = ESlateBrushDrawType::Image;
+    	Brush.ImageSize = FVector2D(200.0f, 200.0f);
+        NewImage->SetBrush(Brush);
+
+    }
+    return NewImage;
+}
+
+USpacer* UHM_TicketCustom::CreateSpacerWidget()
+{
+	USpacer* NewSpacer = NewObject<USpacer>(this);
+	if (NewSpacer)
+	{
+		NewSpacer->SetSize(FVector2D(1.0f, 10.0f));
+	}
+	return NewSpacer;
 }
 
 void UHM_TicketCustom::OnClickedResetBackgroundButton()
@@ -622,18 +703,70 @@ void UHM_TicketCustom::OnClickedSaveButton()
 		}
 	}
 
-	if (FinalTicketUI && this)
-	{
-		Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
-		FinalTicketUI->CaptureAndDisplayTicketBackground(this);
-		FinalTicketUI->AddToViewport();
-		this->SetVisibility(ESlateVisibility::Hidden);
-		
-	}
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// 커스텀 티켓 저장 요청
+	UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 요청"));
+	//HttpActor3->ReqPostSaveCustomTicket(, HttpActor3->GetStickerIds, HttpActor3->GetBackgroundId(),GI->GetAccessToken());
+
+	// 해당 하위 로직은 통신 성공했을 때
+	// if (FinalTicketUI && this)
+	// {
+	// 	Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
+	// 	FinalTicketUI->CaptureAndDisplayTicketBackground(this);
+	// 	FinalTicketUI->AddToViewport();
+	// 	this->SetVisibility(ESlateVisibility::Hidden);
+	// }
 }
 
 void UHM_TicketCustom::OnClickedExitButton()
 {
 	// 메인 위젯에서 스위쳐 호출
 	//this->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UHM_TicketCustom::OnClickedHttpTest01()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// 인벤토리 정보 요청
+	UE_LOG(LogTemp , Log , TEXT("인벤토리 정보 요청"));
+	HttpActor3->ReqGetInventoryData(GI->GetAccessToken());
+}
+
+void UHM_TicketCustom::OnClickedHttpTest02()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// Puzzle 결과, Sticker 획득 요청
+	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
+	HttpActor3->ReqPostPuzzleResultAndGetSticker(1, GI->GetAccessToken());
+}
+
+void UHM_TicketCustom::OnClickedHttpTest03()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// 티켓 커스텀 제작 입장 요청
+	UE_LOG(LogTemp , Log , TEXT("티켓 커스텀 제작 입장 요청"));
+	HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
+}
+
+void UHM_TicketCustom::OnClickedHttpTest04()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// My 커스텀 티켓 목록 조회 요청
+	UE_LOG(LogTemp , Log , TEXT("My 커스텀 티켓 목록 조회 요청"));
+	HttpActor3->ReqGetCustomTicketList(GI->GetAccessToken());
 }

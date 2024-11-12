@@ -145,10 +145,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	class UMainWidget* MainUI;
 	void SetMainUI(UMainWidget* InMainUI);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UHM_TicketCustom> TicketCustomWidget;
-	class UHM_TicketCustom* TicketCustomUI;
+	
+	UPROPERTY()
+	class UMH_TicketingWidget* TicketingUI;
+	void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
 
 	const FString _url = "https://ticketaka.shop/api";
 #pragma endregion
@@ -181,17 +181,10 @@ public:
 	int32 BackgroundId;
 	int32 GetBackgroundId() const { return BackgroundId; }
 	void SetBackgroundId(int32 _BackgroundId) { BackgroundId = _BackgroundId; }
+
+	// 현재 다운로드 중인 이미지의 인덱스를 추적
+	TMap<FString, int32> ImageUrlToIndex;
 	
-#pragma endregion
-
-#pragma region Image URL Data
-	void DownloadStickerImages(const TArray<FString>& StickerImageUrls);
-	void DownloadImage(const FString& URL, EImageType ImageType);
-	void OnImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, EImageType ImageType);
-	UTexture2D* LoadTextureFromData(const TArray<uint8>& ImageData);
-
-	// 현재 진행 중인 다운로드 요청 관리
-	TMap<EImageType, FHttpRequestPtr> ActiveRequests;
 #pragma endregion
 	
 #pragma region HTTP Methods
