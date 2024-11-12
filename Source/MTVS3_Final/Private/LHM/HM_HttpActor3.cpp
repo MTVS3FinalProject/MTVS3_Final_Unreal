@@ -370,6 +370,10 @@ void AHM_HttpActor3::OnResPostSaveCustomTicket(FHttpRequestPtr Request, FHttpRes
 				}
 			}
 		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 실패"));
+		}
 	}
 }
 
@@ -618,6 +622,7 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 								UE_LOG(LogTemp, Warning, TEXT("Failed to create texture from image data for index: %d"), i);
 							}
 						}
+						if(MainUI->GetTicketCustomWidget()) MainUI->SetWidgetSwitcher(8);
 					}
 				}
 			}

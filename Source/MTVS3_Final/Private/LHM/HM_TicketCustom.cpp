@@ -15,6 +15,7 @@
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "HJ/TTGameInstance.h"
+#include "JMH/MainWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_FinalTicket.h"
 #include "LHM/HM_HttpActor3.h"
@@ -30,7 +31,6 @@ void UHM_TicketCustom::NativeConstruct()
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
 	Btn_HttpTest01->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest01);
 	Btn_HttpTest02->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest02);
-	Btn_HttpTest03->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest03);
 	Btn_HttpTest04->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest04);
 
 	RootCanvas = Cast<UCanvasPanel>(GetRootWidget());
@@ -60,10 +60,15 @@ void UHM_TicketCustom::NativeConstruct()
 	ScrollBox_Stickers->SetAllowOverscroll(true);
 	
 	
-	if (FinalTicketWidget)
-	{
-		FinalTicketUI = CreateWidget<UHM_FinalTicket>(GetWorld(), FinalTicketWidget);
-	}
+	// if (FinalTicketWidget)
+	// {
+	// 	FinalTicketUI = CreateWidget<UHM_FinalTicket>(GetWorld(), FinalTicketWidget);
+	// }
+	//
+	// if (MainWidget)
+	// {
+	// 	MainUI = CreateWidget<UMainWidget>(GetWorld(), MainWidget);
+	// }
 	
 	if( Img_TicketBackground && Img_TicketInfo )
 	{
@@ -92,16 +97,6 @@ void UHM_TicketCustom::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 	Super::NativeTick(MyGeometry , InDeltaTime);
 	
 }
-
-// void UHM_TicketCustom::SetupDraggableImage(UImage* Image)
-// {
-// 	if (Image)
-// 	{
-// 		Image->SetVisibility(ESlateVisibility::Visible);
-// 		Image->bIsVariable = true;
-// 		Image->SetIsEnabled(true);
-// 	}
-// }
 
 FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 {
@@ -213,11 +208,11 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			DeleteImgSlot->SetVerticalAlignment(VAlign_Top);
 		}
 		
-		//CopiedImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		//OutlineImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		//RenderAngleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		//RenderScaleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		//RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		CopiedImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		OutlineImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		RenderAngleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		RenderScaleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		
 		// Img_CopiedImgs에 추가
 		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage);
@@ -702,29 +697,23 @@ void UHM_TicketCustom::OnClickedSaveButton()
 			);
 		}
 	}
-
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (!GI && !HttpActor3) return;
-	// 커스텀 티켓 저장 요청
-	UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 요청"));
-	//HttpActor3->ReqPostSaveCustomTicket(, HttpActor3->GetStickerIds, HttpActor3->GetBackgroundId(),GI->GetAccessToken());
-
 	// 해당 하위 로직은 통신 성공했을 때
-	// if (FinalTicketUI && this)
-	// {
-	// 	Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
-	// 	FinalTicketUI->CaptureAndDisplayTicketBackground(this);
-	// 	FinalTicketUI->AddToViewport();
-	// 	this->SetVisibility(ESlateVisibility::Hidden);
-	// }
+	 if (FinalTicketUI && this)
+	 {
+	 	Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
+		FinalTicketUI->CaptureAndDisplayTicketBackground(this);
+	 	FinalTicketUI->AddToViewport();
+	 	this->SetVisibility(ESlateVisibility::Hidden);
+	 }
 }
 
 void UHM_TicketCustom::OnClickedExitButton()
 {
 	// 메인 위젯에서 스위쳐 호출
-	//this->SetVisibility(ESlateVisibility::Hidden);
+	if(MainUI)
+	{
+		MainUI->SetWidgetSwitcher(6);
+	}
 }
 
 void UHM_TicketCustom::OnClickedHttpTest01()
@@ -749,17 +738,6 @@ void UHM_TicketCustom::OnClickedHttpTest02()
 	HttpActor3->ReqPostPuzzleResultAndGetSticker(1, GI->GetAccessToken());
 }
 
-void UHM_TicketCustom::OnClickedHttpTest03()
-{
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (!GI && !HttpActor3) return;
-	// 티켓 커스텀 제작 입장 요청
-	UE_LOG(LogTemp , Log , TEXT("티켓 커스텀 제작 입장 요청"));
-	HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
-}
-
 void UHM_TicketCustom::OnClickedHttpTest04()
 {
 	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
@@ -769,4 +747,14 @@ void UHM_TicketCustom::OnClickedHttpTest04()
 	// My 커스텀 티켓 목록 조회 요청
 	UE_LOG(LogTemp , Log , TEXT("My 커스텀 티켓 목록 조회 요청"));
 	HttpActor3->ReqGetCustomTicketList(GI->GetAccessToken());
+}
+
+void UHM_TicketCustom::SetMainUI(UMainWidget* InMainUI)
+{
+	MainUI = InMainUI;
+}
+
+void UHM_TicketCustom::SetFinalTicketUI(UHM_FinalTicket* InTicketingUI)
+{
+	FinalTicketUI = InTicketingUI;
 }

@@ -37,7 +37,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_TicketCustom> TicketCutomWidget; // 배경 티켓 위젯 클래스 참조
 	class UHM_TicketCustom* TicketCutomUI; // 배경 티켓 위젯 인스턴스
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	class UMainWidget* MainUI;
+	void SetMainUI(UMainWidget* InMainUI);
+	
 private:
 	class UTexture2D* ConvertRenderTargetToTexture(UObject* WorldContextObject, UTextureRenderTarget2D* RenderTarget);
 };

@@ -143,26 +143,33 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_HttpTest02;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_HttpTest03;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_HttpTest04;
 	UFUNCTION()
 	void OnClickedHttpTest01();
 	UFUNCTION()
 	void OnClickedHttpTest02();
 	UFUNCTION()
-	void OnClickedHttpTest03();
-	UFUNCTION()
 	void OnClickedHttpTest04();
 #pragma endregion
 
-protected:
 #pragma region UI : FinalTicket Save
 
 	// 최종 이미지 위젯 참조
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	// TSubclassOf<class UHM_FinalTicket> FinalTicketWidget;
+	// class UHM_FinalTicket* FinalTicketUI;
+	//
+	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	// TSubclassOf<class UMainWidget> MainWidget;
+	// class UMainWidget* MainUI;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UHM_FinalTicket> FinalTicketWidget;
+	class UMainWidget* MainUI;
+	void SetMainUI(UMainWidget* InMainUI);
+	
+	UPROPERTY()
 	class UHM_FinalTicket* FinalTicketUI;
+	void SetFinalTicketUI(UHM_FinalTicket* InTicketingUI);
 	
 #pragma endregion
 };
