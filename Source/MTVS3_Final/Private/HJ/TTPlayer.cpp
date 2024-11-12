@@ -35,6 +35,7 @@
 #include "JMH/MH_MinimapActor.h"
 #include "JMH/PlayerNicknameWidget.h"
 #include "LHM/HM_AimingWidget.h"
+#include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
 
@@ -1372,6 +1373,13 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Customizing")))
 	{
 		// 티켓 커스터마이징 액터 상호작용 시 UI 표시
+		//QR을 서버가 전달 성공했다면
+		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (HttpActor3)
+		{
+			HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
+		}
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
@@ -1662,6 +1670,14 @@ void ATTPlayer::InitMainUI()
 	{
 		HttpActor2->SetMainUI(MainUI);
 		HttpActor2->SetTicketingUI(TicketingUI);
+	}
+
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if (HttpActor3)
+	{
+		HttpActor3->SetMainUI(MainUI);
+		HttpActor3->SetTicketingUI(TicketingUI);
 	}
 }
 

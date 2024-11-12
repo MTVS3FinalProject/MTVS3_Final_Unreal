@@ -105,7 +105,7 @@ FTransform AMH_Chair::GetSittingTransform()
 {
 	// 의자 중심 위치 가져오기
 	FVector Location = Boxcomp->GetComponentLocation();
-	Location.Z += 2.012604;
+	Location.Z += LocZ;
 
 	// 의자 앞 방향을 기준으로 한 회전값 가져오기
 	FRotator Rotation = Boxcomp->GetComponentRotation();
@@ -124,7 +124,7 @@ FTransform AMH_Chair::GetStandingTransform()
 {
 	// 의자 중심 위치 가져오기
 	FVector Location = Boxcomp->GetComponentLocation();
-	Location.Z += 2.012604;
+	Location.Z += LocZ;
 
 	// 의자 앞 방향을 기준으로 한 회전값 가져오기
 	FRotator Rotation = Boxcomp->GetComponentRotation();

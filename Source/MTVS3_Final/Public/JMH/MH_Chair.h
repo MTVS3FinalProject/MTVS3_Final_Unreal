@@ -46,6 +46,9 @@ public:
 	ACharacter* OverlappingPlayer = nullptr;  // 오버랩된 플레이어 추적용
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
+	float LocZ = 32.012604f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
 	float SeatOffset = 30.0;
 	FTransform GetSittingTransform();
 
