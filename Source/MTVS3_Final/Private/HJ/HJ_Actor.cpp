@@ -14,21 +14,24 @@ AHJ_Actor::AHJ_Actor()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	Boxcomp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
-	SetRootComponent(Boxcomp);
+	SceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComp"));
+	SetRootComponent(SceneComp);
 
-	Boxcomp->OnComponentBeginOverlap.AddDynamic(this , &AHJ_Actor::OnBeginOverlap);
-	Boxcomp->OnComponentEndOverlap.AddDynamic(this , &AHJ_Actor::OnEndOverlap);
+	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
+	BoxComp->SetupAttachment(RootComponent);
 
-	Widgetcomp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComp"));
-	Widgetcomp->SetupAttachment(Boxcomp);
+	BoxComp->OnComponentBeginOverlap.AddDynamic(this , &AHJ_Actor::OnBeginOverlap);
+	BoxComp->OnComponentEndOverlap.AddDynamic(this , &AHJ_Actor::OnEndOverlap);
+
+	WidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComp"));
+	WidgetComp->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
 void AHJ_Actor::BeginPlay()
 {
 	Super::BeginPlay();
-	Widgetcomp->SetVisibility(false);
+	WidgetComp->SetVisibility(false);
 }
 
 // Called every frame
@@ -62,9 +65,9 @@ void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 
 void AHJ_Actor::ShowText()
 {
-	Widgetcomp->SetVisibility(true);
+	WidgetComp->SetVisibility(true);
 	// GetWidget()을 사용하여 위젯 인스턴스를 가져옴
-	UUserWidget* WidgetCompUI = Cast<UUserWidget>(Widgetcomp->GetWidget());
+	UUserWidget* WidgetCompUI = Cast<UUserWidget>(WidgetComp->GetWidget());
 	if ( WidgetCompUI )
 	{
 		// 위젯 인스턴스를 UMH_Interaction으로 캐스팅
@@ -94,7 +97,7 @@ void AHJ_Actor::ShowText()
 
 void AHJ_Actor::HideText()
 {
-	Widgetcomp->SetVisibility(false);
+	WidgetComp->SetVisibility(false);
 }
 
 void AHJ_Actor::SetMainUI(UMainWidget* InMainUI)
