@@ -7,6 +7,7 @@
 #include "Components/Image.h"
 #include "Components/WidgetSwitcher.h"
 #include "HJ/TTGameInstance.h"
+#include "HJ/TTPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor.h"
 
@@ -283,9 +284,10 @@ void UMH_StartWidget::OnClickedSelectAvatarRButton()
 	CharacterModelNum++;
 	if (CharacterModelNum > 4)
 	{
-		CharacterModelNum = 0;
+		CharacterModelNum = 1;
 	}
 	//애니메이션, 사진(버튼) 클릭하면 위젯 확대
+	
 }
 
 void UMH_StartWidget::OnClickedSelectAvatarLButton()
@@ -293,7 +295,7 @@ void UMH_StartWidget::OnClickedSelectAvatarLButton()
 	//아바타 이미지 왼쪽이미지로
 	CharacterModelNum--;
 
-	if (CharacterModelNum < 0)
+	if (CharacterModelNum < 1)
 	{
 		CharacterModelNum = 4;
 	}
@@ -307,6 +309,11 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
 	if (HttpActor)
 	{
+		ATTPlayer* Player = Cast<ATTPlayer>(GetOwningPlayer());
+		if(Player)
+		{
+			Player->SetAvatarData(CharacterModelNum);
+		}
 		//관리자 여부, 이메일,비번,나이,닉네임, 캐릭터Num
 		HttpActor->ReqPostSignup(EText_Nickname->GetText(),bIsHost_Signup , EText_SignupEmail->GetText() , EText_SignupPassWord->GetText() ,
 		                         EText_SignupBirth->GetText().ToString(), CharacterModelNum);
@@ -318,6 +325,11 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 	}
 	//회원가입 응답 성공이면 로비로 이동
 	//GoToLobby();
+}
+
+void UMH_StartWidget::PlayerImgAnim(int32 AnimNum)
+{
+	
 }
 
 void UMH_StartWidget::SetLoadingActive(bool bIsActive)

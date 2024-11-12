@@ -209,7 +209,22 @@ public:
 	void OnClickedAvatarConfirmButton();
 	
 	UPROPERTY()
-	int32 CharacterModelNum = 0;
+	int32 CharacterModelNum = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="EmojiAnim")
+	UMaterialInterface* AvatarAnim1;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="EmojiAnim")
+	UMaterialInterface* AvatarAnim2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="EmojiAnim")
+	UMaterialInterface* AvatarAnim3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="EmojiAnim")
+	UMaterialInterface* AvatarAnim4;
+	
+	UFUNCTION()
+	void PlayerImgAnim(int32 AnimNum);
 
 	// KHJ
 	UFUNCTION()
