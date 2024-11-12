@@ -36,7 +36,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 #pragma region 멀티플레이
-	UPROPERTY(Replicated , BlueprintReadOnly , Category = "TTSettings|State")
+	UPROPERTY(ReplicatedUsing=OnRep_bIsSitting , BlueprintReadOnly , Category = "TTSettings|State")
 	bool bIsSitting;
 
 	UFUNCTION(Server , Reliable)
@@ -47,6 +47,9 @@ public:
 
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastStandUp();
+
+	UFUNCTION()
+	void OnRep_bIsSitting();
 
 	UFUNCTION(Server , Reliable)
 	void ServerLuckyDrawStart();

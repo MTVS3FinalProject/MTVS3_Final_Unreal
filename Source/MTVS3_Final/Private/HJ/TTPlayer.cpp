@@ -107,6 +107,7 @@ void ATTPlayer::BeginPlay()
 			OnRep_Nickname();
 			SetTitleNameAndRarity(GetTitleName(), GetTitleRarity());
 			OnRep_TitleNameAndRarity();
+			OnRep_bIsSitting();
 		}
 		else if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom)
 		{
@@ -1715,15 +1716,7 @@ void ATTPlayer::ServerSetSitting_Implementation(bool _bIsSitting)
 {
 	bIsSitting = _bIsSitting; // 서버에서 상태 업데이트
 
-	// 앉기 또는 일어나기 애니메이션 재생
-	if (bIsSitting)
-	{
-		MulticastSitDown();
-	}
-	else
-	{
-		MulticastStandUp();
-	}
+	OnRep_bIsSitting();
 }
 
 void ATTPlayer::MulticastSitDown_Implementation()
@@ -1778,6 +1771,18 @@ void ATTPlayer::MulticastStandUp_Implementation()
 				OtherPlayer->GetMesh()->SetVisibility(true , true); // 로컬 플레이어 시점에서 다시 보이게
 			}
 		}
+	}
+}
+
+void ATTPlayer::OnRep_bIsSitting()
+{
+	if (bIsSitting)
+	{
+		MulticastSitDown();
+	}
+	else
+	{
+		MulticastStandUp();
 	}
 }
 
