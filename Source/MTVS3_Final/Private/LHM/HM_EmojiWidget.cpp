@@ -32,13 +32,8 @@ void UHM_EmojiWidget::OnClickedEmotion1Bun()
 			UMH_EmojiImg* EmojiWidget = Cast<UMH_EmojiImg>(Player->EmojiComp->GetUserWidgetObject());
 			if (EmojiWidget)
 			{
-				EmojiWidget->ShowCanvas();
-				EmojiWidget->AnimMaterialSwitcher(1);
-				// PlayAnim 함수 호출
-				EmojiWidget->PlayAnim();
-				bIsEmojiAnimating = true;
-
 				Player->ServerPlayEmojiAnim(1);
+				bIsEmojiAnimating = true;
 
 				//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
@@ -64,12 +59,8 @@ void UHM_EmojiWidget::OnClickedEmotion2Bun()
 			UMH_EmojiImg* EmojiWidget = Cast<UMH_EmojiImg>(Player->EmojiComp->GetUserWidgetObject());
 			if (EmojiWidget)
 			{
-				EmojiWidget->ShowCanvas();
-				EmojiWidget->AnimMaterialSwitcher(2);
-				// PlayAnim 함수 호출
-				EmojiWidget->PlayAnim();
-				bIsEmojiAnimating = true;
 				Player->ServerPlayEmojiAnim(2);
+				bIsEmojiAnimating = true;
 				//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UHM_EmojiWidget::HideEmojiWidget ,
@@ -94,12 +85,8 @@ void UHM_EmojiWidget::OnClickedEmotion3Bun()
 			UMH_EmojiImg* EmojiWidget = Cast<UMH_EmojiImg>(Player->EmojiComp->GetUserWidgetObject());
 			if (EmojiWidget)
 			{
-				EmojiWidget->ShowCanvas();
-				EmojiWidget->AnimMaterialSwitcher(3);
-				// PlayAnim 함수 호출
-				EmojiWidget->PlayAnim();
-				bIsEmojiAnimating = true;
 				Player->ServerPlayEmojiAnim(3);
+				bIsEmojiAnimating = true;
 				//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UHM_EmojiWidget::HideEmojiWidget ,
@@ -123,12 +110,8 @@ void UHM_EmojiWidget::OnClickedEmotion4Bun()
 			UMH_EmojiImg* EmojiWidget = Cast<UMH_EmojiImg>(Player->EmojiComp->GetUserWidgetObject());
 			if (EmojiWidget)
 			{
-				EmojiWidget->ShowCanvas();
-				EmojiWidget->AnimMaterialSwitcher(4);
-				// PlayAnim 함수 호출
-				EmojiWidget->PlayAnim();
-				bIsEmojiAnimating = true;
 				Player->ServerPlayEmojiAnim(4);
+				bIsEmojiAnimating = true;
 				//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UHM_EmojiWidget::HideEmojiWidget ,
@@ -152,13 +135,9 @@ void UHM_EmojiWidget::OnClickedEmotion5Bun()
 			UMH_EmojiImg* EmojiWidget = Cast<UMH_EmojiImg>(Player->EmojiComp->GetUserWidgetObject());
 			if (EmojiWidget)
 			{
-				EmojiWidget->ShowCanvas();
-				EmojiWidget->AnimMaterialSwitcher(5);
-				// PlayAnim 함수 호출
-				EmojiWidget->PlayAnim();
-				bIsEmojiAnimating = true;
 				Player->ServerPlayEmojiAnim(5);
-				//타이머 1.5초 후 HideEmojiWidget
+				bIsEmojiAnimating = true;
+							//타이머 1.5초 후 HideEmojiWidget
 				FTimerHandle RouletteTimerHandle;
 				GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UHM_EmojiWidget::HideEmojiWidget ,
 													   1.5f , false);
