@@ -85,7 +85,7 @@ public:
 	UFUNCTION()
 	void OnClickedConfirm_QRUi1Button();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetWidgetSwitcher(int32 num);
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -208,23 +208,32 @@ public:
 	UFUNCTION()
 	void OnClickedAvatarConfirmButton();
 	
-	UPROPERTY()
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	int32 CharacterModelNum = 1;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="EmojiAnim")
-	UMaterialInterface* AvatarAnim1;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="EmojiAnim")
-	UMaterialInterface* AvatarAnim2;
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* AvatarAnim1On;
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* AvatarAnim2On;
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* AvatarAnim3On;
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* AvatarAnim4On;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="EmojiAnim")
-	UMaterialInterface* AvatarAnim3;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category="EmojiAnim")
-	UMaterialInterface* AvatarAnim4;
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* AvatarAnim1Off;
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* AvatarAnim2Off;
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* AvatarAnim3Off;
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* AvatarAnim4Off;
 	
 	UFUNCTION()
-	void PlayerImgAnim(int32 AnimNum);
+	void PlayerImgOnAnim(int32 AnimNum);
+
+	UFUNCTION()
+	void PlayerImgOffAnim(int32 AnimNum);
 
 	// KHJ
 	UFUNCTION()

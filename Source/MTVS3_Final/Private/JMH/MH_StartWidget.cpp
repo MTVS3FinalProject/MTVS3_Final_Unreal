@@ -20,13 +20,13 @@ void UMH_StartWidget::NativeConstruct()
 	Btn_SignUp_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedSignUpButton);
 	Btn_test_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::Test_CreateSesstion); //테스트 세션생성 버튼
 	Btn_ForgotPassword_Login->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
-// 종료
+	// 종료
 	Btn_Exit_LoginWin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitWinButton);
 	//Btn_Exit_LoginWin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedForgotPasswordButton);
 	Btn_ExitLogin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedExitButton);
 	Btn_BackLogin->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
-	
-	
+
+
 	//Signup
 	Btn_Confirm_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirmSignupButton);
 	Btn_Back_Signup->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedBackButton);
@@ -55,6 +55,7 @@ void UMH_StartWidget::NativeConstruct()
 	{
 		gi->OnFindSignatureCompleteDelegate.AddDynamic(this , &UMH_StartWidget::SetLoadingActive); // 세션 탐색 또는 생성
 	}
+	
 }
 
 void UMH_StartWidget::Test_CreateSesstion()
@@ -113,10 +114,10 @@ void UMH_StartWidget::OnClickedExitButton()
 	//게임 종료
 	UWorld* World = GetWorld();
 	APlayerController* PlayerController = World ? World->GetFirstPlayerController() : nullptr;
-    
+
 	if (PlayerController)
 	{
-		UKismetSystemLibrary::QuitGame(World, PlayerController, EQuitPreference::Quit, true);
+		UKismetSystemLibrary::QuitGame(World , PlayerController , EQuitPreference::Quit , true);
 	}
 }
 
@@ -170,6 +171,7 @@ void UMH_StartWidget::OnClickedConfirm_QRUi2Button()
 	//확인버튼 누르면 ->
 	//아바타 설정ui로 이동.
 	WS_StartWidgetSwitcher->SetActiveWidgetIndex(2);
+	PlayerImgOffAnim(1);
 }
 
 void UMH_StartWidget::OnClickedConfirmSignupButton()
@@ -178,7 +180,7 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 	//비번 중복확인.
 	FText Password1 = EText_SignupPassWord->GetText();
 	FText Password2 = EText_SignupPassWord2->GetText();
-	
+
 	//모두 입력했는지 확인
 	//아바타 설정으로 이동
 
@@ -187,17 +189,17 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 	{
 		//QR을 서버가 전달 성공했다면
 		AHM_HttpActor* HttpActor = Cast<AHM_HttpActor>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
 		if (HttpActor)
 		{
-			HttpActor->ReqPostGetVerifyIdentityQR(EText_SignupEmail->GetText(),EText_SignupPassWord->GetText());
+			HttpActor->ReqPostGetVerifyIdentityQR(EText_SignupEmail->GetText() , EText_SignupPassWord->GetText());
 		}
 		else
 		{
 			//에러창
 			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
 		}
-	
+
 		//QR띄워주는 ui로 이동.->
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password!!!"));
 	}
@@ -280,18 +282,44 @@ FString UMH_StartWidget::FormatDateInput(const FString& InputText)
 
 void UMH_StartWidget::OnClickedSelectAvatarRButton()
 {
+	// 아바타 이미지 오른쪽으로 이동 (순환)
+	int32 PreviousCharacterModelNum = CharacterModelNum;
+	CharacterModelNum = (CharacterModelNum % 4) + 1; // 1에서 4까지 순환
+
+	// 현재 아바타는 On 애니메이션 재생
+	PlayerImgOnAnim(CharacterModelNum);
+	// 이전 아바타는 Off 애니메이션 재생
+	PlayerImgOffAnim(PreviousCharacterModelNum);
+	/*
 	// 아바타 이미지 오른쪽 이미지로
 	CharacterModelNum++;
+	int32 OffNum = -1 + CharacterModelNum;
 	if (CharacterModelNum > 4)
 	{
 		CharacterModelNum = 1;
+	PlayerImgOnAnim(CharacterModelNum);
+		PlayerImgOffAnim(4);
 	}
+	else if(OffNum > 1)
+	{
+		PlayerImgOnAnim(CharacterModelNum);
+		PlayerImgOffAnim(OffNum);
+	}*/
+
 	//애니메이션, 사진(버튼) 클릭하면 위젯 확대
-	
 }
 
 void UMH_StartWidget::OnClickedSelectAvatarLButton()
 {
+	// 아바타 이미지 왼쪽으로 이동 (순환)
+	int32 PreviousCharacterModelNum = CharacterModelNum;
+	CharacterModelNum = (CharacterModelNum - 2 + 4) % 4 + 1; // 4에서 1로 순환
+
+	// 현재 아바타는 On 애니메이션 재생
+	PlayerImgOnAnim(CharacterModelNum);
+	// 이전 아바타는 Off 애니메이션 재생
+	PlayerImgOffAnim(PreviousCharacterModelNum);
+	/*
 	//아바타 이미지 왼쪽이미지로
 	CharacterModelNum--;
 
@@ -299,7 +327,20 @@ void UMH_StartWidget::OnClickedSelectAvatarLButton()
 	{
 		CharacterModelNum = 4;
 	}
+	PlayerImgOnAnim(CharacterModelNum);
+
+	int32 OffNum = CharacterModelNum++;
+
+	if (OffNum < 4)
+	{
+		PlayerImgOffAnim(OffNum);
+	}
+	else
+	{
+		PlayerImgOffAnim(1);
+	}
 	//애니메이션, 사진(버튼) 클릭하면 위젯 확대
+*/
 }
 
 void UMH_StartWidget::OnClickedAvatarConfirmButton()
@@ -310,13 +351,14 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 	if (HttpActor)
 	{
 		ATTPlayer* Player = Cast<ATTPlayer>(GetOwningPlayer());
-		if(Player)
+		if (Player)
 		{
 			Player->SetAvatarData(CharacterModelNum);
 		}
 		//관리자 여부, 이메일,비번,나이,닉네임, 캐릭터Num
-		HttpActor->ReqPostSignup(EText_Nickname->GetText(),bIsHost_Signup , EText_SignupEmail->GetText() , EText_SignupPassWord->GetText() ,
-		                         EText_SignupBirth->GetText().ToString(), CharacterModelNum);
+		HttpActor->ReqPostSignup(EText_Nickname->GetText() , bIsHost_Signup , EText_SignupEmail->GetText() ,
+		                         EText_SignupPassWord->GetText() ,
+		                         EText_SignupBirth->GetText().ToString() , CharacterModelNum);
 	}
 	else
 	{
@@ -327,9 +369,46 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 	//GoToLobby();
 }
 
-void UMH_StartWidget::PlayerImgAnim(int32 AnimNum)
+void UMH_StartWidget::PlayerImgOnAnim(int32 AnimNum)
 {
-	
+	switch (AnimNum)
+	{
+	case 1:
+		PlayAnimation(AvatarAnim1On);
+		break;
+	case 2:
+		PlayAnimation(AvatarAnim2On);
+		break;
+	case 3:
+		PlayAnimation(AvatarAnim3On);
+		break;
+	case 4:
+		PlayAnimation(AvatarAnim4On);
+		break;
+	default:
+		break;
+	}
+}
+
+void UMH_StartWidget::PlayerImgOffAnim(int32 AnimNum)
+{
+	switch (AnimNum)
+	{
+	case 1:
+		PlayAnimation(AvatarAnim1Off);
+		break;
+	case 2:
+		PlayAnimation(AvatarAnim2Off);
+		break;
+	case 3:
+		PlayAnimation(AvatarAnim3Off);
+		break;
+	case 4:
+		PlayAnimation(AvatarAnim4Off);
+		break;
+	default:
+		break;
+	}
 }
 
 void UMH_StartWidget::SetLoadingActive(bool bIsActive)
