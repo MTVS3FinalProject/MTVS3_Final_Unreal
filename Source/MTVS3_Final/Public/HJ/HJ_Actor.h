@@ -24,10 +24,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditDefaultsOnly)
-	class UBoxComponent* Boxcomp;
+	class USceneComponent* SceneComp;
+	
+	UPROPERTY(EditDefaultsOnly)
+	class UBoxComponent* BoxComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTSettings|UI")
-	class UWidgetComponent* Widgetcomp;
+	class UWidgetComponent* WidgetComp;
 
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
