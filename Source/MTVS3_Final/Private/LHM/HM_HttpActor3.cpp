@@ -47,18 +47,37 @@ void AHM_HttpActor3::SetMainUI(UMainWidget* InMainUI)
 	MainUI = InMainUI;
 }
 
-void AHM_HttpActor3::DownloadImageFromURL(const FString& ImageURL)
+void AHM_HttpActor3::DownloadStickerImages(const TArray<FString>& StickerImageUrls)
+{
+	for (const FString& StickerImageUrl : StickerImageUrls)
+	{
+		DownloadImage(StickerImageUrl, EImageType::StickerImage);
+		UE_LOG(LogTemp , Log , TEXT("DownloadStickerImages"));
+	}
+}
+
+void AHM_HttpActor3::DownloadImage(const FString& URL, EImageType ImageType)
 {
 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnImageDownloaded);
-	HttpRequest->SetURL(ImageURL);
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnImageDownloaded, ImageType);
+	HttpRequest->SetURL(URL);
 	HttpRequest->SetVerb(TEXT("GET"));
-	
+    
+	// 진행 중인 이전 요청 취소
+	if (ActiveRequests.Contains(ImageType))
+	{
+		ActiveRequests[ImageType]->CancelRequest();
+	}
+    
+	ActiveRequests.Add(ImageType, HttpRequest);
 	HttpRequest->ProcessRequest();
 }
 
-void AHM_HttpActor3::OnImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void AHM_HttpActor3:: OnImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, EImageType ImageType)
 {
+	// 완료된 요청 제거
+	ActiveRequests.Remove(ImageType);
+
 	if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
 	{
 		TArray<uint8> ImageData = Response->GetContent();
@@ -66,20 +85,24 @@ void AHM_HttpActor3::OnImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr
 
 		if (Texture && TicketCustomUI)
 		{
-			// 이미지가 성공적으로 다운로드 및 텍스처로 변환되었을 때 UI에 적용
-			TicketCustomUI->SetBackgroundImg(Texture);
+			switch (ImageType)
+			{
+			case EImageType::StickerImage:
+				TicketCustomUI->SetStickerImage(Texture);
+				UE_LOG(LogTemp , Log , TEXT("StickerImage->SetImage"));
+				break;
+			case EImageType::TicketImage:
+				//TicketCustomUI->SetStickersImg(Texture);
+				UE_LOG(LogTemp , Log , TEXT("TicketImage->SetImage"));
+				break;
+			case EImageType::BackgroundImage:
+				TicketCustomUI->SetBackgroundImg(Texture);
+				UE_LOG(LogTemp , Log , TEXT("BackgroundImage->SetImage"));
+				break;
+			}
 		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to create texture from image data."));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to download image from URL."));
 	}
 }
-
 
 UTexture2D* AHM_HttpActor3::LoadTextureFromData(const TArray<uint8>& ImageData)
 {
@@ -170,14 +193,9 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 					{
 						TSharedPtr<FJsonObject> TitlesObject = TitlesValue->AsObject();
 						
-						// TitlesObject를 JSON 문자열로 변환
-						FString TitlesJsonString;
-						TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&TitlesJsonString);
-						FJsonSerializer::Serialize(TitlesObject.ToSharedRef() , Writer);
-
 						// JSON 문자열을 FTitles 구조체로 변환
 						FTitles NewTitles;
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(TitlesJsonString , &NewTitles , 0 , 0))
+						if (FJsonObjectConverter::JsonObjectToUStruct(TitlesObject.ToSharedRef() , &NewTitles , 0 , 0))
 						{
 							// 변환된 FTitles 구조체를 임시 배열에 추가
 							TempTitleItems.Add(NewTitles);
@@ -198,15 +216,10 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 					for ( const TSharedPtr<FJsonValue>& StickerValue : StickersList )
 					{
 						TSharedPtr<FJsonObject> StickerObject = StickerValue->AsObject();
-						
-						// TitlesObject를 JSON 문자열로 변환
-						FString StickerJsonString;
-						TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&StickerJsonString);
-						FJsonSerializer::Serialize(StickerObject.ToSharedRef() , Writer);
 
 						// JSON 문자열을 FTitles 구조체로 변환
 						FStickers NewStikers;
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(StickerJsonString , &NewStikers , 0 , 0))
+						if (FJsonObjectConverter::JsonObjectToUStruct(StickerObject.ToSharedRef() , &NewStikers , 0 , 0))
 						{
 							// 변환된 FTitles 구조체를 임시 배열에 추가
 							TempStickerItems.Add(NewStikers);
@@ -221,21 +234,16 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 					}
 					SetStickerItems(TempStickerItems);
 					
-					// 스티커 목록
+					// 티켓 목록
 					TArray<TSharedPtr<FJsonValue>> TicketsList = ResponseObject->GetArrayField(TEXT("memberTicketDTOList"));
 					TArray<FTickets> TempTicketItems;
 					for ( const TSharedPtr<FJsonValue>& TicketValue : TicketsList )
 					{
 						TSharedPtr<FJsonObject> TicketObject = TicketValue->AsObject();
-						
-						// TitlesObject를 JSON 문자열로 변환
-						FString TicketJsonString;
-						TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&TicketJsonString);
-						FJsonSerializer::Serialize(TicketObject.ToSharedRef() , Writer);
 
 						// JSON 문자열을 FTitles 구조체로 변환
 						FTickets NewTickets;
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(TicketJsonString , &NewTickets , 0 , 0))
+						if (FJsonObjectConverter::JsonObjectToUStruct(TicketObject.ToSharedRef() , &NewTickets , 0 , 0))
 						{
 							// 변환된 FTitles 구조체를 임시 배열에 추가
 							TempTicketItems.Add(NewTickets);
@@ -324,36 +332,44 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request,
 			{
 				// "response" 객체에 접근
 				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
-				if ( ResponseObject.IsValid() )
+				if (ResponseObject.IsValid())
 				{
-					// 스티커 목록
-					TArray<TSharedPtr<FJsonValue>> StickersList = ResponseObject->GetArrayField(TEXT("memberStickerDTOList"));
-					TArray<FStickers> NewStickerItems;
-					for ( const TSharedPtr<FJsonValue>& StickerValue : StickersList )
+					// 타이틀 정보 처리
+					TSharedPtr<FJsonObject> TitleObject = ResponseObject->GetObjectField(TEXT("titleInfo"));
+					if (TitleObject.IsValid())
 					{
-						TSharedPtr<FJsonObject> StickerObject = StickerValue->AsObject();
-						
-						// TitlesObject를 JSON 문자열로 변환
-						FString StickerJsonString;
-						TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&StickerJsonString);
-						FJsonSerializer::Serialize(StickerObject.ToSharedRef() , Writer);
-
-						// JSON 문자열을 FTitles 구조체로 변환
-						FStickers NewStikers;
-						if (FJsonObjectConverter::JsonObjectStringToUStruct(StickerJsonString , &NewStikers , 0 , 0))
+						FTitles NewTitles;
+						if (FJsonObjectConverter::JsonObjectToUStruct(TitleObject.ToSharedRef(), &NewTitles, 0, 0))
 						{
-							// 변환된 FTitles 구조체를 임시 배열에 추가
-							NewStickerItems.Add(NewStikers);
-							
-							UE_LOG(LogTemp , Log , TEXT("Stikers Info | Id: %d, Name: %s, Script: %s, Rarity: %s") ,
-								   NewStikers.stickerId ,
-								   *NewStikers.stickerName ,
-								   *NewStikers.stickerScript ,
-								   *NewStikers.stickerRarity );
+							UE_LOG(LogTemp, Log, TEXT("Titles Info | Id: %d, Name: %s, Script: %s, Rarity: %s"),
+								NewTitles.titleId,
+								*NewTitles.titleName,
+								*NewTitles.titleScript,
+								*NewTitles.titleRarity);
+
+							// 기존 TitleItems 배열에 추가
+							TitleItems.Add(NewTitles);
 						}
 					}
-					// 기존 StickerItems 배열에 새 항목 추가
-					StickerItems.Append(NewStickerItems);
+
+					// 스티커 정보 처리
+					TSharedPtr<FJsonObject> StickerObject = ResponseObject->GetObjectField(TEXT("stickerInfo"));
+					if (StickerObject.IsValid())
+					{
+						FStickers NewStickers;
+						if (FJsonObjectConverter::JsonObjectToUStruct(StickerObject.ToSharedRef(), &NewStickers, 0, 0))
+						{
+							UE_LOG(LogTemp, Log, TEXT("Stikers Info | Id: %d, Name: %s, Script: %s, Rarity: %s, StickerImg: %s"),
+								NewStickers.stickerId,
+								*NewStickers.stickerName,
+								*NewStickers.stickerScript,
+								*NewStickers.stickerRarity,
+								*NewStickers.stickerImage);
+
+							// 기존 StickerItems 배열에 추가
+							StickerItems.Add(NewStickers);
+						}
+					}
 				}
 			}
 		}
@@ -437,6 +453,7 @@ void AHM_HttpActor3::OnResPostSaveCustomTicket(FHttpRequestPtr Request, FHttpRes
 				if ( ResponseObject.IsValid() )
 				{
 					// 티켓 저장 성공처리
+					UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 성공 응답"));
 				}
 			}
 		}
@@ -455,7 +472,10 @@ void AHM_HttpActor3::ReqPostBackground(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
+	UE_LOG(LogTemp , Log , TEXT("Tickets.ticketId: %d"), Tickets.ticketId);
+	
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url); // 임의 티켓아이디
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -558,26 +578,37 @@ void AHM_HttpActor3::OnResGetCustomTicketList(FHttpRequestPtr Request, FHttpResp
 			{
 				// "response" 객체에 접근
 				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
-
 				if ( ResponseObject.IsValid() )
 				{
-					TSharedPtr<FJsonObject> CustomTicketListObject = ResponseObject->GetObjectField(TEXT("ticketDTOList"));
-					if ( CustomTicketListObject.IsValid() )
+					// "ticketDTOList" 배열에 접근
+					TArray<TSharedPtr<FJsonValue>> TicketList = ResponseObject->GetArrayField(TEXT("ticketDTOList"));
+
+					for (const TSharedPtr<FJsonValue>& TicketValue : TicketList)
 					{
-						int32 TicketId = CustomTicketListObject->GetIntegerField(TEXT("ticketId"));
-						FString SeatInfo = CustomTicketListObject->GetStringField(TEXT("seatInfo"));
-						UE_LOG(LogTemp , Log , TEXT("TicketId: %d, SeatInfo: %s") , TicketId , *SeatInfo);
-					}
-					
-					TSharedPtr<FJsonObject> ConcertInfoObject = ResponseObject->GetObjectField(TEXT("concertInfo"));
-					if ( ConcertInfoObject.IsValid() )
-					{
-						FString ConcertName = CustomTicketListObject->GetStringField(TEXT("concertName"));
-						int32 Year = CustomTicketListObject->GetIntegerField(TEXT("year"));
-						int32 Month = CustomTicketListObject->GetIntegerField(TEXT("month"));
-						int32 Day = CustomTicketListObject->GetIntegerField(TEXT("day"));
-						FString Time = CustomTicketListObject->GetStringField(TEXT("time"));
-						UE_LOG(LogTemp , Log , TEXT("ConcertName: %s, Date: %d-%d-%d-%s") , *ConcertName, Year, Month, Day, *Time);
+						// 각 티켓 정보를 FJsonObject로 변환
+						TSharedPtr<FJsonObject> TicketObject = TicketValue->AsObject();
+						if (TicketObject.IsValid())
+						{
+							// 티켓의 기본 정보 추출
+							int32 TicketId = TicketObject->GetIntegerField(TEXT("ticketId"));
+							FString SeatInfo = TicketObject->GetStringField(TEXT("seatInfo"));
+							FString TicketImage = TicketObject->GetStringField(TEXT("ticketImage"));
+            
+							// concertInfo 필드 접근
+							TSharedPtr<FJsonObject> ConcertInfoObject = TicketObject->GetObjectField(TEXT("concertInfo"));
+							if (ConcertInfoObject.IsValid())
+							{
+								FString ConcertName = ConcertInfoObject->GetStringField(TEXT("concertName"));
+								int32 Year = ConcertInfoObject->GetIntegerField(TEXT("year"));
+								int32 Month = ConcertInfoObject->GetIntegerField(TEXT("month"));
+								int32 Day = ConcertInfoObject->GetIntegerField(TEXT("day"));
+								FString Time = ConcertInfoObject->GetStringField(TEXT("time"));
+
+								// 각 필드 로그 출력
+								UE_LOG(LogTemp, Log, TEXT("Ticket Info | Id: %d, SeatInfo: %s, TicketImage: %s"), TicketId, *SeatInfo, *TicketImage);
+								UE_LOG(LogTemp, Log, TEXT("Concert Info | Name: %s, Date: %d-%d-%d, Time: %s"), *ConcertName, Year, Month, Day, *Time);
+							}
+						}
 					}
 				}
 			}
@@ -597,7 +628,10 @@ void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, Tickets.ticketId);
+	UE_LOG(LogTemp , Log , TEXT("Tickets.ticketId: %d"), Tickets.ticketId);
+	
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, Tickets.ticketId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -632,37 +666,28 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 				// "response" 객체에 접근
 				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
 
-				if ( ResponseObject.IsValid() )
+				if (ResponseObject.IsValid())
 				{
-						int32 DailyBackgroundRefreshCount = ResponseObject->GetIntegerField(TEXT("dailyBackgroundRefreshCount"));
-						UE_LOG(LogTemp , Log , TEXT("DailyBackgroundRefreshCount: %d") , DailyBackgroundRefreshCount);
-					
-					TSharedPtr<FJsonObject> StickerListObject = ResponseObject->GetObjectField(TEXT("stickerDTOList"));
-					if ( StickerListObject.IsValid() )
+					int32 DailyBackgroundRefreshCount = ResponseObject->GetIntegerField(TEXT("dailyBackgroundRefreshCount"));
+					UE_LOG(LogTemp , Log , TEXT("DailyBackgroundRefreshCount: %d") , DailyBackgroundRefreshCount);
+
+					// "stickerDTOList" 배열 필드에 접근
+					TArray<TSharedPtr<FJsonValue>> StickerList = ResponseObject->GetArrayField(TEXT("stickerDTOList"));
+					TArray<FString> StickerImageUrls;
+					for (const TSharedPtr<FJsonValue>& StickerValue : StickerList)
 					{
-						int32 StickerId = StickerListObject->GetIntegerField(TEXT("stickerId"));
-						UE_LOG(LogTemp , Log , TEXT("StickerId: %d") , StickerId);
-
-						// Base64로 인코딩된 이미지 데이터 추출
-						FString Base64Image = StickerListObject->GetStringField(TEXT("stickerImage"));
-						TArray<uint8> ImageData;
-						FBase64::Decode(Base64Image , ImageData);
-
-						// 텍스처로 변환
-						UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-						if ( Texture )
+						// 각 스티커 정보를 FJsonObject로 변환
+						TSharedPtr<FJsonObject> StickerObject = StickerValue->AsObject();
+						if (StickerObject.IsValid())
 						{
-							if ( TicketCustomUI )
-							{
-								//TicketCustomUI->SetStickersImg(Texture1, Texture2, Texture3, Texture4, Texture5);
-								UE_LOG(LogTemp , Warning , TEXT("Success to create texture from image data."));
-							}
-						}
-						else
-						{
-							UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
+							int32 StickerId = StickerObject->GetIntegerField(TEXT("stickerId"));
+							FString StickerImage = StickerObject->GetStringField(TEXT("stickerImage"));
+							UE_LOG(LogTemp , Log , TEXT("StickerId: %d, StickerImage: %s"), StickerId, *StickerImage);
+							StickerImageUrls.Add(StickerImage);
 						}
 					}
+					// 스티커 이미지 다운로드 요청
+					DownloadStickerImages(StickerImageUrls);
 				}
 			}
 		}
