@@ -185,8 +185,9 @@ public:
 #pragma endregion
 
 #pragma region Image URL Data
-	void DownloadImageFromURL(const FString& ImageURL);
-	void OnImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	void DownloadStickerImages(const TArray<FString>& StickerImageUrls);
+	void DownloadImage(const FString& URL, EImageType ImageType);
+	void OnImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, EImageType ImageType);
 	UTexture2D* LoadTextureFromData(const TArray<uint8>& ImageData);
 
 	// 현재 진행 중인 다운로드 요청 관리

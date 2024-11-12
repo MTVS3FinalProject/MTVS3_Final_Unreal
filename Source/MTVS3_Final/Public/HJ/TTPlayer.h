@@ -36,7 +36,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 #pragma region 멀티플레이
-	UPROPERTY(Replicated , BlueprintReadOnly , Category = "TTSettings|State")
+	UPROPERTY(ReplicatedUsing=OnRep_bIsSitting , BlueprintReadOnly , Category = "TTSettings|State")
 	bool bIsSitting;
 
 	UFUNCTION(Server , Reliable)
@@ -47,6 +47,9 @@ public:
 
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastStandUp();
+
+	UFUNCTION()
+	void OnRep_bIsSitting();
 
 	UFUNCTION(Server , Reliable)
 	void ServerLuckyDrawStart();
@@ -193,7 +196,7 @@ public:
 #pragma endregion
 
 #pragma region 플레이어 정보 및 복제 설정
-	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 
 	UPROPERTY(ReplicatedUsing=OnRep_Nickname , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString Nickname;
@@ -281,6 +284,7 @@ public:
 	UPROPERTY(Transient)
 	class ULevelSequencePlayer* SequencePlayer;
 
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|Avatar")
 	void SetNewSkeletalMesh(const int32& _AvatarData);
 
 	// ====================퍼즐====================
@@ -402,13 +406,13 @@ public:
 	UPROPERTY()
 	class UMH_WorldMap* WorldMapUI;
 
-	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	UPROPERTY(EditAnywhere ,BlueprintReadWrite, Category = "TTSettings|UI")
 	class UWidgetComponent* NicknameUIComp;
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UPlayerNicknameWidget> NicknameUIFactory;
 	class UPlayerNicknameWidget* NicknameUI;
 
-	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	UPROPERTY(EditAnywhere ,BlueprintReadWrite, Category = "TTSettings|UI")
 	class UWidgetComponent* TitleUIComp;
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UPlayerTitleWidget> TitleUIFactory;
@@ -457,7 +461,7 @@ public:
 	UFUNCTION()
 	void CreateMinimapActor();
 	
-	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	UPROPERTY(EditAnywhere , BlueprintReadWrite, Category = "TTSettings|UI")
 	class UWidgetComponent*  EmojiComp;
 	
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
@@ -465,4 +469,19 @@ public:
 
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	class UMH_EmojiImg* EmojiWidget;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Avatar")
+	USkeletalMesh* Avatar1Mesh;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Avatar")
+	USkeletalMesh* Avatar2Mesh;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Avatar")
+	USkeletalMesh* Avatar3Mesh;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Avatar")
+	USkeletalMesh* Avatar4Mesh;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Avatar")
+	USkeletalMesh* ManagerMesh;
 };
