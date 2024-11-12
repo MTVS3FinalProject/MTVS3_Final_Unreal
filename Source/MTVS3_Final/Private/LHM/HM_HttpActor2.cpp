@@ -298,7 +298,7 @@ void AHM_HttpActor2::ReqGetSeatRegistrationInquiry(FString SeatId , FString Acce
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d") , GetConcertId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -394,7 +394,7 @@ void AHM_HttpActor2::ReqGetRegisterSeat(FString SeatId , FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2/reception") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/reception") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -563,7 +563,7 @@ void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat(FString SeatId , FString Acce
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d") , *_url, GetConcertId(), GetMyReceptionSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("DELETE"));
 
@@ -705,7 +705,7 @@ void AHM_HttpActor2::ReqPostNoticeGameStart(FString SeatId , FString AccessToken
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/drawing") , *_url, GetConcertId(), GetMyReceptionSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2/drawing") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/drawing") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -794,7 +794,7 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/result") , *_url, GetConcertId(), GetMyReceptionSeatId()); 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2/result") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/result") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1130,7 +1130,7 @@ void AHM_HttpActor2::ReqPostPaymentSeat(int32 SeatId , FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/payment") , *_url, GetConcertId(), GetMyReceptionSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/2/payment") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/payment") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
