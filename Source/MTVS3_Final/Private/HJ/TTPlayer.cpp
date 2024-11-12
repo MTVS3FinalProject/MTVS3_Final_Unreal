@@ -532,21 +532,6 @@ void ATTPlayer::OnRep_RandomSeatNumber()
 
 void ATTPlayer::ServerSetNewSkeletalMesh_Implementation(const int32& _AvatarData)
 {
-	USkeletalMesh* Avatar1Mesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT(
-			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* Avatar2Mesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT(
-			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* Avatar3Mesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT(
-			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* Avatar4Mesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT(
-			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* ManagerMesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/KHJ/Assets/SM_Manager.SM_Manager'"));
-
 	switch (_AvatarData)
 	{
 	case 1:
@@ -1140,15 +1125,12 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 		FPSCameraComp->SetActive(true);
 		TPSCameraComp->SetActive(false);
 		NicknameUIComp->SetOwnerNoSee(true);
-		GetMesh()->SetOwnerNoSee(true);
+		// GetMesh()->SetOwnerNoSee(true);
 
 		// 플레이어의 회전 방향과 카메라 정렬
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		if (PC && PC->IsLocalController())
 		{
-			// 캐릭터의 메시를 1인칭 시점에서 보이지 않게 설정
-			GetMesh()->SetOwnerNoSee(true);
-
 			// 캐릭터의 현재 회전 방향으로 카메라를 맞춤
 			FRotator ControlRotation = GetActorRotation();
 			PC->SetControlRotation(ControlRotation);
@@ -1224,21 +1206,6 @@ void ATTPlayer::SwitchCameraOnPiece(bool _bIsThirdPerson)
 
 void ATTPlayer::SetNewSkeletalMesh(const int32& _AvatarData)
 {
-	USkeletalMesh* Avatar1Mesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT(
-			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* Avatar2Mesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT(
-			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* Avatar3Mesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT(
-			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* Avatar4Mesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT(
-			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
-	USkeletalMesh* ManagerMesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn.SKM_Quinn'"));
-
 	switch (_AvatarData)
 	{
 	case 1:
@@ -1765,6 +1732,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Chair && Anim)
 	{
+		UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
 		Chair->bIsOccupied = true;
 		FTransform SittingTransform = Chair->GetSittingTransform();
 		this->SetActorTransform(SittingTransform);
