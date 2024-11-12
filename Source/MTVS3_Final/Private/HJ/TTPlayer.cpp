@@ -753,7 +753,7 @@ void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if (HttpActor2)
 	{
-		HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
+		HttpActor2->ReqPostNoticeGameStart(TEXT("1") ,
 		                                   GI->GetAccessToken());
 	}
 }
