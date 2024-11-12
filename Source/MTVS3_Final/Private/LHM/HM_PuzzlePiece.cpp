@@ -93,7 +93,7 @@ void AHM_PuzzlePiece::PostInitializeComponents()
     
 	// 점수 배열 설정
 	TArray<int32> ScoreOptions = {50, 50, 30, 30, 30, 20, 20, 20, 20};
-	FMath::RandInit(FDateTime::Now().GetMillisecond());
+	FMath::RandInit(FDateTime::Now().GetMinute());
 	Algo::RandomShuffle(ScoreOptions);
 	ScoreArray = ScoreOptions;
 
@@ -151,6 +151,20 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
 			//CurrentTransform = PieceComp->GetComponentTransform();
 		}
 	}
+}
+
+bool AHM_PuzzlePiece::AreAllPiecesDestroyed() const
+{
+	for (UStaticMeshComponent* MeshComponent : PieceMeshes)
+	{
+		if (MeshComponent && MeshComponent->IsValidLowLevel() && !MeshComponent->IsGarbageEliminationEnabled())
+		{
+			// 하나라도 살아있으면 false 반환
+			return false;
+		}
+	}
+	// 모든 요소가 nullptr 또는 파괴된 상태라면 true 반환
+	return true;
 }
 
 void AHM_PuzzlePiece::OnRep_PieceTransform()

@@ -27,8 +27,10 @@
 #include "LevelSequencePlayer.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "HJ/HallSoundManager.h"
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
+#include "JMH/MH_EmojiImg.h"
 #include "JMH/MH_GameWidget.h"
 #include "JMH/MH_MinimapActor.h"
 #include "JMH/PlayerNicknameWidget.h"
@@ -83,6 +85,11 @@ ATTPlayer::ATTPlayer()
 	HandComp = CreateDefaultSubobject<USceneComponent>(TEXT("HandComp"));
 	HandComp->SetupAttachment(FPSCameraComp);
 	HandComp->SetRelativeLocation(FVector(120 , 0 , -40));
+
+	//MH
+	EmojiComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("EmojiWidget"));
+	EmojiComp->SetupAttachment(CenterCapsuleComp);
+	
 }
 
 // Called when the game starts or when spawned
@@ -255,6 +262,18 @@ void ATTPlayer::Tick(float DeltaTime)
 
 			TitleUIComp->SetWorldRotation(TitleUIDirection.GetSafeNormal().ToOrientationRotator());
 		}
+
+		if (EmojiComp && EmojiComp->GetVisibleFlag())
+		{
+			// P = P0 + vt
+			// 카메라 위치
+			FVector CamLoc = UGameplayStatics::GetPlayerCameraManager(GetWorld() , 0)->GetCameraLocation();
+			// 체력바em와 카메라의 방향 벡터
+			FVector EmojiUIDirection = CamLoc - EmojiComp->GetComponentLocation();
+
+			EmojiComp->SetWorldRotation(EmojiUIDirection.GetSafeNormal().ToOrientationRotator());
+		}
+		
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		OnRep_bIsHost();
@@ -615,6 +634,8 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		GameUI->SetWidgetSwitcher(2); // 우승자 UI 업데이트
 	}
 
+	UGameplayStatics::PlaySound2D(GetWorld(), LuckyDrawWinnerSound);
+
 	// 서버 RPC, 멀티캐스트 RPC 필요
 	ServerLuckyDrawWin();
 
@@ -668,7 +689,7 @@ void ATTPlayer::ClientLDWinnerExitSession_Implementation()
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI)
 	{
-		GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
+		GI->SetLuckyDrawState(ELuckyDrawState::Winner);
 		GI->SwitchSession(EPlaceState::Plaza);
 	}
 }
@@ -748,6 +769,44 @@ void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
 	{
 		HttpActor2->ReqPostNoticeGameStart(TEXT("2024A113") ,
 		                                   GI->GetAccessToken());
+	}
+}
+
+void ATTPlayer::PlayConcertBGM()
+{
+	FTimerHandle TimerHandle;
+    
+	GetWorldTimerManager().SetTimer(
+		TimerHandle, 
+		this, 
+		&ATTPlayer::PlayConcertBGMAfterDelay, 
+		0.3f,
+		false    // 반복 실행 안 함
+	);
+}
+
+void ATTPlayer::PlayConcertBGMAfterDelay()
+{
+	AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+    
+	if (HallSoundManager) 
+	{
+		HallSoundManager->PlayConcertBGM();
+	}
+}
+
+void ATTPlayer::ServerPlayEmojiAnim_Implementation(const int32& EmojiNum)
+{
+	MulticastPlayEmojiAnim(EmojiNum);
+}
+
+void ATTPlayer::MulticastPlayEmojiAnim_Implementation(const int32& EmojiNum)
+{
+	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
+	if (Anim)
+	{
+		Anim->PlayEmojiMontage(EmojiNum);
 	}
 }
 
@@ -1032,6 +1091,11 @@ void ATTPlayer::ServerRPCUpdateFPSCameraRotation_Implementation(const FRotator& 
 	}
 }
 
+// void ATTPlayer::ClientPlayRouletteEndSound_Implementation()
+// {
+// 	UGameplayStatics::PlaySoundAtLocation(this, RouletteEndSound, GetActorLocation(), 0.75f, 1.0f, 0.0f, LuckyDrawAttenuation);
+// }
+
 void ATTPlayer::PrintStateLog()
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -1173,7 +1237,7 @@ void ATTPlayer::SetNewSkeletalMesh(const int32& _AvatarData)
 		nullptr , TEXT(
 			"/Script/Engine.SkeletalMesh'/Game/JMH/Mesh/Player01/ShovedReactionWithSpin_UE.ShovedReactionWithSpin_UE'"));
 	USkeletalMesh* ManagerMesh = LoadObject<USkeletalMesh>(
-		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/KHJ/Assets/SM_Manager.SM_Manager'"));
+		nullptr , TEXT("/Script/Engine.SkeletalMesh'/Game/Characters/Mannequins/Meshes/SKM_Quinn.SKM_Quinn'"));
 
 	switch (_AvatarData)
 	{
@@ -1392,7 +1456,7 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 {
 	bIsMapActive = !bIsMapActive;
-	if (!IsLocallyControlled()) return;
+	if (!IsLocallyControlled() || !WorldMapUI) return;
 
 	if (bIsMapActive)
 	{

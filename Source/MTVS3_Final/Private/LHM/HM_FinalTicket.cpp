@@ -1,20 +1,20 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "LHM/HM_FinalTicket.h"
 
+#include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
-#include "Components/Overlay.h"
+#include "HJ/TTGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
+#include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_TicketBG.h"
 #include "LHM/HM_TicketCustom.h"
 #include "Slate/WidgetRenderer.h"
-
-class AHM_TicketSceneCapture2D;
-class UCanvasPanelSlot;
-class FWidgetRenderer;
 
 void UHM_FinalTicket::NativeConstruct()
 {
@@ -29,23 +29,18 @@ void UHM_FinalTicket::NativeConstruct()
     		
     		if (BackgroundSlot)
     		{
-    			BackgroundSlot->SetSize(FVector2D(844, 500));
+    			BackgroundSlot->SetSize(FVector2D(888, 504));
     			BackgroundSlot->SetPosition(FVector2D(-220,0));
     			BackgroundSlot->SetAlignment(FVector2d(0.5));
     		}
     
     		if (InfoSlot)
     		{
-    			InfoSlot->SetSize(FVector2D(436, 500));
+    			InfoSlot->SetSize(FVector2D(436, 504));
     			InfoSlot->SetPosition(FVector2D(420,0));
     			InfoSlot->SetAlignment(FVector2d(0.5));
     		}
     	}
-
-	if (TicketBGWidget)
-	{
-		TicketBGUI = CreateWidget<UHM_TicketBG>(GetWorld(), TicketBGWidget);
-	}
 	
 	if (TicketCutomWidget)
 	{
@@ -53,87 +48,84 @@ void UHM_FinalTicket::NativeConstruct()
 	}
 }
 
-void UHM_FinalTicket::CaptureAndDisplayTicketBackground()
+void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _TicketCutomUI)
 {
-	// 캡쳐 전에 모든 위젯의 상태를 로깅
 	UE_LOG(LogTemp, Log, TEXT("Starting capture process..."));
-	LogWidgetHierarchy(TicketCutomUI);
 
-	// 타이머를 사용하여 캡쳐 지연
-	GetWorld()->GetTimerManager().SetTimer(
-		CaptureTimerHandle,
-		this,
-		&UHM_FinalTicket::ExecuteCapture,
-		0.2f,  // 0.2초로 증가
-		false
-	);
-}
-
-void UHM_FinalTicket::LogWidgetHierarchy(UWidget* Widget, int32 Depth)
-{
-	if (!Widget) return;
-
-	FString Indent;
-	for (int32 i = 0; i < Depth; ++i)
+	this->TicketCutomUI = _TicketCutomUI;
+	if(TicketCutomUI == nullptr) return;
+	
+	if(TicketCutomUI)
 	{
-		Indent += TEXT("  ");
-	}
+		// FWidgetRenderer 생성
+		TSharedPtr<FWidgetRenderer> WidgetRenderer = MakeShareable(new FWidgetRenderer(true));
+	
+		// Render Target 생성 및 크기 설정
+		CaptureSize = FVector2D(888.0f, 504.0f); // 기본 크기 설정
+		//CaptureSize = FVector2D(1920.0f, 1080.0f); // 기본 크기 설정
 
-	UE_LOG(LogTemp, Log, TEXT("%s%s (Visibility: %d)"), 
-		*Indent, 
-		*Widget->GetName(), 
-		static_cast<int32>(Widget->GetVisibility()));
+		FWidgetTransform WidgetTransform;
+		WidgetTransform.Translation = FVector2D(388, 30); // X, Y 좌표
+		//WidgetTransform.Translation = FVector2D(0, 0); // X, Y 좌표
+		TicketCutomUI->SetRenderTransform(WidgetTransform);
+	
+		UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
+		RenderTarget->InitCustomFormat(CaptureSize.X, CaptureSize.Y, PF_B8G8R8A8, true);
+		RenderTarget->UpdateResource();
+	
+		// ImgTicketBackgroundWidgetInstance 캡처
+		WidgetRenderer->DrawWidget(RenderTarget, TicketCutomUI->TakeWidget(), CaptureSize, 1.0f);
 
-	if (UPanelWidget* Panel = Cast<UPanelWidget>(Widget))
-	{
-		for (int32 i = 0; i < Panel->GetChildrenCount(); ++i)
+		// Render Target을 UTexture2D로 변환
+		UTexture2D* CapturedTexture = ConvertRenderTargetToTexture(this, RenderTarget);
+		if (CapturedTexture)
 		{
-			if (UWidget* Child = Panel->GetChildAt(i))
+			CapturedTexture->UpdateResource(); // 리소스 업데이트
+
+			// Img_FinalTicket에 캡처된 텍스처 표시
+			if (TicketCutomUI && Img_FinalTicket)
 			{
-				LogWidgetHierarchy(Child, Depth + 1);
+				FSlateBrush Brush;
+				Brush.SetResourceObject(CapturedTexture);
+
+				// 최종 티켓 이미지에 반영
+				Img_FinalTicket->SetBrush(Brush);
+
+				// 서버에 커스텀 티켓 저장 요청
+				AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+				UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+				if (!GI && !HttpActor3) return;
+				TArray<uint8> ImageData = ConvertTextureToPNG(RenderTarget);
+				//HttpActor3->ReqPostSaveCustomTicket(ImageData ,  , HttpActor3->GetBackgroundId() , GI->GetAccessToken());
+				
 			}
-		}
+		}	
 	}
 }
 
-void UHM_FinalTicket::ExecuteCapture()
+TArray<uint8> UHM_FinalTicket::ConvertTextureToPNG(UTextureRenderTarget2D* RenderTarget)
 {
-	// 모든 자식 위젯을 강제로 다시 그리도록 합니다
-	//ForceLayoutPrepass();
-	
-	// FWidgetRenderer 생성
-	TSharedPtr<FWidgetRenderer> WidgetRenderer = MakeShareable(new FWidgetRenderer(true));
-	
-	// Render Target 생성 및 크기 설정
-	//CaptureSize = FVector2D(844.0f, 500.0f); // 기본 크기 설정
-	CaptureSize = FVector2D(1920.0f, 1080.0f); // 기본 크기 설정
+	TArray<uint8> PNGData;
+	if (!RenderTarget) return PNGData;
 
-	FWidgetTransform WidgetTransform;
-	//WidgetTransform.Translation = FVector2D(340, 30); // X, Y 좌표
-	WidgetTransform.Translation = FVector2D(0, 0); // X, Y 좌표
-	TicketCutomUI->SetRenderTransform(WidgetTransform);
-	
-	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
-	RenderTarget->InitCustomFormat(CaptureSize.X, CaptureSize.Y, PF_B8G8R8A8, true);
-	RenderTarget->UpdateResource();
-	
-	// ImgTicketBackgroundWidgetInstance 캡처
-	WidgetRenderer->DrawWidget(RenderTarget, TicketCutomUI->TakeWidget(), CaptureSize, 5.0f); //Deltatime
+	// Render Target의 리소스를 가져옴
+	FTextureRenderTargetResource* RenderTargetResource = RenderTarget->GameThread_GetRenderTargetResource();
 
-	// Render Target을 UTexture2D로 변환
-	UTexture2D* CapturedTexture = ConvertRenderTargetToTexture(this, RenderTarget);
-	if (CapturedTexture)
+	// 픽셀 데이터를 FColor 형식의 배열에 읽어옴
+	TArray<FColor> Bitmap;
+	RenderTargetResource->ReadPixels(Bitmap);
+
+	// 이미지 래퍼 모듈을 사용해 PNG 형식으로 변환
+	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
+
+	if (ImageWrapper.IsValid() && ImageWrapper->SetRaw(Bitmap.GetData(), Bitmap.Num() * sizeof(FColor), RenderTarget->SizeX, RenderTarget->SizeY, ERGBFormat::BGRA, 8))
 	{
-		CapturedTexture->UpdateResource(); // 리소스 업데이트
-
-		// Img_FinalTicket에 캡처된 텍스처 표시
-		if (Img_FinalTicket)
-		{
-			FSlateBrush Brush;
-			Brush.SetResourceObject(CapturedTexture);
-			Img_FinalTicket->SetBrush(Brush);
-		}
+		PNGData = ImageWrapper->GetCompressed(100);  // 압축 레벨 100으로 PNG로 변환
 	}
+
+	return PNGData;
 }
 
 UTexture2D* UHM_FinalTicket::ConvertRenderTargetToTexture(UObject* WorldContextObject,

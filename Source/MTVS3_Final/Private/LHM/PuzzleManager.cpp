@@ -2,6 +2,9 @@
 
 
 #include "LHM/PuzzleManager.h"
+
+#include "Kismet/GameplayStatics.h"
+#include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
 
 // Sets default values
@@ -18,7 +21,8 @@ void APuzzleManager::BeginPlay()
 	Super::BeginPlay();
 
 	PuzzleUI = CastChecked<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
-	if(PuzzleUI) PuzzleUI->InitializeTextBlocks();
+	//if(PuzzleUI) PuzzleUI->InitializeTextBlocks();
+	bPuzzleCompleted = false;
 }
 
 // Called every frame
@@ -26,6 +30,23 @@ void APuzzleManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (bPuzzleCompleted)
+	{
+		return; // 퍼즐 종료 플래그
+	}
+	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("LV_TA") )
+	{
+		AHM_PuzzlePiece* PuzzlePiece = Cast<AHM_PuzzlePiece>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_PuzzlePiece::StaticClass()));
+
+		if (PuzzlePiece && PuzzlePiece->AreAllPiecesDestroyed())
+		{
+			// 모든 퍼즐 조각이 파괴되었을 때, 퍼즐게임이 끝났을 때
+			GameOver();
+			UE_LOG(LogTemp, Log, TEXT("Game Over"));
+			bPuzzleCompleted = true; // 이후 다시 호출되지 않도록 플래그 설정
+		}
+	}
 }
 
 void APuzzleManager::AddPiece(UStaticMeshComponent* Piece, int32 InitialScore)
@@ -72,10 +93,6 @@ void APuzzleManager::AddScoreToPlayer(AActor* Player, int32 Score)
 
 	if(!bPlayerFound)
 	{
-		//FPlayerScoreInfo NewPlayerInfo;
-		//NewPlayerInfo.Player = Player;
-		//NewPlayerInfo.Score = PlayerScores[Player];
-		//PlayerScoresInfo.Add(NewPlayerInfo);
 		FPlayerScoreInfo NewPlayerInfo(Player, PlayerScores[Player]);
 		PlayerScoresInfo.Add(NewPlayerInfo);
 	}
@@ -118,5 +135,10 @@ void APuzzleManager::SortAndUpdateRanking()
 				*TimeString);
 		}
 	}
+}
+
+void APuzzleManager::GameOver()
+{
+	UE_LOG(LogTemp, Log, TEXT("Game Over"));
 }
 

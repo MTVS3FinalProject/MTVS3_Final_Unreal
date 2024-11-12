@@ -9,6 +9,7 @@
 #include "HJ/TTGameInstance.h"
 #include "ImageUtils.h"
 #include "JsonObjectConverter.h"
+#include "Components/EditableText.h"
 #include "JMH/MH_BuyTicketWidget.h"
 #include "GameFramework/PlayerState.h"
 #include "HJ/TTHallGameState.h"
@@ -190,6 +191,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 		if ( Response->GetResponseCode() == 200 )
 		{
 			TargetPlayer->ServerTeleportPlayer(true);
+			TargetPlayer->PlayConcertBGM();
 			GI->SetPlaceState(EPlaceState::ConcertHall);
 			
 			// JSON 응답 파싱
@@ -562,7 +564,7 @@ void AHM_HttpActor2::OnResGetMyRegisteredSeat(FHttpRequestPtr Request , FHttpRes
 	}
 }
 
-// 좌석 취소 요청
+// 좌석 취소 요청1
 void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat(FString SeatId , FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -588,7 +590,7 @@ void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat(FString SeatId , FString Acce
 	Request->ProcessRequest();
 }
 
-// 좌석 취소 요청에 대한 응답
+// 좌석 취소 요청에 대한 응답1
 void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -632,6 +634,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 	}
 }
 
+// 좌석 취소 요청2
 void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat2(FString SeatId, FString AccessToken)
 {
 	// HTTP 모듈 가져오기
@@ -657,8 +660,8 @@ void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat2(FString SeatId, FString Acce
 	Request->ProcessRequest();
 }
 
-void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request, FHttpResponsePtr Response,
-	bool bWasSuccessful)
+// 좌석 취소 요청에 대한 응답2
+void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
@@ -1106,7 +1109,6 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 					{
 						GI->SetCoin(UserCoin);
 					}
-
 					//SetSeatInfo(SeatInfo);
 					//SetSeatPrice(SeatPrice);
 					
@@ -1277,6 +1279,11 @@ void AHM_HttpActor2::OnResGetReservationInfo(FHttpRequestPtr Request, FHttpRespo
 					FString UserAddress1 = ResponseObject->GetStringField(TEXT("userAddress1"));
 					FString UserAddress2 = ResponseObject->GetStringField(TEXT("userAddress2"));
 
+					FText usename = FText::FromString(UserName);
+					FText phonenumber = FText::FromString(UserPhoneNum);
+					FText address1 = FText::FromString(UserAddress1);
+					FText address2 = FText::FromString(UserAddress2);
+					
 					UE_LOG(LogTemp , Log , TEXT("UserName : %s") , *UserName);
 					UE_LOG(LogTemp , Log , TEXT("UserPhoneNum : %s") , *UserPhoneNum);
 					UE_LOG(LogTemp , Log , TEXT("UserAddress1 : %s") , *UserAddress1);
@@ -1285,10 +1292,10 @@ void AHM_HttpActor2::OnResGetReservationInfo(FHttpRequestPtr Request, FHttpRespo
 					// 배송지 정보 불러오기
 					if ( MainUI->GetBuyTicketWidget() )
 					{
-						//MainUI->BuyTicketWidget->
-						//MainUI->BuyTicketWidget->
-						//MainUI->BuyTicketWidget->
-						//MainUI->BuyTicketWidget->
+						MainUI->BuyTicketWidget->EText_Name->SetText(usename);
+						MainUI->BuyTicketWidget->EText_PhoneNum->SetText(phonenumber);
+						MainUI->BuyTicketWidget->EText_Address1->SetText(address1);
+						MainUI->BuyTicketWidget->EText_Address2->SetText(address2);
 					}
 				}
 			}
