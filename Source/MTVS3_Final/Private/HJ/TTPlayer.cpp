@@ -88,7 +88,7 @@ ATTPlayer::ATTPlayer()
 
 	//MH
 	EmojiComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("EmojiWidget"));
-	EmojiComp->SetupAttachment(CenterCapsuleComp);
+	EmojiComp->SetupAttachment(GetMesh() , TEXT("head"));
 	
 }
 

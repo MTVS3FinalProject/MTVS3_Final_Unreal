@@ -83,6 +83,17 @@ public:
 		return BuyTicketWidget;
 	}
 
+	//TicketCustomWidget 서버가 호출 가능하게
+	UPROPERTY(meta = (BindWidget))
+	UHM_TicketCustom* TicketCustomWidget;
+	
+	// TicketCustomWidget 컴포넌트에 대한 참조 반환 함수
+	UFUNCTION(BlueprintCallable, Category="UI")
+	UHM_TicketCustom* GetTicketCustomWidget() const
+	{
+		return TicketCustomWidget;
+	}
+
 	bool bIsChatVisible = false;
 	
 	UPROPERTY(meta=(BindWidget))

@@ -51,16 +51,16 @@ public:
 	class UImage* Img_TicketBackground;
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_TicketInfo;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UImage* Img_Sticker01;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UImage* Img_Sticker02;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UImage* Img_Sticker03;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UImage* Img_Sticker04;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UImage* Img_Sticker05;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	// class UImage* Img_Sticker01;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	// class UImage* Img_Sticker02;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	// class UImage* Img_Sticker03;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	// class UImage* Img_Sticker04;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	// class UImage* Img_Sticker05;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
 	
@@ -76,13 +76,12 @@ public:
 	FVector2D PreviousMousePosition;
 	FVector2D CurrentImageScale;
 	
-	void SetupDraggableImage(UImage* Image);
+	//void SetupDraggableImage(UImage* Image);
 	FUsedImage CreateCompleteImageSet(UImage* SourceImage);
 	void SetRenderScale(FUsedImage& ImageSet, const FVector2D& MouseDelta);
 	void SetRenderAngle(FUsedImage& ImageSet, const FVector2D& MouseDelta);
 	//void DeleteImage(FUsedImage& ImageSet);
 	void DeleteImage(FUsedImage& ImageSet, int32 Index);
-	void AddImageSetToFinalTicketUI(const FUsedImage& ImageSet);
 	
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
 	virtual FReply NativeOnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
@@ -90,12 +89,37 @@ public:
 	
 	UFUNCTION()
 	void SetBackgroundImg(UTexture2D* newTexture);
+	
+// ================================== 통신에서 받아온 스티커 동적 생성 및 저장 ==================================
+
+	// 동적으로 스티커 이미지를 설정하는 함수
 	UFUNCTION()
-	void SetStickerImage(UTexture2D* Texture);
-	void SetStickersImg(UTexture2D* newTexture1, UTexture2D* newTexture2, UTexture2D* newTexture3, UTexture2D* newTexture4, UTexture2D* newTexture5);
+	void SetStickersImgs(UTexture2D* Texture , int32 ImageIndex);
+
+	// 스티커 이미지 위젯을 초기화하는 함수
+	UFUNCTION()
+	void InitializeStickerImages(int32 Count);
+
+	// 스크롤박스와 버티컬박스 참조
+	UPROPERTY(meta = (BindWidget))
+	class UScrollBox* ScrollBox_Stickers;
+
+	UPROPERTY(meta = (BindWidget))
+	class UVerticalBox* VerticalBox_Stickers;
+
+	// 동적 이미지 배열
+	UPROPERTY()
+	TArray<UImage*> StickerImages;
+
+	// 이미지 생성 헬퍼 함수
+	class UImage* CreateImageWidget(int32 Index);
+    
+	// 스페이서 생성 헬퍼 함수
+	class USpacer* CreateSpacerWidget();
 	
 #pragma endregion
 	
+public:
 #pragma region Button Functions
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_ResetBackground;
@@ -105,7 +129,6 @@ public:
 	class UButton* Btn_Save;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_Exit;
-	
 	UFUNCTION()
 	void OnClickedResetBackgroundButton();
 	UFUNCTION()
@@ -114,6 +137,23 @@ public:
 	void OnClickedSaveButton();
 	UFUNCTION()
 	void OnClickedExitButton();
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_HttpTest01;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_HttpTest02;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_HttpTest03;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_HttpTest04;
+	UFUNCTION()
+	void OnClickedHttpTest01();
+	UFUNCTION()
+	void OnClickedHttpTest02();
+	UFUNCTION()
+	void OnClickedHttpTest03();
+	UFUNCTION()
+	void OnClickedHttpTest04();
 #pragma endregion
 
 protected:
