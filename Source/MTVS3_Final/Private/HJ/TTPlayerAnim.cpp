@@ -42,6 +42,7 @@ void UTTPlayerAnim::PlaySittingMontage()
 
 void UTTPlayerAnim::PlayDancingMontage()
 {
+	bIsDancing=true;
 	if (DancingMontage) Montage_Play(DancingMontage, 1.0f, EMontagePlayReturnType::MontageLength, 0.0f);
 }
 
