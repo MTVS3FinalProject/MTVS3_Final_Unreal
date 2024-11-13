@@ -3,9 +3,7 @@
 
 #include "LHM/HM_HttpActor3.h"
 #include "HttpModule.h"
-#include "IImageWrapper.h"
 #include "ImageUtils.h"
-#include "IImageWrapperModule.h"
 #include "Async/Async.h"
 #include "Engine/Texture2D.h"
 #include "Interfaces/IHttpResponse.h"
@@ -367,6 +365,7 @@ void AHM_HttpActor3::OnResPostSaveCustomTicket(FHttpRequestPtr Request, FHttpRes
 				{
 					// 티켓 저장 성공처리
 					UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 성공 응답"));
+					
 				}
 			}
 		}
@@ -444,6 +443,7 @@ void AHM_HttpActor3::OnResPostBackground(FHttpRequestPtr Request, FHttpResponseP
 						if (MainUI->GetTicketCustomWidget())
 						{
 							MainUI->GetTicketCustomWidget()->SetBackgroundImg(Texture);
+							UE_LOG(LogTemp , Log , TEXT("SetBackgroundImg(Texture);"));
 						}
 					}
 				}
@@ -622,8 +622,8 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 								UE_LOG(LogTemp, Warning, TEXT("Failed to create texture from image data for index: %d"), i);
 							}
 						}
-						if(MainUI->GetTicketCustomWidget()) MainUI->SetWidgetSwitcher(8);
 					}
+						if(MainUI->GetTicketCustomWidget()) MainUI->SetWidgetSwitcher(7);
 				}
 			}
 		}

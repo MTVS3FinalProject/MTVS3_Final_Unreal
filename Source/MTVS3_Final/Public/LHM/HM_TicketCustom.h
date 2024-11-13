@@ -34,12 +34,34 @@ struct FUsedImage
 };
 #pragma endregion
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedTicketCustomBack);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedTicketCustomSave);
+
 UCLASS()
 class MTVS3_FINAL_API UHM_TicketCustom : public UUserWidget
 {
 	GENERATED_BODY()
 	
 public:
+	FOnClickedTicketCustomBack OnClickedTicketCustomBack;
+	FOnClickedTicketCustomSave OnClickedTicketCustomSave;
+
+	// 닫기 버튼 클릭 이벤트 설정
+	UFUNCTION()
+	void OnClickedExitButton()
+	{
+		// 델리게이트 호출
+		OnClickedTicketCustomBack.Broadcast();
+	}
+	
+	// 저장 버튼 클릭 이벤트 설정
+	UFUNCTION()
+	void OnClickedSaveButton()
+	{
+		// 델리게이트 호출
+		OnClickedTicketCustomSave.Broadcast();
+	}
+	
 	virtual void NativeConstruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
@@ -51,22 +73,14 @@ public:
 	class UImage* Img_TicketBackground;
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_TicketInfo;
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	// class UImage* Img_Sticker01;
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	// class UImage* Img_Sticker02;
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	// class UImage* Img_Sticker03;
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	// class UImage* Img_Sticker04;
-	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	// class UImage* Img_Sticker05;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
 	
 	// 드래그 앤 드롭, 회전, 크기조정, 삭제
 	UPROPERTY()
 	class UImage* CurrentImage;
+	UPROPERTY()
+	class UImage* PreviousImage;
 
 	bool bIsDragging;
 	bool bIsRenderingAngle;
@@ -133,10 +147,8 @@ public:
 	void OnClickedResetBackgroundButton();
 	UFUNCTION()
 	void OnClickedResetTicketImageButton();
-	UFUNCTION()
-	void OnClickedSaveButton();
-	UFUNCTION()
-	void OnClickedExitButton();
+	//UFUNCTION()
+	//void OnClickedSaveButtonDELEGATE();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_HttpTest01;
@@ -150,26 +162,5 @@ public:
 	void OnClickedHttpTest02();
 	UFUNCTION()
 	void OnClickedHttpTest04();
-#pragma endregion
-
-#pragma region UI : FinalTicket Save
-
-	// 최종 이미지 위젯 참조
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	// TSubclassOf<class UHM_FinalTicket> FinalTicketWidget;
-	// class UHM_FinalTicket* FinalTicketUI;
-	//
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	// TSubclassOf<class UMainWidget> MainWidget;
-	// class UMainWidget* MainUI;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	class UMainWidget* MainUI;
-	void SetMainUI(UMainWidget* InMainUI);
-	
-	UPROPERTY()
-	class UHM_FinalTicket* FinalTicketUI;
-	void SetFinalTicketUI(UHM_FinalTicket* InTicketingUI);
-	
 #pragma endregion
 };

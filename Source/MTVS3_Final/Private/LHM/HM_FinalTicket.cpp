@@ -5,6 +5,7 @@
 
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
+#include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
@@ -19,7 +20,9 @@
 void UHM_FinalTicket::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	
+	Btn_Exit->OnClicked.AddDynamic(this , &UHM_FinalTicket::OnClickedExitButton);
+	
 	RootCanvas = Cast<UCanvasPanel>(GetRootWidget());
     	if( RootCanvas && Img_FinalTicket && Img_FinalTicketInfo )
     	{
@@ -37,7 +40,7 @@ void UHM_FinalTicket::NativeConstruct()
     		if (InfoSlot)
     		{
     			InfoSlot->SetSize(FVector2D(436, 504));
-    			InfoSlot->SetPosition(FVector2D(420,0));
+    			InfoSlot->SetPosition(FVector2D(445,0));
     			InfoSlot->SetAlignment(FVector2d(0.5));
     		}
     	}
@@ -126,11 +129,6 @@ TArray<uint8> UHM_FinalTicket::ConvertTextureToPNG(UTextureRenderTarget2D* Rende
 	}
 
 	return PNGData;
-}
-
-void UHM_FinalTicket::SetMainUI(UMainWidget* InMainUI)
-{
-	MainUI = InMainUI;
 }
 
 UTexture2D* UHM_FinalTicket::ConvertRenderTargetToTexture(UObject* WorldContextObject,
