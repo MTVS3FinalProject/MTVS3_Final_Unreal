@@ -91,15 +91,15 @@ public:
 	UPROPERTY()
 	class UMH_ItemBox_Title* CurrentTitle;
 
-/*
+
 	//텝 초기화 함수들
 	UFUNCTION()
-	void InitializeTitleTabs(const TArray<FTitleItemData>& TitleItem);
+	void InitializeTitleTabs(const TArray<FTitles>& TitleItem);
 	UFUNCTION()
-	void InitializeTicketTabs(const TArray<FTicketItemData>& TicketItems);
+	void InitializeTicketTabs(const TArray<FTickets>& TicketItems);
 	UFUNCTION()
-	void InitializeStickerTabs(const TArray<FStickerItemData>& StickerItems);
-*/
+	void InitializeStickerTabs(const TArray<FStickers>& StickerItems);
+
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_00_PlayerTitle;

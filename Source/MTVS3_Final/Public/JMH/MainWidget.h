@@ -83,6 +83,28 @@ public:
 		return BuyTicketWidget;
 	}
 
+	//TicketCustomWidget 서버가 호출 가능하게
+	UPROPERTY(meta = (BindWidget))
+	UHM_TicketCustom* TicketCustomWidget;
+	
+	// TicketCustomWidget 컴포넌트에 대한 참조 반환 함수
+	UFUNCTION(BlueprintCallable, Category="UI")
+	UHM_TicketCustom* GetTicketCustomWidget() const
+	{
+		return TicketCustomWidget;
+	}
+
+	//FinalTicket 서버가 호출 가능하게
+	UPROPERTY(meta = (BindWidget))
+	UHM_FinalTicket* FinalTicketWidget;
+	
+	// TicketCustomWidget 컴포넌트에 대한 참조 반환 함수
+	UFUNCTION(BlueprintCallable, Category="UI")
+	UHM_FinalTicket* GetFinalTicketWidget() const
+	{
+		return FinalTicketWidget;
+	}
+	
 	bool bIsChatVisible = false;
 	
 	UPROPERTY(meta=(BindWidget))
@@ -184,6 +206,8 @@ public:
 
 	UFUNCTION()
 	void OnTicketWidgetClose();
+	UFUNCTION()
+	void OnClickedCustomTicketSaveButton();
 
 	//UI 애니메이션
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
@@ -196,6 +220,17 @@ public:
 	UWidgetAnimation* ConcertAnim4;
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* ConcertAnim5;
+
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim1_0;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim2_1;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim3_2;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim4_3;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim5_4;
 
 	UFUNCTION()
 	void SelectConcertAnim(bool bIsRightBtn,int32 AnimNum);

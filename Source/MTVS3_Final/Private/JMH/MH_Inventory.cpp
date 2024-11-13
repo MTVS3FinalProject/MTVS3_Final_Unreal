@@ -3,6 +3,7 @@
 
 #include "JMH/MH_Inventory.h"
 
+#include "ImageUtils.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/HorizontalBox.h"
@@ -71,7 +72,7 @@ void UMH_Inventory::HideTitleUnequipWin()
 
 void UMH_Inventory::InitializeTabs()
 {
-	/*
+	
 		//데이터들이 저장될 HTTPInvenActor에서 정보 TArray로 받아오기
 		AHM_HttpActor3* HTTP_Inven = Cast<AHM_HttpActor3>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
@@ -82,9 +83,9 @@ void UMH_Inventory::InitializeTabs()
 		if (HTTP_Inven)
 		{
 			// 받은 데이터가 비어 있지 않은지 확인
-			const TArray<FTitleItemData>& TitleItems = HTTP_Inven->GetTitleItems();
-			const TArray<FTicketItemData>& TicketItems = HTTP_Inven->GetTicketItems();
-			const TArray<FStickerItemData>& StickerItems = HTTP_Inven->GetStickerItems();
+			const TArray<FTitles>& TitleItems = HTTP_Inven->GetTitleItems();
+			const TArray<FTickets>& TicketItems = HTTP_Inven->GetTicketItems();
+			const TArray<FStickers>& StickerItems = HTTP_Inven->GetStickerItems();
 	
 			if (TitleItems.Num() > 0)
 			{
@@ -98,59 +99,120 @@ void UMH_Inventory::InitializeTabs()
 			{
 				InitializeStickerTabs(StickerItems);
 			}
-		}*/
+		}
 }
-
-/*
-void UMH_Inventory::InitializeTitleTabs(const TArray<FTitleItemData>& TitleItem)
+//현민
+void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_00_Title->ClearChildren();
-
-	for (const FTitleItemData& ItemData : TitleItem)
+	
+	for (const FTitles& ItemData : TitleItem)
 	{
+		//타이틀 호리젠탈에 아이템 박스 넣어주기.
 		UMH_ItemBox_Title* ItemBox_Title = CreateWidget<UMH_ItemBox_Title>(this , TitleItemBoxFac);
+		UOverlay* OverlayTitle = NewObject<UOverlay>(this);
+
 		if (ItemBox_Title)
 		{
-			//ItemBox_Title->
-			//ItemBox_Title->SetTitleData(ItemData); // 타이틀 데이터를 설정
-			Hori_InvenBox_00_Title->AddChild(ItemBox_Title);
+			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
+			ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
+			if (OverlayTitle)
+			{
+				// Overlay에 ItemBox_Title 추가
+				UOverlaySlot* ItemSlot = OverlayTitle->AddChildToOverlay(ItemBox_Title);
+				if (ItemSlot)
+				{
+					ItemSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+					ItemSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);
+
+					// 아이템 박스와 오버레이 슬롯을 매핑하여 저장
+					OverlaySlotMap.Add(ItemBox_Title , ItemSlot);
+				}
+
+				OverlayTitle->SetRenderTransformPivot(FVector2D(0.5f , 0.5f));
+				Hori_InvenBox_00_Title->AddChild(OverlayTitle);
+			}
 		}
 	}
 }
 
-void UMH_Inventory::InitializeTicketTabs(const TArray<FTicketItemData>& TicketItems)
+void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 {
-	///티켓 호리젠탈에 아이템 박스 넣어주기.
+	//콘서트네임,좌석정보,콘서트 이미지
+	//티켓 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_01_Ticket->ClearChildren();
 
-	for (const FTicketItemData& ItemData : TicketItems)
+	for (const FTickets& ItemData : TicketItems)
 	{
 		UMH_ItemBox_Ticket* ItemBox_Ticket = CreateWidget<UMH_ItemBox_Ticket>(this , TicketItemBoxFac);
 		if (ItemBox_Ticket)
 		{
+			// Base64 이미지 문자열을 TArray<uint8>로 디코딩
+			TArray<uint8> ImageData;
+			if (FBase64::Decode(ItemData.ticketImage, ImageData))
+			{
+				UTexture2D* ticketTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+				if (ticketTexture && ItemBox_Ticket->Img_Item_Ticket)
+				{
+					// 이미지 위젯에 텍스처 적용
+					ItemBox_Ticket->Img_Item_Ticket->SetBrushFromTexture(ticketTexture);
+					UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
+				}
+
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to decode base64 image data"));
+			}
+			ItemBox_Ticket->Text_Ticket->SetText(FText::FromString(ItemData.concertName));
+			ItemBox_Ticket->Text_SeatInfo->SetText(FText::FromString(ItemData.seatInfo));
 			//ItemBox_Ticket->SetTicketData(ItemData); // 타이틀 데이터를 설정
 			Hori_InvenBox_01_Ticket->AddChild(ItemBox_Ticket);
 		}
 	}
 }
 
-void UMH_Inventory::InitializeStickerTabs(const TArray<FStickerItemData>& StickerItems)
+void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 {
 	//스티커 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_02_Sticker->ClearChildren();
 
-	for (const FStickerItemData& ItemData : StickerItems)
+	for (const FStickers& ItemData : StickerItems)
 	{
 		UMH_ItemBox_Sticker* ItemBox_Sticker = CreateWidget<UMH_ItemBox_Sticker>(this , StickerItemBoxFac);
 		if (ItemBox_Sticker)
 		{
-			//ItemBox_Sticker->SetStickerData(ItemData); // 타이틀 데이터를 설정
+			// Base64 이미지 문자열을 TArray<uint8>로 디코딩
+			TArray<uint8> ImageData;
+			if (FBase64::Decode(ItemData.stickerImage, ImageData))
+			{
+				UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+				if (StickerTexture && ItemBox_Sticker->Img_Item_Sticker)
+				{
+					// 이미지 위젯에 텍스처 적용
+					ItemBox_Sticker->Img_Item_Sticker->SetBrushFromTexture(StickerTexture);
+					UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
+				}
+
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to decode base64 image data"));
+			}
 			Hori_InvenBox_02_Sticker->AddChild(ItemBox_Sticker);
+			UE_LOG(LogTemp , Log , TEXT("InitializeStickerTabs"));
 		}
 	}
-}*/
-
+}
 
 void UMH_Inventory::OnClicked_PlayerTitle()
 {

@@ -400,6 +400,11 @@ public:
 	TSubclassOf<class UMH_TicketingWidget> TicketingUIFactory;
 	UPROPERTY()
 	class UMH_TicketingWidget* TicketingUI;
+	
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class UHM_TicketCustom> TicketCustomUIFactory;
+	UPROPERTY()
+	class UHM_TicketCustom* TicketCustomUI;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UMH_WorldMap> WorldMapUIFactory;

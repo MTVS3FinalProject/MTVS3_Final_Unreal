@@ -57,7 +57,7 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreas[%d]"), i);
 			BoardAreas[i]->SetupAttachment(RootComponent);
 			BoardAreas[i]->SetStaticMesh(MeshAsset.Object);
-			BoardAreas[i]->SetRelativeScale3D(FVector(0.7f , 7.0f , 7.0f));
+			BoardAreas[i]->SetRelativeScale3D(FVector(0.3f , 5.0f , 5.0f));
 			BoardAreas[i]->SetRelativeRotation(FRotator(0,90,0));
 			
 			BoardAreas[i]->SetCollisionProfileName(TEXT("PuzzleBoard"));
@@ -80,7 +80,7 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			BoardAreasGrid[i]->SetupAttachment(RootComponent);
 			BoardAreasGrid[i]->SetStaticMesh(MeshAsset.Object);
 			//BoardAreasGrid[i]->SetRelativeLocation(FVector(0.0f, 10.f, 0.0f));
-			BoardAreasGrid[i]->SetRelativeScale3D(FVector(0.1f , 6.0f , 6.0f));
+			BoardAreasGrid[i]->SetRelativeScale3D(FVector(0.1f , 4.0f , 4.0f));
 			BoardAreasGrid[i]->SetRelativeRotation(FRotator(0,90,0));
 			
 			BoardAreasGrid[i]->SetVisibility(true);
@@ -100,7 +100,7 @@ void AHM_PuzzleBoard::InitializeBoardAreasLocation()
 			int32 Idx = Row * GridSize + Col;
 			if (BoardAreas.IsValidIndex(Idx) && BoardAreas[Idx])
 			{
-				FVector OffsetLocation = FVector(Col * -CellSize , 0, Row * CellSize);
+				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
 				FVector NewLocation = BoardLocation + OffsetLocation;
 				BoardAreas[Idx]->SetWorldLocation(NewLocation);
 			}
@@ -120,7 +120,7 @@ void AHM_PuzzleBoard::InitializeBoardAreasGridLocation()
 			int32 Idx = Row * GridSize + Col;
 			if (BoardAreasGrid.IsValidIndex(Idx) && BoardAreasGrid[Idx])
 			{
-				FVector OffsetLocation = FVector(Col * -CellSize , 0, Row * CellSize);
+				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
 				FVector NewLocation = BoardGridLocation + OffsetLocation;
 				BoardAreasGrid[Idx]->SetWorldLocation(NewLocation);
 			}

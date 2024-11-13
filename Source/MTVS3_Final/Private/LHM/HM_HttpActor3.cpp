@@ -1,16 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "LHM/HM_HttpActor3.h"
 #include "HttpModule.h"
-#include "IImageWrapper.h"
 #include "ImageUtils.h"
-#include "IImageWrapperModule.h"
 #include "Async/Async.h"
 #include "Engine/Texture2D.h"
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
 #include "JMH/MainWidget.h"
+#include "JMH/MH_Inventory.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_TicketCustom.h"
@@ -28,10 +27,6 @@ void AHM_HttpActor3::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (TicketCustomWidget)
-	{
-		TicketCustomUI = CreateWidget<UHM_TicketCustom>(GetWorld(), TicketCustomWidget);
-	}
 }
 
 // Called every frame
@@ -47,96 +42,9 @@ void AHM_HttpActor3::SetMainUI(UMainWidget* InMainUI)
 	MainUI = InMainUI;
 }
 
-void AHM_HttpActor3::DownloadStickerImages(const TArray<FString>& StickerImageUrls)
+void AHM_HttpActor3::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 {
-	for (const FString& StickerImageUrl : StickerImageUrls)
-	{
-		DownloadImage(StickerImageUrl, EImageType::StickerImage);
-		UE_LOG(LogTemp , Log , TEXT("DownloadStickerImages"));
-	}
-}
-
-void AHM_HttpActor3::DownloadImage(const FString& URL, EImageType ImageType)
-{
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnImageDownloaded, ImageType);
-	HttpRequest->SetURL(URL);
-	HttpRequest->SetVerb(TEXT("GET"));
-    
-	// 진행 중인 이전 요청 취소
-	if (ActiveRequests.Contains(ImageType))
-	{
-		ActiveRequests[ImageType]->CancelRequest();
-	}
-    
-	ActiveRequests.Add(ImageType, HttpRequest);
-	HttpRequest->ProcessRequest();
-}
-
-void AHM_HttpActor3:: OnImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful, EImageType ImageType)
-{
-	// 완료된 요청 제거
-	ActiveRequests.Remove(ImageType);
-
-	if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
-	{
-		TArray<uint8> ImageData = Response->GetContent();
-		UTexture2D* Texture = LoadTextureFromData(ImageData);
-
-		if (Texture && TicketCustomUI)
-		{
-			switch (ImageType)
-			{
-			case EImageType::StickerImage:
-				TicketCustomUI->SetStickerImage(Texture);
-				UE_LOG(LogTemp , Log , TEXT("StickerImage->SetImage"));
-				break;
-			case EImageType::TicketImage:
-				//TicketCustomUI->SetStickersImg(Texture);
-				UE_LOG(LogTemp , Log , TEXT("TicketImage->SetImage"));
-				break;
-			case EImageType::BackgroundImage:
-				TicketCustomUI->SetBackgroundImg(Texture);
-				UE_LOG(LogTemp , Log , TEXT("BackgroundImage->SetImage"));
-				break;
-			}
-		}
-	}
-}
-
-UTexture2D* AHM_HttpActor3::LoadTextureFromData(const TArray<uint8>& ImageData)
-{
-	IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
-	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::JPEG);
-
-	if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(ImageData.GetData(), ImageData.Num()))
-	{
-		TArray<uint8> RawData;
-		if (ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, RawData))
-		{
-			// 텍스처 생성
-			UTexture2D* Texture = UTexture2D::CreateTransient(
-				ImageWrapper->GetWidth(), 
-				ImageWrapper->GetHeight(), 
-				PF_B8G8R8A8
-			);
-
-			if (Texture)
-			{
-				// 텍스처 데이터 설정
-				void* TextureData = Texture->GetPlatformData()->Mips[0].BulkData.Lock(LOCK_READ_WRITE);
-				FMemory::Memcpy(TextureData, RawData.GetData(), RawData.Num());
-				Texture->GetPlatformData()->Mips[0].BulkData.Unlock();
-
-				// 텍스처 리소스 업데이트
-				Texture->UpdateResource();
-				return Texture;
-			}
-		}
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Failed to create texture from image data."));
-	return nullptr;
+	TicketingUI = InTicketingUI;
 }
 
 // 인벤토리 정보 요청
@@ -254,12 +162,14 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 								   *NewTickets.seatInfo ,
 								   *NewTickets.ticketImage );
 						}
+						SetTicketId(NewTickets.ticketId);
 					}
 					SetTicketItems(TempTicketItems);
-
 					if (MainUI)
 					{
-						//MainUI
+						MainUI->WBP_MH_MainBar->WBP_inventoryUI->InitializeTabs();
+						MainUI->WBP_MH_MainBar->SetVisibilityState();
+						UE_LOG(LogTemp , Log , TEXT("inventoryUI->InitializeTabs()"));
 					}
 				}
 			}
@@ -383,6 +293,7 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request,
 // 커스텀 티켓 저장 요청
 void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 요청"));
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
@@ -391,8 +302,9 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TAr
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
+	UE_LOG(LogTemp , Log , TEXT("GetTicketId(): %d"), GetTicketId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, Tickets.ticketId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -408,7 +320,7 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TAr
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
 	Writer->WriteValue(TEXT("customTicketImage"), Base64Image);  // Base64로 인코딩된 이미지
-	Writer->WriteValue(TEXT("backgroundId"), BackGroundId);       // 배경 ID
+	Writer->WriteValue(TEXT("backgroundId"), BackGroundId);      // 배경 ID
 
 	// StickerList를 JSON 배열로 작성
 	Writer->WriteArrayStart(TEXT("stickerIdList"));
@@ -425,7 +337,7 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TAr
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수 연결
-	Request->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnResPostBackground);
+	Request->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnResPostSaveCustomTicket);
 
 	// 요청 전송
 	Request->ProcessRequest();
@@ -454,8 +366,13 @@ void AHM_HttpActor3::OnResPostSaveCustomTicket(FHttpRequestPtr Request, FHttpRes
 				{
 					// 티켓 저장 성공처리
 					UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 성공 응답"));
+					
 				}
 			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 실패"));
 		}
 	}
 }
@@ -467,12 +384,13 @@ void AHM_HttpActor3::ReqPostBackground(FString AccessToken)
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
 
-	FTickets Tickets;
+	UE_LOG(LogTemp , Log , TEXT("AccessToken: %s"), *AccessToken);
+	//FTickets Tickets;
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	UE_LOG(LogTemp , Log , TEXT("Tickets.ticketId: %d"), Tickets.ticketId);
+	UE_LOG(LogTemp , Log , TEXT("GetTicketId(): %d"), GetTicketId());
 	
 	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
 	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url); // 임의 티켓아이디
@@ -513,19 +431,23 @@ void AHM_HttpActor3::OnResPostBackground(FHttpRequestPtr Request, FHttpResponseP
 				{
 					// 받아올 정보 추출
 					int32 _BackgroundId = ResponseObject->GetIntegerField(TEXT("backgroundId"));
-					FString ImageURL = ResponseObject->GetStringField(TEXT("backgroundImage"));
-					SetBackgroundId(_BackgroundId);
+					FString Base64String = ResponseObject->GetStringField(TEXT("backgroundImage"));
 					UE_LOG(LogTemp , Log , TEXT("BackgroundId : %d"), GetBackgroundId());
-					UE_LOG(LogTemp , Log , TEXT("BackgroundImageURL : %s"), *ImageURL);
+					UE_LOG(LogTemp , Log , TEXT("BackgroundImageURL : %s"), *Base64String);
 
-					
-					// // 이미지 URL 추출
-					// FString ImageURL = ResponseObject->GetStringField(TEXT("backgroundImage"));
-					// if (!ImageURL.IsEmpty())
-					// {
-					// 	// URL로 이미지 다운로드
-					// 	DownloadImageFromURL(ImageURL);
-					// }
+					SetBackgroundId(_BackgroundId);
+
+					TArray<uint8> ImageData;
+					FBase64::Decode(Base64String , ImageData);
+					UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+					if (Texture)
+					{
+						if (MainUI->GetTicketCustomWidget())
+						{
+							MainUI->GetTicketCustomWidget()->SetBackgroundImg(Texture);
+							UE_LOG(LogTemp , Log , TEXT("SetBackgroundImg(Texture);"));
+						}
+					}
 				}
 			}
 		}
@@ -593,7 +515,17 @@ void AHM_HttpActor3::OnResGetCustomTicketList(FHttpRequestPtr Request, FHttpResp
 							int32 TicketId = TicketObject->GetIntegerField(TEXT("ticketId"));
 							FString SeatInfo = TicketObject->GetStringField(TEXT("seatInfo"));
 							FString TicketImage = TicketObject->GetStringField(TEXT("ticketImage"));
-            
+
+							SetTicketId(TicketId);
+
+							TArray<uint8> ImageData;
+							FBase64::Decode(TicketImage , ImageData);
+							UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+							if (Texture)
+							{
+								
+							}
+							
 							// concertInfo 필드 접근
 							TSharedPtr<FJsonObject> ConcertInfoObject = TicketObject->GetObjectField(TEXT("concertInfo"));
 							if (ConcertInfoObject.IsValid())
@@ -623,12 +555,12 @@ void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
 
-	FTickets Tickets;
+	//FTickets Tickets;
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	UE_LOG(LogTemp , Log , TEXT("Tickets.ticketId: %d"), Tickets.ticketId);
+	UE_LOG(LogTemp , Log , TEXT("Tickets.ticketId: %d"), GetTicketId());
 	
 	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, Tickets.ticketId);
 	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url);
@@ -670,24 +602,40 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 				{
 					int32 DailyBackgroundRefreshCount = ResponseObject->GetIntegerField(TEXT("dailyBackgroundRefreshCount"));
 					UE_LOG(LogTemp , Log , TEXT("DailyBackgroundRefreshCount: %d") , DailyBackgroundRefreshCount);
-
-					// "stickerDTOList" 배열 필드에 접근
+					
 					TArray<TSharedPtr<FJsonValue>> StickerList = ResponseObject->GetArrayField(TEXT("stickerDTOList"));
-					TArray<FString> StickerImageUrls;
-					for (const TSharedPtr<FJsonValue>& StickerValue : StickerList)
+
+					if(MainUI->GetTicketCustomWidget())
 					{
-						// 각 스티커 정보를 FJsonObject로 변환
-						TSharedPtr<FJsonObject> StickerObject = StickerValue->AsObject();
+						// 스티커 개수에 따라 UI만 초기화 (한 번만 호출)
+						MainUI->GetTicketCustomWidget()->InitializeStickerImages(StickerList.Num());
+					}
+					
+					for (int32 i = 0; i < StickerList.Num(); i++)
+					{
+						TSharedPtr<FJsonObject> StickerObject = StickerList[i]->AsObject();
 						if (StickerObject.IsValid())
 						{
-							int32 StickerId = StickerObject->GetIntegerField(TEXT("stickerId"));
-							FString StickerImage = StickerObject->GetStringField(TEXT("stickerImage"));
-							UE_LOG(LogTemp , Log , TEXT("StickerId: %d, StickerImage: %s"), StickerId, *StickerImage);
-							StickerImageUrls.Add(StickerImage);
+							FString Base64String = StickerObject->GetStringField(TEXT("stickerImage"));
+							TArray<uint8> ImageData;
+					
+							// Base64 디코딩하여 byte array로 변환
+							FBase64::Decode(Base64String, ImageData);
+							UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+							if (Texture)
+							{
+								 if(MainUI->GetTicketCustomWidget())
+								 {
+								 	MainUI->GetTicketCustomWidget()->SetStickersImgs(Texture, i);
+								 }
+							}
+							else
+							{
+								UE_LOG(LogTemp, Warning, TEXT("Failed to create texture from image data for index: %d"), i);
+							}
 						}
 					}
-					// 스티커 이미지 다운로드 요청
-					DownloadStickerImages(StickerImageUrls);
+						if(MainUI->GetTicketCustomWidget()) MainUI->SetWidgetSwitcher(7);
 				}
 			}
 		}

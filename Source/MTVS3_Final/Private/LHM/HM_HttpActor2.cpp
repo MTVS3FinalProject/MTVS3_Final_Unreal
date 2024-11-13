@@ -2,6 +2,9 @@
 
 
 #include "LHM/HM_HttpActor2.h"
+
+#include <string>
+
 #include "JMH/MH_TicketingWidget.h"
 #include "HttpModule.h"
 #include "Interfaces/IHttpResponse.h"
@@ -14,6 +17,8 @@
 #include "GameFramework/PlayerState.h"
 #include "HJ/TTHallGameState.h"
 #include "JMH/MainWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetStringLibrary.h"
 #include "LHM/HM_HttpActor3.h"
 
 // Sets default values
@@ -153,9 +158,10 @@ void AHM_HttpActor2::ReqGetConcertEntry(FString AccessToken)
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
-	
+	FConcertInfo NewConcertInfo;
 	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d"), GetConcertId());
-		
+	UE_LOG(LogTemp , Log , TEXT("NewConcertInfo.concertId: %d"), NewConcertInfo.concertId);
+	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d") , *_url, GetConcertId());
@@ -187,7 +193,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 		if ( Response->GetResponseCode() == 200 )
 		{
 			TargetPlayer->ServerTeleportPlayer(true);
-			TargetPlayer->PlayConcertBGM();
+			//TargetPlayer->PlayConcertBGM();
 			GI->SetPlaceState(EPlaceState::ConcertHall);
 			
 			// JSON 응답 파싱
@@ -291,6 +297,9 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 // 좌석 조회 요청
 void AHM_HttpActor2::ReqGetSeatRegistrationInquiry(FString SeatId , FString AccessToken)
 {
+	//InquirySeatId = UKismetStringLibrary::Conv_StringToInt(SeatId);
+	//UE_LOG(LogTemp , Log , TEXT("ChairTag: %d"), InquirySeatId);
+
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
@@ -298,7 +307,8 @@ void AHM_HttpActor2::ReqGetSeatRegistrationInquiry(FString SeatId , FString Acce
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d") , GetConcertId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s") , *_url, GetConcertId(), *SeatId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -373,7 +383,22 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						TicketingUI->SetTickettingDate(Year , Month , Day);
 						TicketingUI->SetTextGameStartTime(Time);
 					}
-
+					if(GetMyReceptionSeatId() == 1) // 접수한 좌석일 때 접수취소 버튼
+					{
+						UE_LOG(LogTemp , Log , TEXT("GetMyReceptionSeatId: %d, InquirySeatId: %d"), GetMyReceptionSeatId(), InquirySeatId);
+						// MainUI 숨기기
+						MainUI->SetVisibleCanvas(false);
+						// 좌석 경쟁 UI 표시(테스트용)
+						TicketingUI->SetVisibleSwitcher(true , 0);
+						TicketingUI->SetCompletedVisible(true);
+					}
+					else // 접수한 좌석이 아닐 때 접수하기 버튼
+					{
+						// MainUI 숨기기
+						MainUI->SetVisibleCanvas(false);
+						// 좌석 경쟁 UI 표시(테스트용)
+						TicketingUI->SetVisibleSwitcher(true , 0);
+					}
 				}
 			}
 		}
@@ -381,6 +406,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 	else
 	{
 		UE_LOG(LogTemp , Error , TEXT("Failed to get seat registration count: %s") , *Response->GetContentAsString());
+		return;
 	}
 }
 
@@ -442,6 +468,7 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 					UE_LOG(LogTemp , Log , TEXT("RemainingTicket : %d") , RemainingTicket);
 					UE_LOG(LogTemp , Log , TEXT("CompetitionRate : %d") , CompetitionRate);
 
+					MyReceptionSeats.seatId = 1;
 					if( MainUI )
 					{
 						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
@@ -1189,7 +1216,7 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					UE_LOG(LogTemp , Log , TEXT("UserName : %s") , *UserName);
 					UE_LOG(LogTemp , Log , TEXT("UserPhoneNum : %s") , *UserPhoneNum);
 					UE_LOG(LogTemp , Log , TEXT("UserAddress : %s") , *UserAddress);
-					UE_LOG(LogTemp , Log , TEXT("UserAddress : %d") , TicketId);
+					UE_LOG(LogTemp , Log , TEXT("TicketId : %d") , TicketId);
 
 					if ( TTPlayer && GI )
 					{
@@ -1204,9 +1231,13 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(8);
 					}
 
-					FTickets Ticket;
-					Ticket.ticketId = TicketId;
-					UE_LOG(LogTemp , Log , TEXT("FTickets.ticketId: %d"),Ticket.ticketId);
+					AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+					if(HttpActor3)
+					{
+						HttpActor3->SetTicketId(TicketId);
+						UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), TicketId);
+					}
 				}
 			}
 		}
@@ -1393,6 +1424,14 @@ void AHM_HttpActor2::OnResPostCheatPaymentSeat(FHttpRequestPtr Request, FHttpRes
 					UE_LOG(LogTemp , Log , TEXT("UserAddress : %s") , *UserAddress);
 					UE_LOG(LogTemp , Log , TEXT("TicketId : %d") , TicketId);
 
+					AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+					if(HttpActor3)
+					{
+						HttpActor3->SetTicketId(TicketId);
+						UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), TicketId);
+					}
+					
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 					if ( TTPlayer && GI )
