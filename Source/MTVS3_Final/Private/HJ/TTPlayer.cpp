@@ -1753,6 +1753,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	{
 		UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
 		Chair->bIsOccupied = true;
+		Chair->RotateChair(true);
 		FTransform SittingTransform = Chair->GetSittingTransform();
 		this->SetActorTransform(SittingTransform);
 		GetCharacterMovement()->DisableMovement(); // 이동 비활성화
@@ -1780,6 +1781,7 @@ void ATTPlayer::MulticastStandUp_Implementation()
 	if (Chair && Anim)
 	{
 		Chair->bIsOccupied = false;
+		Chair->RotateChair(false);
 		FTransform StandingTransform = Chair->GetStandingTransform();
 		SetActorTransform(StandingTransform);
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // 이동 모드 복원
