@@ -3,6 +3,7 @@
 
 #include "JMH/MH_Inventory.h"
 
+#include "ImageUtils.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/HorizontalBox.h"
@@ -100,7 +101,7 @@ void UMH_Inventory::InitializeTabs()
 			}
 		}
 }
-
+//현민
 void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
@@ -111,7 +112,8 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 		UMH_ItemBox_Title* ItemBox_Title = CreateWidget<UMH_ItemBox_Title>(this , TitleItemBoxFac);
 		if (ItemBox_Title)
 		{
-			//ItemBox_Title->
+			//타이틀 박스 텍스트에 받아온 String넣어주기
+			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
 			//ItemBox_Title->SetTitleData(ItemData); // 타이틀 데이터를 설정
 			Hori_InvenBox_00_Title->AddChild(ItemBox_Title);
 		}
@@ -120,6 +122,7 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 
 void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 {
+	//콘서트네임,좌석정보,콘서트 이미지
 	//티켓 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_01_Ticket->ClearChildren();
 
@@ -128,6 +131,29 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 		UMH_ItemBox_Ticket* ItemBox_Ticket = CreateWidget<UMH_ItemBox_Ticket>(this , TicketItemBoxFac);
 		if (ItemBox_Ticket)
 		{
+			// Base64 이미지 문자열을 TArray<uint8>로 디코딩
+			TArray<uint8> ImageData;
+			if (FBase64::Decode(ItemData.ticketImage, ImageData))
+			{
+				UTexture2D* ticketTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+				if (ticketTexture && ItemBox_Ticket->Img_Item_Ticket)
+				{
+					// 이미지 위젯에 텍스처 적용
+					ItemBox_Ticket->Img_Item_Ticket->SetBrushFromTexture(ticketTexture);
+					UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
+				}
+
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to decode base64 image data"));
+			}
+			ItemBox_Ticket->Text_Ticket->SetText(FText::FromString(ItemData.concertName));
+			ItemBox_Ticket->Text_SeatInfo->SetText(FText::FromString(ItemData.seatInfo));
 			//ItemBox_Ticket->SetTicketData(ItemData); // 타이틀 데이터를 설정
 			Hori_InvenBox_01_Ticket->AddChild(ItemBox_Ticket);
 		}
@@ -144,8 +170,29 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 		UMH_ItemBox_Sticker* ItemBox_Sticker = CreateWidget<UMH_ItemBox_Sticker>(this , StickerItemBoxFac);
 		if (ItemBox_Sticker)
 		{
-			//ItemBox_Sticker->SetStickerData(ItemData); // 타이틀 데이터를 설정
+			// Base64 이미지 문자열을 TArray<uint8>로 디코딩
+			TArray<uint8> ImageData;
+			if (FBase64::Decode(ItemData.stickerImage, ImageData))
+			{
+				UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+				if (StickerTexture && ItemBox_Sticker->Img_Item_Sticker)
+				{
+					// 이미지 위젯에 텍스처 적용
+					ItemBox_Sticker->Img_Item_Sticker->SetBrushFromTexture(StickerTexture);
+					UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
+				}
+
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Failed to decode base64 image data"));
+			}
 			Hori_InvenBox_02_Sticker->AddChild(ItemBox_Sticker);
+			UE_LOG(LogTemp , Log , TEXT("InitializeStickerTabs"));
 		}
 	}
 }
