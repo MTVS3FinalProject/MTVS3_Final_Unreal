@@ -337,7 +337,7 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TAr
 	Request->SetContentAsString(ContentString);
 
 	// 응답받을 함수 연결
-	Request->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnResPostBackground);
+	Request->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnResPostSaveCustomTicket);
 
 	// 요청 전송
 	Request->ProcessRequest();
