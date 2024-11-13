@@ -14,7 +14,8 @@
 #include "Components/Image.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_Chatting.h"
-#include "JMH/MH_Inventory.h"
+#include "LHM/HM_FinalTicket.h"
+#include "LHM/HM_TicketCustom.h"
 
 
 void UMainWidget::NativeConstruct()
@@ -52,7 +53,17 @@ void UMainWidget::NativeConstruct()
 	{
 		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this , &UMainWidget::ShowChatUI);
 	}
+
+	if (TicketCustomWidget)
+	{
+		TicketCustomWidget->OnClickedTicketCustomBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
+		TicketCustomWidget->OnClickedTicketCustomSave.AddDynamic(this , &UMainWidget::OnClickedCustomTicketSaveButton);
+	}
 	
+	if (FinalTicketWidget)
+	{
+		FinalTicketWidget->OnClickedFinalTicketBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
+	}
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -237,6 +248,13 @@ void UMainWidget::OnClickedConcert05()
 void UMainWidget::OnTicketWidgetClose()
 {
 	SetWidgetSwitcher(0);
+}
+
+void UMainWidget::OnClickedCustomTicketSaveButton()
+{
+	FinalTicketWidget->CaptureAndDisplayTicketBackground(TicketCustomWidget);
+	TicketCustomWidget->Btn_ResetBackground->SetVisibility(ESlateVisibility::Visible);
+	SetWidgetSwitcher(8);
 }
 
 void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
