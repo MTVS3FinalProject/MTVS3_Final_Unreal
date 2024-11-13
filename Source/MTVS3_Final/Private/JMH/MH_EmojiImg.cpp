@@ -30,10 +30,10 @@ void UMH_EmojiImg::AnimMaterialSwitcher(int32 num)
 	case 3 : SetMaterial(LoveAnim);
 		break;
 
-	case 4 : SetMaterial(SadAnim);
+	case 4 : SetMaterial(SurprisedAnim);
 		break;
 		
-	case 5 : SetMaterial(SurprisedAnim);
+	case 5 : SetMaterial(SadAnim);
 		break;
 
 		default: break;

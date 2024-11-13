@@ -35,6 +35,7 @@
 #include "JMH/MH_MinimapActor.h"
 #include "JMH/PlayerNicknameWidget.h"
 #include "LHM/HM_AimingWidget.h"
+#include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
 
@@ -49,7 +50,7 @@ ATTPlayer::ATTPlayer()
 	CenterCapsuleComp->SetupAttachment(RootComponent);
 	CenterCapsuleComp->SetCapsuleHalfHeight(88.0f);
 	CenterCapsuleComp->SetCapsuleRadius(3.0f);
-	
+
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("ThirdPersonSpringArm"));
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->SetRelativeLocation(FVector(0 , 0 , 50));
@@ -78,7 +79,8 @@ ATTPlayer::ATTPlayer()
 	TextRenderComp->SetVisibility(false);
 
 	// 머리 위로 약간 올리기 위한 위치 조정
-	NicknameUIComp->SetRelativeLocationAndRotation(FVector(0.46f , -33.0f , -13.0f) , FRotator(75.0f , 270.0f , 180.0f));
+	NicknameUIComp->
+		SetRelativeLocationAndRotation(FVector(0.46f , -33.0f , -13.0f) , FRotator(75.0f , 270.0f , 180.0f));
 	TitleUIComp->SetRelativeLocationAndRotation(FVector(0.46f , -46.0f , -16.0f) , FRotator(75.0f , 270.0f , 180.0f));
 
 	// 퍼즐
@@ -89,7 +91,6 @@ ATTPlayer::ATTPlayer()
 	//MH
 	EmojiComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("EmojiWidget"));
 	EmojiComp->SetupAttachment(GetMesh() , TEXT("head"));
-	
 }
 
 // Called when the game starts or when spawned
@@ -105,7 +106,7 @@ void ATTPlayer::BeginPlay()
 		{
 			SetNickname(GetNickname());
 			OnRep_Nickname();
-			SetTitleNameAndRarity(GetTitleName(), GetTitleRarity());
+			SetTitleNameAndRarity(GetTitleName() , GetTitleRarity());
 			OnRep_TitleNameAndRarity();
 			OnRep_bIsSitting();
 		}
@@ -165,10 +166,10 @@ void ATTPlayer::BeginPlay()
 		// TTHallMap에서는 ELuckyDrawState에 따라 추첨 관련 UI 표시할지 결정
 		// TTHallMap의 시작은 Plaza(광장)
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
-		{			
+		{
 			// SwitchCamera(bIsThirdPerson);
 			SetNickname(GI->GetNickname());
-			SetTitleNameAndRarity(GI->GetTitleName(), GI->GetTitleRarity());
+			SetTitleNameAndRarity(GI->GetTitleName() , GI->GetTitleRarity());
 			// InitMainUI();
 			//미니맵 생성
 			if (IsLocallyControlled())
@@ -186,7 +187,7 @@ void ATTPlayer::BeginPlay()
 			case ELuckyDrawState::Winner:
 				// 추첨 당첨 UI 표시
 				if (MainUI) MainUI->SetWidgetSwitcher(1);
-				// HTTP 요청
+			// HTTP 요청
 				HttpActor2->ReqPostGameResult(GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
 			case ELuckyDrawState::Loser:
@@ -274,7 +275,7 @@ void ATTPlayer::Tick(float DeltaTime)
 
 			EmojiComp->SetWorldRotation(EmojiUIDirection.GetSafeNormal().ToOrientationRotator());
 		}
-		
+
 		break;
 	case EPlaceState::LuckyDrawRoom:
 		OnRep_bIsHost();
@@ -395,12 +396,12 @@ void ATTPlayer::OnRep_Nickname()
 	}
 }
 
-void ATTPlayer::SetTitleNameAndRarity(const FString& _TitleName, const FString& _TitleRarity)
+void ATTPlayer::SetTitleNameAndRarity(const FString& _TitleName , const FString& _TitleRarity)
 {
-	ServerSetTitleNameAndRarity(_TitleName, _TitleRarity);
+	ServerSetTitleNameAndRarity(_TitleName , _TitleRarity);
 }
 
-void ATTPlayer::ServerSetTitleNameAndRarity_Implementation(const FString& _TitleName, const FString& _TitleRarity)
+void ATTPlayer::ServerSetTitleNameAndRarity_Implementation(const FString& _TitleName , const FString& _TitleRarity)
 {
 	TitleName = _TitleName;
 	TitleRarity = _TitleRarity;
@@ -620,7 +621,7 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 		GameUI->SetWidgetSwitcher(2); // 우승자 UI 업데이트
 	}
 
-	UGameplayStatics::PlaySound2D(GetWorld(), LuckyDrawWinnerSound);
+	UGameplayStatics::PlaySound2D(GetWorld() , LuckyDrawWinnerSound);
 
 	// 서버 RPC, 멀티캐스트 RPC 필요
 	ServerLuckyDrawWin();
@@ -714,7 +715,7 @@ void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , i
 	{
 		TTPC->SetDrawStartTime();
 	}
-	
+
 	bIsDrawSessionInviteVisible = bIsVisible; // 현재 추첨 세션 초대 UI 가시성 상태를 저장
 	UpdateDrawSessionInviteVisibility(CompetitionRate);
 }
@@ -761,22 +762,22 @@ void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
 void ATTPlayer::PlayConcertBGM()
 {
 	FTimerHandle TimerHandle;
-    
+
 	GetWorldTimerManager().SetTimer(
-		TimerHandle, 
-		this, 
-		&ATTPlayer::PlayConcertBGMAfterDelay, 
-		0.3f,
-		false    // 반복 실행 안 함
+		TimerHandle ,
+		this ,
+		&ATTPlayer::PlayConcertBGMAfterDelay ,
+		0.3f ,
+		false // 반복 실행 안 함
 	);
 }
 
 void ATTPlayer::PlayConcertBGMAfterDelay()
 {
 	AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
-    
-	if (HallSoundManager) 
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
+
+	if (HallSoundManager)
 	{
 		HallSoundManager->PlayConcertBGM();
 	}
@@ -793,6 +794,16 @@ void ATTPlayer::MulticastPlayEmojiAnim_Implementation(const int32& EmojiNum)
 	if (Anim)
 	{
 		Anim->PlayEmojiMontage(EmojiNum);
+
+		EmojiWidget = Cast<UMH_EmojiImg>(EmojiComp->GetUserWidgetObject());
+		//MH
+		if (EmojiWidget)
+		{
+			EmojiWidget->ShowCanvas();
+			EmojiWidget->AnimMaterialSwitcher(EmojiNum);
+			// PlayAnim 함수 호출
+			EmojiWidget->PlayAnim();
+		}
 	}
 }
 
@@ -1362,6 +1373,13 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Customizing")))
 	{
 		// 티켓 커스터마이징 액터 상호작용 시 UI 표시
+		//QR을 서버가 전달 성공했다면
+		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (HttpActor3)
+		{
+			HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
+		}
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
@@ -1554,7 +1572,7 @@ void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
-	
+
 	if (bIsZoomingIn && bHasPiece)
 	{
 		MyLaunchPiece();
@@ -1577,7 +1595,7 @@ void ATTPlayer::OnMyActionZoomInPiece(const FInputActionValue& Value)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
-	
+
 	if (bHasPiece && !bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = true;
@@ -1593,7 +1611,7 @@ void ATTPlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
-	
+
 	if (bHasPiece && bIsZoomingIn && !bIsThirdPerson)
 	{
 		bIsZoomingIn = false;
@@ -1652,6 +1670,14 @@ void ATTPlayer::InitMainUI()
 	{
 		HttpActor2->SetMainUI(MainUI);
 		HttpActor2->SetTicketingUI(TicketingUI);
+	}
+
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if (HttpActor3)
+	{
+		HttpActor3->SetMainUI(MainUI);
+		HttpActor3->SetTicketingUI(TicketingUI);
 	}
 }
 
@@ -1727,6 +1753,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	{
 		UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
 		Chair->bIsOccupied = true;
+		Chair->RotateChair(true);
 		FTransform SittingTransform = Chair->GetSittingTransform();
 		this->SetActorTransform(SittingTransform);
 		GetCharacterMovement()->DisableMovement(); // 이동 비활성화
@@ -1754,6 +1781,7 @@ void ATTPlayer::MulticastStandUp_Implementation()
 	if (Chair && Anim)
 	{
 		Chair->bIsOccupied = false;
+		Chair->RotateChair(false);
 		FTransform StandingTransform = Chair->GetStandingTransform();
 		SetActorTransform(StandingTransform);
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // 이동 모드 복원

@@ -71,7 +71,7 @@ void UMH_Inventory::HideTitleUnequipWin()
 
 void UMH_Inventory::InitializeTabs()
 {
-	/*
+	
 		//데이터들이 저장될 HTTPInvenActor에서 정보 TArray로 받아오기
 		AHM_HttpActor3* HTTP_Inven = Cast<AHM_HttpActor3>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
@@ -82,9 +82,9 @@ void UMH_Inventory::InitializeTabs()
 		if (HTTP_Inven)
 		{
 			// 받은 데이터가 비어 있지 않은지 확인
-			const TArray<FTitleItemData>& TitleItems = HTTP_Inven->GetTitleItems();
-			const TArray<FTicketItemData>& TicketItems = HTTP_Inven->GetTicketItems();
-			const TArray<FStickerItemData>& StickerItems = HTTP_Inven->GetStickerItems();
+			const TArray<FTitles>& TitleItems = HTTP_Inven->GetTitleItems();
+			const TArray<FTickets>& TicketItems = HTTP_Inven->GetTicketItems();
+			const TArray<FStickers>& StickerItems = HTTP_Inven->GetStickerItems();
 	
 			if (TitleItems.Num() > 0)
 			{
@@ -98,16 +98,15 @@ void UMH_Inventory::InitializeTabs()
 			{
 				InitializeStickerTabs(StickerItems);
 			}
-		}*/
+		}
 }
 
-/*
-void UMH_Inventory::InitializeTitleTabs(const TArray<FTitleItemData>& TitleItem)
+void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_00_Title->ClearChildren();
 
-	for (const FTitleItemData& ItemData : TitleItem)
+	for (const FTitles& ItemData : TitleItem)
 	{
 		UMH_ItemBox_Title* ItemBox_Title = CreateWidget<UMH_ItemBox_Title>(this , TitleItemBoxFac);
 		if (ItemBox_Title)
@@ -119,12 +118,12 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitleItemData>& TitleItem)
 	}
 }
 
-void UMH_Inventory::InitializeTicketTabs(const TArray<FTicketItemData>& TicketItems)
+void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 {
-	///티켓 호리젠탈에 아이템 박스 넣어주기.
+	//티켓 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_01_Ticket->ClearChildren();
 
-	for (const FTicketItemData& ItemData : TicketItems)
+	for (const FTickets& ItemData : TicketItems)
 	{
 		UMH_ItemBox_Ticket* ItemBox_Ticket = CreateWidget<UMH_ItemBox_Ticket>(this , TicketItemBoxFac);
 		if (ItemBox_Ticket)
@@ -135,12 +134,12 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTicketItemData>& TicketIt
 	}
 }
 
-void UMH_Inventory::InitializeStickerTabs(const TArray<FStickerItemData>& StickerItems)
+void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 {
 	//스티커 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_02_Sticker->ClearChildren();
 
-	for (const FStickerItemData& ItemData : StickerItems)
+	for (const FStickers& ItemData : StickerItems)
 	{
 		UMH_ItemBox_Sticker* ItemBox_Sticker = CreateWidget<UMH_ItemBox_Sticker>(this , StickerItemBoxFac);
 		if (ItemBox_Sticker)
@@ -149,8 +148,7 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickerItemData>& Sticke
 			Hori_InvenBox_02_Sticker->AddChild(ItemBox_Sticker);
 		}
 	}
-}*/
-
+}
 
 void UMH_Inventory::OnClicked_PlayerTitle()
 {

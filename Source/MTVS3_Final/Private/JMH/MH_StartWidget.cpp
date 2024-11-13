@@ -290,21 +290,6 @@ void UMH_StartWidget::OnClickedSelectAvatarRButton()
 	PlayerImgOnAnim(CharacterModelNum);
 	// 이전 아바타는 Off 애니메이션 재생
 	PlayerImgOffAnim(PreviousCharacterModelNum);
-	/*
-	// 아바타 이미지 오른쪽 이미지로
-	CharacterModelNum++;
-	int32 OffNum = -1 + CharacterModelNum;
-	if (CharacterModelNum > 4)
-	{
-		CharacterModelNum = 1;
-	PlayerImgOnAnim(CharacterModelNum);
-		PlayerImgOffAnim(4);
-	}
-	else if(OffNum > 1)
-	{
-		PlayerImgOnAnim(CharacterModelNum);
-		PlayerImgOffAnim(OffNum);
-	}*/
 
 	//애니메이션, 사진(버튼) 클릭하면 위젯 확대
 }
@@ -319,28 +304,7 @@ void UMH_StartWidget::OnClickedSelectAvatarLButton()
 	PlayerImgOnAnim(CharacterModelNum);
 	// 이전 아바타는 Off 애니메이션 재생
 	PlayerImgOffAnim(PreviousCharacterModelNum);
-	/*
-	//아바타 이미지 왼쪽이미지로
-	CharacterModelNum--;
-
-	if (CharacterModelNum < 1)
-	{
-		CharacterModelNum = 4;
-	}
-	PlayerImgOnAnim(CharacterModelNum);
-
-	int32 OffNum = CharacterModelNum++;
-
-	if (OffNum < 4)
-	{
-		PlayerImgOffAnim(OffNum);
-	}
-	else
-	{
-		PlayerImgOffAnim(1);
-	}
-	//애니메이션, 사진(버튼) 클릭하면 위젯 확대
-*/
+	
 }
 
 void UMH_StartWidget::OnClickedAvatarConfirmButton()
