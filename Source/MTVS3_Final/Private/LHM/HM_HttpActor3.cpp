@@ -523,11 +523,7 @@ void AHM_HttpActor3::OnResGetCustomTicketList(FHttpRequestPtr Request, FHttpResp
 							UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
 							if (Texture)
 							{
-								if (MainUI->GetTicketCustomWidget())
-								{
-									MainUI->GetTicketCustomWidget()->SetCustomTicketList(Texture, SeatInfo);
-									UE_LOG(LogTemp , Log , TEXT("SetBackgroundImg(Texture);"));
-								}
+								
 							}
 							
 							// concertInfo 필드 접근

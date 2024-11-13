@@ -30,7 +30,7 @@ public:
 	TArray<UStaticMeshComponent*> BoardAreas;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float CellSize = 700.0f;
+	float CellSize = 500.0f;
 
 	void InitializeBoardAreas();
 	

@@ -103,13 +103,6 @@ public:
 	
 	UFUNCTION()
 	void SetBackgroundImg(UTexture2D* newTexture);
-
-	UPROPERTY()
-	class UImage* Img_CustomTicketList00;
-	UPROPERTY()
-	class UTextBlock* Text_CustomTicketName00;
-	UFUNCTION()
-	void SetCustomTicketList(UTexture2D* newTexture, const FString& TicketName);
 	
 // ================================== 통신에서 받아온 스티커 동적 생성 및 저장 ==================================
 
@@ -158,13 +151,9 @@ public:
 	//void OnClickedSaveButtonDELEGATE();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_HttpTest01;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_HttpTest02;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_HttpTest04;
-	UFUNCTION()
-	void OnClickedHttpTest01();
 	UFUNCTION()
 	void OnClickedHttpTest02();
 	UFUNCTION()
