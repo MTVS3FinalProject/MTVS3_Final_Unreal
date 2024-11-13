@@ -26,6 +26,9 @@ public:
 
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* Text_Ticket;
+	
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Text_SeatInfo;
 
 	//UFUNCTION()
 	//void SetTicketData(const FTicketItemData& InTicketData);
