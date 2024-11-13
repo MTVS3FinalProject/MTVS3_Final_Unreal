@@ -303,8 +303,8 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TAr
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	UE_LOG(LogTemp , Log , TEXT("GetTicketId(): %d"), GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, Tickets.ticketId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -320,7 +320,7 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TAr
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
 	Writer->WriteValue(TEXT("customTicketImage"), Base64Image);  // Base64로 인코딩된 이미지
-	Writer->WriteValue(TEXT("backgroundId"), BackGroundId);       // 배경 ID
+	Writer->WriteValue(TEXT("backgroundId"), BackGroundId);      // 배경 ID
 
 	// StickerList를 JSON 배열로 작성
 	Writer->WriteArrayStart(TEXT("stickerIdList"));
@@ -517,6 +517,18 @@ void AHM_HttpActor3::OnResGetCustomTicketList(FHttpRequestPtr Request, FHttpResp
 							FString TicketImage = TicketObject->GetStringField(TEXT("ticketImage"));
 
 							SetTicketId(TicketId);
+
+							TArray<uint8> ImageData;
+							FBase64::Decode(TicketImage , ImageData);
+							UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+							if (Texture)
+							{
+								if (MainUI->GetTicketCustomWidget())
+								{
+									MainUI->GetTicketCustomWidget()->SetCustomTicketList(Texture, SeatInfo);
+									UE_LOG(LogTemp , Log , TEXT("SetBackgroundImg(Texture);"));
+								}
+							}
 							
 							// concertInfo 필드 접근
 							TSharedPtr<FJsonObject> ConcertInfoObject = TicketObject->GetObjectField(TEXT("concertInfo"));

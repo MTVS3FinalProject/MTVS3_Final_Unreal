@@ -12,6 +12,7 @@
 #include "Components/OverlaySlot.h"
 #include "Components/ScrollBox.h"
 #include "Components/Spacer.h"
+#include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "HJ/TTGameInstance.h"
@@ -548,6 +549,12 @@ void UHM_TicketCustom::SetBackgroundImg(UTexture2D* newTexture)
 {
 	Img_TicketBackground->SetBrushFromTexture(newTexture);
 	UE_LOG(LogTemp , Log , TEXT("SetBackgroundImg"));
+}
+
+void UHM_TicketCustom::SetCustomTicketList(UTexture2D* newTexture, const FString& TicketName)
+{
+	Img_CustomTicketList00->SetBrushFromTexture(newTexture);
+	Text_CustomTicketName00->SetText(FText::FromString(TicketName));
 }
 
 void UHM_TicketCustom::SetStickersImgs(UTexture2D* Texture, int32 ImageIndex)
