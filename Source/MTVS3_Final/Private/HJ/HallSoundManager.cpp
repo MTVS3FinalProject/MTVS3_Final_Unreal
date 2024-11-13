@@ -49,3 +49,11 @@ void AHallSoundManager::PlayConcertBGM()
 	}
 }
 
+void AHallSoundManager::PlayPlazaBGM()
+{
+	if (PlazaBGMCue)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, PlazaBGMCue, PlazaBGMLocation, 0.75f, 1.0f, 0.0f, PlazaAttenuation);
+	}
+}
+
