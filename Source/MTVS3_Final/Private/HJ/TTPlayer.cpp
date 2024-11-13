@@ -35,6 +35,7 @@
 #include "JMH/MH_MinimapActor.h"
 #include "JMH/PlayerNicknameWidget.h"
 #include "LHM/HM_AimingWidget.h"
+#include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
 
@@ -1327,12 +1328,6 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		if (!Chair->bIsOccupied)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
-
-			// MainUI 숨기기
-			MainUI->SetVisibleCanvas(false);
-			// 좌석 접수 UI 표시
-			TicketingUI->SetVisibleSwitcher(true , 0);
-			//TicketingUI->SetWidgetSwitcher(0);
 			HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 
 			ServerSetSitting(true);
@@ -1372,6 +1367,13 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Customizing")))
 	{
 		// 티켓 커스터마이징 액터 상호작용 시 UI 표시
+		//QR을 서버가 전달 성공했다면
+		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (HttpActor3)
+		{
+			HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
+		}
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
@@ -1402,11 +1404,6 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 	{
 		// Chair의 태그를 가져와서 매개변수로 넘김
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
-		// MainUI 숨기기
-		MainUI->SetVisibleCanvas(false);
-		// 좌석 경쟁 UI 표시(테스트용)
-		TicketingUI->SetVisibleSwitcher(true , 0);
-		//TicketingUI->SetWidgetSwitcher(1);
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
 }
@@ -1663,6 +1660,14 @@ void ATTPlayer::InitMainUI()
 		HttpActor2->SetMainUI(MainUI);
 		HttpActor2->SetTicketingUI(TicketingUI);
 	}
+
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if (HttpActor3)
+	{
+		HttpActor3->SetMainUI(MainUI);
+		HttpActor3->SetTicketingUI(TicketingUI);
+	}
 }
 
 void ATTPlayer::InitGameUI()
@@ -1737,6 +1742,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	{
 		UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
 		Chair->bIsOccupied = true;
+		Chair->RotateChair(true);
 		FTransform SittingTransform = Chair->GetSittingTransform();
 		this->SetActorTransform(SittingTransform);
 		GetCharacterMovement()->DisableMovement(); // 이동 비활성화
@@ -1764,6 +1770,7 @@ void ATTPlayer::MulticastStandUp_Implementation()
 	if (Chair && Anim)
 	{
 		Chair->bIsOccupied = false;
+		Chair->RotateChair(false);
 		FTransform StandingTransform = Chair->GetStandingTransform();
 		SetActorTransform(StandingTransform);
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // 이동 모드 복원

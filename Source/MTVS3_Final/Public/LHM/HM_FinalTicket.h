@@ -9,12 +9,29 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedFinalTicketBack);
+
 UCLASS()
 class MTVS3_FINAL_API UHM_FinalTicket : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
+
+	FOnClickedFinalTicketBack OnClickedFinalTicketBack;
+	
+	// 닫기 버튼 클릭 이벤트 설정
+	UFUNCTION()
+	void OnClickedExitButton()
+	{
+		// 델리게이트 호출
+		OnClickedFinalTicketBack.Broadcast();
+	}
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_Exit;
+	
 	virtual void NativeConstruct() override;
 
 	UPROPERTY()
@@ -37,7 +54,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UHM_TicketCustom> TicketCutomWidget; // 배경 티켓 위젯 클래스 참조
 	class UHM_TicketCustom* TicketCutomUI; // 배경 티켓 위젯 인스턴스
-
+	
 private:
 	class UTexture2D* ConvertRenderTargetToTexture(UObject* WorldContextObject, UTextureRenderTarget2D* RenderTarget);
 };

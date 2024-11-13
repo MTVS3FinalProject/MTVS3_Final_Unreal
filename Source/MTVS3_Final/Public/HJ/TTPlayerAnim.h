@@ -35,7 +35,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UAnimMontage* DancingMontage;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool bIsDancing;
 	void PlayDancingMontage();
 
 	// 이모티콘

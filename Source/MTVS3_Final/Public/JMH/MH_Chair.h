@@ -46,11 +46,17 @@ public:
 	ACharacter* OverlappingPlayer = nullptr;  // 오버랩된 플레이어 추적용
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
-	float SeatOffset = 30.0;
+	float SittingLocZ = 32.012604f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
+	float StandingLocZ = 50.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
+	float SeatOffset = 40.0f;
 	FTransform GetSittingTransform();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "TTSettings|Custom")
-	float StandingOffset = 50.0;
+	float StandingOffset = 40.0f;
 	FTransform GetStandingTransform();
 
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "TTSettings|State")
@@ -65,5 +71,8 @@ public:
 	UPROPERTY()
     class UMH_TicketingWidget* TicketingUI;
 	void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void RotateChair(bool bIsSitting);
 #pragma endregion
 };
