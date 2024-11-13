@@ -106,16 +106,33 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_00_Title->ClearChildren();
-
+	
 	for (const FTitles& ItemData : TitleItem)
 	{
+		//타이틀 호리젠탈에 아이템 박스 넣어주기.
 		UMH_ItemBox_Title* ItemBox_Title = CreateWidget<UMH_ItemBox_Title>(this , TitleItemBoxFac);
+		UOverlay* OverlayTitle = NewObject<UOverlay>(this);
+
 		if (ItemBox_Title)
 		{
-			//타이틀 박스 텍스트에 받아온 String넣어주기
 			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
-			//ItemBox_Title->SetTitleData(ItemData); // 타이틀 데이터를 설정
-			Hori_InvenBox_00_Title->AddChild(ItemBox_Title);
+			ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
+			if (OverlayTitle)
+			{
+				// Overlay에 ItemBox_Title 추가
+				UOverlaySlot* ItemSlot = OverlayTitle->AddChildToOverlay(ItemBox_Title);
+				if (ItemSlot)
+				{
+					ItemSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+					ItemSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);
+
+					// 아이템 박스와 오버레이 슬롯을 매핑하여 저장
+					OverlaySlotMap.Add(ItemBox_Title , ItemSlot);
+				}
+
+				OverlayTitle->SetRenderTransformPivot(FVector2D(0.5f , 0.5f));
+				Hori_InvenBox_00_Title->AddChild(OverlayTitle);
+			}
 		}
 	}
 }
