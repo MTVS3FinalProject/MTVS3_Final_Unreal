@@ -383,7 +383,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						TicketingUI->SetTickettingDate(Year , Month , Day);
 						TicketingUI->SetTextGameStartTime(Time);
 					}
-					if(GetMyReceptionSeatId() == InquirySeatId)
+					if(GetMyReceptionSeatId() == 1) // 접수한 좌석일 때 접수취소 버튼
 					{
 						UE_LOG(LogTemp , Log , TEXT("GetMyReceptionSeatId: %d, InquirySeatId: %d"), GetMyReceptionSeatId(), InquirySeatId);
 						// MainUI 숨기기
@@ -392,7 +392,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						TicketingUI->SetVisibleSwitcher(true , 0);
 						TicketingUI->SetCompletedVisible(true);
 					}
-					else
+					else // 접수한 좌석이 아닐 때 접수하기 버튼
 					{
 						// MainUI 숨기기
 						MainUI->SetVisibleCanvas(false);
@@ -468,6 +468,7 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 					UE_LOG(LogTemp , Log , TEXT("RemainingTicket : %d") , RemainingTicket);
 					UE_LOG(LogTemp , Log , TEXT("CompetitionRate : %d") , CompetitionRate);
 
+					MyReceptionSeats.seatId = 1;
 					if( MainUI )
 					{
 						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
