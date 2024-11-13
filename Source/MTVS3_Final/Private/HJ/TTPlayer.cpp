@@ -1367,6 +1367,17 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
 		}
 	}
+	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("PlazaTeleport")))
+	{
+		ServerTeleportPlayer(false);
+		AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
+		if (HallSoundManager)
+		{
+			HallSoundManager->PlayPlazaBGM();
+		}
+		GI->SetPlaceState(EPlaceState::Plaza);
+	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
 
