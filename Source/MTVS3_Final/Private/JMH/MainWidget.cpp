@@ -12,9 +12,11 @@
 #include <HJ/TTPlayerState.h>
 
 #include "Components/Image.h"
+#include "HJ/HallSoundManager.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_Chatting.h"
-#include "JMH/MH_Inventory.h"
+#include "LHM/HM_FinalTicket.h"
+#include "LHM/HM_TicketCustom.h"
 
 
 void UMainWidget::NativeConstruct()
@@ -52,7 +54,17 @@ void UMainWidget::NativeConstruct()
 	{
 		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this , &UMainWidget::ShowChatUI);
 	}
+
+	if (TicketCustomWidget)
+	{
+		TicketCustomWidget->OnClickedTicketCustomBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
+		TicketCustomWidget->OnClickedTicketCustomSave.AddDynamic(this , &UMainWidget::OnClickedCustomTicketSaveButton);
+	}
 	
+	if (FinalTicketWidget)
+	{
+		FinalTicketWidget->OnClickedFinalTicketBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
+	}
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -63,6 +75,11 @@ void UMainWidget::SetWidgetSwitcher(int32 num)
 		//PlayAnimation(TicketImgAnim01,0,0,EUMGSequencePlayMode::Reverse;
 		PlayAnimation(TicketImgAnim01);
 	}
+	if (num == 5)
+	{
+		PlayAnimation(ConcertAnim1_0);
+	}
+	
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
@@ -107,6 +124,14 @@ void UMainWidget::SetTextCurrentTime(FString CurrentTime)
 
 void UMainWidget::OnClickedBackMain()
 {
+	//HJ 버튼 사운드
+	AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
+
+	if (HallSoundManager)
+	{
+		HallSoundManager->PlayPlazaBGM();
+	}
 	// 로비로?
 	auto* GI = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (GI)
@@ -239,6 +264,13 @@ void UMainWidget::OnTicketWidgetClose()
 	SetWidgetSwitcher(0);
 }
 
+void UMainWidget::OnClickedCustomTicketSaveButton()
+{
+	FinalTicketWidget->CaptureAndDisplayTicketBackground(TicketCustomWidget);
+	TicketCustomWidget->Btn_ResetBackground->SetVisibility(ESlateVisibility::Visible);
+	SetWidgetSwitcher(8);
+}
+
 void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 {
 	if (bIsRightBtn)
@@ -260,7 +292,6 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 		case 5:
 			PlayAnimation(ConcertAnim5);
 			break;
-
 		default:
 			break;
 		}
@@ -271,19 +302,19 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 		switch (AnimNum)
 		{
 		case 1:
-			PlayAnimation(ConcertAnim1 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim1_0);
 			break;
 		case 2:
-			PlayAnimation(ConcertAnim2 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim2_1); 
 			break;
 		case 3:
-			PlayAnimation(ConcertAnim3 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim3_2);
 			break;
 		case 4:
-			PlayAnimation(ConcertAnim4 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim4_3);
 			break;
 		case 5:
-			PlayAnimation(ConcertAnim5 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim5_4);
 			break;
 		default:
 			break;

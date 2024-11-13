@@ -5,6 +5,7 @@
 
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
+#include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
@@ -19,7 +20,9 @@
 void UHM_FinalTicket::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	
+	Btn_Exit->OnClicked.AddDynamic(this , &UHM_FinalTicket::OnClickedExitButton);
+	
 	RootCanvas = Cast<UCanvasPanel>(GetRootWidget());
     	if( RootCanvas && Img_FinalTicket && Img_FinalTicketInfo )
     	{
@@ -37,7 +40,7 @@ void UHM_FinalTicket::NativeConstruct()
     		if (InfoSlot)
     		{
     			InfoSlot->SetSize(FVector2D(436, 504));
-    			InfoSlot->SetPosition(FVector2D(420,0));
+    			InfoSlot->SetPosition(FVector2D(445,0));
     			InfoSlot->SetAlignment(FVector2d(0.5));
     		}
     	}
@@ -85,11 +88,11 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 			// Img_FinalTicket에 캡처된 텍스처 표시
 			if (TicketCutomUI && Img_FinalTicket)
 			{
-				FSlateBrush Brush;
-				Brush.SetResourceObject(CapturedTexture);
+				//FSlateBrush Brush;
+				///Brush.SetResourceObject(CapturedTexture);
 
 				// 최종 티켓 이미지에 반영
-				Img_FinalTicket->SetBrush(Brush);
+				Img_FinalTicket->SetBrushFromTexture(CapturedTexture);
 
 				// 서버에 커스텀 티켓 저장 요청
 				AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
@@ -97,7 +100,7 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 				UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 				if (!GI && !HttpActor3) return;
 				TArray<uint8> ImageData = ConvertTextureToPNG(RenderTarget);
-				//HttpActor3->ReqPostSaveCustomTicket(ImageData ,  , HttpActor3->GetBackgroundId() , GI->GetAccessToken());
+				HttpActor3->ReqPostSaveCustomTicket(ImageData , HttpActor3->GetStickerIds() , HttpActor3->GetBackgroundId() , GI->GetAccessToken());
 				
 			}
 		}	

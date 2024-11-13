@@ -15,8 +15,8 @@
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "HJ/TTGameInstance.h"
+#include "JMH/MainWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "LHM/HM_FinalTicket.h"
 #include "LHM/HM_HttpActor3.h"
 
 
@@ -30,16 +30,9 @@ void UHM_TicketCustom::NativeConstruct()
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
 	Btn_HttpTest01->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest01);
 	Btn_HttpTest02->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest02);
-	Btn_HttpTest03->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest03);
 	Btn_HttpTest04->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest04);
 
 	RootCanvas = Cast<UCanvasPanel>(GetRootWidget());
-	
-	// SetupDraggableImage(Img_Sticker01);
-	// SetupDraggableImage(Img_Sticker02);
-	// SetupDraggableImage(Img_Sticker03);
-	// SetupDraggableImage(Img_Sticker04);
-	// SetupDraggableImage(Img_Sticker05);
 	
 	bIsDragging = false;
 	bIsRenderingAngle = false;
@@ -58,12 +51,6 @@ void UHM_TicketCustom::NativeConstruct()
 	ScrollBox_Stickers->SetScrollBarVisibility(ESlateVisibility::Visible);
 	ScrollBox_Stickers->SetAnimateWheelScrolling(true);
 	ScrollBox_Stickers->SetAllowOverscroll(true);
-	
-	
-	if (FinalTicketWidget)
-	{
-		FinalTicketUI = CreateWidget<UHM_FinalTicket>(GetWorld(), FinalTicketWidget);
-	}
 	
 	if( Img_TicketBackground && Img_TicketInfo )
 	{
@@ -93,16 +80,6 @@ void UHM_TicketCustom::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 	
 }
 
-// void UHM_TicketCustom::SetupDraggableImage(UImage* Image)
-// {
-// 	if (Image)
-// 	{
-// 		Image->SetVisibility(ESlateVisibility::Visible);
-// 		Image->bIsVariable = true;
-// 		Image->SetIsEnabled(true);
-// 	}
-// }
-
 FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 {
 	if(!RootCanvas || !SourceImage) return FUsedImage();
@@ -112,8 +89,18 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 	if (!ImageGroupOverlay) return FUsedImage();
 	
 	// RootCanvas에 UOverlay를 추가하여 CanvasPanelSlot을 얻음
+	UCanvasPanelSlot* GroupSlotOverlay = Cast<UCanvasPanelSlot>(ImageGroupOverlay->Slot);
+	if (GroupSlotOverlay)
+	{
+		GroupSlotOverlay->SetAlignment(FVector2d(0.5));
+	}
+	
 	UCanvasPanelSlot* GroupSlot = RootCanvas->AddChildToCanvas(ImageGroupOverlay);
 	if (!GroupSlot) return FUsedImage();
+	
+	GroupSlot->SetSize(FVector2D(230));
+	GroupSlot->SetAlignment(FVector2d(0.5f));
+	GroupSlot->SetZOrder(100); // 필요 시 ZOrder 조정
 	
 	// 새 이미지 생성
 	UImage* CopiedImage = NewObject<UImage>(this, UImage::StaticClass());
@@ -154,9 +141,9 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		}
 		// 속성 설정
 		OutlineImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
-		RenderAngleImage->SetDesiredSizeOverride(FVector2d(32));
-		RenderScaleImage->SetDesiredSizeOverride(FVector2d(32));
-		RenderDeleteImage->SetDesiredSizeOverride(FVector2d(32));
+		RenderAngleImage->SetDesiredSizeOverride(FVector2d(37));
+		RenderScaleImage->SetDesiredSizeOverride(FVector2d(37));
+		RenderDeleteImage->SetDesiredSizeOverride(FVector2d(37));
 		OutlineImage->SetVisibility(ESlateVisibility::Hidden);
 		RenderAngleImage->SetVisibility(ESlateVisibility::Hidden);
 		RenderScaleImage->SetVisibility(ESlateVisibility::Hidden);
@@ -182,10 +169,14 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		if (CopiedSlot)
 		{
 			FVector2D Position = CopiedSlot->GetPosition();
-			GroupSlot->SetPosition(Position);
-			GroupSlot->SetSize(FVector2D(230));
-			GroupSlot->SetAlignment(FVector2d(0.5f));
-			GroupSlot->SetZOrder(100); // 필요 시 ZOrder 조정
+			CopiedSlot->SetPosition(Position);
+			CopiedSlot->SetAlignment(FVector2d(0.5f));
+			CopiedSlot->SetSize(FVector2D(230));
+			CopiedSlot->SetZOrder(100); // 필요 시 ZOrder 조정
+			 GroupSlot->SetPosition(Position);
+			 GroupSlot->SetSize(FVector2D(230));
+			 GroupSlot->SetAlignment(FVector2d(0.5f));
+			 GroupSlot->SetZOrder(100); // 필요 시 ZOrder 조정
 		}
 
 		// 각 이미지의 개별 위치와 크기 설정 (중앙을 기준으로 조정)
@@ -213,11 +204,11 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			DeleteImgSlot->SetVerticalAlignment(VAlign_Top);
 		}
 		
-		//CopiedImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		//OutlineImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		//RenderAngleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		//RenderScaleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
-		//RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		CopiedImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		OutlineImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		RenderAngleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		RenderScaleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
+		RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		
 		// Img_CopiedImgs에 추가
 		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage);
@@ -292,6 +283,7 @@ void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet, int32 Index)
 
 		bIsDelete = false;
 		CurrentImage = nullptr;
+		PreviousImage = nullptr;
 	}
 }
 
@@ -327,6 +319,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 						{
 							GroupSlot->SetPosition(AdjustedPosition);
 							GroupSlot->SetSize(FVector2D(230));  // 그룹 전체 크기 설정
+							GroupSlot->SetAlignment(FVector2d(0.5f));
 							GroupSlot->SetZOrder(110);
 						}
 						return FReply::Handled().CaptureMouse(this->TakeWidget());
@@ -350,6 +343,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
 					bIsDragging = true;
+					PreviousImage = CurrentImage;
 					CurrentImage = CopiedImg;
 					
 					FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
@@ -360,6 +354,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 					{
 						GroupSlot->SetPosition(AdjustedPosition);
 						GroupSlot->SetSize(FVector2D(230));  // 그룹 전체 크기 설정
+						GroupSlot->SetAlignment(FVector2d(0.5f));
 						GroupSlot->SetZOrder(110);
 					}
 					return FReply::Handled().CaptureMouse(this->TakeWidget());
@@ -445,6 +440,7 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 				{
 					GroupSlot->SetPosition(AdjustedPosition);
 					GroupSlot->SetSize(FVector2D(230));  // 그룹 전체 크기 설정
+					GroupSlot->SetAlignment(FVector2d(0.5f));
 					GroupSlot->SetZOrder(110);
 				}
 			}
@@ -686,46 +682,30 @@ void UHM_TicketCustom::OnClickedResetTicketImageButton()
 	}
 }
 
-void UHM_TicketCustom::OnClickedSaveButton()
-{
-	for (FUsedImage& ImageSet : Img_CopiedImgs)
-	{
-		if (ImageSet.CopiedImage && ImageSet.Outline && ImageSet.RenderAngle && ImageSet.RenderScale && ImageSet.Delete)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s="),
-			Img_CopiedImgs.Num() - 1,
-			*ImageSet.CopiedImage->GetName(),
-			*ImageSet.Outline->GetName(),
-			*ImageSet.RenderAngle->GetName(),
-			*ImageSet.RenderScale->GetName(),
-			*ImageSet.Delete->GetName()
-			);
-		}
-	}
-
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (!GI && !HttpActor3) return;
-	// 커스텀 티켓 저장 요청
-	UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 요청"));
-	//HttpActor3->ReqPostSaveCustomTicket(, HttpActor3->GetStickerIds, HttpActor3->GetBackgroundId(),GI->GetAccessToken());
-
-	// 해당 하위 로직은 통신 성공했을 때
-	// if (FinalTicketUI && this)
-	// {
-	// 	Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
-	// 	FinalTicketUI->CaptureAndDisplayTicketBackground(this);
-	// 	FinalTicketUI->AddToViewport();
-	// 	this->SetVisibility(ESlateVisibility::Hidden);
-	// }
-}
-
-void UHM_TicketCustom::OnClickedExitButton()
-{
-	// 메인 위젯에서 스위쳐 호출
-	//this->SetVisibility(ESlateVisibility::Hidden);
-}
+// void UHM_TicketCustom::OnClickedSaveButtonDELEGATE()
+// {
+// 	for (FUsedImage& ImageSet : Img_CopiedImgs)
+// 	{
+// 		if (ImageSet.CopiedImage && ImageSet.Outline && ImageSet.RenderAngle && ImageSet.RenderScale && ImageSet.Delete)
+// 		{
+// 			UE_LOG(LogTemp, Log, TEXT("Img_CopiedImgs[%d]: CopiedImage = %s, Outline = %s, RenderAngle = %s, RenderScale = %s, Delete = %s="),
+// 			Img_CopiedImgs.Num() - 1,
+// 			*ImageSet.CopiedImage->GetName(),
+// 			*ImageSet.Outline->GetName(),
+// 			*ImageSet.RenderAngle->GetName(),
+// 			*ImageSet.RenderScale->GetName(),
+// 			*ImageSet.Delete->GetName()
+// 			);
+// 		}
+// 	}
+// 	// 해당 하위 로직은 통신 성공했을 때
+// 	 
+// 	 	//Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
+// 		//FinalTicketUI->CaptureAndDisplayTicketBackground(this);
+// 	 	//FinalTicketUI->AddToViewport();
+// 	 	this->SetVisibility(ESlateVisibility::Hidden);
+// 	 
+// }
 
 void UHM_TicketCustom::OnClickedHttpTest01()
 {
@@ -747,17 +727,6 @@ void UHM_TicketCustom::OnClickedHttpTest02()
 	// Puzzle 결과, Sticker 획득 요청
 	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
 	HttpActor3->ReqPostPuzzleResultAndGetSticker(1, GI->GetAccessToken());
-}
-
-void UHM_TicketCustom::OnClickedHttpTest03()
-{
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (!GI && !HttpActor3) return;
-	// 티켓 커스텀 제작 입장 요청
-	UE_LOG(LogTemp , Log , TEXT("티켓 커스텀 제작 입장 요청"));
-	HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
 }
 
 void UHM_TicketCustom::OnClickedHttpTest04()

@@ -172,15 +172,7 @@ void ATTPlayer::BeginPlay()
 			SetTitleNameAndRarity(GI->GetTitleName() , GI->GetTitleRarity());
 			// InitMainUI();
 			//미니맵 생성
-			if (IsLocallyControlled())
-			{
-				UE_LOG(LogTemp , Warning , TEXT("Locally controlled player: Creating Minimap Actor."));
-				CreateMinimapActor();
-			}
-			else
-			{
-				UE_LOG(LogTemp , Warning , TEXT("Non-locally controlled player or server instance."));
-			}
+			CreateMinimapActor();
 
 			switch (GI->GetLuckyDrawState())
 			{
@@ -564,9 +556,9 @@ void ATTPlayer::MulticastSetNewSkeletalMesh_Implementation(USkeletalMesh* NewMes
 
 void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 {
-	FVector TargetLocation = bIsToConcertHall ? FVector(19 , -4962 , 516) : FVector(20680 , 6260 , 3092);
-	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , 170 , 0);
-
+	FVector TargetLocation = bIsToConcertHall ? FVector(19 , -4962 , 516) : FVector(18055 , 2000 , 3132);
+	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , -45 , 0);
+	
 	TeleportTo(TargetLocation , TargetRotation);
 }
 
@@ -1328,12 +1320,6 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		if (!Chair->bIsOccupied)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
-
-			// MainUI 숨기기
-			MainUI->SetVisibleCanvas(false);
-			// 좌석 접수 UI 표시
-			TicketingUI->SetVisibleSwitcher(true , 0);
-			//TicketingUI->SetWidgetSwitcher(0);
 			HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 
 			ServerSetSitting(true);
@@ -1410,11 +1396,6 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 	{
 		// Chair의 태그를 가져와서 매개변수로 넘김
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
-		// MainUI 숨기기
-		MainUI->SetVisibleCanvas(false);
-		// 좌석 경쟁 UI 표시(테스트용)
-		TicketingUI->SetVisibleSwitcher(true , 0);
-		//TicketingUI->SetWidgetSwitcher(1);
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
 }
@@ -1753,6 +1734,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	{
 		UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
 		Chair->bIsOccupied = true;
+		Chair->RotateChair(true);
 		FTransform SittingTransform = Chair->GetSittingTransform();
 		this->SetActorTransform(SittingTransform);
 		GetCharacterMovement()->DisableMovement(); // 이동 비활성화
@@ -1780,6 +1762,7 @@ void ATTPlayer::MulticastStandUp_Implementation()
 	if (Chair && Anim)
 	{
 		Chair->bIsOccupied = false;
+		Chair->RotateChair(false);
 		FTransform StandingTransform = Chair->GetStandingTransform();
 		SetActorTransform(StandingTransform);
 		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // 이동 모드 복원

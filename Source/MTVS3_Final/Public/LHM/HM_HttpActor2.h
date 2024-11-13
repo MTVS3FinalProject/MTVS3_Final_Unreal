@@ -290,6 +290,8 @@ public:
 	FString UserCode;
 	const FString& GetUserCode() const { return UserCode; }
 	void SetUserCode(const FString& _UserCode) { UserCode = _UserCode; }
+
+	int32 InquirySeatId = 1;
 	
 public:	
 	// Sets default values for this actor's properties
