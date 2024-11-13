@@ -74,6 +74,11 @@ void UMainWidget::SetWidgetSwitcher(int32 num)
 		//PlayAnimation(TicketImgAnim01,0,0,EUMGSequencePlayMode::Reverse;
 		PlayAnimation(TicketImgAnim01);
 	}
+	if (num == 5)
+	{
+		PlayAnimation(ConcertAnim1_0);
+	}
+	
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
@@ -278,7 +283,6 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 		case 5:
 			PlayAnimation(ConcertAnim5);
 			break;
-
 		default:
 			break;
 		}
@@ -289,19 +293,19 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 		switch (AnimNum)
 		{
 		case 1:
-			PlayAnimation(ConcertAnim1 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim1_0);
 			break;
 		case 2:
-			PlayAnimation(ConcertAnim2 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim2_1); 
 			break;
 		case 3:
-			PlayAnimation(ConcertAnim3 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim3_2);
 			break;
 		case 4:
-			PlayAnimation(ConcertAnim4 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim4_3);
 			break;
 		case 5:
-			PlayAnimation(ConcertAnim5 , 0.f , 1 , EUMGSequencePlayMode::Reverse , 1.f);
+			PlayAnimation(ConcertAnim5_4);
 			break;
 		default:
 			break;

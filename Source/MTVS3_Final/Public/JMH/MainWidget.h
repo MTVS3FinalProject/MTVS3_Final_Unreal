@@ -221,6 +221,17 @@ public:
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* ConcertAnim5;
 
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim1_0;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim2_1;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim3_2;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim4_3;
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* ConcertAnim5_4;
+
 	UFUNCTION()
 	void SelectConcertAnim(bool bIsRightBtn,int32 AnimNum);
 
