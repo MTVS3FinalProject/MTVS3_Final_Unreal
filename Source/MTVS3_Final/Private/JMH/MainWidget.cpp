@@ -12,6 +12,7 @@
 #include <HJ/TTPlayerState.h>
 
 #include "Components/Image.h"
+#include "HJ/HallSoundManager.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_Chatting.h"
 #include "LHM/HM_FinalTicket.h"
@@ -123,6 +124,14 @@ void UMainWidget::SetTextCurrentTime(FString CurrentTime)
 
 void UMainWidget::OnClickedBackMain()
 {
+	//HJ 버튼 사운드
+	AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
+
+	if (HallSoundManager)
+	{
+		HallSoundManager->PlayPlazaBGM();
+	}
 	// 로비로?
 	auto* GI = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (GI)
