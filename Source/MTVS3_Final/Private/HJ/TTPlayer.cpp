@@ -172,15 +172,7 @@ void ATTPlayer::BeginPlay()
 			SetTitleNameAndRarity(GI->GetTitleName() , GI->GetTitleRarity());
 			// InitMainUI();
 			//미니맵 생성
-			if (IsLocallyControlled())
-			{
-				UE_LOG(LogTemp , Warning , TEXT("Locally controlled player: Creating Minimap Actor."));
-				CreateMinimapActor();
-			}
-			else
-			{
-				UE_LOG(LogTemp , Warning , TEXT("Non-locally controlled player or server instance."));
-			}
+			CreateMinimapActor();
 
 			switch (GI->GetLuckyDrawState())
 			{
@@ -564,9 +556,9 @@ void ATTPlayer::MulticastSetNewSkeletalMesh_Implementation(USkeletalMesh* NewMes
 
 void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 {
-	FVector TargetLocation = bIsToConcertHall ? FVector(19 , -4962 , 516) : FVector(20680 , 6260 , 3092);
-	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , 170 , 0);
-
+	FVector TargetLocation = bIsToConcertHall ? FVector(19 , -4962 , 516) : FVector(18055 , 2000 , 3132);
+	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , -45 , 0);
+	
 	TeleportTo(TargetLocation , TargetRotation);
 }
 
