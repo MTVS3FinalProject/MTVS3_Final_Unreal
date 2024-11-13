@@ -294,16 +294,17 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request,
 // 커스텀 티켓 저장 요청
 void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 요청"));
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
 
-	FTickets Tickets;
+	//FTickets Tickets;
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
+	UE_LOG(LogTemp , Log , TEXT("GetTicketId(): %d"), GetTicketId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -383,12 +384,13 @@ void AHM_HttpActor3::ReqPostBackground(FString AccessToken)
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
 
-	FTickets Tickets;
+	UE_LOG(LogTemp , Log , TEXT("AccessToken: %s"), *AccessToken);
+	//FTickets Tickets;
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	UE_LOG(LogTemp , Log , TEXT("Tickets.ticketId: %d"), Tickets.ticketId);
+	UE_LOG(LogTemp , Log , TEXT("GetTicketId(): %d"), GetTicketId());
 	
 	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
 	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url); // 임의 티켓아이디
@@ -543,12 +545,12 @@ void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
 
-	FTickets Tickets;
+	//FTickets Tickets;
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	UE_LOG(LogTemp , Log , TEXT("Tickets.ticketId: %d"), Tickets.ticketId);
+	UE_LOG(LogTemp , Log , TEXT("Tickets.ticketId: %d"), GetTicketId());
 	
 	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, Tickets.ticketId);
 	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url);

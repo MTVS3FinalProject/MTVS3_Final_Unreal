@@ -1328,12 +1328,6 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		if (!Chair->bIsOccupied)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
-
-			// MainUI 숨기기
-			MainUI->SetVisibleCanvas(false);
-			// 좌석 접수 UI 표시
-			TicketingUI->SetVisibleSwitcher(true , 0);
-			//TicketingUI->SetWidgetSwitcher(0);
 			HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 
 			ServerSetSitting(true);
@@ -1410,11 +1404,6 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 	{
 		// Chair의 태그를 가져와서 매개변수로 넘김
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
-		// MainUI 숨기기
-		MainUI->SetVisibleCanvas(false);
-		// 좌석 경쟁 UI 표시(테스트용)
-		TicketingUI->SetVisibleSwitcher(true , 0);
-		//TicketingUI->SetWidgetSwitcher(1);
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
 }

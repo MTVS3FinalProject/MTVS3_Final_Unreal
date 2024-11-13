@@ -184,6 +184,12 @@ public:
 
 	// 현재 다운로드 중인 이미지의 인덱스를 추적
 	TMap<FString, int32> ImageUrlToIndex;
+
+	// 시연용 ticketId
+	UPROPERTY(VisibleAnywhere, Category = "Default|params")
+	int32 CheatTicketID;
+	int32 GetTicketId() const { return CheatTicketID; }
+	void SetTicketId(int32 _TicketId) { CheatTicketID = _TicketId; }
 	
 #pragma endregion
 	
