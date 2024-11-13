@@ -43,6 +43,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
 	FVector PlazaBGMLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
+	bool bPlayPlazaBGM = true;
 	
 	UFUNCTION(BlueprintCallable, Category = "TTSettings|Sound")
 	void PlayConcertBGM();
