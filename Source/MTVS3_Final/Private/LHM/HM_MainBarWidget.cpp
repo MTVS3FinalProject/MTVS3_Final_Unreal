@@ -68,6 +68,19 @@ void UHM_MainBarWidget::SetWidgetSwitcher(int32 num)
 	WS_Bar->SetActiveWidgetIndex(num);
 }
 
+void UHM_MainBarWidget::SetVisibilityState()
+{
+	SetVisibleSwitcher(true);
+	if (bIsMenuVisible)
+	{
+		OnClickedMenuBtn();
+	}
+	if (bIsChatVisible)
+	{
+		CloseButtonPressed();
+	}
+}
+
 void UHM_MainBarWidget::OnClickedEmojiBtn()
 {
 	//이모티콘 버튼 누르면
@@ -101,16 +114,16 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 
 	if (bIsCollectionBookVisible)
 	{
+		//인벤 열기
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (HttpActor3)
+		{
+			// 인벤토리 정보 요청
+			HttpActor3->ReqGetInventoryData(GI->GetAccessToken());
+		}
 		SetWidgetSwitcher(2);
-		SetVisibleSwitcher(true);
-		if (bIsMenuVisible)
-		{
-			OnClickedMenuBtn();
-		}
-		if (bIsChatVisible)
-		{
-			CloseButtonPressed();
-		}
 	}
 	else
 	{

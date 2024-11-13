@@ -9,6 +9,7 @@
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
 #include "JMH/MainWidget.h"
+#include "JMH/MH_Inventory.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_TicketCustom.h"
@@ -26,10 +27,6 @@ void AHM_HttpActor3::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// if (TicketCustomWidget)
-	// {
-	// 	TicketCustomUI = CreateWidget<UHM_TicketCustom>(GetWorld(), TicketCustomWidget);
-	// }
 }
 
 // Called every frame
@@ -165,12 +162,14 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 								   *NewTickets.seatInfo ,
 								   *NewTickets.ticketImage );
 						}
+						SetTicketId(NewTickets.ticketId);
 					}
 					SetTicketItems(TempTicketItems);
-
 					if (MainUI)
 					{
-						//MainUI
+						MainUI->WBP_MH_MainBar->WBP_inventoryUI->InitializeTabs();
+						MainUI->WBP_MH_MainBar->SetVisibilityState();
+						UE_LOG(LogTemp , Log , TEXT("inventoryUI->InitializeTabs()"));
 					}
 				}
 			}
@@ -299,12 +298,13 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TAr
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
 
-	//FTickets Tickets;
+	FTickets Tickets;
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	UE_LOG(LogTemp , Log , TEXT("GetTicketId(): %d"), GetTicketId());
 	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, Tickets.ticketId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -515,7 +515,9 @@ void AHM_HttpActor3::OnResGetCustomTicketList(FHttpRequestPtr Request, FHttpResp
 							int32 TicketId = TicketObject->GetIntegerField(TEXT("ticketId"));
 							FString SeatInfo = TicketObject->GetStringField(TEXT("seatInfo"));
 							FString TicketImage = TicketObject->GetStringField(TEXT("ticketImage"));
-            
+
+							SetTicketId(TicketId);
+							
 							// concertInfo 필드 접근
 							TSharedPtr<FJsonObject> ConcertInfoObject = TicketObject->GetObjectField(TEXT("concertInfo"));
 							if (ConcertInfoObject.IsValid())
