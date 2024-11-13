@@ -24,6 +24,18 @@ AHallSoundManager::AHallSoundManager()
 			ConcertAttenuation = tempConcertAttenuation.Object;
 		}
 	}
+
+	ConstructorHelpers::FObjectFinder<USoundCue> tempPlazaBGMCue(TEXT("/Script/Engine.SoundCue'/Game/KHJ/Assets/Sounds/A_LOBBY_BGM_Cue.A_LOBBY_BGM_Cue'"));
+	if (tempPlazaBGMCue.Succeeded())
+	{
+		PlazaBGMCue = tempPlazaBGMCue.Object;
+		PlazaBGMCue->Priority = 0.5f; // 우선 순위 설정
+		ConstructorHelpers::FObjectFinder<USoundAttenuation> tempPlazaAttenuation(TEXT("/Script/Engine.SoundAttenuation'/Game/KHJ/Assets/Sounds/ATT_PlazaAttenuation.ATT_PlazaAttenuation'"));
+		if (tempPlazaAttenuation.Succeeded())
+		{
+			PlazaAttenuation = tempPlazaAttenuation.Object;
+		}
+	}
 }
 
 // Called when the game starts or when spawned
@@ -31,6 +43,7 @@ void AHallSoundManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+	PlayPlazaBGM();
 	PlayConcertBGM();
 }
 
