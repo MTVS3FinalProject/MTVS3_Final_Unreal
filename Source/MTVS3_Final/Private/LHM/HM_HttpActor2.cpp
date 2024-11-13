@@ -1423,6 +1423,14 @@ void AHM_HttpActor2::OnResPostCheatPaymentSeat(FHttpRequestPtr Request, FHttpRes
 					UE_LOG(LogTemp , Log , TEXT("UserAddress : %s") , *UserAddress);
 					UE_LOG(LogTemp , Log , TEXT("TicketId : %d") , TicketId);
 
+					AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+					if(HttpActor3)
+					{
+						HttpActor3->SetTicketId(TicketId);
+						UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), TicketId);
+					}
+					
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 					if ( TTPlayer && GI )

@@ -100,7 +100,7 @@ void UMH_Inventory::InitializeTabs()
 			}
 		}
 }
-
+//현민
 void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
@@ -111,7 +111,8 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 		UMH_ItemBox_Title* ItemBox_Title = CreateWidget<UMH_ItemBox_Title>(this , TitleItemBoxFac);
 		if (ItemBox_Title)
 		{
-			//ItemBox_Title->
+			//타이틀 박스 텍스트에 받아온 String넣어주기
+			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
 			//ItemBox_Title->SetTitleData(ItemData); // 타이틀 데이터를 설정
 			Hori_InvenBox_00_Title->AddChild(ItemBox_Title);
 		}
