@@ -271,7 +271,7 @@ void UMainWidget::OnTicketWidgetClose()
 
 void UMainWidget::OnClickedCustomTicketSaveButton()
 {
-	FinalTicketWidget->CaptureAndDisplayTicketBackground(TicketCustomWidget);
+	//FinalTicketWidget->CaptureAndDisplayTicketBackground(TicketCustomWidget);
 	TicketCustomWidget->Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
 	SetWidgetSwitcher(8);
 }

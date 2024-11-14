@@ -152,11 +152,18 @@ public:
 	UPROPERTY()
 	class UMH_ItemBox_Sticker* SelectedSticker;
 
-	UPROPERTY(meta = (BindWidget))
-	UUserWidget* InfoWidget;
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	TSubclassOf<class UMH_ItemInfoBox> InfoWidget;
+
+	UPROPERTY()
+	class UMH_ItemInfoBox* HoveredInfoTitle;
 
 	// 인포 위젯 가시성 설정 함수
+	UFUNCTION()
 	void SetInfoVisibility(bool bVisible);
+
+	UFUNCTION()
+	void OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem);
 	
 	//타이틀 박스 더블클릭시
 	//UFUNCTION()
