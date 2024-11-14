@@ -350,11 +350,14 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo")); // ex: A1구역 13번
 					bool IsReceived = ResponseObject->GetBoolField(TEXT("isReceived"));
 					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
+					int32 SeatPrice = ResponseObject->GetIntegerField(TEXT("seatPrice"));
 					
 					UE_LOG(LogTemp , Log , TEXT("Floor: %d") , Floor);
 					UE_LOG(LogTemp , Log , TEXT("SeatInfo: %s") , *SeatInfo);
 					UE_LOG(LogTemp , Log , TEXT("IsReceived: %s") , IsReceived ? TEXT("true") : TEXT("false"));
 					UE_LOG(LogTemp , Log , TEXT("CompetitionRate: %d") , CompetitionRate);
+					UE_LOG(LogTemp , Log , TEXT("SeatPrice: %d") , SeatPrice);
+
 
 					if(MainUI) MainUI->SetTextSeatNum1(SeatInfo);
 					
@@ -367,6 +370,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 					{
 						TicketingUI->SetTextSeatID(Floor , SeatInfo);
 						TicketingUI->SetTextCompetitionRate(CompetitionRate);
+						TicketingUI->SetTextTicketPrice(SeatPrice);
 					}
 
 					// "drawingTime" 객체를 얻음
@@ -383,9 +387,8 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						TicketingUI->SetTickettingDate(Year , Month , Day);
 						TicketingUI->SetTextGameStartTime(Time);
 					}
-					if(GetMyReceptionSeatId() == 1) // 접수한 좌석일 때 접수취소 버튼
+					if(IsReceived) // 접수한 좌석일 때 접수취소 버튼
 					{
-						UE_LOG(LogTemp , Log , TEXT("GetMyReceptionSeatId: %d, InquirySeatId: %d"), GetMyReceptionSeatId(), InquirySeatId);
 						// MainUI 숨기기
 						MainUI->SetVisibleCanvas(false);
 						// 좌석 경쟁 UI 표시(테스트용)

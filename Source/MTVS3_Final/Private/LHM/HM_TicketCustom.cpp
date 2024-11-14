@@ -12,7 +12,6 @@
 #include "Components/OverlaySlot.h"
 #include "Components/ScrollBox.h"
 #include "Components/Spacer.h"
-#include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "HJ/TTGameInstance.h"
@@ -290,7 +289,9 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 {
 	if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 	{
-		//TArray<UImage*> Img_Stickers {Img_Sticker01, Img_Sticker02, Img_Sticker03, Img_Sticker04, Img_Sticker05};
+		// 현민 테스트용
+		//TArray<UImage*> Img_Stickers {Img_Sticker01, Img_Sticker02, Img_Sticker03, Img_Sticker04};
+		//for (UImage* Image : Img_Stickers)
 		for (UImage* Image : StickerImages)
 		{
 			if (Image && Image->IsVisible() && Image->GetIsEnabled() == true)
@@ -657,7 +658,7 @@ void UHM_TicketCustom::OnClickedResetBackgroundButton()
 void UHM_TicketCustom::OnClickedResetTicketImageButton()
 {
 	// 티켓 이미지 전체 초기화
-	for (int32 Index = 0; Index < Img_CopiedImgs.Num(); ++Index) // 인덱스를 추적
+	for (int32 Index = Img_CopiedImgs.Num() - 1; Index >= 0; --Index) // 인덱스를 추적
 	{
 		FUsedImage& ImageSet = Img_CopiedImgs[Index];
 
