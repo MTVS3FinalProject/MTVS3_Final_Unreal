@@ -1177,7 +1177,7 @@ void ATTPlayer::SwitchCameraOnPiece(bool _bIsThirdPerson)
 		FPSCameraComp->SetActive(false);
 		TPSCameraComp->SetActive(true);
 		NicknameUIComp->SetOwnerNoSee(false);
-
+		TitleUIComp->SetOwnerNoSee(false);
 		PC->SetViewTargetWithBlend(this); // 부드러운 시점 전환
 	}
 	else // 1인칭 모드
@@ -1185,6 +1185,7 @@ void ATTPlayer::SwitchCameraOnPiece(bool _bIsThirdPerson)
 		FPSCameraComp->SetActive(true);
 		TPSCameraComp->SetActive(false);
 		NicknameUIComp->SetOwnerNoSee(true);
+		TitleUIComp->SetOwnerNoSee(true);
 		GetMesh()->SetOwnerNoSee(true);
 
 		if (!bHasPiece)
