@@ -69,6 +69,7 @@ void UMainWidget::NativeConstruct()
 	{
 		FinalTicketWidget->OnClickedFinalTicketBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
+	
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -81,7 +82,7 @@ void UMainWidget::SetWidgetSwitcher(int32 num)
 	}
 	if (num == 5)
 	{
-		PlayAnimation(ConcertAnim1_0);
+		PlayAnimation(ConcertAnim5);
 	}
 	
 }

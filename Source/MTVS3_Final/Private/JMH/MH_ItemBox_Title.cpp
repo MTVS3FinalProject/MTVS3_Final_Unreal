@@ -10,12 +10,11 @@ void UMH_ItemBox_Title::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Btn_Item_Title->OnClicked.AddDynamic(this,&UMH_ItemBox_Title::OnClickedTitle);
+	Btn_Item_Title->OnClicked.AddDynamic(this , &UMH_ItemBox_Title::OnClickedTitle);
 }
 
 void UMH_ItemBox_Title::ChangeColorTitleName(const FString& _TitleRarity)
 {
-
 	if (_TitleRarity == "Common")
 	{
 		Text_Title->SetColorAndOpacity(FSlateColor(FColor(111 , 111 , 111)));
@@ -34,12 +33,23 @@ void UMH_ItemBox_Title::ChangeColorTitleName(const FString& _TitleRarity)
 	}
 }
 
+void UMH_ItemBox_Title::SetTitleID(int32 TitleID0)
+{
+	TitleID = TitleID0;
+}
+
+int32 UMH_ItemBox_Title::GetTitleID()
+{
+
+	return TitleID;
+	
+}
+
 
 //void UMH_ItemBox_Title::SetTitleData(const FTitleItemData& InTitleData)
 //{
 
 
-	
 //}
 /*
 FReply UMH_ItemBox_Title::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
@@ -51,4 +61,3 @@ FReply UMH_ItemBox_Title::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry
 
 	return FReply::Handled();
 }*/
-
