@@ -361,13 +361,13 @@ void AHM_HttpActor3::OnResPostSaveCustomTicket(FHttpRequestPtr Request, FHttpRes
 			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
 			{
 				// "response" 객체에 접근
-				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
-				if ( ResponseObject.IsValid() )
-				{
+				//TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				//if ( ResponseObject.IsValid() )
+				//{
 					// 티켓 저장 성공처리
 					UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 성공 응답"));
 					
-				}
+				//}
 			}
 		}
 		else
