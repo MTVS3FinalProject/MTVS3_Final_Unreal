@@ -82,7 +82,7 @@ public:
 	void MulticastSetVisibilityTextRender(bool bIsVisible);
 
 	UFUNCTION(NetMulticast , Reliable)
-	void MulticastSetColorTextRender(FColor NewColor);
+	void MulticastSetColorTextRender(const FLinearColor& NewColor);
 
 	UFUNCTION(Server , Reliable)
 	void ServerChangeWalkSpeed(bool bIsRunning);
