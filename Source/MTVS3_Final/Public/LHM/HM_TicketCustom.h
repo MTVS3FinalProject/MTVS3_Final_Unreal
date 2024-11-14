@@ -75,6 +75,17 @@ public:
 	class UImage* Img_TicketInfo;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
+
+	// 현민 테스트용
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_Sticker01;
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_Sticker02;
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_Sticker03;
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_Sticker04;
+	
 	
 	// 드래그 앤 드롭, 회전, 크기조정, 삭제
 	UPROPERTY()
