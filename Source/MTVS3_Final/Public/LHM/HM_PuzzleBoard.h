@@ -30,7 +30,7 @@ public:
 	TArray<UStaticMeshComponent*> BoardAreas;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	float CellSize = 700.0f;
+	float CellSize = 500.0f;
 
 	void InitializeBoardAreas();
 	
@@ -49,4 +49,16 @@ public:
 	// 모든 클라이언트에서 호출되는 RPC 함수
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastSetBoardAreaVisibility(int32 BoardIndex, bool bVisible);
+
+	// KHJ
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UPROPERTY(ReplicatedUsing=OnRep_BoardAreaVisibility)
+	TArray<bool> BoardAreaVisibility;
+	
+	UFUNCTION()
+	void OnRep_BoardAreaVisibility();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastDestroyPuzzlePiece(AHM_PuzzlePiece* PuzzlePiece, const FString& TagToDestroy);
 };

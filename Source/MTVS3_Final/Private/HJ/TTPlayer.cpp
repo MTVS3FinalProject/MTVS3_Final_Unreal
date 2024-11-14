@@ -560,6 +560,23 @@ void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , -45 , 0);
 	
 	TeleportTo(TargetLocation , TargetRotation);
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		ClientAdjustCamera(TargetRotation);
+	}
+}
+
+void ATTPlayer::ClientAdjustCamera_Implementation(FRotator NewRotation)
+{
+	if (!IsLocallyControlled())
+		return;
+        
+	if (ATTPlayerController* PC = Cast<ATTPlayerController>(Controller))
+	{
+		PC->SetControlRotation(NewRotation);
+		PC->SetViewTargetWithBlend(this);
+	}
 }
 
 void ATTPlayer::ServerLuckyDrawStart_Implementation()
@@ -678,9 +695,9 @@ void ATTPlayer::MulticastSetVisibilityTextRender_Implementation(bool bIsVisible)
 	TextRenderComp->SetVisibility(bIsVisible);
 }
 
-void ATTPlayer::MulticastSetColorTextRender_Implementation(FColor NewColor)
+void ATTPlayer::MulticastSetColorTextRender_Implementation(const FLinearColor& NewColor)
 {
-	TextRenderComp->SetTextRenderColor(NewColor);
+	TextRenderComp->SetTextRenderColor(NewColor.ToFColor(true));
 }
 
 void ATTPlayer::ServerChangeWalkSpeed_Implementation(bool bIsRunning)
@@ -1366,6 +1383,17 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		{
 			HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
 		}
+	}
+	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("PlazaTeleport")))
+	{
+		ServerTeleportPlayer(false);
+		AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
+		if (HallSoundManager)
+		{
+			HallSoundManager->PlayPlazaBGM();
+		}
+		GI->SetPlaceState(EPlaceState::Plaza);
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }

@@ -84,5 +84,23 @@ public:
 	
 	// 복제하기 위한 함수들
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-    
+
+	// 서버의 현재 Transform을 저장하고 복제
+	UPROPERTY(ReplicatedUsing = OnRep_ServerTransforms)
+	TArray<FTransform> ServerTransforms;
+
+	// KHJ
+	UFUNCTION()
+	void OnRep_ServerTransforms();
+
+	// 주기적으로 Transform을 업데이트하는 타이머 함수
+	void UpdateServerTransforms();
+
+	// 피스당 충돌 프로파일 설정
+	void SetupCollisionProfiles();
+
+	FTimerHandle TransformUpdateTimer;
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastUpdateTransforms();
 };

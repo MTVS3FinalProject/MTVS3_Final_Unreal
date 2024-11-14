@@ -106,16 +106,34 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_00_Title->ClearChildren();
-
+	
 	for (const FTitles& ItemData : TitleItem)
 	{
+		//타이틀 호리젠탈에 아이템 박스 넣어주기.
 		UMH_ItemBox_Title* ItemBox_Title = CreateWidget<UMH_ItemBox_Title>(this , TitleItemBoxFac);
+		UOverlay* OverlayTitle = NewObject<UOverlay>(this);
+
 		if (ItemBox_Title)
 		{
-			//타이틀 박스 텍스트에 받아온 String넣어주기
+			ItemBox_Title->ChangeColorTitleName(ItemData.titleRarity);
 			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
-			//ItemBox_Title->SetTitleData(ItemData); // 타이틀 데이터를 설정
-			Hori_InvenBox_00_Title->AddChild(ItemBox_Title);
+			ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
+			if (OverlayTitle)
+			{
+				// Overlay에 ItemBox_Title 추가
+				UOverlaySlot* ItemSlot = OverlayTitle->AddChildToOverlay(ItemBox_Title);
+				if (ItemSlot)
+				{
+					ItemSlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Center);
+					ItemSlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Center);
+
+					// 아이템 박스와 오버레이 슬롯을 매핑하여 저장
+					OverlaySlotMap.Add(ItemBox_Title , ItemSlot);
+				}
+
+				OverlayTitle->SetRenderTransformPivot(FVector2D(0.5f , 0.5f));
+				Hori_InvenBox_00_Title->AddChild(OverlayTitle);
+			}
 		}
 	}
 }
@@ -140,11 +158,11 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 				{
 					// 이미지 위젯에 텍스처 적용
 					ItemBox_Ticket->Img_Item_Ticket->SetBrushFromTexture(ticketTexture);
-					UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
+					UE_LOG(LogTemp, Log, TEXT("ticket image set successfully"));
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
+					UE_LOG(LogTemp, Warning, TEXT("Failed to create ticketTexture or Img_Item_ticket is null"));
 				}
 
 			}
@@ -179,6 +197,7 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 				{
 					// 이미지 위젯에 텍스처 적용
 					ItemBox_Sticker->Img_Item_Sticker->SetBrushFromTexture(StickerTexture);
+					ItemBox_Sticker->Text_Sticker->SetText(FText::FromString(ItemData.stickerName));
 					UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
 				}
 				else

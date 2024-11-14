@@ -82,7 +82,7 @@ public:
 	void MulticastSetVisibilityTextRender(bool bIsVisible);
 
 	UFUNCTION(NetMulticast , Reliable)
-	void MulticastSetColorTextRender(FColor NewColor);
+	void MulticastSetColorTextRender(const FLinearColor& NewColor);
 
 	UFUNCTION(Server , Reliable)
 	void ServerChangeWalkSpeed(bool bIsRunning);
@@ -96,6 +96,9 @@ public:
 	UFUNCTION(Server , Reliable , BlueprintCallable)
 	void ServerTeleportPlayer(bool bIsToConcertHall);
 
+	UFUNCTION(Client, Reliable)
+	void ClientAdjustCamera(FRotator NewRotation);
+	
 	UFUNCTION(Server , Reliable)
 	void ServerSetNewSkeletalMesh(const int32& _AvatarData);
 

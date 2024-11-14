@@ -25,6 +25,8 @@ struct FUsedImage
     class UOverlay* ImageGroupOverlay; // 그룹화된 이미지 컨테이너
     UImage* OriginImage; // 원본 이미지 참조 추가
 
+	//FVector2D CurrentScale = FVector2D(1.0f, 1.0f); // 초기 스케일 값
+
 	// 기본 생성자
 	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr), ImageGroupOverlay(nullptr), OriginImage(nullptr) {}
 	
@@ -69,12 +71,25 @@ public:
 #pragma region Origin Variable & Custom Properties
 	UPROPERTY()
 	class UCanvasPanel* RootCanvas;
+	//UPROPERTY()
+	//class UCanvasPanel* TicketCanvas;
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_TicketBackground;
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_TicketInfo;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
+
+	// 현민 테스트용
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_Sticker01;
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_Sticker02;
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_Sticker03;
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_Sticker04;
+	
 	
 	// 드래그 앤 드롭, 회전, 크기조정, 삭제
 	UPROPERTY()
@@ -149,18 +164,20 @@ public:
 	void OnClickedResetTicketImageButton();
 	//UFUNCTION()
 	//void OnClickedSaveButtonDELEGATE();
+
+	// 현민 테스트용
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	//class UButton* Btn_Capture;
+	//UFUNCTION()
+	//void OnClickedCapture();
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_HttpTest01;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_HttpTest02;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_HttpTest04;
 	UFUNCTION()
-	void OnClickedHttpTest01();
-	UFUNCTION()
-	void OnClickedHttpTest02();
-	UFUNCTION()
 	void OnClickedHttpTest04();
+	
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	//TSubclassOf<class UHM_FinalTicket> FinalTicketWidget; // 배경 티켓 위젯 클래스 참조
+	//class UHM_FinalTicket* FinalTicketUI; // 배경 티켓 위젯 인스턴스
 #pragma endregion
 };

@@ -16,6 +16,7 @@
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_Chatting.h"
 #include "LHM/HM_FinalTicket.h"
+#include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_TicketCustom.h"
 
 
@@ -38,6 +39,9 @@ void UMainWidget::NativeConstruct()
 	Btn_ConcertR->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertR);
 	Btn_ConcertL->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertL);
 	//Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
+
+	// 현민 HTTP TEST: 퍼즐 결과, 타이틀과 스티커 획득 요청
+	Btn_HttpTest_Puzzle->OnClicked.AddDynamic(this , &UMainWidget::OnClickedHttpTest_Puzzle);
 
 	//닫기 버튼 다른 위젯 클래스와 연결 
 	if (BuyTicketWidget)
@@ -267,7 +271,7 @@ void UMainWidget::OnTicketWidgetClose()
 void UMainWidget::OnClickedCustomTicketSaveButton()
 {
 	FinalTicketWidget->CaptureAndDisplayTicketBackground(TicketCustomWidget);
-	TicketCustomWidget->Btn_ResetBackground->SetVisibility(ESlateVisibility::Visible);
+	TicketCustomWidget->Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
 	SetWidgetSwitcher(8);
 }
 
@@ -320,6 +324,17 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 			break;
 		}
 	}
+}
+
+void UMainWidget::OnClickedHttpTest_Puzzle()
+{
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI && !HttpActor3) return;
+	// Puzzle 결과, Sticker 획득 요청
+	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
+	HttpActor3->ReqPostPuzzleResultAndGetSticker(1, GI->GetAccessToken());
 }
 
 

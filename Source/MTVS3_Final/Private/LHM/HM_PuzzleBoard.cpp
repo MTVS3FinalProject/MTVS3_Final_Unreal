@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/PuzzleManager.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AHM_PuzzleBoard::AHM_PuzzleBoard()
@@ -26,12 +27,27 @@ void AHM_PuzzleBoard::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 네트워크 리플리케이션 활성화
 	bReplicates = true;
-	
+    
+	// 서버에서만 초기화
+	if (HasAuthority())
+	{
+		// BoardAreaVisibility 초기화
+		BoardAreaVisibility.Init(false, 9);
+        
+		// 초기 가시성 상태 설정
+		for (int32 i = 0; i < BoardAreas.Num(); i++)
+		{
+			if (BoardAreas[i])
+			{
+				BoardAreas[i]->SetVisibility(false);
+				BoardAreaVisibility[i] = false;
+			}
+		}
+	}
+    
 	InitializeBoardAreasLocation();
 	InitializeBoardAreasGridLocation();
-	
 }
 
 // Called every frame
@@ -57,7 +73,7 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreas[%d]"), i);
 			BoardAreas[i]->SetupAttachment(RootComponent);
 			BoardAreas[i]->SetStaticMesh(MeshAsset.Object);
-			BoardAreas[i]->SetRelativeScale3D(FVector(0.7f , 7.0f , 7.0f));
+			BoardAreas[i]->SetRelativeScale3D(FVector(0.3f , 5.0f , 5.0f));
 			BoardAreas[i]->SetRelativeRotation(FRotator(0,90,0));
 			
 			BoardAreas[i]->SetCollisionProfileName(TEXT("PuzzleBoard"));
@@ -80,7 +96,7 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			BoardAreasGrid[i]->SetupAttachment(RootComponent);
 			BoardAreasGrid[i]->SetStaticMesh(MeshAsset.Object);
 			//BoardAreasGrid[i]->SetRelativeLocation(FVector(0.0f, 10.f, 0.0f));
-			BoardAreasGrid[i]->SetRelativeScale3D(FVector(0.1f , 6.0f , 6.0f));
+			BoardAreasGrid[i]->SetRelativeScale3D(FVector(0.1f , 4.0f , 4.0f));
 			BoardAreasGrid[i]->SetRelativeRotation(FRotator(0,90,0));
 			
 			BoardAreasGrid[i]->SetVisibility(true);
@@ -100,7 +116,7 @@ void AHM_PuzzleBoard::InitializeBoardAreasLocation()
 			int32 Idx = Row * GridSize + Col;
 			if (BoardAreas.IsValidIndex(Idx) && BoardAreas[Idx])
 			{
-				FVector OffsetLocation = FVector(Col * -CellSize , 0, Row * CellSize);
+				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
 				FVector NewLocation = BoardLocation + OffsetLocation;
 				BoardAreas[Idx]->SetWorldLocation(NewLocation);
 			}
@@ -120,7 +136,7 @@ void AHM_PuzzleBoard::InitializeBoardAreasGridLocation()
 			int32 Idx = Row * GridSize + Col;
 			if (BoardAreasGrid.IsValidIndex(Idx) && BoardAreasGrid[Idx])
 			{
-				FVector OffsetLocation = FVector(Col * -CellSize , 0, Row * CellSize);
+				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
 				FVector NewLocation = BoardGridLocation + OffsetLocation;
 				BoardAreasGrid[Idx]->SetWorldLocation(NewLocation);
 			}
@@ -133,6 +149,12 @@ void AHM_PuzzleBoard::ServerSetBoardAreaVisibility_Implementation(int32 BoardInd
 	// 서버에서 유효성 검사
 	if (BoardIndex >= 0 && BoardIndex < BoardAreas.Num())
 	{
+		// BoardAreaVisibility 업데이트
+		if (HasAuthority())
+		{
+			BoardAreaVisibility[BoardIndex] = bVisible;
+		}
+        
 		// 모든 클라이언트(및 서버)에게 알림
 		MulticastSetBoardAreaVisibility(BoardIndex, bVisible);
 	}
@@ -143,7 +165,14 @@ void AHM_PuzzleBoard::MulticastSetBoardAreaVisibility_Implementation(int32 Board
 	// 모든 클라이언트와 서버에서 실행
 	if (BoardIndex >= 0 && BoardIndex < BoardAreas.Num())
 	{
+		// 가시성 직접 설정
 		BoardAreas[BoardIndex]->SetVisibility(bVisible);
+        
+		// 서버에서만 BoardAreaVisibility 업데이트
+		if (HasAuthority())
+		{
+			BoardAreaVisibility[BoardIndex] = bVisible;
+		}
 	}
 }
 
@@ -192,18 +221,45 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 					// 맞춘 피스는 제거
 					if(HasAuthority())
 					{
-						const TArray<UStaticMeshComponent*>& PiecesArray = PuzzlePiece->GetAllPieces();
-						for(UStaticMeshComponent* Piece : PiecesArray)
-						{
-							if(Piece && Piece->ComponentTags.Num() > 0 &&
-							   Piece->ComponentTags[0].ToString() == ActualTag)
-							{
-								Piece->DestroyComponent();
-								break;
-							}
-						}	
+						MulticastDestroyPuzzlePiece(PuzzlePiece, ActualTag);
 					}
 				}
+				break;
+			}
+		}
+	}
+}
+
+void AHM_PuzzleBoard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AHM_PuzzleBoard, BoardAreaVisibility);
+}
+
+void AHM_PuzzleBoard::OnRep_BoardAreaVisibility()
+{
+	for (int32 i = 0; i < BoardAreaVisibility.Num(); i++)
+	{
+		if (BoardAreas.IsValidIndex(i) && BoardAreas[i])
+		{
+			BoardAreas[i]->SetVisibility(BoardAreaVisibility[i]);
+		}
+	}
+}
+
+void AHM_PuzzleBoard::MulticastDestroyPuzzlePiece_Implementation(AHM_PuzzlePiece* PuzzlePiece,
+	const FString& TagToDestroy)
+{
+	if (PuzzlePiece)
+	{
+		const TArray<UStaticMeshComponent*>& PiecesArray = PuzzlePiece->GetAllPieces();
+		for(UStaticMeshComponent* Piece : PiecesArray)
+		{
+			if(Piece && Piece->ComponentTags.Num() > 0 &&
+			   Piece->ComponentTags[0].ToString() == TagToDestroy)
+			{
+				Piece->DestroyComponent();
 				break;
 			}
 		}

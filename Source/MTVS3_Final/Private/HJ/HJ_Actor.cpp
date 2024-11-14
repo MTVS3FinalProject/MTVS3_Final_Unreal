@@ -83,6 +83,10 @@ void AHJ_Actor::ShowText()
 			{
 				InteractionUI->SetActiveWidgetIndex(2);
 			}
+			else if(ActorHasTag("PlazaTeleport"))
+			{
+				InteractionUI->SetActiveWidgetIndex(3);
+			}
 		}
 		else
 		{

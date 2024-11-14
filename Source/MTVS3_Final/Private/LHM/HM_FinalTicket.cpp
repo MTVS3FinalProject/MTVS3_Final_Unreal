@@ -9,6 +9,7 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
+#include "Components/Overlay.h"
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
@@ -60,6 +61,8 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 	
 	if(TicketCutomUI)
 	{
+		TicketCutomUI->Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
+		
 		// FWidgetRenderer 생성
 		TSharedPtr<FWidgetRenderer> WidgetRenderer = MakeShareable(new FWidgetRenderer(true));
 	
@@ -71,7 +74,7 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 		WidgetTransform.Translation = FVector2D(388, 30); // X, Y 좌표
 		//WidgetTransform.Translation = FVector2D(0, 0); // X, Y 좌표
 		TicketCutomUI->SetRenderTransform(WidgetTransform);
-	
+		
 		UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
 		RenderTarget->InitCustomFormat(CaptureSize.X, CaptureSize.Y, PF_B8G8R8A8, true);
 		RenderTarget->UpdateResource();
@@ -89,18 +92,18 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 			if (TicketCutomUI && Img_FinalTicket)
 			{
 				//FSlateBrush Brush;
-				///Brush.SetResourceObject(CapturedTexture);
-
+				//Brush.SetResourceObject(CapturedTexture);
+			
 				// 최종 티켓 이미지에 반영
 				Img_FinalTicket->SetBrushFromTexture(CapturedTexture);
-
+			
 				// 서버에 커스텀 티켓 저장 요청
-				AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-				UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-				if (!GI && !HttpActor3) return;
-				TArray<uint8> ImageData = ConvertTextureToPNG(RenderTarget);
-				HttpActor3->ReqPostSaveCustomTicket(ImageData , HttpActor3->GetStickerIds() , HttpActor3->GetBackgroundId() , GI->GetAccessToken());
+				 AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+				 	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+				 UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+				 if (!GI && !HttpActor3) return;
+				 TArray<uint8> ImageData = ConvertTextureToPNG(RenderTarget);
+				 HttpActor3->ReqPostSaveCustomTicket(ImageData , HttpActor3->GetStickerIds() , HttpActor3->GetBackgroundId() , GI->GetAccessToken());
 				
 			}
 		}	
