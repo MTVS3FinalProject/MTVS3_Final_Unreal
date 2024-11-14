@@ -4,6 +4,7 @@
 #include "JMH/MH_ItemBox_Title.h"
 
 #include "Components/Button.h"
+#include "Components/TextBlock.h"
 
 void UMH_ItemBox_Title::NativeConstruct()
 {
@@ -11,6 +12,28 @@ void UMH_ItemBox_Title::NativeConstruct()
 
 	Btn_Item_Title->OnClicked.AddDynamic(this,&UMH_ItemBox_Title::OnClickedTitle);
 }
+
+void UMH_ItemBox_Title::ChangeColorTitleName(const FString& _TitleRarity)
+{
+
+	if (_TitleRarity == "Common")
+	{
+		Text_Title->SetColorAndOpacity(FSlateColor(FColor(111 , 111 , 111)));
+	}
+	else if (_TitleRarity == "Rare")
+	{
+		Text_Title->SetColorAndOpacity(FSlateColor(FColor(5 , 177 , 216)));
+	}
+	else if (_TitleRarity == "Unique")
+	{
+		Text_Title->SetColorAndOpacity(FSlateColor(FColor(216 , 5 , 188)));
+	}
+	else
+	{
+		Text_Title->SetColorAndOpacity(FSlateColor(FColor(111 , 111 , 111))); // 기본값
+	}
+}
+
 
 //void UMH_ItemBox_Title::SetTitleData(const FTitleItemData& InTitleData)
 //{

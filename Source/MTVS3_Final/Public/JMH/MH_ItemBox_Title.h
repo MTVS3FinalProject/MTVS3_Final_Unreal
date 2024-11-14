@@ -48,5 +48,8 @@ public:
 
 	// 더블 클릭 이벤트 함수 오버라이드
 	//virtual FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent);
+
+	UFUNCTION()
+	void ChangeColorTitleName(const FString& _TitleRarity);
 	
 };
