@@ -11,11 +11,17 @@
  */
 
 //struct FTitleItemData;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemHovered_Sticker, bool, bHovered);
 
 UCLASS()
 class MTVS3_FINAL_API UMH_ItemBox_Sticker : public UUserWidget
 {
 	GENERATED_BODY()
+
+public:
+	// 아이템 박스 버튼에 마우스 호버 이벤트 델리게이트
+	UPROPERTY(BlueprintAssignable)
+	FOnItemHovered_Sticker OnItemHovered_Sticker;
 
 public:
 	virtual void NativeConstruct() override;

@@ -21,3 +21,8 @@ void UMH_ItemBox_Ticket::OnClickedTicketBtn()
 {
 	
 }
+
+void UMH_ItemBox_Ticket::OnButtonHovered_Ticket()
+{
+	
+}

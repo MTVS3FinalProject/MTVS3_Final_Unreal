@@ -641,3 +641,132 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 		}
 	}
 }
+
+void AHM_HttpActor3::ReqGetEquipTheTitle(int32 TitleID, FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if ( !Http ) return;
+	
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+	
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/title/%d") , *_url, TitleID);
+	FString FormattedUrl = FString::Printf(TEXT("http://125.132.216.190:7878/api/member/title/%d"), TitleID);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("PUT"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetEquipTheTitle);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor3::OnResGetEquipTheTitle(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if (ResponseObject.IsValid())
+				{
+					FString TitleName = ResponseObject->GetStringField(TEXT("titleName"));
+					FString TitleRarity = ResponseObject->GetStringField(TEXT("titleRarity"));
+					
+					ATTPlayer* Player = Cast<ATTPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+					if (Player)
+					{
+						Player->SetTitleNameAndRarity(TitleName, TitleRarity);
+					}
+					UE_LOG(LogTemp , Log , TEXT("타이틀 장착 성공"));
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("타이틀 장착 실패"));
+		}
+	}
+}
+
+void AHM_HttpActor3::ReqGetNotEquipTheTitle(FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/title") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("http://125.132.216.190:7878/api/member/title"));
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("DELETE"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetNotEquipTheTitle);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor3::OnResGetNotEquipTheTitle(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				// "response" 객체에 접근
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+
+				if (ResponseObject.IsValid())
+				{
+					ATTPlayer* Player = Cast<ATTPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+					if (Player)
+					{
+						FString TitleName = " ";
+						FString TitleRarity = " ";
+						Player->SetTitleNameAndRarity(TitleName, TitleRarity);
+					}
+					UE_LOG(LogTemp , Log , TEXT("타이틀 해제 성공"));
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("타이틀 해제 실패"));
+		}
+	}
+}

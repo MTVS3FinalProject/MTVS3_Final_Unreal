@@ -9,14 +9,20 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemHovered_Ticket, bool, bHovered);
 UCLASS()
 class MTVS3_FINAL_API UMH_ItemBox_Ticket : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	// 아이템 박스 버튼에 마우스 호버 이벤트 델리게이트
+	UPROPERTY(BlueprintAssignable)
+	FOnItemHovered_Ticket OnItemHovered_Ticket;
 	
 public:
 	virtual void NativeConstruct() override;
+	
 	
 	UPROPERTY(meta=(BindWidget))
 	class UImage* Img_Item_Ticket;
@@ -36,5 +42,7 @@ public:
 	UFUNCTION()
 	void OnClickedTicketBtn();
 	
-	
+private:
+	UFUNCTION()
+	void OnButtonHovered_Ticket();
 };
