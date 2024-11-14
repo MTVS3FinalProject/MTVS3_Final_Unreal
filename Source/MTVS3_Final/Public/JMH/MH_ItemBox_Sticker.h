@@ -23,9 +23,13 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnItemHovered_Sticker OnItemHovered_Sticker;
 
+	
 public:
 	virtual void NativeConstruct() override;
 
+	UFUNCTION()
+	void OnButtonHovered_Sticker();
+	
 	UPROPERTY(meta=(BindWidget))
 	class UImage* Img_Item_Sticker;
 
