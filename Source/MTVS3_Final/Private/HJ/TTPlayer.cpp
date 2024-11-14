@@ -840,7 +840,7 @@ void ATTPlayer::MyTakePiece()
 
 		bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult , Start , End , ECC_Visibility , TraceParams);
 
-		DrawDebugLine(GetWorld() , Start , End , FColor::Blue , false , 5.f , 0 , 1.f);
+		//DrawDebugLine(GetWorld() , Start , End , FColor::Blue , false , 5.f , 0 , 1.f);
 
 		if (bHit && HitResult.GetComponent())
 		{
