@@ -60,7 +60,7 @@ public:
 	FConcertTime concertTime;
 	
     FConcertInfo()
-	    : concertId(0)
+	    : concertId(1)
         , concertName(TEXT(""))
         , concertTime(0,0,0,TEXT(""))
     {}

@@ -823,8 +823,10 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
+	UE_LOG(LogTemp , Log , TEXT("GetConcertId(): %d"), GetConcertId());
+	
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/result") , *_url, GetConcertId(), GetMyReceptionSeatId()); 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/result") , *_url, GetConcertId()); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/1/seats/1/result") , *_url); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
