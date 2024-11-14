@@ -164,6 +164,14 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		RenderScaleImage->SetIsEnabled(true);
 		RenderDeleteImage->SetIsEnabled(true);
 
+		CopiedImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		CopiedImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		OutlineImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		RenderAngleImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		RenderScaleImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		RenderDeleteImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		
+
 		// UOverlay에 이미지를 자식으로 추가
 		ImageGroupOverlay->AddChildToOverlay(CopiedImage);
 		ImageGroupOverlay->AddChildToOverlay(OutlineImage);

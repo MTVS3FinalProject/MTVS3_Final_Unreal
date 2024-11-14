@@ -13,7 +13,8 @@ void UPlayerTitleWidget::UpdateTitleNameUI(const FString& _TitleName)
 {
 	if (!_TitleName.IsEmpty())
 	{
-		FString FormattedTitleName = FString::Printf(TEXT("|%s|") , *_TitleName);
+		//FString FormattedTitleName = FString::Printf(TEXT("|%s|") , *_TitleName);
+		FString FormattedTitleName = FString::Printf(TEXT("%s") , *_TitleName);
 		Tex_TitleName->SetText(FText::FromString(FormattedTitleName));
 	}
 }
