@@ -10,6 +10,7 @@
 #include "HJ/TTGameInstance.h"
 #include "ImageUtils.h"
 #include "JsonObjectConverter.h"
+#include "HJ/TTPlayer.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -411,6 +412,11 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 
                             // 세션 입장
                             StartUI->GoToLobby();
+                        	ATTPlayer* Player = Cast<ATTPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+                        	if (Player)
+                        	{
+                        		Player->SetTitleNameAndRarity(PlayerData.titleName, PlayerData.titleRarity); // 호출하고자 하는 함수
+                        	}
                         }
                         else
                         {

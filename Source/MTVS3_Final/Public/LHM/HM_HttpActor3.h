@@ -217,5 +217,14 @@ public:
 	// 티켓 커스텀 제작 입장 요청
 	void ReqGetEnterTicketCustomization(FString AccessToken);
 	void OnResGetEnterTicketCustomization(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 타이틀 장착 요청
+	void ReqGetEquipTheTitle(int32 TitleID, FString AccessToken);
+	void OnResGetEquipTheTitle(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 타이틀 해제 요청
+	void ReqGetNotEquipTheTitle(FString AccessToken);
+	void OnResGetNotEquipTheTitle(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
 #pragma endregion
 };
