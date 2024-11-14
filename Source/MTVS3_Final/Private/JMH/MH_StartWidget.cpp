@@ -314,11 +314,11 @@ void UMH_StartWidget::OnClickedAvatarConfirmButton()
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor::StaticClass()));
 	if (HttpActor)
 	{
-		ATTPlayer* Player = Cast<ATTPlayer>(GetOwningPlayer());
-		if (Player)
-		{
-			Player->SetAvatarData(CharacterModelNum);
-		}
+		//ATTPlayer* Player = Cast<ATTPlayer>(GetOwningPlayer());
+		//if (Player)
+		//{
+		//	Player->SetAvatarData(CharacterModelNum);
+		//}
 		//관리자 여부, 이메일,비번,나이,닉네임, 캐릭터Num
 		HttpActor->ReqPostSignup(EText_Nickname->GetText() , bIsHost_Signup , EText_SignupEmail->GetText() ,
 		                         EText_SignupPassWord->GetText() ,
