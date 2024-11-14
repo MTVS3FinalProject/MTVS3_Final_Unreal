@@ -152,8 +152,8 @@ public:
 	UPROPERTY()
 	class UMH_ItemBox_Sticker* SelectedSticker;
 
-	UPROPERTY(EditAnywhere , BlueprintReadWrite)
-	TSubclassOf<class UMH_ItemInfoBox> InfoWidget;
+	//UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	//TSubclassOf<class UMH_ItemInfoBox> InfoWidget;
 
 	UPROPERTY()
 	class UMH_ItemInfoBox* HoveredInfoTitle;

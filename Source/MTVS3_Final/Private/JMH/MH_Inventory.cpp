@@ -126,7 +126,7 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
 			ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
 			// 아이템박스 위젯을 가져와 델리게이트에 바인딩
-			ItemBox_Title->OnItemHovered_Title.AddDynamic(this, &UMH_Inventory::OnHoveredTitleBtn);
+			//ItemBox_Title->OnItemHovered_Title.AddDynamic(this, &UMH_Inventory::OnHoveredTitleBtn);
 			ItemBox_Title->SetInfoString(ItemData.titleScript);
 			ItemBox_Title->SetTitleID(ItemData.titleId);
 			if (OverlayTitle)
@@ -405,8 +405,8 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 	//인포 창 뜸.
 	if (HoveredItem)
 	{
-		HoveredInfoTitle->SetTextItemInfo(HoveredItem->GetInfoString());
-		SetInfoVisibility(true);
+		//HoveredInfoTitle->SetTextItemInfo(HoveredItem->GetInfoString());
+		//SetInfoVisibility(true);
 	}
 }
 
