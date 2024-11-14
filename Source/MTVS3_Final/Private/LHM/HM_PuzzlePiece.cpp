@@ -160,8 +160,8 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
             {
                 // 랜덤 위치 계산
                 FVector RandomOffset = FVector(
-                    FMath::RandRange(-1500.f, 1500.f),
-                    FMath::RandRange(-1500.f, 1500.f),
+                    FMath::RandRange(-100.f, 100.f), // 기본값 1500
+                    FMath::RandRange(-100.f, 100.f),
                     FMath::RandRange(500.f, 500.f)
                 );
                 
