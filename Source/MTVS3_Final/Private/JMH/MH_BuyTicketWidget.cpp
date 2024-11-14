@@ -30,6 +30,7 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	Btn_Confirm01_1->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm01_1Button);
 	Btn_Confirm_QRFailed->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedConfirm_QRUiFailedButton);
 	Btn_SaveTicket->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedSaveTicketButton);
+	Btn_RecentAddress->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedRecentAddress);
 	//뒤로가기
 	Btn_Back01->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack01Button);
 	Btn_Back02->OnClicked.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBack01Button);
