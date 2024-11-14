@@ -315,7 +315,7 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 		if (HttpActor3 && GI)
 		{
-			//HttpActor3->ReqGetNotEquipTheTitle(타이틀ID 변수, GI->GetAccessToken());
+			HttpActor3->ReqGetNotEquipTheTitle(GI->GetAccessToken());
 		}
 		
 	}
@@ -337,7 +337,7 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 		if (HttpActor3 && GI)
 		{
-			//HttpActor3->ReqGetEquipTheTitle(타이틀ID 변수, GI->GetAccessToken());
+			HttpActor3->ReqGetEquipTheTitle(CurrentTitle->GetTitleID(), GI->GetAccessToken());
 		}
 
 		
