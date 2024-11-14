@@ -115,6 +115,7 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 
 		if (ItemBox_Title)
 		{
+			ItemBox_Title->ChangeColorTitleName(ItemData.titleRarity);
 			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
 			ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
 			if (OverlayTitle)
@@ -157,11 +158,11 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 				{
 					// 이미지 위젯에 텍스처 적용
 					ItemBox_Ticket->Img_Item_Ticket->SetBrushFromTexture(ticketTexture);
-					UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
+					UE_LOG(LogTemp, Log, TEXT("ticket image set successfully"));
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
+					UE_LOG(LogTemp, Warning, TEXT("Failed to create ticketTexture or Img_Item_ticket is null"));
 				}
 
 			}
@@ -196,6 +197,7 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 				{
 					// 이미지 위젯에 텍스처 적용
 					ItemBox_Sticker->Img_Item_Sticker->SetBrushFromTexture(StickerTexture);
+					ItemBox_Sticker->Text_Sticker->SetText(FText::FromString(ItemData.stickerName));
 					UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
 				}
 				else
