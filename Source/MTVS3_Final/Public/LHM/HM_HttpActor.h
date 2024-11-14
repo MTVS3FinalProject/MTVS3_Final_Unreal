@@ -31,9 +31,9 @@ public:
 	class UMH_StartWidget* StartUI;
 #pragma endregion
 
-	// 백엔드에 요청 보낼 때만 api 포함, 프론트는 api X
-	const FString _url = "https://ticketaka.shop/api";
-
+	//const FString _url = "https://ticketaka.shop/api";
+	const FString _url = "http://125.132.216.190:7878/api";
+	
 	// QR코드 요청을 서버에 보내는 함수
 	void ReqPostGetVerifyIdentityQR(FText Email, FText Password);
 

@@ -13,7 +13,7 @@ void UMH_ItemBox_Title::NativeConstruct()
 	Btn_Item_Title->OnClicked.AddDynamic(this , &UMH_ItemBox_Title::OnClickedTitle);
 
 	// 버튼이 호버될 때 델리게이트 호출
-	Btn_Item_Title->OnHovered.AddDynamic(this, &UMH_ItemBox_Title::OnButtonHovered_Title);
+	//Btn_Item_Title->OnHovered.AddDynamic(this, &UMH_ItemBox_Title::OnButtonHovered_Title);
 	
 }
 
