@@ -2,7 +2,7 @@
 
 
 #include "LHM/HM_TicketCustom.h"
-
+#include "LHM/HM_FinalTicket.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/Image.h"
 #include "Components/Button.h"
@@ -29,8 +29,11 @@ void UHM_TicketCustom::NativeConstruct()
 	Btn_Save->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedSaveButton);
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
 	Btn_HttpTest04->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest04);
+	
+	//Btn_Capture->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedCapture);
 
 	RootCanvas = Cast<UCanvasPanel>(GetRootWidget());
+	//TicketCanvas = Cast<UCanvasPanel>(GetRootWidget());
 	
 	bIsDragging = false;
 	bIsRenderingAngle = false;
@@ -39,11 +42,11 @@ void UHM_TicketCustom::NativeConstruct()
 	bIsBackground = false;
 	CurrentImage = nullptr;
 
-	if (!ScrollBox_Stickers || !VerticalBox_Stickers)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ScrollBox or VerticalBox is not bound in widget blueprint"));
-		return;
-	}
+	 if (!ScrollBox_Stickers || !VerticalBox_Stickers)
+	 {
+	 	UE_LOG(LogTemp, Error, TEXT("ScrollBox or VerticalBox is not bound in widget blueprint"));
+	 	return;
+	 }
 
 	// 스크롤박스 설정
 	ScrollBox_Stickers->SetScrollBarVisibility(ESlateVisibility::Visible);
@@ -70,6 +73,11 @@ void UHM_TicketCustom::NativeConstruct()
 			InfoSlot->SetAlignment(FVector2d(0.5));
 		}
 	}
+
+	// if (FinalTicketWidget)
+	// {
+	// 	FinalTicketUI = CreateWidget<UHM_FinalTicket>(GetWorld(), FinalTicketWidget);
+	// }
 }
 
 void UHM_TicketCustom::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -80,7 +88,7 @@ void UHM_TicketCustom::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 
 FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 {
-	if(!RootCanvas || !SourceImage) return FUsedImage();
+	if(!RootCanvas || !SourceImage ) return FUsedImage();
 	
 	// UOverlay 컨테이너 생성 (이미지 그룹을 관리할 컨테이너)
 	UOverlay* ImageGroupOverlay = NewObject<UOverlay>(this, UOverlay::StaticClass());
@@ -94,11 +102,12 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 	}
 	
 	UCanvasPanelSlot* GroupSlot = RootCanvas->AddChildToCanvas(ImageGroupOverlay);
+	//UCanvasPanelSlot* GroupSlot = TicketCanvas->AddChildToCanvas(ImageGroupOverlay);
 	if (!GroupSlot) return FUsedImage();
 	
 	GroupSlot->SetSize(FVector2D(230));
 	GroupSlot->SetAlignment(FVector2d(0.5f));
-	GroupSlot->SetZOrder(100); // 필요 시 ZOrder 조정
+	GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 1); // 필요 시 ZOrder 조정
 	
 	// 새 이미지 생성
 	UImage* CopiedImage = NewObject<UImage>(this, UImage::StaticClass());
@@ -139,9 +148,9 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		}
 		// 속성 설정
 		OutlineImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
-		RenderAngleImage->SetDesiredSizeOverride(FVector2d(37));
-		RenderScaleImage->SetDesiredSizeOverride(FVector2d(37));
-		RenderDeleteImage->SetDesiredSizeOverride(FVector2d(37));
+		RenderAngleImage->SetDesiredSizeOverride(FVector2d(45));
+		RenderScaleImage->SetDesiredSizeOverride(FVector2d(45));
+		RenderDeleteImage->SetDesiredSizeOverride(FVector2d(45));
 		OutlineImage->SetVisibility(ESlateVisibility::Hidden);
 		RenderAngleImage->SetVisibility(ESlateVisibility::Hidden);
 		RenderScaleImage->SetVisibility(ESlateVisibility::Hidden);
@@ -170,11 +179,11 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			CopiedSlot->SetPosition(Position);
 			CopiedSlot->SetAlignment(FVector2d(0.5f));
 			CopiedSlot->SetSize(FVector2D(230));
-			CopiedSlot->SetZOrder(100); // 필요 시 ZOrder 조정
+			CopiedSlot->SetZOrder(Img_CopiedImgs.Num() + 1); // 필요 시 ZOrder 조정
 			 GroupSlot->SetPosition(Position);
 			 GroupSlot->SetSize(FVector2D(230));
 			 GroupSlot->SetAlignment(FVector2d(0.5f));
-			 GroupSlot->SetZOrder(100); // 필요 시 ZOrder 조정
+			 GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 1); // 필요 시 ZOrder 조정
 		}
 
 		// 각 이미지의 개별 위치와 크기 설정 (중앙을 기준으로 조정)
@@ -320,7 +329,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 							GroupSlot->SetPosition(AdjustedPosition);
 							GroupSlot->SetSize(FVector2D(230));  // 그룹 전체 크기 설정
 							GroupSlot->SetAlignment(FVector2d(0.5f));
-							GroupSlot->SetZOrder(110);
+							GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 1);
 						}
 						return FReply::Handled().CaptureMouse(this->TakeWidget());
 					}
@@ -355,7 +364,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 						GroupSlot->SetPosition(AdjustedPosition);
 						GroupSlot->SetSize(FVector2D(230));  // 그룹 전체 크기 설정
 						GroupSlot->SetAlignment(FVector2d(0.5f));
-						GroupSlot->SetZOrder(110);
+						GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 1);
 					}
 					return FReply::Handled().CaptureMouse(this->TakeWidget());
 				}
@@ -404,18 +413,50 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 					return FReply::Handled().CaptureMouse(this->TakeWidget());
 				}
 			}
+		}
+		// 백그라운드 클릭 시
+		if (Img_TicketBackground && Img_TicketBackground->IsVisible() && Img_TicketBackground->GetIsEnabled() == true)
+		{
+			FGeometry BGGeometry = Img_TicketBackground->GetCachedGeometry();
+			if (BGGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+			{
+				bIsBackground = true;
+				CurrentImage = Img_TicketBackground;
 
-			// // BackGround 클릭시
-			// if(Img_TicketBackground && Img_TicketBackground->IsVisible() && Img_TicketBackground->GetIsEnabled() == true)
-			// {
-			// 	FGeometry BGGeometry = Img_TicketBackground->GetCachedGeometry();
-			// 	if (BGGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
-			// 	{
-			// 		bIsBackground = true;
-			// 		CurrentImage = Img_TicketBackground;
-			// 		return FReply::Handled().CaptureMouse(this->TakeWidget());
-			// 	}
-			// }
+				// Img_CopiedImgs 내 모든 요소의 Outline, RenderAngle, RenderScale, Delete 숨기기
+				for(FUsedImage& ImageSet : Img_CopiedImgs)
+				{
+					if (ImageSet.Outline) ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
+					if (ImageSet.RenderAngle) ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
+					if (ImageSet.RenderScale) ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
+					if (ImageSet.Delete) ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
+				}
+
+				// 마우스 캡처 설정
+				return FReply::Handled().CaptureMouse(this->TakeWidget());
+			}
+		}
+		// 티켓인포 클릭 시
+		if (Img_TicketInfo && Img_TicketInfo->IsVisible() && Img_TicketInfo->GetIsEnabled() == true)
+		{
+			FGeometry BGGeometry = Img_TicketInfo->GetCachedGeometry();
+			if (BGGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+			{
+				bIsBackground = true;
+				CurrentImage = Img_TicketInfo;
+
+				// Img_CopiedImgs 내 모든 요소의 Outline, RenderAngle, RenderScale, Delete 숨기기
+				for(FUsedImage& ImageSet : Img_CopiedImgs)
+				{
+					if (ImageSet.Outline) ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
+					if (ImageSet.RenderAngle) ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
+					if (ImageSet.RenderScale) ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
+					if (ImageSet.Delete) ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
+				}
+
+				// 마우스 캡처 설정
+				return FReply::Handled().CaptureMouse(this->TakeWidget());
+			}
 		}
 	}
 	return FReply::Unhandled();
@@ -441,7 +482,7 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 					GroupSlot->SetPosition(AdjustedPosition);
 					GroupSlot->SetSize(FVector2D(230));  // 그룹 전체 크기 설정
 					GroupSlot->SetAlignment(FVector2d(0.5f));
-					GroupSlot->SetZOrder(110);
+					GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 1);
 				}
 			}
 		}
@@ -493,17 +534,6 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 			}
 		}
 	}
-	// if (bIsBackground && CurrentImage)
-	// {
-	// 	if (Img_TicketBackground == CurrentImage)
-	// 	{
-	// 		for(FUsedImage& ImageSet : Img_CopiedImgs)
-	// 		{
-	// 			//
-	// 		}
-	// 		return FReply::Handled();
-	// 	}
-	// }
 	return FReply::Unhandled();
 }
 
@@ -681,6 +711,14 @@ void UHM_TicketCustom::OnClickedResetTicketImageButton()
 		UE_LOG(LogTemp, Log, TEXT("Deleted ImageSet at index: %d"), Index);
 	}
 }
+
+// void UHM_TicketCustom::OnClickedCapture()
+// {
+// 	Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
+// 			FinalTicketUI->CaptureAndDisplayTicketBackground(this);
+// 		 	FinalTicketUI->AddToViewport();
+// 		 	this->SetVisibility(ESlateVisibility::Hidden);
+// }
 
 // void UHM_TicketCustom::OnClickedSaveButtonDELEGATE()
 // {

@@ -25,6 +25,8 @@ struct FUsedImage
     class UOverlay* ImageGroupOverlay; // 그룹화된 이미지 컨테이너
     UImage* OriginImage; // 원본 이미지 참조 추가
 
+	//FVector2D CurrentScale = FVector2D(1.0f, 1.0f); // 초기 스케일 값
+
 	// 기본 생성자
 	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr), ImageGroupOverlay(nullptr), OriginImage(nullptr) {}
 	
@@ -69,6 +71,8 @@ public:
 #pragma region Origin Variable & Custom Properties
 	UPROPERTY()
 	class UCanvasPanel* RootCanvas;
+	//UPROPERTY()
+	//class UCanvasPanel* TicketCanvas;
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_TicketBackground;
 	UPROPERTY(meta = (BindWidget))
@@ -160,10 +164,20 @@ public:
 	void OnClickedResetTicketImageButton();
 	//UFUNCTION()
 	//void OnClickedSaveButtonDELEGATE();
+
+	// 현민 테스트용
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	//class UButton* Btn_Capture;
+	//UFUNCTION()
+	//void OnClickedCapture();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_HttpTest04;
 	UFUNCTION()
 	void OnClickedHttpTest04();
+	
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	//TSubclassOf<class UHM_FinalTicket> FinalTicketWidget; // 배경 티켓 위젯 클래스 참조
+	//class UHM_FinalTicket* FinalTicketUI; // 배경 티켓 위젯 인스턴스
 #pragma endregion
 };
