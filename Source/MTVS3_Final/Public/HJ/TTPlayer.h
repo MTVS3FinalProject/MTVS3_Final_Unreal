@@ -96,6 +96,9 @@ public:
 	UFUNCTION(Server , Reliable , BlueprintCallable)
 	void ServerTeleportPlayer(bool bIsToConcertHall);
 
+	UFUNCTION(Client, Reliable)
+	void ClientAdjustCamera(FRotator NewRotation);
+	
 	UFUNCTION(Server , Reliable)
 	void ServerSetNewSkeletalMesh(const int32& _AvatarData);
 

@@ -29,7 +29,6 @@ void UHM_TicketCustom::NativeConstruct()
 	Btn_ResetTicketImage->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedResetTicketImageButton);
 	Btn_Save->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedSaveButton);
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
-	Btn_HttpTest02->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest02);
 	Btn_HttpTest04->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest04);
 
 	RootCanvas = Cast<UCanvasPanel>(GetRootWidget());
@@ -706,17 +705,6 @@ void UHM_TicketCustom::OnClickedResetTicketImageButton()
 // 	 	this->SetVisibility(ESlateVisibility::Hidden);
 // 	 
 // }
-
-void UHM_TicketCustom::OnClickedHttpTest02()
-{
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (!GI && !HttpActor3) return;
-	// Puzzle 결과, Sticker 획득 요청
-	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
-	HttpActor3->ReqPostPuzzleResultAndGetSticker(1, GI->GetAccessToken());
-}
 
 void UHM_TicketCustom::OnClickedHttpTest04()
 {

@@ -560,6 +560,23 @@ void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , -45 , 0);
 	
 	TeleportTo(TargetLocation , TargetRotation);
+
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		ClientAdjustCamera(TargetRotation);
+	}
+}
+
+void ATTPlayer::ClientAdjustCamera_Implementation(FRotator NewRotation)
+{
+	if (!IsLocallyControlled())
+		return;
+        
+	if (ATTPlayerController* PC = Cast<ATTPlayerController>(Controller))
+	{
+		PC->SetControlRotation(NewRotation);
+		PC->SetViewTargetWithBlend(this);
+	}
 }
 
 void ATTPlayer::ServerLuckyDrawStart_Implementation()

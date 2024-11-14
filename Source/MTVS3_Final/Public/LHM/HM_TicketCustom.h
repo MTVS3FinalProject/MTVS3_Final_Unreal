@@ -151,11 +151,7 @@ public:
 	//void OnClickedSaveButtonDELEGATE();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_HttpTest02;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
 	class UButton* Btn_HttpTest04;
-	UFUNCTION()
-	void OnClickedHttpTest02();
 	UFUNCTION()
 	void OnClickedHttpTest04();
 #pragma endregion
