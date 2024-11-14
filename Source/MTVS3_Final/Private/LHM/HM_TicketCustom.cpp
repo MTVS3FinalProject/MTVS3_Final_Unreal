@@ -12,6 +12,7 @@
 #include "Components/OverlaySlot.h"
 #include "Components/ScrollBox.h"
 #include "Components/Spacer.h"
+#include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "HJ/TTGameInstance.h"
@@ -28,7 +29,6 @@ void UHM_TicketCustom::NativeConstruct()
 	Btn_ResetTicketImage->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedResetTicketImageButton);
 	Btn_Save->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedSaveButton);
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
-	Btn_HttpTest01->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest01);
 	Btn_HttpTest02->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest02);
 	Btn_HttpTest04->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedHttpTest04);
 
@@ -706,17 +706,6 @@ void UHM_TicketCustom::OnClickedResetTicketImageButton()
 // 	 	this->SetVisibility(ESlateVisibility::Hidden);
 // 	 
 // }
-
-void UHM_TicketCustom::OnClickedHttpTest01()
-{
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (!GI && !HttpActor3) return;
-	// 인벤토리 정보 요청
-	UE_LOG(LogTemp , Log , TEXT("인벤토리 정보 요청"));
-	HttpActor3->ReqGetInventoryData(GI->GetAccessToken());
-}
 
 void UHM_TicketCustom::OnClickedHttpTest02()
 {
