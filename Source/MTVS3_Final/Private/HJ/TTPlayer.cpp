@@ -695,9 +695,9 @@ void ATTPlayer::MulticastSetVisibilityTextRender_Implementation(bool bIsVisible)
 	TextRenderComp->SetVisibility(bIsVisible);
 }
 
-void ATTPlayer::MulticastSetColorTextRender_Implementation(FColor NewColor)
+void ATTPlayer::MulticastSetColorTextRender_Implementation(const FLinearColor& NewColor)
 {
-	TextRenderComp->SetTextRenderColor(NewColor);
+	TextRenderComp->SetTextRenderColor(NewColor.ToFColor(true));
 }
 
 void ATTPlayer::ServerChangeWalkSpeed_Implementation(bool bIsRunning)
