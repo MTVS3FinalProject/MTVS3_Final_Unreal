@@ -235,6 +235,7 @@ void AHM_PuzzleBoard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AHM_PuzzleBoard, BoardAreaVisibility);
+	DOREPLIFETIME(AHM_PuzzleBoard, DestroyedPieceTags);
 }
 
 void AHM_PuzzleBoard::OnRep_BoardAreaVisibility()
@@ -248,11 +249,44 @@ void AHM_PuzzleBoard::OnRep_BoardAreaVisibility()
 	}
 }
 
+void AHM_PuzzleBoard::OnRep_DestroyedPieceTags()
+{
+	// 월드에서 모든 퍼즐 피스를 찾아서 확인
+	TArray<AActor*> FoundPuzzlePieces;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AHM_PuzzlePiece::StaticClass(), FoundPuzzlePieces);
+
+	for (AActor* Actor : FoundPuzzlePieces)
+	{
+		AHM_PuzzlePiece* PuzzlePiece = Cast<AHM_PuzzlePiece>(Actor);
+		if (PuzzlePiece)
+		{
+			const TArray<UStaticMeshComponent*>& PiecesArray = PuzzlePiece->GetAllPieces();
+			for (UStaticMeshComponent* Piece : PiecesArray)
+			{
+				if (Piece && Piece->ComponentTags.Num() > 0)
+				{
+					FString PieceTag = Piece->ComponentTags[0].ToString();
+					if (DestroyedPieceTags.Contains(PieceTag))
+					{
+						Piece->DestroyComponent();
+					}
+				}
+			}
+		}
+	}
+}
+
 void AHM_PuzzleBoard::MulticastDestroyPuzzlePiece_Implementation(AHM_PuzzlePiece* PuzzlePiece,
-	const FString& TagToDestroy)
+                                                                 const FString& TagToDestroy)
 {
 	if (PuzzlePiece)
 	{
+		if (HasAuthority())
+		{
+			// 서버에서만 DestroyedPieceTags 업데이트
+			DestroyedPieceTags.AddUnique(TagToDestroy);
+		}
+
 		const TArray<UStaticMeshComponent*>& PiecesArray = PuzzlePiece->GetAllPieces();
 		for(UStaticMeshComponent* Piece : PiecesArray)
 		{
