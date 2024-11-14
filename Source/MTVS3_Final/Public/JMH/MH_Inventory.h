@@ -83,7 +83,7 @@ public:
 	class UButton* Btn_Title_no2;
 	UFUNCTION()
 	void OnClickedTilteNo2Btn();
-
+	
 	//처음 인벤토리 접속 할 때 아이템 데이터 받아오기
 	UFUNCTION()
 	void InitializeTabs();
@@ -152,6 +152,12 @@ public:
 	UPROPERTY()
 	class UMH_ItemBox_Sticker* SelectedSticker;
 
+	UPROPERTY(meta = (BindWidget))
+	UUserWidget* InfoWidget;
+
+	// 인포 위젯 가시성 설정 함수
+	void SetInfoVisibility(bool bVisible);
+	
 	//타이틀 박스 더블클릭시
 	//UFUNCTION()
 	//void HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem);

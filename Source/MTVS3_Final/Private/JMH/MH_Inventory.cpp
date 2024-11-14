@@ -12,6 +12,7 @@
 #include "Components/OverlaySlot.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
+#include "HJ/TTGameInstance.h"
 #include "JMH/MH_ItemBox_Sticker.h"
 #include "JMH/MH_ItemBox_Ticket.h"
 #include "JMH/MH_ItemBox_Title.h"
@@ -118,6 +119,7 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 			ItemBox_Title->ChangeColorTitleName(ItemData.titleRarity);
 			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
 			ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
+			ItemBox_Title->SetTitleID(ItemData.titleId);
 			if (OverlayTitle)
 			{
 				// Overlay에 ItemBox_Title 추가
@@ -271,6 +273,8 @@ void UMH_Inventory::SetPlayerStickerInfo()
 
 void UMH_Inventory::SetPlayerTitle(int32 TitleID)
 {
+	//서버에 보내고.
+	//서버에서 완료가 되면 플레이어 칭호 바꿔주기
 	//플레이어에 있는 칭호 위젯에 칭호 적용.
 	//플레이어에 칭호 적용 되었다는  bIsEquipped = true; 변경
 }
@@ -297,21 +301,46 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 	if (SelectedTitle)
 	{
 		// 이전에 선택된 아이템에서 프레임 제거
+		
 		RemoveFrame();
+		
 		//타이틀을 제거하시겠습니까? 창 뜨기
 		//플레이어한테 칭호 해제
+		//해제할 때 필요
+		//CurrentTitle->GetTitleID();
+
+		// 타이틀 해제 요청 통신
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (HttpActor3 && GI)
+		{
+			//HttpActor3->ReqGetNotEquipTheTitle(타이틀ID 변수, GI->GetAccessToken());
+		}
+		
 	}
 
 	SelectedTitle = CurrentTitle;
 
 	if (SelectedTitle)
 	{
+		
+		//플레이어한테 칭호 추가,
 		// 현재 선택된 아이템에 프레임 추가
 		AddFrame(CurrentTitle);
 		// 프레임 위치 업데이트
 		SetFramePosition(CurrentTitle);
+		//등록할 때 필요
+		//CurrentTitle->GetTitleID();
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (HttpActor3 && GI)
+		{
+			//HttpActor3->ReqGetEquipTheTitle(타이틀ID 변수, GI->GetAccessToken());
+		}
 
-		//플레이어한테 칭호 해제
+		
 	}
 
 	OnClickedTilteNoBtn();
@@ -326,18 +355,28 @@ void UMH_Inventory::OnClickedTilteNoBtn()
 void UMH_Inventory::OnClickedTilteYes2Btn()
 {
 	//칭호 해제하기
-
 	SelectedTitle = nullptr;
 	CurrentTitle = nullptr;
 	//프레임 삭제
 	RemoveFrame();
 	HideTitleUnequipWin();
+	//해제할 때 필요
+	//CurrentTitle->GetTitleID();
 }
 
 void UMH_Inventory::OnClickedTilteNo2Btn()
 {
 	//아니오
 	HideTitleUnequipWin();
+}
+
+void UMH_Inventory::SetInfoVisibility(bool bVisible)
+{
+	if (InfoWidget)
+	{
+		// 가시성 설정
+		InfoWidget->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
 }
 
 //1.타이틀버튼 누름

@@ -12,12 +12,19 @@
 
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDoubleClicked, UMH_ItemBox_Title*, ClickedItem);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickedTitleBtn, UMH_ItemBox_Title*, ClickedItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemHovered_Title, bool, bHovered);
 
 UCLASS()
 class MTVS3_FINAL_API UMH_ItemBox_Title : public UUserWidget
 {
 	GENERATED_BODY()
 
+public:
+	// 아이템 박스 버튼에 마우스 호버 이벤트 델리게이트
+	UPROPERTY(BlueprintAssignable)
+	FOnItemHovered_Title OnItemHovered_Title;
+
+	
 public:
 	virtual void NativeConstruct() override;
 
@@ -29,6 +36,11 @@ public:
 
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* Text_Title;
+
+	//현민
+	//타이틀 ID값 저장하고 해제할때 필요
+	UPROPERTY()
+	int32 TitleID=0;
 
 	//UFUNCTION()
 	//void SetTitleData(const FTitleItemData& InTitleData);
@@ -51,5 +63,12 @@ public:
 
 	UFUNCTION()
 	void ChangeColorTitleName(const FString& _TitleRarity);
+
+	//타이틀ID 값 넘겨주기
+	UFUNCTION()
+	void SetTitleID(int32 TitleID0);
+	
+	UFUNCTION()
+	int32 GetTitleID();
 	
 };
