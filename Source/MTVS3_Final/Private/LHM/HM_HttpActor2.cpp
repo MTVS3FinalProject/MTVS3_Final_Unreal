@@ -129,6 +129,7 @@ void AHM_HttpActor2::OnResGetConcertInfo(FHttpRequestPtr Request , FHttpResponse
 
 							if (MainUI && MainUI->GetBuyTicketWidget())
 							{
+								MainUI->SetWidgetSwitcher(5);
 								MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
 									NewConcertInfo.concertName ,
 									NewConcertInfo.concertTime.year ,

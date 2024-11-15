@@ -1360,9 +1360,9 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
 
 			// MainUI 표시
-			MainUI->SetVisibleCanvas(true);
+			if (MainUI) MainUI->SetVisibleCanvas(true);
 			// 좌석 접수 UI 숨기기
-			TicketingUI->SetVisibleSwitcher(false , 0);
+			if (TicketingUI) TicketingUI->SetVisibleSwitcher(false , 0);
 
 			ServerSetSitting(false);
 			SwitchCamera(bIsThirdPerson);
@@ -1371,8 +1371,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("SelectConcert")))
 	{
-		MainUI->SetWidgetSwitcher(5);
-		HttpActor2->ReqGetConcertInfo(GI->GetAccessToken() , this);
+		if (HttpActor2) HttpActor2->ReqGetConcertInfo(GI->GetAccessToken() , this);
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Customizing")))
 	{
