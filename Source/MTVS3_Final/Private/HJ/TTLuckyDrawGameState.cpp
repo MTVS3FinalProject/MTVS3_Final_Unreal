@@ -15,21 +15,19 @@
 
 ATTLuckyDrawGameState::ATTLuckyDrawGameState()
 {
+	
 }
 
 void ATTLuckyDrawGameState::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 모든 타이머 초기화
-	GetWorldTimerManager().ClearAllTimersForObject(this);
-
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI) GI->SetPlaceState(EPlaceState::LuckyDrawRoom);
 
 	CurrentSeatNumber = 0;
 
-	GameUI = Cast<UMH_GameWidget>(CreateWidget(GetWorld() , GameUIFactory));
+	GameUI = CastChecked<UMH_GameWidget>(CreateWidget(GetWorld() , GameUIFactory));
 	if (GameUI)
 	{
 		GameUI->AddToViewport();
@@ -113,10 +111,10 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
 
 
 		int32 SeatNumber = TTPlayer->GetRandomSeatNumber();
-		if (SeatNumber != 0 && ChairManager->PlayerToChairMap.Contains(SeatNumber)) // SeatNumber가 유효한지 확인
+		if (SeatNumber != 0)  // SeatNumber가 유효한지 확인
 		{
 			FString* ChairTag = ChairManager->PlayerToChairMap.Find(SeatNumber);
-			if (ChairTag && !ChairTag->IsEmpty())
+			if (ChairTag)
 			{
 				// Chair_ 형태에서 Table_ 형태로 변환
 				FString TableTag = "Table_" + ChairTag->RightChop(6);
@@ -130,10 +128,9 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
 						ALuckyDrawTable* TargetTable = Cast<ALuckyDrawTable>(TableComponent->GetChildActor());
 						if (TargetTable)
 						{
-							TargetTable->SetColorBlue(); // 테이블 색상을 파란색으로 설정
+							TargetTable->SetColorBlue();  // 테이블 색상을 파란색으로 설정
 							TargetTable->MulticastSetTextRender(FText::FromString(FString::FromInt(SeatNumber)));
-							UE_LOG(LogTemp , Log , TEXT("Table %s color set to blue and seat number %d displayed") ,
-							       *TableTag , SeatNumber);
+							UE_LOG(LogTemp, Log, TEXT("Table %s color set to blue and seat number %d displayed"), *TableTag, SeatNumber);
 						}
 						break;
 					}
@@ -141,12 +138,12 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
 			}
 			else
 			{
-				UE_LOG(LogTemp , Warning , TEXT("ChairTag not found for SeatNumber: %d") , SeatNumber);
+				UE_LOG(LogTemp, Warning, TEXT("ChairTag not found for SeatNumber: %d"), SeatNumber);
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp , Warning , TEXT("Invalid SeatNumber (0) for player: %s") , *TTPlayer->GetNickname());
+			UE_LOG(LogTemp, Warning, TEXT("Invalid SeatNumber (0) for player: %s"), *TTPlayer->GetNickname());
 		}
 	}
 
@@ -173,7 +170,6 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
 
 void ATTLuckyDrawGameState::StartPlayRoulette()
 {
-	if (!IsValid(this)) return;
 	MulticastStartLuckyDraw();
 
 	TArray<AActor*> FoundActors;
@@ -212,7 +208,7 @@ void ATTLuckyDrawGameState::OnRep_NewSeatNumber()
 
 void ATTLuckyDrawGameState::MulticastPlayRouletteEndSound_Implementation()
 {
-	UGameplayStatics::PlaySound2D(GetWorld() , RouletteEndSound);
+	UGameplayStatics::PlaySound2D(GetWorld(), RouletteEndSound);
 }
 
 void ATTLuckyDrawGameState::MulticastShowOnlyNumPlayers_Implementation()
@@ -232,10 +228,10 @@ void ATTLuckyDrawGameState::MulticastUpdatePlayerNumUI_Implementation(int32 Play
 void ATTLuckyDrawGameState::EliminatePlayers()
 {
 	MulticastPlayRouletteEndSound();
-
+	
 	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
 	if (!GameMode) return;
-	if (CurrentRound > 0 && GameMode && GameMode->EliminatedPlayersPerRound.IsValidIndex(CurrentRound - 1))
+	if (CurrentRound > 0 && GameMode->EliminatedPlayersPerRound.Num() >= CurrentRound)
 	{
 		int32 LastRoundIndex = CurrentRound - 1;
 		ALuckyDrawManager* ChairManager = Cast<ALuckyDrawManager>(
@@ -280,11 +276,6 @@ void ATTLuckyDrawGameState::EliminatePlayers()
 						}
 					}
 
-					if (!TargetChairTag)
-					{
-						UE_LOG(LogTemp , Warning , TEXT("Invalid TargetChairTag for PlayerID: %d") , PlayerID);
-						continue;
-					}
 					// Chair 태그를 기반으로 Table 태그 생성 (예: Chair_1 -> Table_1)
 					FString TargetTableTag = TEXT("Table_") + TargetChairTag->RightChop(6);
 
@@ -320,7 +311,6 @@ void ATTLuckyDrawGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 void ATTLuckyDrawGameState::MulticastStartLuckyDraw_Implementation()
 {
-	if (!GameUI) return;
 	GameUI->ShowWidget();
 	GameUI->PlayRouletteAnim04();
 }
@@ -346,27 +336,26 @@ void ATTLuckyDrawGameState::StartNextRound()
 	// }
 	// Clear any existing EliminatePlayers timer
 	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
-	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
-
-	if (IsValid(this) && CurrentRound < TotalRounds)
+    
+	if (CurrentRound >= TotalRounds)
 	{
 		// Set final elimination timer and end game
-		GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle , this ,
-		                                &ATTLuckyDrawGameState::EliminatePlayers , 4.5f , false);
+		GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle, this, 
+			&ATTLuckyDrawGameState::EliminatePlayers, 4.5f, false);
 		FTimerHandle RouletteTimerHandle;
-		GetWorldTimerManager().SetTimer(RouletteTimerHandle , this ,
-		                                &ATTLuckyDrawGameState::EndRounds , 8.0f , false);
+		GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, 
+			&ATTLuckyDrawGameState::EndRounds, 8.0f, false);
 		return;
 	}
 
 	// Set timer for next elimination
-	GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle , this ,
-	                                &ATTLuckyDrawGameState::EliminatePlayers , 4.5f , false);
+	GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle, this, 
+		&ATTLuckyDrawGameState::EliminatePlayers, 4.5f, false);
 
 	// Set timer for next roulette round
 	float Delay = (CurrentRound == 0) ? 0.5f : 10.0f;
-	GetWorldTimerManager().SetTimer(RoundTimerHandle , this ,
-	                                &ATTLuckyDrawGameState::PlayRoulette , Delay , false);
+	GetWorldTimerManager().SetTimer(RoundTimerHandle, this, 
+		&ATTLuckyDrawGameState::PlayRoulette, Delay, false);
 
 	/*ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
 	if (!GameMode) return;
@@ -416,10 +405,12 @@ void ATTLuckyDrawGameState::MulticastHideGameUI_Implementation()
 
 void ATTLuckyDrawGameState::MulticastUpdateRouletteUI_Implementation(int32 Player , int32 Rule , int32 Result)
 {
-	if (!IsValid(this) || !GameUI) return;
-	GameUI->SetTextroulette1(FString::FromInt(Player));
-	GameUI->SetTextroulette2(Rule);
-	GameUI->SetTextroulette3(Result);
+	if (GameUI)
+	{
+		GameUI->SetTextroulette1(FString::FromInt(Player));
+		GameUI->SetTextroulette2(Rule);
+		GameUI->SetTextroulette3(Result);
+	}
 }
 
 void ATTLuckyDrawGameState::EndRounds()
@@ -447,8 +438,8 @@ void ATTLuckyDrawGameState::EndRounds()
 
 	// 모든 테이블을 검정색으로 설정하고 텍스트 초기화
 	ALDTableManager* TableManager = Cast<ALDTableManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , ALDTableManager::StaticClass()));
-
+		UGameplayStatics::GetActorOfClass(GetWorld(), ALDTableManager::StaticClass()));
+    
 	if (TableManager)
 	{
 		TArray<UChildActorComponent*> TableComponents;
