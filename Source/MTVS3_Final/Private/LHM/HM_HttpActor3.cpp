@@ -304,7 +304,6 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TAr
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	UE_LOG(LogTemp , Log , TEXT("GetTicketId(): %d"), GetTicketId());
 	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, Tickets.ticketId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -343,6 +342,71 @@ void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TAr
 	Request->ProcessRequest();
 }
 
+void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& ImageData, TArray<int32> StickerList,
+	int32 BackGroundId, FString AccessToken)
+{
+	 UE_LOG(LogTemp, Log, TEXT("커스텀 티켓 저장 요청 - ImageData Multipart"));
+
+    // HTTP 모듈 가져오기
+    FHttpModule* Http = &FHttpModule::Get();
+    if (!Http) return;
+
+    // HTTP 요청 생성
+    TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+    FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom"), *_url, GetTicketId());
+    Request->SetURL(FormattedUrl);
+    Request->SetVerb(TEXT("POST"));
+
+    // 헤더 설정
+    Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *AccessToken));
+    FString Boundary = "---------------------------BoundaryString"; // 임의의 고유 문자열
+    Request->SetHeader(TEXT("Content-Type"), FString::Printf(TEXT("multipart/form-data; boundary=%s"), *Boundary));
+
+    // Multipart Body 작성
+    FString MultipartBody;
+
+    // 1. 이미지 데이터 추가
+    MultipartBody += FString::Printf(TEXT("--%s\r\n"), *Boundary);
+    MultipartBody += TEXT("Content-Disposition: form-data; name=\"customTicketImage\"; filename=\"ticket.png\"\r\n");
+    MultipartBody += TEXT("Content-Type: image/png\r\n\r\n");
+    MultipartBody.Append(FString(ANSI_TO_TCHAR(reinterpret_cast<const char*>(ImageData.GetData())), ImageData.Num()));
+    MultipartBody += TEXT("\r\n");
+
+    // 2. JSON 데이터 추가
+    MultipartBody += FString::Printf(TEXT("--%s\r\n"), *Boundary);
+    MultipartBody += TEXT("Content-Disposition: form-data; name=\"metadata\"\r\n");
+    MultipartBody += TEXT("Content-Type: application/json\r\n\r\n");
+
+    // JSON 데이터 생성
+    FString JsonContent;
+    TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonContent);
+    Writer->WriteObjectStart();
+    Writer->WriteValue(TEXT("backgroundId"), BackGroundId);
+    Writer->WriteArrayStart(TEXT("stickerIdList"));
+    for (int32 StickerId : StickerList)
+    {
+        Writer->WriteValue(StickerId);
+    }
+    Writer->WriteArrayEnd();
+    Writer->WriteObjectEnd();
+    Writer->Close();
+
+    MultipartBody += JsonContent;
+    MultipartBody += TEXT("\r\n");
+
+    // 끝나는 Boundary 추가
+    MultipartBody += FString::Printf(TEXT("--%s--\r\n"), *Boundary);
+
+    // 요청 본문에 데이터 설정
+    Request->SetContentAsString(MultipartBody);
+
+    // 응답받을 함수 연결
+    Request->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnResPostSaveCustomTicket);
+
+    // 요청 전송
+    Request->ProcessRequest();
+}
+
 // 커스텀 티켓 저장 요청에 대한 응답
 void AHM_HttpActor3::OnResPostSaveCustomTicket(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
@@ -364,8 +428,8 @@ void AHM_HttpActor3::OnResPostSaveCustomTicket(FHttpRequestPtr Request, FHttpRes
 				//TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
 				//if ( ResponseObject.IsValid() )
 				//{
-					// 티켓 저장 성공처리
-					UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 성공 응답"));
+				// 티켓 저장 성공처리
+				UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 성공 응답"));
 					
 				//}
 			}
@@ -446,100 +510,6 @@ void AHM_HttpActor3::OnResPostBackground(FHttpRequestPtr Request, FHttpResponseP
 						{
 							MainUI->GetTicketCustomWidget()->SetBackgroundImg(Texture);
 							UE_LOG(LogTemp , Log , TEXT("SetBackgroundImg(Texture);"));
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-// My 커스텀 티켓 목록 조회 요청
-void AHM_HttpActor3::ReqGetCustomTicketList(FString AccessToken)
-{
-	// HTTP 모듈 가져오기
-	FHttpModule* Http = &FHttpModule::Get();
-	if ( !Http ) return;
-
-	FTickets Tickets;
-	
-	// HTTP 요청 생성
-	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets") , *_url);
-	Request->SetURL(FormattedUrl);
-	Request->SetVerb(TEXT("GET"));
-
-	// 헤더 설정
-	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
-	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
-
-	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetCustomTicketList);
-
-	// 요청 전송
-	Request->ProcessRequest();
-}
-
-// My 커스텀 티켓 목록 조회 요청에 대한 응답
-void AHM_HttpActor3::OnResGetCustomTicketList(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
-{
-	if ( bWasSuccessful && Response.IsValid() )
-	{
-		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
-		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
-
-		if ( Response->GetResponseCode() == 200 )
-		{
-			// JSON 응답 파싱
-			FString ResponseBody = Response->GetContentAsString();
-			TSharedPtr<FJsonObject> JsonObject;
-			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
-
-			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
-			{
-				// "response" 객체에 접근
-				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
-				if ( ResponseObject.IsValid() )
-				{
-					// "ticketDTOList" 배열에 접근
-					TArray<TSharedPtr<FJsonValue>> TicketList = ResponseObject->GetArrayField(TEXT("ticketDTOList"));
-
-					for (const TSharedPtr<FJsonValue>& TicketValue : TicketList)
-					{
-						// 각 티켓 정보를 FJsonObject로 변환
-						TSharedPtr<FJsonObject> TicketObject = TicketValue->AsObject();
-						if (TicketObject.IsValid())
-						{
-							// 티켓의 기본 정보 추출
-							int32 TicketId = TicketObject->GetIntegerField(TEXT("ticketId"));
-							FString SeatInfo = TicketObject->GetStringField(TEXT("seatInfo"));
-							FString TicketImage = TicketObject->GetStringField(TEXT("ticketImage"));
-
-							SetTicketId(TicketId);
-
-							TArray<uint8> ImageData;
-							FBase64::Decode(TicketImage , ImageData);
-							UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-							if (Texture)
-							{
-								
-							}
-							
-							// concertInfo 필드 접근
-							TSharedPtr<FJsonObject> ConcertInfoObject = TicketObject->GetObjectField(TEXT("concertInfo"));
-							if (ConcertInfoObject.IsValid())
-							{
-								FString ConcertName = ConcertInfoObject->GetStringField(TEXT("concertName"));
-								int32 Year = ConcertInfoObject->GetIntegerField(TEXT("year"));
-								int32 Month = ConcertInfoObject->GetIntegerField(TEXT("month"));
-								int32 Day = ConcertInfoObject->GetIntegerField(TEXT("day"));
-								FString Time = ConcertInfoObject->GetStringField(TEXT("time"));
-
-								// 각 필드 로그 출력
-								UE_LOG(LogTemp, Log, TEXT("Ticket Info | Id: %d, SeatInfo: %s, TicketImage: %s"), TicketId, *SeatInfo, *TicketImage);
-								UE_LOG(LogTemp, Log, TEXT("Concert Info | Name: %s, Date: %d-%d-%d, Time: %s"), *ConcertName, Year, Month, Day, *Time);
-							}
 						}
 					}
 				}
@@ -642,6 +612,7 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 	}
 }
 
+// 타이틀 장착 요청
 void AHM_HttpActor3::ReqGetEquipTheTitle(int32 TitleID, FString AccessToken)
 {
 	UE_LOG(LogTemp , Log , TEXT("타이틀 장착 요청"));
@@ -667,6 +638,7 @@ void AHM_HttpActor3::ReqGetEquipTheTitle(int32 TitleID, FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// 타이틀 장착 요청에 대한 응답
 void AHM_HttpActor3::OnResGetEquipTheTitle(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -707,6 +679,7 @@ void AHM_HttpActor3::OnResGetEquipTheTitle(FHttpRequestPtr Request, FHttpRespons
 	}
 }
 
+// 타이틀 해제 요청
 void AHM_HttpActor3::ReqGetNotEquipTheTitle(FString AccessToken)
 {
 	UE_LOG(LogTemp , Log , TEXT("타이틀 해제 요청"));
@@ -732,6 +705,7 @@ void AHM_HttpActor3::ReqGetNotEquipTheTitle(FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// 타이틀 해체 요청에 대한 응답
 void AHM_HttpActor3::OnResGetNotEquipTheTitle(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -769,4 +743,91 @@ void AHM_HttpActor3::OnResGetNotEquipTheTitle(FHttpRequestPtr Request, FHttpResp
 			UE_LOG(LogTemp , Log , TEXT("타이틀 해제 실패"));
 		}
 	}
+}
+
+// 좌석 결제 미루기 요청
+void AHM_HttpActor3::ReqGetPostponePaymentSeat(int32 ConcertId, int32 SeatId, FString AccessToken)
+{
+	UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 요청"));
+	
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/postpone") , *_url, ConcertId, SeatId);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+// 우편함 조회 요청
+void AHM_HttpActor3::ReqGetMailbox(FString AccessToken)
+{
+	UE_LOG(LogTemp , Log , TEXT("우편함 조회 요청"));
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/mails") , *_url);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetPostponePaymentSeat);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+// 우편함 조회 요청에 대한 응답
+void AHM_HttpActor3::OnResGetPostponePaymentSeat(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	
+}
+
+// 특정 우편함 조회 요청
+void AHM_HttpActor3::ReqGetSpecificMail(int32 MailId, FString AccessToken)
+{
+	UE_LOG(LogTemp , Log , TEXT("특정 우편함 조회 요청"));
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/mails/%d") , *_url, MailId);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetSpecificMail);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor3::OnResGetSpecificMail(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	
 }
