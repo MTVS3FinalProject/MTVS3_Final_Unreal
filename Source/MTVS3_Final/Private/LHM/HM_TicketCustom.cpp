@@ -761,5 +761,5 @@ void UHM_TicketCustom::OnClickedHttpTest04()
 	if (!GI && !HttpActor3) return;
 	// My 커스텀 티켓 목록 조회 요청
 	UE_LOG(LogTemp , Log , TEXT("My 커스텀 티켓 목록 조회 요청"));
-	HttpActor3->ReqGetCustomTicketList(GI->GetAccessToken());
+	//HttpActor3->ReqGetCustomTicketList(GI->GetAccessToken());
 }

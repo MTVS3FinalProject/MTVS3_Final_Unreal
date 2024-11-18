@@ -303,7 +303,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
+	 
 #pragma region UI & URL
 	UPROPERTY()
 	class UMainWidget* MainUI;

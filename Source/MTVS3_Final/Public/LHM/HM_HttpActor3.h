@@ -7,13 +7,6 @@
 #include "Interfaces/IHttpRequest.h"
 #include "HM_HttpActor3.generated.h"
 
-UENUM(BlueprintType)
-enum class EImageType : uint8
-{
-	StickerImage,
-	TicketImage,
-	BackgroundImage,
-};
 USTRUCT()
 struct FTitles
 {
@@ -109,7 +102,7 @@ public:
 	FString ticketImage;
 	
 	FTickets()
-		: ticketId(0)
+		: ticketId(1)
 		, concertName(TEXT(""))
 		, seatInfo(TEXT(""))
 		, ticketImage(TEXT(""))
@@ -205,15 +198,14 @@ public:
 	
 	// 커스텀 티켓 저장 요청
 	void ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken);
+	// 커스텀 티켓 저장 요청 - multipart
+	void ReqPostSaveCustomTicketMultipart(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken);
+	// 커스텀 티켓 저장 요청에 대한 응답
 	void OnResPostSaveCustomTicket(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 배경 생성 요청
 	void ReqPostBackground(FString AccessToken);
 	void OnResPostBackground(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-	
-	// My 커스텀 티켓 목록 조회 요청
-	void ReqGetCustomTicketList(FString AccessToken);
-	void OnResGetCustomTicketList(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 티켓 커스텀 제작 입장 요청
 	void ReqGetEnterTicketCustomization(FString AccessToken);
@@ -226,6 +218,16 @@ public:
 	// 타이틀 해제 요청
 	void ReqGetNotEquipTheTitle(FString AccessToken);
 	void OnResGetNotEquipTheTitle(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 좌석 결제 미루기
+	void ReqGetPostponePaymentSeat(int32 ConcertId, int32 SeatId, FString AccessToken);
+
+	// 우편함 조회
+	void ReqGetMailbox(FString AccessToken);
+	void OnResGetPostponePaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
+	// 특정 우편 조회
+	void ReqGetSpecificMail(int32 MailId, FString AccessToken);
+	void OnResGetSpecificMail(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 #pragma endregion
 };

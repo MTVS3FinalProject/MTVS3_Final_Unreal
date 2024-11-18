@@ -122,7 +122,7 @@ void APuzzleManager::SortAndUpdateRanking()
 	// UI 업데이트
 	if (PuzzleUI)
 	{
-		PuzzleUI->UpdatePlayerScores(PlayerScoresInfo);
+		//PuzzleUI->UpdatePlayerScores(PlayerScoresInfo);
         
 		// 디버그 로그로 정렬된 점수 출력
 		for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)

@@ -67,12 +67,12 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 		TSharedPtr<FWidgetRenderer> WidgetRenderer = MakeShareable(new FWidgetRenderer(true));
 	
 		// Render Target 생성 및 크기 설정
-		CaptureSize = FVector2D(888.0f, 504.0f); // 기본 크기 설정
-		//CaptureSize = FVector2D(1920.0f, 1080.0f); // 기본 크기 설정
+		//CaptureSize = FVector2D(888.0f, 504.0f); // 기본 크기 설정
+		CaptureSize = FVector2D(1920.0f, 1080.0f); // 기본 크기 설정
 
 		FWidgetTransform WidgetTransform;
-		WidgetTransform.Translation = FVector2D(388, 30); // X, Y 좌표
-		//WidgetTransform.Translation = FVector2D(0, 0); // X, Y 좌표
+		//WidgetTransform.Translation = FVector2D(388, 30); // X, Y 좌표
+		WidgetTransform.Translation = FVector2D(0, 0); // X, Y 좌표
 		TicketCutomUI->SetRenderTransform(WidgetTransform);
 		
 		UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
@@ -103,7 +103,7 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 				 UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 				 if (!GI && !HttpActor3) return;
 				 TArray<uint8> ImageData = ConvertTextureToPNG(RenderTarget);
-				 HttpActor3->ReqPostSaveCustomTicket(ImageData , HttpActor3->GetStickerIds() , HttpActor3->GetBackgroundId() , GI->GetAccessToken());
+				 HttpActor3->ReqPostSaveCustomTicketMultipart(ImageData , HttpActor3->GetStickerIds() , HttpActor3->GetBackgroundId() , GI->GetAccessToken());
 				
 			}
 		}	
