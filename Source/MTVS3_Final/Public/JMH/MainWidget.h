@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MH_BuyTicketWidget.h"
+#include "MH_Interaction.h"
 #include "MH_TTHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "LHM/HM_MainBarWidget.h"
@@ -255,7 +256,7 @@ public:
 	//희진이
 	//WBP_InteractionUI 여기서 스위쳐함수 찾아서 바꿔주기
 	UPROPERTY(meta = (BindWidget))
-	UHM_MainBarWidget* WBP_InteractionUI;
+	UMH_Interaction* WBP_InteractionUI;
 	//Interaction 캔버스 비지블 설정
 	UPROPERTY()
 	bool bIsInteraction = false;
