@@ -368,3 +368,15 @@ void UMainWidget::OnClickedConcertR()
 		SelectConcertAnim(false , ConcertNum);
 	}
 }
+
+void UMainWidget::SetVisibleInteractionCan(bool visible)
+{
+	if(visible)
+	{
+		Can_Interaction->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		Can_Interaction->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
