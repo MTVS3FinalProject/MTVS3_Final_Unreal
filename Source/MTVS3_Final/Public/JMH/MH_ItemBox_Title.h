@@ -12,7 +12,7 @@
 
 //DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDoubleClicked, UMH_ItemBox_Title*, ClickedItem);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickedTitleBtn, UMH_ItemBox_Title*, ClickedItem);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemHovered_Title, bool, bHovered);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemHovered_Title,UMH_ItemBox_Title*, HoveredItem);
 
 UCLASS()
 class MTVS3_FINAL_API UMH_ItemBox_Title : public UUserWidget
@@ -23,6 +23,12 @@ public:
 	// 아이템 박스 버튼에 마우스 호버 이벤트 델리게이트
 	UPROPERTY(BlueprintAssignable)
 	FOnItemHovered_Title OnItemHovered_Title;
+	
+	UFUNCTION()
+	void OnButtonHovered_Title()
+	{
+		OnItemHovered_Title.Broadcast(this);
+	}
 
 	
 public:
@@ -70,5 +76,15 @@ public:
 	
 	UFUNCTION()
 	int32 GetTitleID();
+
+
+	UPROPERTY()
+	FString InfoTextString;
+	
+	UFUNCTION()
+	FString GetInfoString();
+
+	UFUNCTION()
+	void SetInfoString(FString infoString);
 	
 };

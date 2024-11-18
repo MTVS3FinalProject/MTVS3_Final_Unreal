@@ -644,6 +644,7 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 
 void AHM_HttpActor3::ReqGetEquipTheTitle(int32 TitleID, FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("타이틀 장착 요청"));
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
@@ -651,8 +652,7 @@ void AHM_HttpActor3::ReqGetEquipTheTitle(int32 TitleID, FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	
-	//FString FormattedUrl = FString::Printf(TEXT("%s/member/title/%d") , *_url, TitleID);
-	FString FormattedUrl = FString::Printf(TEXT("http://125.132.216.190:7878/api/member/title/%d"), TitleID);
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/title/%d") , *_url, TitleID);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("PUT"));
 
@@ -709,6 +709,7 @@ void AHM_HttpActor3::OnResGetEquipTheTitle(FHttpRequestPtr Request, FHttpRespons
 
 void AHM_HttpActor3::ReqGetNotEquipTheTitle(FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("타이틀 해제 요청"));
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if (!Http) return;
@@ -716,8 +717,7 @@ void AHM_HttpActor3::ReqGetNotEquipTheTitle(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	//FString FormattedUrl = FString::Printf(TEXT("%s/member/title") , *_url);
-	FString FormattedUrl = FString::Printf(TEXT("http://125.132.216.190:7878/api/member/title"));
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/title") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("DELETE"));
 

@@ -11,6 +11,10 @@ void UMH_ItemBox_Title::NativeConstruct()
 	Super::NativeConstruct();
 
 	Btn_Item_Title->OnClicked.AddDynamic(this , &UMH_ItemBox_Title::OnClickedTitle);
+
+	// 버튼이 호버될 때 델리게이트 호출
+	//Btn_Item_Title->OnHovered.AddDynamic(this, &UMH_ItemBox_Title::OnButtonHovered_Title);
+	
 }
 
 void UMH_ItemBox_Title::ChangeColorTitleName(const FString& _TitleRarity)
@@ -40,9 +44,17 @@ void UMH_ItemBox_Title::SetTitleID(int32 TitleID0)
 
 int32 UMH_ItemBox_Title::GetTitleID()
 {
-
 	return TitleID;
-	
+}
+
+FString UMH_ItemBox_Title::GetInfoString()
+{
+	return InfoTextString;
+}
+
+void UMH_ItemBox_Title::SetInfoString(FString infoString)
+{
+	InfoTextString = infoString;
 }
 
 

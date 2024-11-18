@@ -10,7 +10,12 @@ void UMH_ItemBox_Sticker::NativeConstruct()
 	Super::NativeConstruct();
 	
 	Btn_Item_Sticker->OnClicked.AddDynamic(this,&UMH_ItemBox_Sticker::OnClickedStickerBtn);
-	
+
+	// 버튼이 호버될 때 델리게이트 호출
+	if (UButton* Button = Cast<UButton>(GetWidgetFromName(TEXT("Btn_Item_Ticket"))))
+	{
+		Button->OnHovered.AddDynamic(this, &UMH_ItemBox_Sticker::OnButtonHovered_Sticker);
+	}
 }
 
 //void UMH_ItemBox_Sticker::SetStickerData(const FStickerItemData& InStickerData)
@@ -24,5 +29,10 @@ void UMH_ItemBox_Sticker::OnClickedStickerBtn()
 	
 }
 
+
+void UMH_ItemBox_Sticker::OnButtonHovered_Sticker()
+{
+	OnItemHovered_Sticker.Broadcast(true);  // 델리게이트 호출
+}
 
 

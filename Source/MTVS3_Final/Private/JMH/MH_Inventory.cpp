@@ -16,6 +16,7 @@
 #include "JMH/MH_ItemBox_Sticker.h"
 #include "JMH/MH_ItemBox_Ticket.h"
 #include "JMH/MH_ItemBox_Title.h"
+#include "JMH/MH_ItemInfoBox.h"
 #include "LHM/HM_HttpActor3.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -42,6 +43,11 @@ void UMH_Inventory::NativeConstruct()
 	Btn_Title_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Title_Test);
 	Btn_Ticket_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket_Test);
 	Btn_Sticker_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker_Test);
+	// 초기 상태 설정
+	if (HoveredInfoTitle)
+	{
+		HoveredInfoTitle->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void UMH_Inventory::SetWidgetSwitcher(int32 num)
@@ -119,6 +125,9 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 			ItemBox_Title->ChangeColorTitleName(ItemData.titleRarity);
 			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
 			ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
+			// 아이템박스 위젯을 가져와 델리게이트에 바인딩
+			//ItemBox_Title->OnItemHovered_Title.AddDynamic(this, &UMH_Inventory::OnHoveredTitleBtn);
+			ItemBox_Title->SetInfoString(ItemData.titleScript);
 			ItemBox_Title->SetTitleID(ItemData.titleId);
 			if (OverlayTitle)
 			{
@@ -361,6 +370,14 @@ void UMH_Inventory::OnClickedTilteYes2Btn()
 	RemoveFrame();
 	HideTitleUnequipWin();
 	//해제할 때 필요
+	// 타이틀 해제 요청 통신
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if (HttpActor3 && GI)
+	{
+		HttpActor3->ReqGetNotEquipTheTitle(GI->GetAccessToken());
+	}
 	//CurrentTitle->GetTitleID();
 }
 
@@ -372,10 +389,24 @@ void UMH_Inventory::OnClickedTilteNo2Btn()
 
 void UMH_Inventory::SetInfoVisibility(bool bVisible)
 {
-	if (InfoWidget)
+	if (HoveredInfoTitle)
 	{
 		// 가시성 설정
-		InfoWidget->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		//HoveredInfoTitle->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+	}
+	if (HoveredInfoTitle)
+	{
+		//HoveredInfoTitle->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
+{
+	//인포 창 뜸.
+	if (HoveredItem)
+	{
+		//HoveredInfoTitle->SetTextItemInfo(HoveredItem->GetInfoString());
+		//SetInfoVisibility(true);
 	}
 }
 

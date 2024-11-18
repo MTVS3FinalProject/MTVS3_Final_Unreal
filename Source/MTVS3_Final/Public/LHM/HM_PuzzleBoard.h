@@ -41,6 +41,9 @@ public:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	
 // ==================================== 멀티 ====================================
+
+	UPROPERTY(ReplicatedUsing = OnRep_DestroyedPieceTags)
+	TArray<FString> DestroyedPieceTags;
 	
 	// 서버에서 호출되는 RPC 함수
 	UFUNCTION(Server, Reliable)
@@ -61,4 +64,7 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastDestroyPuzzlePiece(AHM_PuzzlePiece* PuzzlePiece, const FString& TagToDestroy);
+
+	UFUNCTION()
+	void OnRep_DestroyedPieceTags();
 };
