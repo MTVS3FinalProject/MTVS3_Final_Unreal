@@ -42,6 +42,10 @@ void ATTLuckyDrawGameState::BeginPlay()
 			TTPlayer->InitGameUI();
 		}
 	}
+
+	// 타이머 핸들 초기화
+	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
 }
 
 void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
@@ -317,6 +321,10 @@ void ATTLuckyDrawGameState::MulticastStartLuckyDraw_Implementation()
 
 void ATTLuckyDrawGameState::StartRounds(int32 InTotalRounds)
 {
+	// 새로운 라운드 시작 전 타이머 초기화
+	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
+	
 	TotalRounds = InTotalRounds;
 	CurrentRound = 0;
 	StartNextRound(); // 첫 번째 라운드 시작
@@ -458,6 +466,10 @@ void ATTLuckyDrawGameState::EndRounds()
 
 	// 좌석 번호 초기화
 	CurrentSeatNumber = 0;
+
+	// 게임 종료 시 타이머 정리
+	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
 }
 
 void ATTLuckyDrawGameState::MulticastEndRounds_Implementation()
