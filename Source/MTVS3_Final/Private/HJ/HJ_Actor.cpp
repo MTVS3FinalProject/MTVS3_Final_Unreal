@@ -23,15 +23,15 @@ AHJ_Actor::AHJ_Actor()
 	BoxComp->OnComponentBeginOverlap.AddDynamic(this , &AHJ_Actor::OnBeginOverlap);
 	BoxComp->OnComponentEndOverlap.AddDynamic(this , &AHJ_Actor::OnEndOverlap);
 
-	WidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComp"));
-	WidgetComp->SetupAttachment(RootComponent);
+	// WidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComp"));
+	// WidgetComp->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
 void AHJ_Actor::BeginPlay()
 {
 	Super::BeginPlay();
-	WidgetComp->SetVisibility(false);
+	// WidgetComp->SetVisibility(false);
 }
 
 // Called every frame
@@ -65,43 +65,62 @@ void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 
 void AHJ_Actor::ShowText()
 {
-	WidgetComp->SetVisibility(true);
-	// GetWidget()을 사용하여 위젯 인스턴스를 가져옴
-	UUserWidget* WidgetCompUI = Cast<UUserWidget>(WidgetComp->GetWidget());
-	if ( WidgetCompUI )
+	if (MainUI) MainUI->SetVisibleInteractionCan(true);
+	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+	if (InteractionUI)
 	{
-		// 위젯 인스턴스를 UMH_Interaction으로 캐스팅
-		UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(WidgetCompUI);
-		
-		if ( InteractionUI )
+		if (ActorHasTag("SelectConcert"))
 		{
-			if (ActorHasTag("SelectConcert"))
-			{
-				InteractionUI->SetActiveWidgetIndex(1);
-			}
-			else if(ActorHasTag("Customizing"))
-			{
-				InteractionUI->SetActiveWidgetIndex(2);
-			}
-			else if(ActorHasTag("PlazaTeleport"))
-			{
-				InteractionUI->SetActiveWidgetIndex(3);
-			}
+			InteractionUI->SetActiveWidgetIndex(1);
 		}
-		else
+		else if(ActorHasTag("Customizing"))
 		{
-			UE_LOG(LogTemp , Warning , TEXT("No interaction UI: %s") , *GetName());
+			InteractionUI->SetActiveWidgetIndex(2);
+		}
+		else if(ActorHasTag("PlazaTeleport"))
+		{
+			InteractionUI->SetActiveWidgetIndex(3);
 		}
 	}
-	else
-	{
-		UE_LOG(LogTemp , Warning , TEXT("No widget found in component: %s") , *GetName());
-	}
+	
+	// WidgetComp->SetVisibility(true);
+	// // GetWidget()을 사용하여 위젯 인스턴스를 가져옴
+	// UUserWidget* WidgetCompUI = Cast<UUserWidget>(WidgetComp->GetWidget());
+	// if ( WidgetCompUI )
+	// {
+	// 	// 위젯 인스턴스를 UMH_Interaction으로 캐스팅
+	// 	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(WidgetCompUI);
+	// 	
+	// 	if ( InteractionUI )
+	// 	{
+	// 		if (ActorHasTag("SelectConcert"))
+	// 		{
+	// 			InteractionUI->SetActiveWidgetIndex(1);
+	// 		}
+	// 		else if(ActorHasTag("Customizing"))
+	// 		{
+	// 			InteractionUI->SetActiveWidgetIndex(2);
+	// 		}
+	// 		else if(ActorHasTag("PlazaTeleport"))
+	// 		{
+	// 			InteractionUI->SetActiveWidgetIndex(3);
+	// 		}
+	// 	}
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp , Warning , TEXT("No interaction UI: %s") , *GetName());
+	// 	}
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp , Warning , TEXT("No widget found in component: %s") , *GetName());
+	// }
 }
 
 void AHJ_Actor::HideText()
 {
-	WidgetComp->SetVisibility(false);
+	MainUI->SetVisibleInteractionCan(false);
+	// WidgetComp->SetVisibility(false);
 }
 
 void AHJ_Actor::SetMainUI(UMainWidget* InMainUI)

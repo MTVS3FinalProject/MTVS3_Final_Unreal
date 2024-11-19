@@ -271,8 +271,8 @@ void UMainWidget::OnTicketWidgetClose()
 
 void UMainWidget::OnClickedCustomTicketSaveButton()
 {
-	//FinalTicketWidget->CaptureAndDisplayTicketBackground(TicketCustomWidget);
 	TicketCustomWidget->Btn_ResetBackground->SetVisibility(ESlateVisibility::Hidden);
+	FinalTicketWidget->CaptureAndDisplayTicketBackground(TicketCustomWidget);
 	SetWidgetSwitcher(8);
 }
 
@@ -366,5 +366,17 @@ void UMainWidget::OnClickedConcertR()
 	else
 	{
 		SelectConcertAnim(false , ConcertNum);
+	}
+}
+
+void UMainWidget::SetVisibleInteractionCan(bool visible)
+{
+	if(visible)
+	{
+		Can_Interaction->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		Can_Interaction->SetVisibility(ESlateVisibility::Hidden);
 	}
 }

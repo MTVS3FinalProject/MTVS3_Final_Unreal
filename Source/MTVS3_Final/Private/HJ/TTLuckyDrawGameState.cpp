@@ -42,6 +42,10 @@ void ATTLuckyDrawGameState::BeginPlay()
 			TTPlayer->InitGameUI();
 		}
 	}
+
+	// 타이머 핸들 초기화
+	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
 }
 
 void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
@@ -164,7 +168,7 @@ void ATTLuckyDrawGameState::MovePlayersToChairs()
 	MulticastShowOnlyNumPlayers();
 
 	FTimerHandle RouletteTimerHandle;
-	GetWorldTimerManager().SetTimer(RouletteTimerHandle , this , &ATTLuckyDrawGameState::StartPlayRoulette , 6.0f ,
+	GetWorldTimerManager().SetTimer(RouletteTimerHandle , this , &ATTLuckyDrawGameState::StartPlayRoulette , StartPlayRouletteDelayTime ,
 	                                false);
 }
 
@@ -188,6 +192,74 @@ void ATTLuckyDrawGameState::StartPlayRoulette()
 	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
 	if (!GameMode) return;
 	StartRounds(GameMode->Round);
+}
+
+void ATTLuckyDrawGameState::StartRounds(int32 InTotalRounds)
+{
+	// 새로운 라운드 시작 전 타이머 초기화
+	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
+	
+	TotalRounds = InTotalRounds;
+	CurrentRound = 0;
+	StartNextRound(); // 첫 번째 라운드 시작
+}
+
+void ATTLuckyDrawGameState::StartNextRound()
+{
+	// FTimerHandle LuckyDrawLoseTimerHandle;
+	// GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle , this , &ATTLuckyDrawGameState::EliminatePlayers , 4.5f ,
+	//                                 false);
+	//
+	// if (CurrentRound >= TotalRounds)
+	// {
+	// 	FTimerHandle RouletteTimerHandle;
+	// 	GetWorldTimerManager().SetTimer(RouletteTimerHandle , this , &ATTLuckyDrawGameState::EndRounds , 8.0f , false);
+	// 	return;
+	// }
+	// Clear any existing EliminatePlayers timer
+	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
+
+	// 마지막 라운드에서 실행
+	if (CurrentRound >= TotalRounds)
+	{
+		// Set final elimination timer and end game
+		GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle, this, 
+			&ATTLuckyDrawGameState::EliminatePlayers, EliminatePlayersDelayTime, false);
+		FTimerHandle RouletteTimerHandle;
+		GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, 
+			&ATTLuckyDrawGameState::EndRounds, EndRoundsDelayTime, false);
+		return;
+	}
+
+	// 일반 라운드에서 실행
+	// Set timer for next elimination
+	GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle, this, 
+		&ATTLuckyDrawGameState::EliminatePlayers, EliminatePlayersDelayTime, false);
+
+	// Set timer for next roulette round
+	float Delay = (CurrentRound == 0) ? StartPlayRouletteDelayTime : PlayRouletteDelayTime;
+	GetWorldTimerManager().SetTimer(RoundTimerHandle, this, 
+		&ATTLuckyDrawGameState::PlayRoulette, Delay, false);
+
+	/*ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
+	if (!GameMode) return;
+
+	// 각 라운드에 맞는 룰렛 정보를 가져옴
+	const FRouletteInfo& Info = GameMode->GetRouletteInfoForRound(CurrentRound);
+
+	// GameUI에 룰렛 정보를 반영
+	if (GameUI)
+	{ 
+	    GameUI->SetTextroulette1(FString::FromInt(Info.Player));
+	    GameUI->SetTextroulette2(static_cast<int32>(Info.Rule));
+	    GameUI->SetTextroulette3(static_cast<int32>(Info.Result));
+	}*/
+
+
+	// 첫 라운드는 즉시 시작, 이후 라운드는 7초 딜레이
+	// float Delay = (CurrentRound == 0) ? 0.5f : 10.0f;
+	// GetWorldTimerManager().SetTimer(RoundTimerHandle , this , &ATTLuckyDrawGameState::PlayRoulette , Delay , false);
 }
 
 void ATTLuckyDrawGameState::MulticastPlayRouletteAnimation_Implementation()
@@ -315,68 +387,6 @@ void ATTLuckyDrawGameState::MulticastStartLuckyDraw_Implementation()
 	GameUI->PlayRouletteAnim04();
 }
 
-void ATTLuckyDrawGameState::StartRounds(int32 InTotalRounds)
-{
-	TotalRounds = InTotalRounds;
-	CurrentRound = 0;
-	StartNextRound(); // 첫 번째 라운드 시작
-}
-
-void ATTLuckyDrawGameState::StartNextRound()
-{
-	// FTimerHandle LuckyDrawLoseTimerHandle;
-	// GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle , this , &ATTLuckyDrawGameState::EliminatePlayers , 4.5f ,
-	//                                 false);
-	//
-	// if (CurrentRound >= TotalRounds)
-	// {
-	// 	FTimerHandle RouletteTimerHandle;
-	// 	GetWorldTimerManager().SetTimer(RouletteTimerHandle , this , &ATTLuckyDrawGameState::EndRounds , 8.0f , false);
-	// 	return;
-	// }
-	// Clear any existing EliminatePlayers timer
-	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
-    
-	if (CurrentRound >= TotalRounds)
-	{
-		// Set final elimination timer and end game
-		GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle, this, 
-			&ATTLuckyDrawGameState::EliminatePlayers, 4.5f, false);
-		FTimerHandle RouletteTimerHandle;
-		GetWorldTimerManager().SetTimer(RouletteTimerHandle, this, 
-			&ATTLuckyDrawGameState::EndRounds, 8.0f, false);
-		return;
-	}
-
-	// Set timer for next elimination
-	GetWorldTimerManager().SetTimer(LuckyDrawLoseTimerHandle, this, 
-		&ATTLuckyDrawGameState::EliminatePlayers, 4.5f, false);
-
-	// Set timer for next roulette round
-	float Delay = (CurrentRound == 0) ? 0.5f : 10.0f;
-	GetWorldTimerManager().SetTimer(RoundTimerHandle, this, 
-		&ATTLuckyDrawGameState::PlayRoulette, Delay, false);
-
-	/*ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
-	if (!GameMode) return;
-
-	// 각 라운드에 맞는 룰렛 정보를 가져옴
-	const FRouletteInfo& Info = GameMode->GetRouletteInfoForRound(CurrentRound);
-
-	// GameUI에 룰렛 정보를 반영
-	if (GameUI)
-	{ 
-	    GameUI->SetTextroulette1(FString::FromInt(Info.Player));
-	    GameUI->SetTextroulette2(static_cast<int32>(Info.Rule));
-	    GameUI->SetTextroulette3(static_cast<int32>(Info.Result));
-	}*/
-
-
-	// 첫 라운드는 즉시 시작, 이후 라운드는 7초 딜레이
-	// float Delay = (CurrentRound == 0) ? 0.5f : 10.0f;
-	// GetWorldTimerManager().SetTimer(RoundTimerHandle , this , &ATTLuckyDrawGameState::PlayRoulette , Delay , false);
-}
-
 void ATTLuckyDrawGameState::PlayRoulette()
 {
 	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
@@ -458,6 +468,10 @@ void ATTLuckyDrawGameState::EndRounds()
 
 	// 좌석 번호 초기화
 	CurrentSeatNumber = 0;
+
+	// 게임 종료 시 타이머 정리
+	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
+	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
 }
 
 void ATTLuckyDrawGameState::MulticastEndRounds_Implementation()
