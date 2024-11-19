@@ -34,26 +34,8 @@ void UHM_PuzzleWidget::NativeConstruct()
 	TextPlayerScores[7] = Text_Player8Score;
 	TextPlayerScores[8] = Text_Player9Score;
 	
-	InitializePuzzlePieces();
-	
-}
+	//InitializePuzzlePieces();
 
-void UHM_PuzzleWidget::InitializeTextBlocks()
-{
-	// TextPlayerScore 포인터 배열로 초기화
-	TextPlayerScores[0] = Text_Player1Score;
-	TextPlayerScores[1] = Text_Player2Score;
-	TextPlayerScores[2] = Text_Player3Score;
-	TextPlayerScores[3] = Text_Player4Score;
-	TextPlayerScores[4] = Text_Player5Score; 
-	TextPlayerScores[5] = Text_Player6Score;
-	TextPlayerScores[6] = Text_Player7Score;
-	TextPlayerScores[7] = Text_Player8Score;
-	TextPlayerScores[8] = Text_Player9Score;
-}
-
-void UHM_PuzzleWidget::InitializePuzzlePieces()
-{
 	APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
 	if (Manager)
 	{
@@ -73,6 +55,44 @@ void UHM_PuzzleWidget::InitializePuzzlePieces()
 			Index++;
 		}
 	}
+	
+}
+
+void UHM_PuzzleWidget::InitializeTextBlocks()
+{
+	// // TextPlayerScore 포인터 배열로 초기화
+	// TextPlayerScores[0] = Text_Player1Score;
+	// TextPlayerScores[1] = Text_Player2Score;
+	// TextPlayerScores[2] = Text_Player3Score;
+	// TextPlayerScores[3] = Text_Player4Score;
+	// TextPlayerScores[4] = Text_Player5Score; 
+	// TextPlayerScores[5] = Text_Player6Score;
+	// TextPlayerScores[6] = Text_Player7Score;
+	// TextPlayerScores[7] = Text_Player8Score;
+	// TextPlayerScores[8] = Text_Player9Score;
+}
+
+void UHM_PuzzleWidget::InitializePuzzlePieces()
+{
+	// APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
+	// if (Manager)
+	// {
+	// 	int32 Index = 0;
+	// 	for(const auto& PieceEntry : Manager->Pieces)
+	// 	{
+	// 		if(Index >= 9) break;
+	//
+	// 		UStaticMeshComponent* PieceComp = PieceEntry.Key;
+	// 		int32 Score = PieceEntry.Value;
+	//
+	// 		if(PieceComp)
+	// 		{
+	// 			FString PieceName = PieceComp->GetName();
+	// 			SetTextPieceInfo(PieceName, Score, Index);
+	// 		}
+	// 		Index++;
+	// 	}
+	// }
 }
 
 void UHM_PuzzleWidget::SetTextPieceInfo(FString PieceName, int32 Score, int32 Index)
@@ -93,7 +113,11 @@ void UHM_PuzzleWidget::UpdatePlayerScores(const TArray<FPlayerScoreInfo>& Player
     // 점수 정보 업데이트
 	for (int32 Index = 0; Index < PlayerScoresInfo.Num(); Index++)
 	{
-		if(TextPlayerScores[Index] == nullptr) UE_LOG(LogTemp, Log, TEXT("TextPlayerScores[%d] is null!!"), Index);
+		if(TextPlayerScores[Index] == nullptr)
+		{
+			UE_LOG(LogTemp, Log, TEXT("TextPlayerScores[%d] is null!!"), Index);
+			return;
+		}
 		
 		if (Index < 9 && TextPlayerScores[Index]) // 최대 9명까지 표시
 		{
@@ -103,8 +127,10 @@ void UHM_PuzzleWidget::UpdatePlayerScores(const TArray<FPlayerScoreInfo>& Player
                 *PlayerScoresInfo[Index].Player->GetName(), 
                 PlayerScoresInfo[Index].Score,
                 *TimeString);
-
-			TextPlayerScores[Index]->SetText(FText::FromString(ScoreText));
+			UTextBlock* TextBlock = TextPlayerScores[Index];
+			
+			//TextPlayerScores[Index]->SetText(FText::FromString(ScoreText));
+			TextBlock->SetText(FText::FromString(ScoreText));
 			UE_LOG(LogTemp , Log , TEXT("Successfully set text for player : %s") , *ScoreText);
 		}
 	}

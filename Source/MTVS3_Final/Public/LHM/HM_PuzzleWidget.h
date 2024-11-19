@@ -43,7 +43,6 @@ public:
 	
 	
 	// TextPlayerScore 포인터 배열
-	UPROPERTY()
 	class UTextBlock* TextPlayerScores[9];
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))

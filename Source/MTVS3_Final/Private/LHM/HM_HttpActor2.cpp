@@ -802,6 +802,7 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 
 					ATTHallGameState* HallGameState = GetWorld()->GetGameState<ATTHallGameState>();
 					if (HallGameState) HallGameState->SendLuckyDrawInvitation(NicknameList, CompetitionRate);
+					UE_LOG(LogTemp , Log , TEXT("추첨 시작 알림 요청 성공"));
 				}
 			}
 		}
