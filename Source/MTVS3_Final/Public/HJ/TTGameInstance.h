@@ -12,6 +12,7 @@
  */
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindSignature , bool , value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoinChangeSignature, int32, NewCoin);
 
 UENUM(BlueprintType)
 enum class EPlaceState : uint8
@@ -82,6 +83,10 @@ public:
 	void ClearDestroySessionDelegate();
 
 	FDelegateHandle OnDestroySessionCompleteDelegateHandle;
+	
+	// 코인 변경 델리게이트
+	UPROPERTY(BlueprintAssignable, Category = "TTSettings|UserInfo")
+	FCoinChangeSignature OnCoinChanged;
 
 # pragma region 세션
 	FString GenerateUniqueSessionName(const FString& SessionNamePrefix);

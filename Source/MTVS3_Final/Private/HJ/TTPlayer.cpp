@@ -1328,6 +1328,11 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!HttpActor2 || !GI) return;
 
+	if (bHasPiece)
+	{
+		UE_LOG(LogTemp , Warning , TEXT("큐브를 내려놓으세요."));
+		return;
+	}
 	if (Chair)
 	{
 		// Chair의 태그를 가져와서 매개변수로 넘김
@@ -1416,6 +1421,12 @@ AActor* ATTPlayer::GetOverlappingActor()
 void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed F: Purchase"));
+	if (bHasPiece)
+	{
+		UE_LOG(LogTemp , Warning , TEXT("큐브를 내려놓으세요."));
+		return;
+	}
+	
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
