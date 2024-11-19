@@ -242,6 +242,7 @@ void ATTPlayer::Tick(float DeltaTime)
 	{
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
+	case EPlaceState::StyleLounge:
 		OnRep_bIsHost();
 		OnRep_Nickname();
 		OnRep_TitleNameAndRarity();
@@ -1486,6 +1487,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 	{
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
+	case EPlaceState::StyleLounge:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTHallMap"));
 		if (GetbIsHost() || HasAuthority())
 		{
@@ -1542,6 +1544,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 	{
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
+	case EPlaceState::StyleLounge:
 		if (!HttpActor2) return;
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Enable Cheat2 in TTHallMap"));
 		if (GetbIsHost() || HasAuthority())
@@ -1571,6 +1574,7 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	{
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
+	case EPlaceState::StyleLounge:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
 		bIsHost = !bIsHost;
 		if (GI) GI->SetbIsHost(bIsHost);
