@@ -27,6 +27,26 @@ protected:
 	bool bIsGameUIInitialized = false;
 
 public:
+	// 5초 카운트다운 후 룰렛 돌리기 시작하는 딜레이
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Timer")
+	float StartPlayRouletteDelayTime = 6.0f;
+
+	// 룰렛 처음으로 돌리는 딜레이
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Timer")
+	float FirstPlayRouletteDelayTime = 0.5f;
+
+	// 두 번째 이후의 룰렛 돌리는 릴레이
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Timer")
+	float PlayRouletteDelayTime = 10.0f;
+
+	// 플레이어 탈락 딜레이
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Timer")
+	float EliminatePlayersDelayTime = 4.5f;
+
+	// 결과 나오고 우승자 시퀀스 나올 때까지의 딜레이
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Timer")
+	float EndRoundsDelayTime = 8.0f;
+	
 #pragma region UI
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UMH_GameWidget> GameUIFactory;
