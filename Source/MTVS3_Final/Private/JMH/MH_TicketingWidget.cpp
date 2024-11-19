@@ -3,6 +3,7 @@
 
 #include "JMH/MH_TicketingWidget.h"
 #include "Components/Button.h"
+#include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
@@ -338,6 +339,19 @@ void UMH_TicketingWidget::OnClickedSoundButton()
 void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 {
 	//소리 들리게, 안들리게.
+}
+
+void UMH_TicketingWidget::SetBattleEntryVisible(bool bVisible)
+{
+	if(bVisible)
+	{
+		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	else if(!bVisible)
+	{
+		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 /*

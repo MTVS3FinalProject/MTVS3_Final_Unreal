@@ -193,6 +193,14 @@ public:
 
 	UPROPERTY()
 	bool bIsVisible;
+
+	//추첨장 입장 알림
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_TicketBattleEntry;
+
+	UFUNCTION()
+	void SetBattleEntryVisible(bool bVisible);
+	
 	
 	// ==================================
 	// HttpActor2 공연장 입장 통신 테스트용
