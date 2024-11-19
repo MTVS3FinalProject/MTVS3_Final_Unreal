@@ -386,6 +386,9 @@ void UTTGameInstance::SetCoin(const int32& _Coin)
 {
 	PlayerData.coin = _Coin;
 	SetPlayerData(PlayerData);
+
+	// 코인 값이 변경될 때 델리게이트 브로드캐스트
+	OnCoinChanged.Broadcast(_Coin);
 }
 
 void UTTGameInstance::SetAvatarData(const int32& _AvatarData)

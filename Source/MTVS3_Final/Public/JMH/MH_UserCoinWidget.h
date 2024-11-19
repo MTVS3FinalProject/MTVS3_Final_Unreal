@@ -23,6 +23,13 @@ public:
 	class UTextBlock* Text_UserCoin;
 	UFUNCTION()
 	void SetUserCoin(int32 UserCoin);
+
+	// 델리게이트 콜백 함수
+	UFUNCTION()
+	void OnCoinValueChanged(int32 NewCoin);
 	
-	
+	void NativeDestruct();
+
+	UPROPERTY()
+	class UTTGameInstance* gi;
 };
