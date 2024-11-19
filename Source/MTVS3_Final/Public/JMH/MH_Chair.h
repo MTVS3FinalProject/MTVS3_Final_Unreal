@@ -28,8 +28,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UBoxComponent* Boxcomp;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTSettings|UI")
-	class UWidgetComponent* Widgetcomp;
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TTSettings|UI")
+	// class UWidgetComponent* Widgetcomp;
 
 	UFUNCTION()
 	void OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -38,7 +38,7 @@ public:
 
 	UFUNCTION()
 	void ShowText();
-
+	
 	UFUNCTION()
 	void HideText();
 

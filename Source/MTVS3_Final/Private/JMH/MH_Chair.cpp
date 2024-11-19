@@ -23,16 +23,15 @@ AMH_Chair::AMH_Chair()
 	Boxcomp->OnComponentBeginOverlap.AddDynamic(this , &AMH_Chair::OnBeginOverlap);
 	Boxcomp->OnComponentEndOverlap.AddDynamic(this , &AMH_Chair::OnEndOverlap);
 
-	Widgetcomp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComp"));
-	Widgetcomp->SetupAttachment(Boxcomp);
-
+	// Widgetcomp = CreateDefaultSubobject<UWidgetComponent>(TEXT("WidgetComp"));
+	// Widgetcomp->SetupAttachment(Boxcomp);
 }
 
 // Called when the game starts or when spawned
 void AMH_Chair::BeginPlay()
 {
 	Super::BeginPlay();
-	Widgetcomp->SetVisibility(false);
+	// Widgetcomp->SetVisibility(false);
 }
 
 // Called every frame
@@ -73,32 +72,47 @@ void AMH_Chair::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 
 void AMH_Chair::ShowText()
 {
-	Widgetcomp->SetVisibility(true);
+	if (MainUI) MainUI->SetVisibleInteractionCan(true);
+	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+	if (InteractionUI) InteractionUI->SetActiveWidgetIndex(0);
+	// 애니메이션 적용
+	// InteractionUI->TextOnAnimPlay();
 
-	// GetWidget()을 사용하여 위젯 인스턴스를 가져옴
-	UUserWidget* WidgetCompUI = Cast<UUserWidget>(Widgetcomp->GetWidget());
-	if ( WidgetCompUI )
-	{
-		// 위젯 인스턴스를 UMH_Interaction으로 캐스팅
-		UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(WidgetCompUI);
-		if ( InteractionUI )
-		{
-			InteractionUI->SetActiveWidgetIndex(0);
-		}
-		else
-		{
-			UE_LOG(LogTemp , Warning , TEXT("No interaction UI: %s") , *GetName());
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp , Warning , TEXT("No widget found in component: %s") , *GetName());
-	}
+	// WidgetComp(삭제)
+	// Widgetcomp->SetVisibility(true);
+	//
+	// // GetWidget()을 사용하여 위젯 인스턴스를 가져옴
+	// UUserWidget* WidgetCompUI = Cast<UUserWidget>(Widgetcomp->GetWidget());
+	// if ( WidgetCompUI )
+	// {
+	// 	// 위젯 인스턴스를 UMH_Interaction으로 캐스팅
+	// 	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(WidgetCompUI);
+	// 	if ( InteractionUI )
+	// 	{
+	// 		InteractionUI->SetActiveWidgetIndex(0);
+	// 	}
+	// 	else
+	// 	{
+	// 		UE_LOG(LogTemp , Warning , TEXT("No interaction UI: %s") , *GetName());
+	// 	}
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp , Warning , TEXT("No widget found in component: %s") , *GetName());
+	// }
 }
 
 void AMH_Chair::HideText()
 {
-	Widgetcomp->SetVisibility(false);
+	// 애니메이션 적용 안 함
+	MainUI->SetVisibleInteractionCan(false);
+
+	// 애니메이션 적용
+	// UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+	// InteractionUI->TextOffAnimPlay();
+
+	// WidgetComp(삭제)
+	// Widgetcomp->SetVisibility(false);
 }
 
 FTransform AMH_Chair::GetSittingTransform()
