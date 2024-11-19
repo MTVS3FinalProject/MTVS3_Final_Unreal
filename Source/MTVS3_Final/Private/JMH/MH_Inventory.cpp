@@ -3,7 +3,9 @@
 
 #include "JMH/MH_Inventory.h"
 
+#include "HttpModule.h"
 #include "ImageUtils.h"
+#include "Interfaces/IHttpResponse.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/HorizontalBox.h"
@@ -160,27 +162,39 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 		UMH_ItemBox_Ticket* ItemBox_Ticket = CreateWidget<UMH_ItemBox_Ticket>(this , TicketItemBoxFac);
 		if (ItemBox_Ticket)
 		{
-			// Base64 이미지 문자열을 TArray<uint8>로 디코딩
-			TArray<uint8> ImageData;
-			if (FBase64::Decode(ItemData.ticketImage, ImageData))
-			{
-				UTexture2D* ticketTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-				if (ticketTexture && ItemBox_Ticket->Img_Item_Ticket)
-				{
-					// 이미지 위젯에 텍스처 적용
-					ItemBox_Ticket->Img_Item_Ticket->SetBrushFromTexture(ticketTexture);
-					UE_LOG(LogTemp, Log, TEXT("ticket image set successfully"));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Failed to create ticketTexture or Img_Item_ticket is null"));
-				}
+			// URL에서 이미지 다운로드
+			TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
+			ImageRequest->SetURL(ItemData.ticketImage);
+			ImageRequest->SetVerb(TEXT("GET"));
 
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Failed to decode base64 image data"));
-			}
+			// 다운로드 완료 시 콜백 설정
+			ImageRequest->OnProcessRequestComplete().BindLambda(
+				[ItemBox_Ticket](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful) {
+					if (bWasSuccessful && Response.IsValid())
+					{
+						// 이미지 데이터 가져오기
+						TArray<uint8> ImageData = Response->GetContent();
+
+						// 텍스처로 변환
+						UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+						if (StickerTexture && ItemBox_Ticket->Img_Item_Ticket)
+						{
+							// 이미지 위젯에 텍스처 적용
+							ItemBox_Ticket->Img_Item_Ticket->SetBrushFromTexture(StickerTexture);
+							UE_LOG(LogTemp, Log, TEXT("Ticket image set successfully"));
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Failed to create TicketTexture or Img_Item_Ticket is null"));
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Failed to download Ticket image from URL: %s"), *Request->GetURL());
+					}
+				});
+			ImageRequest->ProcessRequest();
+			
 			ItemBox_Ticket->Text_Ticket->SetText(FText::FromString(ItemData.concertName));
 			ItemBox_Ticket->Text_SeatInfo->SetText(FText::FromString(ItemData.seatInfo));
 			//ItemBox_Ticket->SetTicketData(ItemData); // 타이틀 데이터를 설정
@@ -199,28 +213,41 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 		UMH_ItemBox_Sticker* ItemBox_Sticker = CreateWidget<UMH_ItemBox_Sticker>(this , StickerItemBoxFac);
 		if (ItemBox_Sticker)
 		{
-			// Base64 이미지 문자열을 TArray<uint8>로 디코딩
-			TArray<uint8> ImageData;
-			if (FBase64::Decode(ItemData.stickerImage, ImageData))
-			{
-				UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-				if (StickerTexture && ItemBox_Sticker->Img_Item_Sticker)
-				{
-					// 이미지 위젯에 텍스처 적용
-					ItemBox_Sticker->Img_Item_Sticker->SetBrushFromTexture(StickerTexture);
-					ItemBox_Sticker->Text_Sticker->SetText(FText::FromString(ItemData.stickerName));
-					UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
-				}
-				else
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
-				}
+			// URL에서 이미지 다운로드
+			TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
+			ImageRequest->SetURL(ItemData.stickerImage);
+			ImageRequest->SetVerb(TEXT("GET"));
 
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Failed to decode base64 image data"));
-			}
+			// 다운로드 완료 시 콜백 설정
+			ImageRequest->OnProcessRequestComplete().BindLambda(
+				[ItemBox_Sticker](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful) {
+					if (bWasSuccessful && Response.IsValid())
+					{
+						// 이미지 데이터 가져오기
+						TArray<uint8> ImageData = Response->GetContent();
+
+						// 텍스처로 변환
+						UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+						if (StickerTexture && ItemBox_Sticker->Img_Item_Sticker)
+						{
+							// 이미지 위젯에 텍스처 적용
+							ItemBox_Sticker->Img_Item_Sticker->SetBrushFromTexture(StickerTexture);
+							UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
+						}
+						else
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Failed to download sticker image from URL: %s"), *Request->GetURL());
+					}
+				});
+			ImageRequest->ProcessRequest();
+			
+			ItemBox_Sticker->Text_Sticker->SetText(FText::FromString(ItemData.stickerName));
+			UE_LOG(LogTemp , Log , TEXT("Sticker image set successfully"));
 			Hori_InvenBox_02_Sticker->AddChild(ItemBox_Sticker);
 			UE_LOG(LogTemp , Log , TEXT("InitializeStickerTabs"));
 		}
