@@ -144,7 +144,6 @@ public:
 	void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
 
 	const FString _url = "https://ticketaka.shop/api";
-	//const FString _url = "http://125.132.216.190:7878/api";
 #pragma endregion
 
 #pragma region FTitles/FStickers/FTickets/BackgroundId Getter & Setter Methods

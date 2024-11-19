@@ -90,10 +90,26 @@ public:
 #pragma region Origin Variable & Custom Properties
 	UPROPERTY()
 	class UCanvasPanel* RootCanvas;
-	//UPROPERTY()
-	//class UCanvasPanel* TicketCanvas;
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_TicketBackground;
+	UPROPERTY(meta = (BindWidget))
+	class UImage* Img_TicketInfo;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* Txt_ConcertName;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* Txt_Year;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* Txt_Day;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* Txt_Month;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* Txt_Time;
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* Txt_SeatInfo;
+
+	UFUNCTION()
+	void SetTextTicketInfo(FString _ConcertName, int32 _Year, int32 _Monthm, int32 _Day, FString _Time, FString _SeatInfo);
+	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
 	
