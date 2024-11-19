@@ -32,7 +32,6 @@ public:
 #pragma endregion
 
 	const FString _url = "https://ticketaka.shop/api";
-	//const FString _url = "http://125.132.216.190:7878/api";
 	
 	// QR코드 요청을 서버에 보내는 함수
 	void ReqPostGetVerifyIdentityQR(FText Email, FText Password);

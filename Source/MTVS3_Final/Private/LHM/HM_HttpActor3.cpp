@@ -374,7 +374,6 @@ void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& Image
 	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*HeaderImage), HeaderImage.Len());
 	RequestContent.Append(ImageData); // 이미지 데이터를 그대로 추가
 	RequestContent.Append((uint8*)"\r\n", 2);
-
 	
 	// 3. Start_x 추가
 	FString Start_x = FString::Printf(TEXT("--%s\r\n"), *Boundary);
@@ -557,7 +556,8 @@ void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url); // 테스트용
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -596,6 +596,27 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 				{
 					int32 DailyBackgroundRefreshCount = ResponseObject->GetIntegerField(TEXT("dailyBackgroundRefreshCount"));
 					UE_LOG(LogTemp , Log , TEXT("DailyBackgroundRefreshCount: %d") , DailyBackgroundRefreshCount);
+
+					TArray<TSharedPtr<FJsonValue>> TicketDtoList = ResponseObject->GetArrayField(TEXT("ticketDTOList"));
+					for (int32 i = 0; i < TicketDtoList.Num(); i++)
+					{
+						TSharedPtr<FJsonObject> TicketObject = TicketDtoList[i]->AsObject();
+						if (TicketObject.IsValid())
+						{
+							int32 TicketId = TicketObject->GetIntegerField(TEXT("ticketId"));
+							FString ConcertName = TicketObject->GetStringField(TEXT("concertName"));
+							int32 Year = TicketObject->GetIntegerField(TEXT("year"));
+							int32 Month = TicketObject->GetIntegerField(TEXT("month"));
+							int32 Day = TicketObject->GetIntegerField(TEXT("day"));
+							FString Time = TicketObject->GetStringField(TEXT("time"));
+							FString SeatInfo = TicketObject->GetStringField(TEXT("seatInfo"));
+
+							if(MainUI->GetTicketCustomWidget())
+							{
+								MainUI->GetTicketCustomWidget()->SetTextTicketInfo(ConcertName, Year, Month, Day, Time, SeatInfo);
+							}
+						}
+					}
 					
 					TArray<TSharedPtr<FJsonValue>> StickerList = ResponseObject->GetArrayField(TEXT("stickerDTOList"));
 					
@@ -635,6 +656,7 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 										if (MainUI->GetTicketCustomWidget())
 										{
 											MainUI->GetTicketCustomWidget()->SetStickersImgs(Texture, i);
+											//MainUI->GetTicketCustomWidget()->AddSticker(StickerId, Texture);
 										}
 									}
 									else
@@ -654,6 +676,10 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 						if(MainUI->GetTicketCustomWidget()) MainUI->SetWidgetSwitcher(7);
 				}
 			}
+		}
+		else if( Response->GetResponseCode() == 400 )
+		{
+			// 티켓을 보유하고 있지 않을 때 커스텀 티켓 제작에 입장할 수 없는 문구 위젯스위쳐
 		}
 	}
 }

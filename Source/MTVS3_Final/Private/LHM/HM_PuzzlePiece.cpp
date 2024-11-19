@@ -85,15 +85,15 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
  void AHM_PuzzlePiece::Tick(float DeltaTime)
  {
  	Super::Tick(DeltaTime);
- 
+
  }
 
 void AHM_PuzzlePiece::SetComponentOwner(UStaticMeshComponent* Component, class ATTPlayer* NewOwner)
 {
-	if (Component)
+	if (Component)UE_LOG(LogTemp, Log, TEXT("All board areas are visible. Ending puzzle."));
 	{
 		ComponentOwners.Add(Component, NewOwner);
-
+		UE_LOG(LogTemp, Log, TEXT("All board areas are visible. Ending puzzle."));
 	}
 }
 
@@ -205,20 +205,6 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
             }
         }
     }
-}
-
-bool AHM_PuzzlePiece::AreAllPiecesDestroyed() const
-{
-	for (UStaticMeshComponent* MeshComponent : PieceMeshes)
-	{
-		if (MeshComponent && MeshComponent->IsValidLowLevel() && !MeshComponent->IsGarbageEliminationEnabled())
-		{
-			// 하나라도 살아있으면 false 반환
-			return false;
-		}
-	}
-	// 모든 요소가 nullptr 또는 파괴된 상태라면 true 반환
-	return true;
 }
 
 void AHM_PuzzlePiece::OnRep_PieceTransform()
