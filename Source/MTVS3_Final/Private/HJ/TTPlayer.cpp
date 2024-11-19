@@ -601,12 +601,12 @@ void ATTPlayer::MulticastLuckyDrawStart_Implementation()
 	{
 		Anim->PlaySittingMontage();
 	}
-	GetCharacterMovement()->DisableMovement(); // 이동 비활성화
 }
 
 void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& TargetTransform)
 {
-	SetActorTransform(TargetTransform);
+	this->SetActorTransform(TargetTransform);
+	GetCharacterMovement()->DisableMovement(); // 이동 비활성화
 }
 
 void ATTPlayer::ClientLuckyDrawLose_Implementation()
