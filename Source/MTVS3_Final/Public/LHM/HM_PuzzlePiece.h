@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/Actor.h"
 #include "HM_PuzzlePiece.generated.h"
 
@@ -25,6 +26,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<UStaticMeshComponent*> PieceMeshes;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	TArray<UBoxComponent*> CollisionBoxComps;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	//TArray<UStaticMeshComponent*> Pieces;
