@@ -15,7 +15,6 @@ AStyleLoungeActor::AStyleLoungeActor()
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
 	BoxComp->SetupAttachment(RootComponent);
 
-	BoxComp->OnComponentBeginOverlap.AddDynamic(this , &AStyleLoungeActor::OnBeginOverlap);
 	BoxComp->OnComponentEndOverlap.AddDynamic(this , &AStyleLoungeActor::OnEndOverlap);
 }
 
@@ -30,12 +29,6 @@ void AStyleLoungeActor::BeginPlay()
 void AStyleLoungeActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-}
-
-void AStyleLoungeActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
 
 }
 
