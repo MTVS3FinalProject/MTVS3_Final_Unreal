@@ -9,6 +9,7 @@
 /**
  * 
  */
+
 UCLASS()
 class MTVS3_FINAL_API UMH_Interaction : public UUserWidget
 {
@@ -22,4 +23,21 @@ public:
 	class UWidgetSwitcher* WS_InteractionWidgetSwitcher;
 	
 	void SetActiveWidgetIndex(int index);//0:Chair, 1:콘서트 입장, 2:스타일 라운지
+	
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* TextOffAnim;
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* TextOnAnim;
+
+	UPROPERTY()
+	bool bAnimationFinished = false;
+
+	UFUNCTION()
+	void TextOnAnimPlay();
+
+	UFUNCTION()
+	void TextOffAnimPlay();
+	
+	virtual void OnAnimationFinished();
+	
 };
