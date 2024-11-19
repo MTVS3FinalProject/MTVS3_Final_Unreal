@@ -379,13 +379,13 @@ void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& Image
 	// 3. Start_x 추가
 	FString Start_x = FString::Printf(TEXT("--%s\r\n"), *Boundary);
 	Start_x += TEXT("Content-Disposition: form-data; name=\"start_x\"\r\n\r\n");
-	Start_x += FString::FromInt(1085) + TEXT("\r\n");
+	Start_x += FString::FromInt(856) + TEXT("\r\n");
 	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*Start_x), Start_x.Len());
 	
 	// 4. Start_y 추가
 	FString Start_y = FString::Printf(TEXT("--%s\r\n"), *Boundary);
 	Start_y += TEXT("Content-Disposition: form-data; name=\"start_y\"\r\n\r\n");
-	Start_y += FString::FromInt(540) + TEXT("\r\n");
+	Start_y += FString::FromInt(96) + TEXT("\r\n");
 	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*Start_y), Start_y.Len());
 	
 	// 5. BackgroundId 추가
@@ -460,8 +460,9 @@ void AHM_HttpActor3::ReqPostBackground(FString AccessToken)
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-	
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url); // 임의 티켓아이디
+
+	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -554,8 +555,9 @@ void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-	
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url);
+
+	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 

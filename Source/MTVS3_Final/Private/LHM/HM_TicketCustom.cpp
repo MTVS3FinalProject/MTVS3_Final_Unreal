@@ -50,23 +50,6 @@ void UHM_TicketCustom::NativeConstruct()
 	ScrollBox_Stickers->SetAnimateWheelScrolling(true);
 	ScrollBox_Stickers->SetAllowOverscroll(true);
 	
-	if( Img_TicketBackground )
-	{
-		// 에디터에서 설정된 위치와 크기 사용
-		UCanvasPanelSlot* BackgroundSlot = Cast<UCanvasPanelSlot>(Img_TicketBackground->Slot);
-		
-		if (BackgroundSlot)
-		{
-			BackgroundSlot->SetSize(FVector2D(888, 504));
-			BackgroundSlot->SetPosition(FVector2D(-388.0,-30));
-			BackgroundSlot->SetAlignment(FVector2d(0.5));
-		}
-	}
-
-	// if (FinalTicketWidget)
-	// {
-	// 	FinalTicketUI = CreateWidget<UHM_FinalTicket>(GetWorld(), FinalTicketWidget);
-	// }
 }
 
 void UHM_TicketCustom::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

@@ -4,6 +4,7 @@
 #include "LHM/HM_PuzzlePiece.h"
 
 #include "Algo/RandomShuffle.h"
+#include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/PuzzleManager.h"
 #include "Net/UnrealNetwork.h"
@@ -31,6 +32,21 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 			{
 				PieceMeshes[i]->SetupAttachment(RootComponent);
 				PieceMeshes[i]->SetStaticMesh(MeshAsset.Object);
+			}
+
+			// 콜리전 박스 생성
+			FString CollisionBoxName = FString::Printf(TEXT("CollisionBoxComp%d"), i + 1);
+			UBoxComponent* CollisionBox = CreateDefaultSubobject<UBoxComponent>(*CollisionBoxName);
+			if (CollisionBox)
+			{
+				// 콜리전 박스의 크기를 피스보다 작게 설정
+				FVector BoxExtent = PieceMeshes[i]->GetStaticMesh()->GetBounds().BoxExtent * 0.7f; // 70% 크기
+				CollisionBox->SetBoxExtent(BoxExtent);
+				CollisionBox->SetupAttachment(PieceMeshes[i]);
+				CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				CollisionBox->SetCollisionResponseToAllChannels(ECR_Block);
+				CollisionBox->SetNotifyRigidBodyCollision(true);
+				CollisionBox->RegisterComponent();
 			}
 		}
 	}
