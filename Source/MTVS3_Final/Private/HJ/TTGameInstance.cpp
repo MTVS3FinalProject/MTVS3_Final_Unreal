@@ -285,6 +285,7 @@ void UTTGameInstance::SwitchSession(EPlaceState Destination)
 		// 목적지가 광장 또는 콘서트홀이면(광장에 스폰)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
+	case EPlaceState::StyleLounge:
 		bSwitchToHallSession = true;
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
 		break;
