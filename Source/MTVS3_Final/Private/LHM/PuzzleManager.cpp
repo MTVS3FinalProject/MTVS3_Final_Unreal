@@ -3,6 +3,7 @@
 
 #include "LHM/PuzzleManager.h"
 
+#include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
@@ -21,32 +22,13 @@ void APuzzleManager::BeginPlay()
 	Super::BeginPlay();
 
 	PuzzleUI = CastChecked<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
-	//if(PuzzleUI) PuzzleUI->InitializeTextBlocks();
-	bPuzzleCompleted = false;
+
 }
 
 // Called every frame
 void APuzzleManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (bPuzzleCompleted)
-	{
-		return; // 퍼즐 종료 플래그
-	}
-	if ( UGameplayStatics::GetCurrentLevelName(GetWorld()) == TEXT("LV_TA") )
-	{
-		AHM_PuzzlePiece* PuzzlePiece = Cast<AHM_PuzzlePiece>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_PuzzlePiece::StaticClass()));
-
-		if (PuzzlePiece && PuzzlePiece->AreAllPiecesDestroyed())
-		{
-			// 모든 퍼즐 조각이 파괴되었을 때, 퍼즐게임이 끝났을 때
-			GameOver();
-			UE_LOG(LogTemp, Log, TEXT("Game Over"));
-			bPuzzleCompleted = true; // 이후 다시 호출되지 않도록 플래그 설정
-		}
-	}
 }
 
 void APuzzleManager::AddPiece(UStaticMeshComponent* Piece, int32 InitialScore)
@@ -96,10 +78,21 @@ void APuzzleManager::AddScoreToPlayer(AActor* Player, int32 Score)
 		FPlayerScoreInfo NewPlayerInfo(Player, PlayerScores[Player]);
 		PlayerScoresInfo.Add(NewPlayerInfo);
 	}
-	
-	UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *Player->GetName(), PlayerScores[Player]);
+
+	UTTGameInstance* GI = Cast<UTTGameInstance>(Player->GetGameInstance());
+	FString NickName;
+	if (GI)
+	{
+		NickName = GI->GetNickname();
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *NickName, PlayerScores[Player]);
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
-				FString::Printf(TEXT("Player %s new score: %d"),*Player->GetName(), PlayerScores[Player]));
+				FString::Printf(TEXT("Player %s new score: %d"),*NickName, PlayerScores[Player]));
+	
+	// UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *Player->GetName(), PlayerScores[Player]);
+	// GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
+	// 			FString::Printf(TEXT("Player %s new score: %d"),*Player->GetName(), PlayerScores[Player]));
 
 
 	
@@ -123,14 +116,23 @@ void APuzzleManager::SortAndUpdateRanking()
 	if (PuzzleUI)
 	{
 		//PuzzleUI->UpdatePlayerScores(PlayerScoresInfo);
-        
+		
 		// 디버그 로그로 정렬된 점수 출력
 		for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)
 		{
 			FString TimeString = PlayerScoresInfo[i].Timestamp.ToString(TEXT("%M:%S"));
+
+			UTTGameInstance* GI = Cast<UTTGameInstance>(PlayerScoresInfo[i].Player->GetGameInstance());
+			FString NickName;
+			if (GI)
+			{
+				NickName = GI->GetNickname();
+			}
+			
 			UE_LOG(LogTemp, Log, TEXT("Rank %d - Player: %s, Score: %d, Time %s"), 
 				i + 1, 
-				*PlayerScoresInfo[i].Player->GetName(), 
+				//*PlayerScoresInfo[i].Player->GetName(),
+				*NickName,
 				PlayerScoresInfo[i].Score,
 				*TimeString);
 		}
@@ -140,5 +142,8 @@ void APuzzleManager::SortAndUpdateRanking()
 void APuzzleManager::GameOver()
 {
 	UE_LOG(LogTemp, Log, TEXT("Game Over"));
+	
+	// 퍼즐 종료 UI 스위쳐
+	//if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
 }
 

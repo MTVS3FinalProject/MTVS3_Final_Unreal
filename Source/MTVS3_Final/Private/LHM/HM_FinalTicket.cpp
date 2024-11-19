@@ -23,26 +23,6 @@ void UHM_FinalTicket::NativeConstruct()
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_FinalTicket::OnClickedExitButton);
 	
 	RootCanvas = Cast<UCanvasPanel>(GetRootWidget());
-    	if( RootCanvas && Img_FinalTicket && Img_FinalTicketInfo )
-    	{
-    		// 에디터에서 설정된 위치와 크기 사용
-    		UCanvasPanelSlot* BackgroundSlot = Cast<UCanvasPanelSlot>(Img_FinalTicket->Slot);
-    		UCanvasPanelSlot* InfoSlot = Cast<UCanvasPanelSlot>(Img_FinalTicketInfo->Slot);
-    		
-    		if (BackgroundSlot)
-    		{
-    			BackgroundSlot->SetSize(FVector2D(888, 504));
-    			BackgroundSlot->SetPosition(FVector2D(-220,0));
-    			BackgroundSlot->SetAlignment(FVector2d(0.5));
-    		}
-    
-    		if (InfoSlot)
-    		{
-    			InfoSlot->SetSize(FVector2D(436, 504));
-    			InfoSlot->SetPosition(FVector2D(445,0));
-    			InfoSlot->SetAlignment(FVector2d(0.5));
-    		}
-    	}
 	
 	if (TicketCutomWidget)
 	{
@@ -89,9 +69,6 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 			// Img_FinalTicket에 캡처된 텍스처 표시
 			if (TicketCutomUI && Img_FinalTicket)
 			{
-				//FSlateBrush Brush;
-				//Brush.SetResourceObject(CapturedTexture);
-			
 				// 최종 티켓 이미지에 반영
 				Img_FinalTicket->SetBrushFromTexture(CapturedTexture);
 			
