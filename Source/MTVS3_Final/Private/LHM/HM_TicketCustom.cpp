@@ -12,6 +12,7 @@
 #include "Components/OverlaySlot.h"
 #include "Components/ScrollBox.h"
 #include "Components/Spacer.h"
+#include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "HJ/TTGameInstance.h"
@@ -56,6 +57,16 @@ void UHM_TicketCustom::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 {
 	Super::NativeTick(MyGeometry , InDeltaTime);
 	
+}
+
+void UHM_TicketCustom::SetTextTicketInfo(FString _ConcertName, int32 _Year, int32 _Monthm, int32 _Day, FString _Time, FString _SeatInfo)
+{
+	Txt_ConcertName->SetText(FText::FromString(_ConcertName));
+	Txt_Year->SetText(FText::FromString(FString::FromInt(_Year)));
+	Txt_Month->SetText(FText::AsNumber(_Monthm));
+	Txt_Day->SetText(FText::AsNumber(_Day));
+	Txt_Time->SetText(FText::FromString(_Time));
+	Txt_SeatInfo->SetText(FText::FromString(_SeatInfo));
 }
 
 FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
