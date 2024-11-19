@@ -153,6 +153,19 @@ void AHM_PuzzleBoard::ServerSetBoardAreaVisibility_Implementation(int32 BoardInd
 		if (HasAuthority())
 		{
 			BoardAreaVisibility[BoardIndex] = bVisible;
+			UE_LOG(LogTemp, Log, TEXT("Updated BoardAreaVisibility[%d] to %s"), BoardIndex, bVisible ? TEXT("true") : TEXT("false"));
+
+			// 모든 보드 영역이 가시화되었는지 확인
+			if (AreAllBoardAreasVisible())
+			{
+				UE_LOG(LogTemp, Log, TEXT("All board areas are visible. Ending puzzle."));
+				// 퍼즐 완료 처리
+				APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
+				if (Manager)
+				{
+					Manager->GameOver(); // 퍼즐 종료 로직 호출
+				}
+			}
 		}
         
 		// 모든 클라이언트(및 서버)에게 알림
@@ -228,6 +241,20 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 			}
 		}
 	}
+}
+
+bool AHM_PuzzleBoard::AreAllBoardAreasVisible() const
+{
+	// BoardAreaVisibility 배열의 모든 값이 true인지 확인
+	for (bool bVisible : BoardAreaVisibility)
+	{
+		if (!bVisible)
+		{
+			return false; // 하나라도 false면 전체가 true가 아님
+		}
+	}
+	UE_LOG(LogTemp, Log, TEXT("All BoardAreaVisibility values are true"));
+	return true; // 모든 값이 true임
 }
 
 void AHM_PuzzleBoard::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

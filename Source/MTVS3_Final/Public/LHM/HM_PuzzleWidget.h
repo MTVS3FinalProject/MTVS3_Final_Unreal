@@ -63,9 +63,6 @@ public:
 	class UTextBlock* Text_Player8Score;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Player9Score;
-
-	void InitializeTextBlocks();
-	void InitializePuzzlePieces();
 	
 	void SetTextPieceInfo(FString PieceName, int32 Score, int32 Index);
 	
