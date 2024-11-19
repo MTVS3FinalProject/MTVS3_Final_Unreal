@@ -24,33 +24,34 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 	if (MeshAsset.Succeeded())
 	{
 		PieceMeshes.SetNum(9);
+		CollisionBoxComps.SetNum(9);
 		for (int32 i = 0; i < 9; i++)
 		{
+			// 콜리전 박스 생성
+			FString CollisionBoxName = FString::Printf(TEXT("CollisionBoxComp%d"), i + 1);
+			CollisionBoxComps[i] = CreateDefaultSubobject<UBoxComponent>(*CollisionBoxName);
+			if (CollisionBoxComps[i])
+			{
+				// 콜리전 박스의 크기를 피스보다 작게 설정
+				//FVector BoxExtent = PieceMeshes[i]->GetStaticMesh()->GetBounds().BoxExtent * 0.7f; // 70% 크기
+				CollisionBoxComps[i]->SetRelativeScale3D(FVector(0.4f));
+				CollisionBoxComps[i]->SetupAttachment(RootComponent);
+				CollisionBoxComps[i]->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				CollisionBoxComps[i]->SetCollisionResponseToAllChannels(ECR_Block);
+				CollisionBoxComps[i]->SetNotifyRigidBodyCollision(true);
+				CollisionBoxComps[i]->SetSimulatePhysics(true);
+				CollisionBoxComps[i]->RegisterComponent();
+			}
+
 			FName PieceName = *FString::Printf(TEXT("Piece%d"), i + 1);
 			PieceMeshes[i] = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
 			if (PieceMeshes[i])
 			{
-				PieceMeshes[i]->SetupAttachment(RootComponent);
+				PieceMeshes[i]->SetupAttachment(CollisionBoxComps[i]);
 				PieceMeshes[i]->SetStaticMesh(MeshAsset.Object);
-			}
-
-			// 콜리전 박스 생성
-			FString CollisionBoxName = FString::Printf(TEXT("CollisionBoxComp%d"), i + 1);
-			UBoxComponent* CollisionBox = CreateDefaultSubobject<UBoxComponent>(*CollisionBoxName);
-			if (CollisionBox)
-			{
-				// 콜리전 박스의 크기를 피스보다 작게 설정
-				FVector BoxExtent = PieceMeshes[i]->GetStaticMesh()->GetBounds().BoxExtent * 0.7f; // 70% 크기
-				CollisionBox->SetBoxExtent(BoxExtent);
-				CollisionBox->SetupAttachment(PieceMeshes[i]);
-				CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				CollisionBox->SetCollisionResponseToAllChannels(ECR_Block);
-				CollisionBox->SetNotifyRigidBodyCollision(true);
-				CollisionBox->RegisterComponent();
 			}
 		}
 	}
-	
  }
  
  // Called when the game starts or when spawned
