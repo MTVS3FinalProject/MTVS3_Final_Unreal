@@ -75,7 +75,10 @@ void AMH_Chair::ShowText()
 	if (MainUI) MainUI->SetVisibleInteractionCan(true);
 	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
 	if (InteractionUI) InteractionUI->SetActiveWidgetIndex(0);
-	
+	// 애니메이션 적용
+	// InteractionUI->TextOnAnimPlay();
+
+	// WidgetComp(삭제)
 	// Widgetcomp->SetVisibility(true);
 	//
 	// // GetWidget()을 사용하여 위젯 인스턴스를 가져옴
@@ -101,7 +104,14 @@ void AMH_Chair::ShowText()
 
 void AMH_Chair::HideText()
 {
+	// 애니메이션 적용 안 함
 	MainUI->SetVisibleInteractionCan(false);
+
+	// 애니메이션 적용
+	// UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+	// InteractionUI->TextOffAnimPlay();
+
+	// WidgetComp(삭제)
 	// Widgetcomp->SetVisibility(false);
 }
 
