@@ -257,10 +257,7 @@ public:
 	//WBP_InteractionUI 여기서 스위쳐함수 찾아서 바꿔주기
 	UPROPERTY(meta = (BindWidget))
 	UMH_Interaction* WBP_InteractionUI;
-	//Interaction 캔버스 비지블 설정
-	UPROPERTY()
-	bool bIsInteraction = false;
-
+	//Interaction 캔버스 비지블
 	UFUNCTION()
 	void SetVisibleInteractionCan(bool visible);
 
