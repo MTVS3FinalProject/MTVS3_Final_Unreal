@@ -28,27 +28,29 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 		for (int32 i = 0; i < 9; i++)
 		{
 			// 콜리전 박스 생성
-			FString CollisionBoxName = FString::Printf(TEXT("CollisionBoxComp%d"), i + 1);
-			CollisionBoxComps[i] = CreateDefaultSubobject<UBoxComponent>(*CollisionBoxName);
-			if (CollisionBoxComps[i])
+			FName CollisionBoxName = *FString::Printf(TEXT("CollisionBoxComp%d"), i + 1);
+			UBoxComponent* BoxComp = CreateDefaultSubobject<UBoxComponent>(CollisionBoxName);
+			CollisionBoxComps[i] = BoxComp;
+            
+			if (BoxComp)
 			{
-				// 콜리전 박스의 크기를 피스보다 작게 설정
-				//FVector BoxExtent = PieceMeshes[i]->GetStaticMesh()->GetBounds().BoxExtent * 0.7f; // 70% 크기
-				CollisionBoxComps[i]->SetRelativeScale3D(FVector(0.4f));
-				CollisionBoxComps[i]->SetupAttachment(RootComponent);
-				CollisionBoxComps[i]->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				CollisionBoxComps[i]->SetCollisionResponseToAllChannels(ECR_Block);
-				CollisionBoxComps[i]->SetNotifyRigidBodyCollision(true);
-				CollisionBoxComps[i]->SetSimulatePhysics(true);
-				CollisionBoxComps[i]->RegisterComponent();
+				BoxComp->SetupAttachment(RootComponent);
+				BoxComp->SetRelativeScale3D(FVector(0.4f));
+				BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				BoxComp->SetCollisionResponseToAllChannels(ECR_Block);
+				BoxComp->SetNotifyRigidBodyCollision(true);
+				BoxComp->SetSimulatePhysics(true);
 			}
 
+			// Mesh 컴포넌트 생성
 			FName PieceName = *FString::Printf(TEXT("Piece%d"), i + 1);
-			PieceMeshes[i] = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
-			if (PieceMeshes[i])
+			UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
+			PieceMeshes[i] = MeshComp;
+            
+			if (MeshComp)
 			{
-				PieceMeshes[i]->SetupAttachment(CollisionBoxComps[i]);
-				PieceMeshes[i]->SetStaticMesh(MeshAsset.Object);
+				MeshComp->SetupAttachment(BoxComp);
+				MeshComp->SetStaticMesh(MeshAsset.Object);
 			}
 		}
 	}
