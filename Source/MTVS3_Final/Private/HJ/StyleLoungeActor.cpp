@@ -15,6 +15,7 @@ AStyleLoungeActor::AStyleLoungeActor()
 	BoxComp = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
 	BoxComp->SetupAttachment(RootComponent);
 
+	BoxComp->OnComponentBeginOverlap.AddDynamic(this , &AStyleLoungeActor::OnBeginOverlap);
 	BoxComp->OnComponentEndOverlap.AddDynamic(this , &AStyleLoungeActor::OnEndOverlap);
 }
 
