@@ -69,7 +69,6 @@ void UMainWidget::NativeConstruct()
 	{
 		FinalTicketWidget->OnClickedFinalTicketBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
-	
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)

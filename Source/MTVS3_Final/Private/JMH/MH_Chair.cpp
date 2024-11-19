@@ -72,11 +72,11 @@ void AMH_Chair::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 
 void AMH_Chair::ShowText()
 {
-	if (MainUI) MainUI->SetVisibleInteractionCan(true);
+	//if (MainUI) MainUI->SetVisibleInteractionCan(true);
 	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
 	if (InteractionUI) InteractionUI->SetActiveWidgetIndex(0);
 	// 애니메이션 적용
-	// InteractionUI->TextOnAnimPlay();
+	InteractionUI->TextOnAnimPlay();
 
 	// WidgetComp(삭제)
 	// Widgetcomp->SetVisibility(true);
@@ -105,11 +105,11 @@ void AMH_Chair::ShowText()
 void AMH_Chair::HideText()
 {
 	// 애니메이션 적용 안 함
-	MainUI->SetVisibleInteractionCan(false);
+	//MainUI->SetVisibleInteractionCan(false);
 
 	// 애니메이션 적용
-	// UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
-	// InteractionUI->TextOffAnimPlay();
+	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+	InteractionUI->TextOffAnimPlay();
 
 	// WidgetComp(삭제)
 	// Widgetcomp->SetVisibility(false);
