@@ -9,12 +9,10 @@
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
-#include "Components/Overlay.h"
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetRenderingLibrary.h"
 #include "LHM/HM_HttpActor3.h"
-#include "LHM/HM_TicketBG.h"
 #include "LHM/HM_TicketCustom.h"
 #include "Slate/WidgetRenderer.h"
 

@@ -4,6 +4,7 @@
 #include "LHM/HM_PuzzlePiece.h"
 
 #include "Algo/RandomShuffle.h"
+#include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/PuzzleManager.h"
 #include "Net/UnrealNetwork.h"
@@ -23,18 +24,36 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 	if (MeshAsset.Succeeded())
 	{
 		PieceMeshes.SetNum(9);
+		CollisionBoxComps.SetNum(9);
 		for (int32 i = 0; i < 9; i++)
 		{
-			FName PieceName = *FString::Printf(TEXT("Piece%d"), i + 1);
-			PieceMeshes[i] = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
-			if (PieceMeshes[i])
+			// 콜리전 박스 생성
+			FName CollisionBoxName = *FString::Printf(TEXT("CollisionBoxComp%d"), i + 1);
+			UBoxComponent* BoxComp = CreateDefaultSubobject<UBoxComponent>(CollisionBoxName);
+			CollisionBoxComps[i] = BoxComp;
+            
+			if (BoxComp)
 			{
-				PieceMeshes[i]->SetupAttachment(RootComponent);
-				PieceMeshes[i]->SetStaticMesh(MeshAsset.Object);
+				BoxComp->SetupAttachment(RootComponent);
+				BoxComp->SetRelativeScale3D(FVector(0.4f));
+				BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+				BoxComp->SetCollisionResponseToAllChannels(ECR_Block);
+				BoxComp->SetNotifyRigidBodyCollision(true);
+				BoxComp->SetSimulatePhysics(true);
+			}
+
+			// Mesh 컴포넌트 생성
+			FName PieceName = *FString::Printf(TEXT("Piece%d"), i + 1);
+			UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
+			PieceMeshes[i] = MeshComp;
+            
+			if (MeshComp)
+			{
+				MeshComp->SetupAttachment(BoxComp);
+				MeshComp->SetStaticMesh(MeshAsset.Object);
 			}
 		}
 	}
-	
  }
  
  // Called when the game starts or when spawned

@@ -10,14 +10,33 @@ void UMH_UserCoinWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if ( gi )
 	{
+		// 초기 코인 값 설정
 		SetUserCoin(gi->GetCoin());
+        
+		// 델리게이트 구독
+		gi->OnCoinChanged.AddDynamic(this, &UMH_UserCoinWidget::OnCoinValueChanged);
 	}
 }
 
 void UMH_UserCoinWidget::SetUserCoin(int32 UserCoin)
 {
 	Text_UserCoin->SetText(FText::AsNumber(UserCoin));
+}
+
+void UMH_UserCoinWidget::OnCoinValueChanged(int32 NewCoin)
+{
+	SetUserCoin(NewCoin);
+}
+
+// 위젯이 소멸될 때 델리게이트 구독 해제를 위해 추가
+void UMH_UserCoinWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+	if (gi)
+	{
+		gi->OnCoinChanged.RemoveDynamic(this, &UMH_UserCoinWidget::OnCoinValueChanged);
+	}
 }
