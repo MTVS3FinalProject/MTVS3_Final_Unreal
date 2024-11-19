@@ -11,6 +11,25 @@ class UCanvasPanelSlot;
 /**
  * 
  */
+#pragma region Sticker Data
+USTRUCT(BlueprintType)
+struct FStickerData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	int32 StickerId;
+
+	UPROPERTY()
+	UTexture2D* StickerImage;
+
+	// 기본 생성자
+	FStickerData() : StickerId(-1), StickerImage(nullptr) {}
+	FStickerData(int32 InStickerId, UTexture2D* InStickerImage)
+		: StickerId(InStickerId), StickerImage(InStickerImage) {}
+};
+#pragma endregion
+
 #pragma region Copied Image Set Structs
 USTRUCT()
 struct FUsedImage
@@ -75,21 +94,8 @@ public:
 	//class UCanvasPanel* TicketCanvas;
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_TicketBackground;
-	UPROPERTY(meta = (BindWidget))
-	class UImage* Img_TicketInfo;
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
-
-	// 현민 테스트용
-	UPROPERTY(meta = (BindWidget))
-	class UImage* Img_Sticker01;
-	UPROPERTY(meta = (BindWidget))
-	class UImage* Img_Sticker02;
-	UPROPERTY(meta = (BindWidget))
-	class UImage* Img_Sticker03;
-	UPROPERTY(meta = (BindWidget))
-	class UImage* Img_Sticker04;
-	
 	
 	// 드래그 앤 드롭, 회전, 크기조정, 삭제
 	UPROPERTY()
@@ -145,6 +151,14 @@ public:
     
 	// 스페이서 생성 헬퍼 함수
 	class USpacer* CreateSpacerWidget();
+
+	//============================================ 스티커 이미지와 아이디 배열 테스트
+	// 동적 StickerImages와 StickerId 배열
+	UPROPERTY()
+	TArray<FStickerData> StickerDataArray;
+
+	UFUNCTION()
+	void AddSticker(int32 StickerId, UTexture2D* StickerImage);
 	
 #pragma endregion
 	
@@ -162,22 +176,6 @@ public:
 	void OnClickedResetBackgroundButton();
 	UFUNCTION()
 	void OnClickedResetTicketImageButton();
-	//UFUNCTION()
-	//void OnClickedSaveButtonDELEGATE();
-
-	// 현민 테스트용
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	//class UButton* Btn_Capture;
-	//UFUNCTION()
-	//void OnClickedCapture();
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UButton* Btn_HttpTest04;
-	UFUNCTION()
-	void OnClickedHttpTest04();
-	
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	//TSubclassOf<class UHM_FinalTicket> FinalTicketWidget; // 배경 티켓 위젯 클래스 참조
-	//class UHM_FinalTicket* FinalTicketUI; // 배경 티켓 위젯 인스턴스
 #pragma endregion
 };

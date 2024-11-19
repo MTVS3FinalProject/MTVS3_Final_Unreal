@@ -358,42 +358,60 @@ void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& Image
     Request->SetVerb(TEXT("POST"));
 
     // 헤더 설정
-    Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *AccessToken));
     FString Boundary = "-------------BoundaryString"; // 임의의 고유 문자열
+    Request->SetHeader(TEXT("Authorization"), FString::Printf(TEXT("Bearer %s"), *AccessToken));
 	Request->SetHeader(TEXT("Content-Type"), FString::Printf(TEXT("multipart/form-data; boundary=%s"), *Boundary));
 
-    // Multipart Body 작성
-    FString MultipartBody;
+	// 멀티파트 폼 데이터 작성
+	TArray<uint8> RequestContent;
 
-    // 1. 이미지 데이터 추가
-    MultipartBody += FString::Printf(TEXT("--%s\r\n"), *Boundary);
-    MultipartBody += TEXT("Content-Disposition: form-data; name=\"customTicketImage\"; filename=\"ticket.png\"\r\n");
-    MultipartBody += TEXT("Content-Type: image/png\r\n\r\n");
-     MultipartBody.Append(FString(ANSI_TO_TCHAR(reinterpret_cast<const char*>(ImageData.GetData())), ImageData.Num()));
-    MultipartBody += TEXT("\r\n");
+	// 1. Boundary 시작
+	FString BoundaryStart = FString::Printf(TEXT("--%s\r\n"), *Boundary);
+	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*BoundaryStart), BoundaryStart.Len());
 
-	// 2. BackgroundId 추가
-	MultipartBody += FString::Printf(TEXT("--%s\r\n"), *Boundary);
-	MultipartBody += TEXT("Content-Disposition: form-data; name=\"backgroundId\"\r\n\r\n");
-	MultipartBody += FString::FromInt(BackGroundId);
-	MultipartBody += TEXT("\r\n");
+	// 2. 이미지 데이터 추가
+	FString HeaderImage = TEXT("Content-Disposition: form-data; name=\"customTicketImage\"; filename=\"ticket.png\"\r\nContent-Type: image/png\r\n\r\n");
+	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*HeaderImage), HeaderImage.Len());
+	RequestContent.Append(ImageData); // 이미지 데이터를 그대로 추가
+	RequestContent.Append((uint8*)"\r\n", 2);
 
-	// 3. StickerIdList 추가
-	MultipartBody += FString::Printf(TEXT("--%s\r\n"), *Boundary);
-	MultipartBody += TEXT("Content-Disposition: form-data; name=\"stickerIdList\"\r\n\r\n");
+	
+	// 3. Start_x 추가
+	FString Start_x = FString::Printf(TEXT("--%s\r\n"), *Boundary);
+	Start_x += TEXT("Content-Disposition: form-data; name=\"start_x\"\r\n\r\n");
+	Start_x += FString::FromInt(1085) + TEXT("\r\n");
+	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*Start_x), Start_x.Len());
+	
+	// 4. Start_y 추가
+	FString Start_y = FString::Printf(TEXT("--%s\r\n"), *Boundary);
+	Start_y += TEXT("Content-Disposition: form-data; name=\"start_y\"\r\n\r\n");
+	Start_y += FString::FromInt(540) + TEXT("\r\n");
+	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*Start_y), Start_y.Len());
+	
+	// 5. BackgroundId 추가
+	FString BackgroundIdPart = FString::Printf(TEXT("--%s\r\n"), *Boundary);
+	BackgroundIdPart += TEXT("Content-Disposition: form-data; name=\"backgroundId\"\r\n\r\n");
+	BackgroundIdPart += FString::FromInt(BackGroundId) + TEXT("\r\n");
+	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*BackgroundIdPart), BackgroundIdPart.Len());
+
+	// 6. StickerIdList 추가
+	FString StickerListPart = FString::Printf(TEXT("--%s\r\n"), *Boundary);
+	StickerListPart += TEXT("Content-Disposition: form-data; name=\"stickerIdList\"\r\n\r\n");
 	for (int32 StickerId : StickerList)
 	{
-		MultipartBody += FString::FromInt(StickerId) + TEXT(",");
+		StickerListPart += FString::FromInt(StickerId) + TEXT(",");
 	}
-	MultipartBody.RemoveFromEnd(TEXT(",")); // 마지막 콤마 제거
-	MultipartBody += TEXT("\r\n");
+	StickerListPart.RemoveFromEnd(TEXT(","));
+	StickerListPart += TEXT("\r\n");
+	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*StickerListPart), StickerListPart.Len());
 
-	// 끝나는 Boundary 추가
-	MultipartBody += FString::Printf(TEXT("--%s--\r\n"), *Boundary);
+	// 7. Boundary 종료
+	FString BoundaryEnd = FString::Printf(TEXT("--%s--\r\n"), *Boundary);
+	RequestContent.Append((uint8*)TCHAR_TO_ANSI(*BoundaryEnd), BoundaryEnd.Len());
 
-	// 요청 본문에 데이터 설정
-	Request->SetContentAsString(MultipartBody);
-
+	// 요청 본문에 데이터 추가
+	Request->SetContent(RequestContent);
+	
     // 응답받을 함수 연결
     Request->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnResPostSaveCustomTicket);
 
@@ -418,14 +436,7 @@ void AHM_HttpActor3::OnResPostSaveCustomTicket(FHttpRequestPtr Request, FHttpRes
 
 			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
 			{
-				// "response" 객체에 접근
-				//TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
-				//if ( ResponseObject.IsValid() )
-				//{
-				// 티켓 저장 성공처리
 				UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 성공 응답"));
-					
-				//}
 			}
 		}
 		else
@@ -488,9 +499,7 @@ void AHM_HttpActor3::OnResPostBackground(FHttpRequestPtr Request, FHttpResponseP
 				{
 					// 받아올 정보 추출
 					int32 _BackgroundId = ResponseObject->GetIntegerField(TEXT("backgroundId"));
-					UE_LOG(LogTemp , Log , TEXT("BackgroundId : %d") , GetBackgroundId());
-					//FString Base64String = ResponseObject->GetStringField(TEXT("backgroundImage"));
-					//UE_LOG(LogTemp , Log , TEXT("BackgroundImageURL : %s"), *Base64String);
+					UE_LOG(LogTemp , Log , TEXT("BackgroundId : %d") , _BackgroundId);
 
 					SetBackgroundId(_BackgroundId);
 
@@ -542,8 +551,6 @@ void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
-
-	//FTickets Tickets;
 	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
@@ -589,7 +596,7 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 					UE_LOG(LogTemp , Log , TEXT("DailyBackgroundRefreshCount: %d") , DailyBackgroundRefreshCount);
 					
 					TArray<TSharedPtr<FJsonValue>> StickerList = ResponseObject->GetArrayField(TEXT("stickerDTOList"));
-
+					
 					if(MainUI->GetTicketCustomWidget())
 					{
 						// 스티커 개수에 따라 UI만 초기화 (한 번만 호출)
@@ -601,6 +608,8 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 						TSharedPtr<FJsonObject> StickerObject = StickerList[i]->AsObject();
 						if (StickerObject.IsValid())
 						{
+							// stickerId 가져오기
+							int32 StickerId = StickerObject->GetIntegerField(TEXT("stickerId"));
 							// stickerImage URL 가져오기
 							FString StickerImageUrl = StickerObject->GetStringField(TEXT("stickerImage"));
 
@@ -750,28 +759,14 @@ void AHM_HttpActor3::OnResGetNotEquipTheTitle(FHttpRequestPtr Request, FHttpResp
 
 		if ( Response->GetResponseCode() == 200 )
 		{
-			// JSON 응답 파싱
-			FString ResponseBody = Response->GetContentAsString();
-			TSharedPtr<FJsonObject> JsonObject;
-			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
-
-			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			ATTPlayer* Player = Cast<ATTPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld() , 0));
+			if (Player)
 			{
-				// "response" 객체에 접근
-				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
-
-				if (ResponseObject.IsValid())
-				{
-					ATTPlayer* Player = Cast<ATTPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-					if (Player)
-					{
-						FString TitleName = " ";
-						FString TitleRarity = " ";
-						Player->SetTitleNameAndRarity(TitleName, TitleRarity);
-					}
-					UE_LOG(LogTemp , Log , TEXT("타이틀 해제 성공"));
-				}
+				FString TitleName = " ";
+				FString TitleRarity = " ";
+				Player->SetTitleNameAndRarity(TitleName , TitleRarity);
 			}
+			UE_LOG(LogTemp , Log , TEXT("타이틀 해제 성공"));
 		}
 		else
 		{
