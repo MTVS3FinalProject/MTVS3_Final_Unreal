@@ -65,15 +65,35 @@ void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 
 void AHJ_Actor::ShowText()
 {
+	// MainUI 체크
+	if (!IsValid(MainUI))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MainUI is not valid in ShowText"));
+		return;
+	}
 	if (MainUI) MainUI->SetVisibleInteractionCan(true);
+
+	// WBP_InteractionUI 체크
+	if (!IsValid(MainUI->WBP_InteractionUI))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("WBP_InteractionUI is not valid in ShowText"));
+		return;
+	}
+	
 	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+	if (!IsValid(InteractionUI))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to cast to UMH_Interaction in ShowText"));
+		return;
+	}
+	
 	if (InteractionUI)
 	{
 		if (ActorHasTag("SelectConcert"))
-		{
-			InteractionUI->SetActiveWidgetIndex(1);
-		}
-		else if(ActorHasTag("Customizing"))
+                                    		{
+                                    			InteractionUI->SetActiveWidgetIndex(1);
+                                    		}
+                                    		else if(ActorHasTag("Customizing"))
 		{
 			InteractionUI->SetActiveWidgetIndex(2);
 		}
@@ -81,8 +101,11 @@ void AHJ_Actor::ShowText()
 		{
 			InteractionUI->SetActiveWidgetIndex(3);
 		}
+		// 애니메이션 적용
+		// InteractionUI->TextOnAnimPlay();
 	}
-	
+
+	// WidgetComp(삭제)
 	// WidgetComp->SetVisibility(true);
 	// // GetWidget()을 사용하여 위젯 인스턴스를 가져옴
 	// UUserWidget* WidgetCompUI = Cast<UUserWidget>(WidgetComp->GetWidget());
@@ -119,7 +142,34 @@ void AHJ_Actor::ShowText()
 
 void AHJ_Actor::HideText()
 {
+	// 애니메이션 적용 안 함
 	MainUI->SetVisibleInteractionCan(false);
+
+	// 애니메이션 적용
+	// // MainUI 체크
+	// if (!IsValid(MainUI))
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("MainUI is not valid in HideText"));
+	// 	return;
+	// }
+	//
+	// // WBP_InteractionUI 체크
+	// if (!IsValid(MainUI->WBP_InteractionUI))
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("WBP_InteractionUI is not valid in HideText"));
+	// 	return;
+	// }
+	//
+	// UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+	// if (!IsValid(InteractionUI))
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("Failed to cast to UMH_Interaction in HideText"));
+	// 	return;
+	// }
+	//
+	// InteractionUI->TextOffAnimPlay();
+
+	// WidgetComp(삭제)
 	// WidgetComp->SetVisibility(false);
 }
 
