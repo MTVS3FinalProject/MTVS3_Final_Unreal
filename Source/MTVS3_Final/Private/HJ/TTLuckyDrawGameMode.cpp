@@ -168,13 +168,20 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 			UE_LOG(LogLuckyDraw , Warning , TEXT("룰렛 옵션 선택 시도 횟수: %d") , attempts);
 		}
 
-		// MaxPlayerNumber 이하인 플레이어들만 필터링
+		// MaxPlayerNumber 이하이면서 실제 좌석에 있는 플레이어들만 필터링
 		TArray<int32> ValidPlayers;
 		for (int32 Player : RemainingPlayers)
 		{
+			// MaxPlayerNumber 체크
 			if (Player <= MaxPlayerNumber)
 			{
-				ValidPlayers.Add(Player);
+				// 좌석에 실제로 있는지 체크
+				int32 PlayerRow = -1, PlayerCol = -1;
+				GetPlayerPosition(Player, PlayerRow, PlayerCol);
+				if (PlayerRow != -1 && PlayerCol != -1)  // 좌석이 있는 경우만 추가
+				{
+					ValidPlayers.Add(Player);
+				}
 			}
 		}
 
