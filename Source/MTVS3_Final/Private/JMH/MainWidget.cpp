@@ -69,7 +69,6 @@ void UMainWidget::NativeConstruct()
 	{
 		FinalTicketWidget->OnClickedFinalTicketBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
-	
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -79,10 +78,6 @@ void UMainWidget::SetWidgetSwitcher(int32 num)
 	{
 		//PlayAnimation(TicketImgAnim01,0,0,EUMGSequencePlayMode::Reverse;
 		PlayAnimation(TicketImgAnim01);
-	}
-	if (num == 5)
-	{
-		PlayAnimation(ConcertAnim5);
 	}
 	
 }

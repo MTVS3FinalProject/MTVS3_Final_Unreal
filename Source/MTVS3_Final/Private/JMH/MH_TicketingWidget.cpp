@@ -3,6 +3,7 @@
 
 #include "JMH/MH_TicketingWidget.h"
 #include "Components/Button.h"
+#include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
@@ -16,6 +17,7 @@ void UMH_TicketingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	Btn_Back1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedBackButton);
+	//Btn_Back1_1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedBack1_1);
 	//Btn_Back2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedBackButton);
 	Btn_Confirm_Ticketting->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedConfirmButton);
 	Btn_Cancel_Ticketting1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
@@ -84,6 +86,8 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 			bIsVisible = true;
 			WS_RegisterSwitcher->SetActiveWidgetIndex(1);
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
+			//추첨장 입장 비지블온
+			SetBattleEntryVisible(true);
 			
 			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 			if (Local)
@@ -104,6 +108,8 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 		{
 			bIsVisible = false;
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+			//추첨장 입장 비지블오프
+			SetBattleEntryVisible(false);
 			
 			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 			if (Local)
@@ -273,6 +279,11 @@ void UMH_TicketingWidget::OnClickedCancelButton2()
 	}
 }
 
+//void UMH_TicketingWidget::OnClickedBack1_1()
+//{
+//	SetVisibleSwitcher(false,1);
+//}
+
 void UMH_TicketingWidget::SetTextGameCountDown(FString GameCountDown)
 {
 	Text_GameCountDown->SetText(FText::FromString(GameCountDown));
@@ -338,6 +349,20 @@ void UMH_TicketingWidget::OnClickedSoundButton()
 void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 {
 	//소리 들리게, 안들리게.
+}
+
+//추첨장 입장 UI띄우기 비지블로 변경
+void UMH_TicketingWidget::SetBattleEntryVisible(bool bVisible)
+{
+	if(bVisible)
+	{
+		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	else if(!bVisible)
+	{
+		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 /*

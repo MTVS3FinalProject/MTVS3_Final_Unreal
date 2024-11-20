@@ -155,8 +155,8 @@ public:
 	//UPROPERTY(EditAnywhere , BlueprintReadWrite)
 	//TSubclassOf<class UMH_ItemInfoBox> InfoWidget;
 
-	UPROPERTY()
-	class UMH_ItemInfoBox* HoveredInfoTitle;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UMH_ItemInfoBox* WBP_HoveredInfoTitle;
 
 	// 인포 위젯 가시성 설정 함수
 	UFUNCTION()
@@ -164,6 +164,8 @@ public:
 
 	UFUNCTION()
 	void OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem);
+	UFUNCTION()
+	void OnUnHoveredTitleBtn(UMH_ItemBox_Title* UnHoveredItem);
 	
 	//타이틀 박스 더블클릭시
 	//UFUNCTION()

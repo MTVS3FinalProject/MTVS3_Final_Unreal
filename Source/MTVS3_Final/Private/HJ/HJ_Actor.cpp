@@ -11,7 +11,7 @@
 // Sets default values
 AHJ_Actor::AHJ_Actor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	SceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("SceneComp"));
@@ -40,26 +40,29 @@ void AHJ_Actor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AHJ_Actor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent , AActor* OtherActor , UPrimitiveComponent* OtherComp , int32 OtherBodyIndex , bool bFromSweep , const FHitResult& SweepResult)
+void AHJ_Actor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent , AActor* OtherActor ,
+                               UPrimitiveComponent* OtherComp , int32 OtherBodyIndex , bool bFromSweep ,
+                               const FHitResult& SweepResult)
 {
 	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
-	if ( TTPlayer && TTPlayer->IsLocallyControlled() )
+	if (TTPlayer && TTPlayer->IsLocallyControlled())
 	{
 		SetMainUI(TTPlayer->MainUI);
 
-		OverlappingPlayer = TTPlayer;  // 오버랩된 플레이어 추적
+		OverlappingPlayer = TTPlayer; // 오버랩된 플레이어 추적
 		ShowText();
 	}
 }
 
-void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* OtherActor , UPrimitiveComponent* OtherComp , int32 OtherBodyIndex)
+void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* OtherActor ,
+                             UPrimitiveComponent* OtherComp , int32 OtherBodyIndex)
 {
 	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
-	if ( TTPlayer && TTPlayer->IsLocallyControlled() )
+	if (TTPlayer && TTPlayer->IsLocallyControlled())
 	{
-		OverlappingPlayer = nullptr;  // 오버랩 해제 시 플레이어 초기화
+		OverlappingPlayer = nullptr; // 오버랩 해제 시 플레이어 초기화
 		HideText();
-		if ( MainUI ) MainUI->SetWidgetSwitcher(0);
+		if (MainUI) MainUI->SetWidgetSwitcher(0);
 	}
 }
 
@@ -68,41 +71,45 @@ void AHJ_Actor::ShowText()
 	// MainUI 체크
 	if (!IsValid(MainUI))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("MainUI is not valid in ShowText"));
+		UE_LOG(LogTemp , Warning , TEXT("MainUI is not valid in ShowText"));
 		return;
 	}
-	if (MainUI) MainUI->SetVisibleInteractionCan(true);
+	//if (MainUI) MainUI->SetVisibleInteractionCan(true);
 
 	// WBP_InteractionUI 체크
 	if (!IsValid(MainUI->WBP_InteractionUI))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("WBP_InteractionUI is not valid in ShowText"));
+		UE_LOG(LogTemp , Warning , TEXT("WBP_InteractionUI is not valid in ShowText"));
 		return;
 	}
-	
+
 	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
 	if (!IsValid(InteractionUI))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to cast to UMH_Interaction in ShowText"));
+		UE_LOG(LogTemp , Warning , TEXT("Failed to cast to UMH_Interaction in ShowText"));
 		return;
 	}
-	
+
 	if (InteractionUI)
 	{
 		if (ActorHasTag("SelectConcert"))
-                                    		{
-                                    			InteractionUI->SetActiveWidgetIndex(1);
-                                    		}
-                                    		else if(ActorHasTag("Customizing"))
+		{
+			InteractionUI->SetActiveWidgetIndex(1);
+			// 애니메이션 적용
+			InteractionUI->TextOnAnimPlay();
+		}
+		else if (ActorHasTag("Customizing"))
 		{
 			InteractionUI->SetActiveWidgetIndex(2);
+			// 애니메이션 적용
+			InteractionUI->TextOnAnimPlay();
 		}
-		else if(ActorHasTag("PlazaTeleport"))
+		else if (ActorHasTag("PlazaTeleport"))
 		{
 			InteractionUI->SetActiveWidgetIndex(3);
+			// 애니메이션 적용
+			InteractionUI->TextOnAnimPlay();
 		}
-		// 애니메이션 적용
-		// InteractionUI->TextOnAnimPlay();
 	}
 
 	// WidgetComp(삭제)
@@ -143,7 +150,7 @@ void AHJ_Actor::ShowText()
 void AHJ_Actor::HideText()
 {
 	// 애니메이션 적용 안 함
-	MainUI->SetVisibleInteractionCan(false);
+	//MainUI->SetVisibleInteractionCan(false);
 
 	// 애니메이션 적용
 	// // MainUI 체크
@@ -160,14 +167,14 @@ void AHJ_Actor::HideText()
 	// 	return;
 	// }
 	//
-	// UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
 	// if (!IsValid(InteractionUI))
 	// {
 	// 	UE_LOG(LogTemp, Warning, TEXT("Failed to cast to UMH_Interaction in HideText"));
 	// 	return;
 	// }
 	//
-	// InteractionUI->TextOffAnimPlay();
+	InteractionUI->TextOffAnimPlay();
 
 	// WidgetComp(삭제)
 	// WidgetComp->SetVisibility(false);
@@ -177,4 +184,3 @@ void AHJ_Actor::SetMainUI(UMainWidget* InMainUI)
 {
 	MainUI = InMainUI;
 }
-

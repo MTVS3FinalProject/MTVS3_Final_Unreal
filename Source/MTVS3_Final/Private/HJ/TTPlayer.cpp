@@ -739,7 +739,7 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 		if (MainUI) MainUI->SetVisibleCanvas(false);
 		if (TicketingUI)
 		{
-			TicketingUI->SetVisibleSwitcher(true , 1);
+			TicketingUI->SetVisibleSwitcher(true , 1);//이부분 수정해야함 매희
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 		}
 	}
@@ -870,7 +870,11 @@ void ATTPlayer::MyTakePiece()
 							}
 						}
 					}
-					if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+					if (PuzzleUI)
+					{
+						PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+						PuzzleUI->SetWidgetSwitcher(0);
+					}
 				}
 			}
 		}
@@ -1500,7 +1504,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 				// MainUI 숨기기
 				MainUI->SetVisibleCanvas(false);
 				// 좌석 경쟁 UI 표시
-				TicketingUI->SetVisibleSwitcher(true , 1);
+				TicketingUI->SetVisibleSwitcher(true , 1);//이부분 수정해야함 매희
 			}
 			else
 			{
@@ -1516,7 +1520,8 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 	case EPlaceState::LuckyDrawRoom:
 		if (GetbIsHost())
 		{
-			if (GI)
+			ATTLuckyDrawGameState* GameState = GetWorld()->GetGameState<ATTLuckyDrawGameState>();
+			if (GI && GameState && GameState->bIsStartRound != true)
 			{
 				GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 				GI->SwitchSession(EPlaceState::Plaza);
@@ -1702,6 +1707,7 @@ void ATTPlayer::InitMainUI()
 	{
 		HttpActor3->SetMainUI(MainUI);
 		HttpActor3->SetTicketingUI(TicketingUI);
+		HttpActor3->SetPuzzleUI(PuzzleUI);
 	}
 }
 

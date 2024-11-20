@@ -8,6 +8,9 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
+
 
 // Sets default values
 AMH_MinimapActor::AMH_MinimapActor()
@@ -70,6 +73,30 @@ void AMH_MinimapActor::BeginPlay()
 	// 그림자도 숨김
 	// 동적 그림자 비활성화
 	MinimapCapture->ShowFlags.DynamicShadows = false;
+	//지붕 없애기
+	if (MinimapCapture)
+	{
+		TArray<AActor*> AllActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), AllActors);
+
+		for (AActor* Actor : AllActors)
+		{
+			// GetComponents의 결과를 TArray로 변환
+			TSet<UActorComponent*> ComponentSet = Actor->GetComponents();
+			TArray<UActorComponent*> Components;
+			Components.Append(ComponentSet.Array()); // TSet을 TArray로 변환
+
+			for (UActorComponent* Component : Components)
+			{
+				UStaticMeshComponent* MeshComponent = Cast<UStaticMeshComponent>(Component);
+				if (MeshComponent && MeshComponent->ComponentHasTag(FName("HideFromMinimap")))
+				{
+					MinimapCapture->HiddenComponents.Add(MeshComponent);
+					UE_LOG(LogTemp, Log, TEXT("Hidden component added: %s"), *MeshComponent->GetName());
+				}
+			}
+		}
+	}
 }
 
 void AMH_MinimapActor::Tick(float DeltaTime)
