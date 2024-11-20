@@ -23,5 +23,12 @@ public:
 
 	UFUNCTION()
 	void SetTextItemInfo(FString Info);
+
+	UFUNCTION()
+	void PlayInfoTextAnim(bool forward);
+	
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* InfoBoxTextAnim;
+	
 	
 };

@@ -47,11 +47,6 @@ void UMH_Inventory::NativeConstruct()
 	Btn_Title_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Title_Test);
 	Btn_Ticket_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket_Test);
 	Btn_Sticker_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker_Test);
-	// 초기 상태 설정
-	if (WBP_HoveredInfoTitle)
-	{
-		WBP_HoveredInfoTitle->SetVisibility(ESlateVisibility::Hidden);
-	}
 }
 
 void UMH_Inventory::SetWidgetSwitcher(int32 num)
@@ -416,38 +411,59 @@ void UMH_Inventory::OnClickedTilteNo2Btn()
 	HideTitleUnequipWin();
 }
 
+/*
 void UMH_Inventory::SetInfoVisibility(bool bVisible)
 {
-	if (WBP_HoveredInfoTitle && bVisible)
+	if (WBP_HoveredInfoTitlebox && bVisible)
 	{
 		// 가시성 설정
-		WBP_HoveredInfoTitle->SetVisibility(ESlateVisibility::Visible);
+		WBP_HoveredInfoTitlebox->SetVisibility(ESlateVisibility::Visible);
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Visible!"));
 	}
-	else if (WBP_HoveredInfoTitle && !bVisible)
+	else if (WBP_HoveredInfoTitlebox && !bVisible)
 	{
-		WBP_HoveredInfoTitle->SetVisibility(ESlateVisibility::Hidden);
+		WBP_HoveredInfoTitlebox->SetVisibility(ESlateVisibility::Hidden);
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Hidden!"));
 	}
+}*/
+
+void UMH_Inventory::DestroyInfo(UMH_ItemInfoBox* DestroyBox)
+{
+	// UI에서 제거
+	DestroyBox->RemoveFromParent();
+
+	// 이후 가비지 컬렉터가 파괴하도록 둠
+	DestroyBox = nullptr;
 }
 
 void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 {
 	//인포 창 뜸.
-	if (HoveredItem && WBP_HoveredInfoTitle)
+	if (HoveredItem)
 	{
-		// HoveredItem의 CanvasSlot 정보 가져오기
-		UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(HoveredItem);
-
-		if (CanvasSlot)
+		if (InfoBoxMap.Contains(HoveredItem))
 		{
-			// HoveredItem의 현재 위치 가져오기
-			FVector2D ItemPosition = CanvasSlot->GetPosition();
-			// InfoBox를 HoveredItem의 아래로 일정 거리 떨어진 위치에 배치
-			FVector2D InfoBoxPosition = ItemPosition + FVector2D(0.0f , 50.0f); // 아래로 50픽셀 이동
-			WBP_HoveredInfoTitle->SetRenderTranslation(InfoBoxPosition);
-			WBP_HoveredInfoTitle->SetTextItemInfo(HoveredItem->GetInfoString());
-			SetInfoVisibility(true);
+			return;
+		}
+		UMH_ItemInfoBox* WBP_HoveredInfoTitlebox = CreateWidget<UMH_ItemInfoBox>(this , InfoBoxFac);
+		if (WBP_HoveredInfoTitlebox)
+		{
+			// HoveredItem의 절대 위치를 가져오기
+			FGeometry CachedGeometry = HoveredItem->GetCachedGeometry();
+			FVector2D AbsolutePosition = CachedGeometry.GetAbsolutePosition();
+
+			// 부모 패널의 좌표계로 변환
+			FGeometry ParentGeometry = GetCachedGeometry(); // UMH_Inventory의 부모 패널
+			FVector2D LocalPosition = ParentGeometry.AbsoluteToLocal(AbsolutePosition);
+
+			// InfoBox를 HoveredItem 아래로 배치 (예: 50픽셀 아래)
+			FVector2D Offset(20.f , 90.0f);
+			FVector2D InfoBoxPosition = LocalPosition + Offset;
+
+			WBP_HoveredInfoTitlebox->SetRenderTranslation(InfoBoxPosition);
+			WBP_HoveredInfoTitlebox->SetTextItemInfo(HoveredItem->GetInfoString());
+			WBP_HoveredInfoTitlebox->PlayInfoTextAnim(true);
+			InfoBoxMap.Add(HoveredItem , WBP_HoveredInfoTitlebox);
 		}
 	}
 }
@@ -455,9 +471,23 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 void UMH_Inventory::OnUnHoveredTitleBtn(UMH_ItemBox_Title* UnHoveredItem)
 {
 	//인포 창 사라짐.
-	if (UnHoveredItem)
+	if (UnHoveredItem && InfoBoxMap.Contains(UnHoveredItem))
 	{
-		SetInfoVisibility(false);
+		// 매핑에서 InfoBox 가져오기
+		UMH_ItemInfoBox* WBP_HoveredInfoTitlebox = InfoBoxMap[UnHoveredItem];
+		if (WBP_HoveredInfoTitlebox)
+		{
+			WBP_HoveredInfoTitlebox->PlayInfoTextAnim(false);
+			FTimerHandle TimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(
+				TimerHandle ,
+				[this, WBP_HoveredInfoTitlebox, UnHoveredItem]()
+				{
+					DestroyInfo(WBP_HoveredInfoTitlebox);
+					InfoBoxMap.Remove(UnHoveredItem);
+				} ,
+				1.0f , false);
+		}
 	}
 }
 
@@ -494,12 +524,10 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 {
 	if (Img_Frame && ClickedItem)
 	{
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SetFrame111!"));
-
 		if (UOverlaySlot** FoundSlot = OverlaySlotMap.Find(ClickedItem))
 		{
 			UOverlaySlot* OverlaySlot = *FoundSlot;
-			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SetFrame222!"));
+			//GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SetFrame!"));
 			if (OverlaySlot)
 			{
 				UOverlay* ParentOverlay = Cast<UOverlay>(OverlaySlot->Parent);

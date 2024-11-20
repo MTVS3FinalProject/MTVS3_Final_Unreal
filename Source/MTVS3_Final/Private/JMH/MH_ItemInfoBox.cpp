@@ -9,10 +9,22 @@
 void UMH_ItemInfoBox::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
 }
 
 void UMH_ItemInfoBox::SetTextItemInfo(FString Info)
 {
 	Text_ItemInfo->SetText(FText::FromString(Info));
+}
+
+void UMH_ItemInfoBox::PlayInfoTextAnim(bool forward)
+{
+	if(forward)
+	{
+		PlayAnimation(InfoBoxTextAnim);
+	}
+	
+	else if (!forward)
+	{
+		PlayAnimation(InfoBoxTextAnim , 0 , 1 , EUMGSequencePlayMode::Reverse);
+	}
 }

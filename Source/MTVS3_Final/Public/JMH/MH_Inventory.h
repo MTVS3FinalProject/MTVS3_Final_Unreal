@@ -142,6 +142,9 @@ public:
 
 	UPROPERTY(EditAnywhere , BlueprintReadWrite)
 	TSubclassOf<class UMH_ItemBox_Sticker> StickerItemBoxFac;
+	
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	TSubclassOf<class UMH_ItemInfoBox> InfoBoxFac;
 
 	UPROPERTY()
 	class UMH_ItemBox_Title* SelectedTitle;
@@ -152,15 +155,9 @@ public:
 	UPROPERTY()
 	class UMH_ItemBox_Sticker* SelectedSticker;
 
-	//UPROPERTY(EditAnywhere , BlueprintReadWrite)
-	//TSubclassOf<class UMH_ItemInfoBox> InfoWidget;
-
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UMH_ItemInfoBox* WBP_HoveredInfoTitle;
-
 	// 인포 위젯 가시성 설정 함수
 	UFUNCTION()
-	void SetInfoVisibility(bool bVisible);
+	void DestroyInfo(UMH_ItemInfoBox* DestroyBox);
 
 	UFUNCTION()
 	void OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem);
@@ -209,6 +206,9 @@ public:
 
 	UPROPERTY()
 	TMap<class UMH_ItemBox_Title*, class UOverlaySlot*> OverlaySlotMap;
+	
+	UPROPERTY()
+	TMap<class UMH_ItemBox_Title*, class UMH_ItemInfoBox*> InfoBoxMap;
 	
 	
 };
