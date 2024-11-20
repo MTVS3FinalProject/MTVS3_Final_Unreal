@@ -185,29 +185,35 @@ void ATTLuckyDrawGameState::StartPlayRoulette()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld() , AMH_CountDownActor::StaticClass() , FoundActors);
 	if (FoundActors.Num() > 0)
 	{
-		// 첫 번째 찾은 액터를 AMH_CountDownActor로 캐스팅
 		AMH_CountDownActor* CountDownActor = Cast<AMH_CountDownActor>(FoundActors[0]);
 		if (CountDownActor)
 		{
-			// CountDownActor의 함수를 호출
 			CountDownActor->MulticastStartCountDownVisible(false);
 		}
 	}
 
 	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
 	if (!GameMode) return;
-	StartRounds(GameMode->Round);
+
+	// 마지막 라운드까지 포함하도록 Round + 1을 전달
+	StartRounds(GameMode->Round + 1);
 }
 
 void ATTLuckyDrawGameState::StartRounds(int32 InTotalRounds)
 {
-	// 새로운 라운드 시작 전 타이머 초기화
+	// 타이머 초기화
 	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
 	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
-	
+    
 	TotalRounds = InTotalRounds;
 	CurrentRound = 0;
-	StartNextRound(); // 첫 번째 라운드 시작
+    
+	UE_LOG(LogTemp, Log, TEXT("Starting Rounds - Total Rounds: %d"), TotalRounds);
+    
+	// GameMode의 라운드 정보 개수 체크는 제거하고 바로 시작
+	// 룰렛 정보는 라운드가 진행되면서 생성되기 때문에
+	// 시작 시점에는 RouletteInfosPerRound가 비어있는 것이 정상입니다.
+	StartNextRound();
 }
 
 void ATTLuckyDrawGameState::StartNextRound()
@@ -454,13 +460,36 @@ void ATTLuckyDrawGameState::MulticastStartLuckyDraw_Implementation()
 void ATTLuckyDrawGameState::PlayRoulette()
 {
 	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
-	if (!GameMode) return;
+	if (!GameMode) 
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GameMode is invalid"));
+		return;
+	}
 
-	// 각 라운드에 맞는 룰렛 정보를 가져옴
+	// CurrentRound가 유효한지 확인
+	if (CurrentRound >= TotalRounds)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Attempting to play invalid round %d (Total rounds: %d)"), 
+			CurrentRound + 1, TotalRounds);
+		EndRounds();  // 강제로 게임 종료
+		return;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("Playing Roulette for Round: %d"), CurrentRound + 1);
+
+	// 룰렛 정보 가져오기
 	const FRouletteInfo& Info = GameMode->GetRouletteInfoForRound(CurrentRound);
+    
+	// 유효하지 않은 플레이어 번호 체크
+	if (Info.Player == -1)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid roulette info for round %d, ending game"), CurrentRound + 1);
+		EndRounds();  // 강제로 게임 종료
+		return;
+	}
 
-	// 서버에서 클라이언트로 룰렛 정보 동기화
-	MulticastUpdateRouletteUI(Info.Player , static_cast<int32>(Info.Rule) , static_cast<int32>(Info.Result));
+	// UI 업데이트
+	MulticastUpdateRouletteUI(Info.Player, static_cast<int32>(Info.Rule), static_cast<int32>(Info.Result));
 
 	if (GameUI)
 	{
@@ -468,8 +497,16 @@ void ATTLuckyDrawGameState::PlayRoulette()
 	}
 
 	CurrentRound++;
-	// 다음 라운드 시작
-	StartNextRound();
+    
+	// 다음 라운드 시작 전에 유효성 체크
+	if (CurrentRound >= TotalRounds)
+	{
+		EndRounds();
+	}
+	else
+	{
+		StartNextRound();
+	}
 }
 
 void ATTLuckyDrawGameState::MulticastHideGameUI_Implementation()

@@ -39,6 +39,15 @@ void ATTLuckyDrawGameMode::BeginPlay()
 
 void ATTLuckyDrawGameMode::StartLuckyDraw(int32 PlayerNum)
 {
+	// 실제 CurrentSeatNumber로 플레이어 수 설정
+	ATTLuckyDrawGameState* GS = GetGameState<ATTLuckyDrawGameState>();
+	if (!GS || GS->CurrentSeatNumber == 0)
+	{
+		UE_LOG(LogLuckyDraw , Warning , TEXT("아직 플레이어가 준비되지 않았습니다. CurrentSeatNumber: %d") ,
+		       GS ? GS->CurrentSeatNumber : 0);
+		return;
+	}
+
 	RouletteTestNumPlayers = PlayerNum;
 	// 인원 수를 출력
 	if (GEngine)
@@ -74,13 +83,35 @@ const TArray<TArray<FSeat>>& ATTLuckyDrawGameMode::GetShuffledSeats() const
 
 const FRouletteInfo& ATTLuckyDrawGameMode::GetRouletteInfoForRound(int32 RoundIndex) const
 {
+	static const FRouletteInfo DefaultInfo = []() {
+		FRouletteInfo Info;
+		Info.Player = -1;
+		Info.Rule = ERouletteRule::OnlySelected;
+		Info.Result = ERouletteResult::Pass;
+		return Info;
+	}();
+
+	// 배열이 비어있는 경우 체크
+	if (RouletteInfosPerRound.Num() == 0)
+	{
+		UE_LOG(LogLuckyDraw, Warning, TEXT("RouletteInfosPerRound is empty. Round: %d"), Round);
+		return DefaultInfo;
+	}
+
+	// 유효한 인덱스 범위 체크
+	if (!RouletteInfosPerRound.IsValidIndex(RoundIndex))
+	{
+		UE_LOG(LogLuckyDraw, Warning, TEXT("Invalid round index: %d, Available rounds: %d"), 
+			   RoundIndex, RouletteInfosPerRound.Num());
+		return DefaultInfo;
+	}
+
 	const FRouletteInfo& Info = RouletteInfosPerRound[RoundIndex];
-	UE_LOG(LogLuckyDraw , Log , TEXT("현재 라운드: %d, Player: %d, Rule: %d, Result: %d") ,
-	       RoundIndex , Info.Player , static_cast<int32>(Info.Rule) , static_cast<int32>(Info.Result));
-	// 요청된 라운드의 룰렛 정보를 반환. 범위를 초과하는 경우 마지막 값을 반환
-	return RouletteInfosPerRound.IsValidIndex(RoundIndex)
-		       ? RouletteInfosPerRound[RoundIndex]
-		       : RouletteInfosPerRound.Last();
+	UE_LOG(LogLuckyDraw, Log, TEXT("Round: %d/%d, Player: %d, Rule: %d, Result: %d"),
+		   RoundIndex + 1, RouletteInfosPerRound.Num(), Info.Player, 
+		   static_cast<int32>(Info.Rule), static_cast<int32>(Info.Result));
+    
+	return Info;
 }
 
 // 라운드를 시작하는 함수
@@ -153,6 +184,26 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 	ATTLuckyDrawGameState* GS = GetGameState<ATTLuckyDrawGameState>();
 	int32 MaxPlayerNumber = GS ? GS->CurrentSeatNumber : RemainingPlayers.Num();
 
+	bool bHasValidPlayer = false;
+	for (int32 Player : RemainingPlayers)
+	{
+		if (Player <= MaxPlayerNumber)
+		{
+			bHasValidPlayer = true;
+			break;
+		}
+	}
+
+	// MaxPlayerNumber 이하의 플레이어가 없다면 이는 전멸 상황
+	if (!bHasValidPlayer)
+	{
+		UE_LOG(LogLuckyDraw , Warning , TEXT("MaxPlayerNumber %d 이하의 플레이어가 모두 탈락했습니다. 다른 조합을 시도합니다.") ,
+		       MaxPlayerNumber);
+		// 전멸 상황이므로 여기서 다시 시작
+		StartRound(); // 또는 적절한 처리 방법 선택
+		return;
+	}
+
 	int32 attempts = 0;
 	// **추가
 
@@ -176,9 +227,9 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 			if (Player <= MaxPlayerNumber)
 			{
 				// 좌석에 실제로 있는지 체크
-				int32 PlayerRow = -1, PlayerCol = -1;
-				GetPlayerPosition(Player, PlayerRow, PlayerCol);
-				if (PlayerRow != -1 && PlayerCol != -1)  // 좌석이 있는 경우만 추가
+				int32 PlayerRow = -1 , PlayerCol = -1;
+				GetPlayerPosition(Player , PlayerRow , PlayerCol);
+				if (PlayerRow != -1 && PlayerCol != -1) // 좌석이 있는 경우만 추가
 				{
 					ValidPlayers.Add(Player);
 				}
@@ -189,7 +240,7 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 		if (ValidPlayers.Num() == 0)
 		{
 			UE_LOG(LogLuckyDraw , Warning , TEXT("MaxPlayerNumber %d 이하의 유효한 플레이어가 없습니다.") , MaxPlayerNumber);
-			// 기존 continue 로직으로 돌아가기
+			StartRound();
 			return;
 		}
 
@@ -236,13 +287,23 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 		TArray<int32> SimulatedRemainingPlayers = RemainingPlayers;
 		bWillCauseElimination = false;
 
+		// MaxPlayerNumber 이하 플레이어들의 생존 여부를 미리 체크
+		bool bWillEliminateAllLowNumberPlayers = true; // MaxPlayerNumber 이하 플레이어들이 모두 탈락하는지 체크
+		TArray<int32> SimulatedLowNumberPlayers; // MaxPlayerNumber 이하인 플레이어들
+
 		if (RouletteOutcome == ERouletteResult::Pass)
 		{
 			for (int32 i = SimulatedRemainingPlayers.Num() - 1; i >= 0; --i)
 			{
-				if (!AffectedPlayers.Contains(SimulatedRemainingPlayers[i]))
+				int32 Player = SimulatedRemainingPlayers[i];
+				if (!AffectedPlayers.Contains(Player))
 				{
 					SimulatedRemainingPlayers.RemoveAt(i);
+					// MaxPlayerNumber 이하 플레이어가 탈락하는지 체크
+					if (Player <= MaxPlayerNumber)
+					{
+						SimulatedLowNumberPlayers.Add(Player);
+					}
 				}
 			}
 		}
@@ -250,19 +311,45 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 		{
 			for (int32 i = SimulatedRemainingPlayers.Num() - 1; i >= 0; --i)
 			{
-				if (AffectedPlayers.Contains(SimulatedRemainingPlayers[i]))
+				int32 Player = SimulatedRemainingPlayers[i];
+				if (AffectedPlayers.Contains(Player))
 				{
 					SimulatedRemainingPlayers.RemoveAt(i);
+					// MaxPlayerNumber 이하 플레이어가 탈락하는지 체크
+					if (Player <= MaxPlayerNumber)
+					{
+						SimulatedLowNumberPlayers.Add(Player);
+					}
 				}
 			}
 		}
 
-		// 전멸 여부 확인
-		if (SimulatedRemainingPlayers.Num() < 1)
+		// 시뮬레이션 후 MaxPlayerNumber 이하 플레이어가 하나라도 살아있는지 확인
+		for (int32 Player : SimulatedRemainingPlayers)
 		{
-			if (bIsRouletteTestMode) UE_LOG(LogLuckyDraw , Log , TEXT("전멸이 확인되었습니다. 다른 조합을 시도합니다."));
-			bWillCauseElimination = true;
-			continue;
+			if (Player <= MaxPlayerNumber)
+			{
+				bWillEliminateAllLowNumberPlayers = false;
+				break;
+			}
+		}
+
+		// MaxPlayerNumber 이하 플레이어가 모두 탈락하거나 전멸이 확인되면 다시 시도
+		if (bWillEliminateAllLowNumberPlayers || SimulatedRemainingPlayers.Num() < 1)
+		{
+			if (bIsRouletteTestMode)
+			{
+				if (bWillEliminateAllLowNumberPlayers)
+				{
+					UE_LOG(LogLuckyDraw, Log, TEXT("MaxPlayerNumber %d 이하 플레이어의 전멸이 예상됩니다. 다른 조합을 시도합니다."), MaxPlayerNumber);
+				}
+				else
+				{
+					UE_LOG(LogLuckyDraw, Log, TEXT("전멸이 확인되었습니다. 다른 조합을 시도합니다."));
+				}
+			}
+			StartRound();
+			return;
 		}
 
 		// 이후의 시뮬레이션 좌석 갱신은 전멸이 아닌 경우에만 진행
@@ -294,12 +381,27 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 
 			IsValidResult = true;
 
-			// 룰렛 정보 저장
-			FRouletteInfo RouletteInfo;
-			RouletteInfo.Player = SelectedPlayer;
-			RouletteInfo.Rule = SelectedRule;
-			RouletteInfo.Result = RouletteOutcome;
-			RouletteInfosPerRound.Add(RouletteInfo);
+			// 룰렛 정보를 저장하기 전에 유효성 체크
+			if (IsValidResult)
+			{
+				FRouletteInfo RouletteInfo;
+				RouletteInfo.Player = SelectedPlayer;
+				RouletteInfo.Rule = SelectedRule;
+				RouletteInfo.Result = RouletteOutcome;
+        
+				// 현재 라운드에 해당하는 인덱스에 정보 저장
+				if (RouletteInfosPerRound.IsValidIndex(Round - 1))
+				{
+					RouletteInfosPerRound[Round - 1] = RouletteInfo;
+				}
+				else
+				{
+					RouletteInfosPerRound.Add(RouletteInfo);
+				}
+        
+				UE_LOG(LogLuckyDraw, Log, TEXT("라운드 %d 룰렛 정보 저장: Player(%d), Rule(%d), Result(%d)"),
+					   Round, SelectedPlayer, static_cast<int32>(SelectedRule), static_cast<int32>(RouletteOutcome));
+			}
 		}
 	}
 
