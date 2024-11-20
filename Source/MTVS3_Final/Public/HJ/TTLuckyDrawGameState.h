@@ -47,6 +47,9 @@ public:
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Timer")
 	float EndRoundsDelayTime = 8.0f;
 	
+	UFUNCTION(BlueprintCallable)
+	void ResetChair();
+	
 #pragma region UI
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UMH_GameWidget> GameUIFactory;
@@ -75,6 +78,7 @@ public:
 	void StartPlayRoulette();
 
 	void EndRounds();
+	void InitializeChairs();
 	bool bIsStartRound = false;
 
 	void EliminatePlayers();
@@ -122,4 +126,8 @@ private:
 	int32 CurrentRound;
 	FTimerHandle RoundTimerHandle;
 	FTimerHandle LuckyDrawLoseTimerHandle;
+
+	FVector OriginalLocation;
+	FRotator OriginalRotation;
+	bool bIsThrown;
 };

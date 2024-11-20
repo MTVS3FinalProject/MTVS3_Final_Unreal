@@ -2,7 +2,10 @@
 
 
 #include "LHM/HM_PuzzleWidget.h"
+
+#include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "Components/WidgetSwitcher.h"
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/PuzzleManager.h"
@@ -96,11 +99,73 @@ void UHM_PuzzleWidget::UpdatePlayerScores(const TArray<FPlayerScoreInfo>& Player
                 *NickName,
                 PlayerScoresInfo[Index].Score,
                 *TimeString);
-			UTextBlock* TextBlock = TextPlayerScores[Index];
 			
 			//TextPlayerScores[Index]->SetText(FText::FromString(ScoreText));
-			TextBlock->SetText(FText::FromString(ScoreText));
-			UE_LOG(LogTemp , Log , TEXT("Successfully set text for player : %s") , *ScoreText);
+			UTextBlock* TextBlock = TextPlayerScores[Index];
+			if(TextBlock)
+			{
+				TextBlock->SetText(FText::FromString(ScoreText));
+				UE_LOG(LogTemp , Log , TEXT("Successfully set text for player : %s") , *ScoreText);
+			}
 		}
 	}
+}
+
+void UHM_PuzzleWidget::SetTextPuzzleRank1Nickname(FString Nickname)
+{
+	Txt_Nickname_1->SetText(FText::FromString(Nickname));
+}
+
+void UHM_PuzzleWidget::SetTextPuzzleRank1(UTexture2D* StickerImg, FString StickerRarity ,
+	FString StickerName, FString StickerScript, FString TitleRarity, FString TitleName, FString TitleScript)
+{
+	Txt_StickerRarity_1->SetText(FText::FromString(StickerRarity));
+	Txt_StickerName_1->SetText(FText::FromString(StickerName));
+	Txt_StickerScript_1->SetText(FText::FromString(StickerScript));
+	Txt_TitleRarity_1->SetText(FText::FromString(TitleRarity));
+	Txt_TitleName_1->SetText(FText::FromString(TitleName));
+	Txt_TitleScript_1->SetText(FText::FromString(TitleScript));
+	
+	Img_StickerImg_1->SetBrushFromTexture(StickerImg);
+}
+
+void UHM_PuzzleWidget::SetTextPuzzleRank2Nickname(FString Nickname)
+{
+	Txt_Nickname_2->SetText(FText::FromString(Nickname));
+}
+
+void UHM_PuzzleWidget::SetTextPuzzleRank2(UTexture2D* StickerImg, FString StickerRarity,
+	FString StickerName, FString StickerScript, FString TitleRarity, FString TitleName, FString TitleScript)
+{
+	Txt_StickerRarity_2->SetText(FText::FromString(StickerRarity));
+	Txt_StickerName_2->SetText(FText::FromString(StickerName));
+	Txt_StickerScript_2->SetText(FText::FromString(StickerScript));
+	Txt_TitleRarity_2->SetText(FText::FromString(TitleRarity));
+	Txt_TitleName_2->SetText(FText::FromString(TitleName));
+	Txt_TitleScript_2->SetText(FText::FromString(TitleScript));
+	
+	Img_StickerImg_2->SetBrushFromTexture(StickerImg);
+}
+
+void UHM_PuzzleWidget::SetTextPuzzleRank3Nickname(FString Nickname)
+{
+	Txt_Nickname_3->SetText(FText::FromString(Nickname));
+}
+
+void UHM_PuzzleWidget::SetTextPuzzleRank3(UTexture2D* StickerImg, FString StickerRarity,
+	FString StickerName, FString StickerScript, FString TitleRarity, FString TitleName, FString TitleScript)
+{
+	Txt_StickerRarity_3->SetText(FText::FromString(StickerRarity));
+	Txt_StickerName_3->SetText(FText::FromString(StickerName));
+	Txt_StickerScript_3->SetText(FText::FromString(StickerScript));
+	Txt_TitleRarity_3->SetText(FText::FromString(TitleRarity));
+	Txt_TitleName_3->SetText(FText::FromString(TitleName));
+	Txt_TitleScript_3->SetText(FText::FromString(TitleScript));
+	
+	Img_StickerImg_3->SetBrushFromTexture(StickerImg);
+}
+
+void UHM_PuzzleWidget::SetWidgetSwitcher(int32 num)
+{
+	WS_PuzzleSwitcher->SetActiveWidgetIndex(num);
 }

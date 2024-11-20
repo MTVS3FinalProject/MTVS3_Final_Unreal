@@ -870,7 +870,11 @@ void ATTPlayer::MyTakePiece()
 							}
 						}
 					}
-					if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+					if (PuzzleUI)
+					{
+						PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+						PuzzleUI->SetWidgetSwitcher(0);
+					}
 				}
 			}
 		}
@@ -1516,7 +1520,8 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 	case EPlaceState::LuckyDrawRoom:
 		if (GetbIsHost())
 		{
-			if (GI)
+			ATTLuckyDrawGameState* GameState = GetWorld()->GetGameState<ATTLuckyDrawGameState>();
+			if (GI && GameState && GameState->bIsStartRound != true)
 			{
 				GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 				GI->SwitchSession(EPlaceState::Plaza);
@@ -1702,6 +1707,7 @@ void ATTPlayer::InitMainUI()
 	{
 		HttpActor3->SetMainUI(MainUI);
 		HttpActor3->SetTicketingUI(TicketingUI);
+		HttpActor3->SetPuzzleUI(PuzzleUI);
 	}
 }
 

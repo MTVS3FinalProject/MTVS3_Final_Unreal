@@ -143,6 +143,10 @@ public:
 	class UMH_TicketingWidget* TicketingUI;
 	void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
 
+	UPROPERTY()
+	class UHM_PuzzleWidget* PuzzleUI;
+	void SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI);
+
 	const FString _url = "https://ticketaka.shop/api";
 #pragma endregion
 
@@ -219,7 +223,7 @@ public:
 	void OnResGetNotEquipTheTitle(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 결제 미루기
-	void ReqGetPostponePaymentSeat(int32 ConcertId, int32 SeatId, FString AccessToken);
+	void ReqPostponePaymentSeat(int32 ConcertId, int32 SeatId, FString AccessToken);
 
 	// 우편함 조회
 	void ReqGetMailbox(FString AccessToken);
