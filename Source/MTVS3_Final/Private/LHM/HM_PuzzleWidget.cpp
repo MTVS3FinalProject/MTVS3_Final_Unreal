@@ -6,16 +6,19 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
-#include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/PuzzleManager.h"
+#include "Components/Button.h"
+#include "Components/VerticalBox.h"
 
 class APuzzleManager;
 
 void UHM_PuzzleWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	
+	Btn_Exit->OnClicked.AddDynamic(this , &UHM_PuzzleWidget::OnClickedExitButton);
+	
 	// TextPiece 포인터 배열로 초기화
 	TextPieces[0] = Text_Piece1;
 	TextPieces[1] = Text_Piece2;
@@ -28,15 +31,15 @@ void UHM_PuzzleWidget::NativeConstruct()
 	TextPieces[8] = Text_Piece9;
 
 	// TextPlayerScore 포인터 배열로 초기화
-	TextPlayerScores[0] = Text_Player1Score;
-	TextPlayerScores[1] = Text_Player2Score;
-	TextPlayerScores[2] = Text_Player3Score;
-	TextPlayerScores[3] = Text_Player4Score;
-	TextPlayerScores[4] = Text_Player5Score; 
-	TextPlayerScores[5] = Text_Player6Score;
-	TextPlayerScores[6] = Text_Player7Score;
-	TextPlayerScores[7] = Text_Player8Score;
-	TextPlayerScores[8] = Text_Player9Score;
+	// TextPlayerScores[0] = Text_Player1Score;
+	// TextPlayerScores[1] = Text_Player2Score;
+	// TextPlayerScores[2] = Text_Player3Score;
+	// TextPlayerScores[3] = Text_Player4Score;
+	// TextPlayerScores[4] = Text_Player5Score; 
+	// TextPlayerScores[5] = Text_Player6Score;
+	// TextPlayerScores[6] = Text_Player7Score;
+	// TextPlayerScores[7] = Text_Player8Score;
+	// TextPlayerScores[8] = Text_Player9Score;
 
 	APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
 	if (Manager)
@@ -72,48 +75,49 @@ void UHM_PuzzleWidget::SetTextPieceInfo(FString PieceName, int32 Score, int32 In
 	}
 }
 
-void UHM_PuzzleWidget::UpdatePlayerScores(const TArray<FPlayerScoreInfo>& PlayerScoresInfo)
-{
-    // 점수 정보 업데이트
-	for (int32 Index = 0; Index < PlayerScoresInfo.Num(); Index++)
-	{
-		if(TextPlayerScores[Index] == nullptr)
-		{
-			UE_LOG(LogTemp, Log, TEXT("TextPlayerScores[%d] is null!!"), Index);
-			return;
-		}
-		
-		if (Index < 9 && TextPlayerScores[Index]) // 최대 9명까지 표시
-		{
-			UTTGameInstance* GI = Cast<UTTGameInstance>(PlayerScoresInfo[Index].Player->GetGameInstance());
-			FString NickName;
-			if (GI)
-			{
-				NickName = GI->GetNickname();
-			}
-			
-			FString TimeString = PlayerScoresInfo[Index].Timestamp.ToString(TEXT("%M:%S"));
-			FString ScoreText = FString::Printf(TEXT("#%d %s: %d / %s"), 
-				Index + 1,  // 랭킹 표시
-                //*PlayerScoresInfo[Index].Player->GetName(),
-                *NickName,
-                PlayerScoresInfo[Index].Score,
-                *TimeString);
-			
-			//TextPlayerScores[Index]->SetText(FText::FromString(ScoreText));
-			UTextBlock* TextBlock = TextPlayerScores[Index];
-			if(TextBlock)
-			{
-				TextBlock->SetText(FText::FromString(ScoreText));
-				UE_LOG(LogTemp , Log , TEXT("Successfully set text for player : %s") , *ScoreText);
-			}
-		}
-	}
-}
+// void UHM_PuzzleWidget::UpdatePlayerScores(const TArray<FPlayerScoreInfo>& PlayerScoresInfo)
+// {
+//     // 점수 정보 업데이트
+// 	for (int32 Index = 0; Index < PlayerScoresInfo.Num(); Index++)
+// 	{
+// 		if(TextPlayerScores[Index] == nullptr)
+// 		{
+// 			UE_LOG(LogTemp, Log, TEXT("TextPlayerScores[%d] is null!!"), Index);
+// 			return;
+// 		}
+// 		
+// 		if (Index < 9 && TextPlayerScores[Index]) // 최대 9명까지 표시
+// 		{
+// 			UTTGameInstance* GI = Cast<UTTGameInstance>(PlayerScoresInfo[Index].Player->GetGameInstance());
+// 			FString NickName;
+// 			if (GI)
+// 			{
+// 				NickName = GI->GetNickname();
+// 			}
+// 			
+// 			FString TimeString = PlayerScoresInfo[Index].Timestamp.ToString(TEXT("%M:%S"));
+// 			FString ScoreText = FString::Printf(TEXT("#%d %s: %d / %s"), 
+// 				Index + 1,  // 랭킹 표시
+//                 //*PlayerScoresInfo[Index].Player->GetName(),
+//                 *NickName,
+//                 PlayerScoresInfo[Index].Score,
+//                 *TimeString);
+// 			
+// 			//TextPlayerScores[Index]->SetText(FText::FromString(ScoreText));
+// 			UTextBlock* TextBlock = TextPlayerScores[Index];
+// 			if(TextBlock)
+// 			{
+// 				TextBlock->SetText(FText::FromString(ScoreText));
+// 				UE_LOG(LogTemp , Log , TEXT("Successfully set text for player : %s") , *ScoreText);
+// 			}
+// 		}
+// 	}
+// }
 
 void UHM_PuzzleWidget::SetTextPuzzleRank1Nickname(FString Nickname)
 {
 	Txt_Nickname_1->SetText(FText::FromString(Nickname));
+	UE_LOG(LogTemp , Log , TEXT("UI Rank1 Nickname: %s"), *Nickname);
 }
 
 void UHM_PuzzleWidget::SetTextPuzzleRank1(UTexture2D* StickerImg, FString StickerRarity ,
@@ -132,6 +136,7 @@ void UHM_PuzzleWidget::SetTextPuzzleRank1(UTexture2D* StickerImg, FString Sticke
 void UHM_PuzzleWidget::SetTextPuzzleRank2Nickname(FString Nickname)
 {
 	Txt_Nickname_2->SetText(FText::FromString(Nickname));
+	UE_LOG(LogTemp , Log , TEXT("UI Rank2 Nickname: %s"), *Nickname);
 }
 
 void UHM_PuzzleWidget::SetTextPuzzleRank2(UTexture2D* StickerImg, FString StickerRarity,
@@ -150,6 +155,7 @@ void UHM_PuzzleWidget::SetTextPuzzleRank2(UTexture2D* StickerImg, FString Sticke
 void UHM_PuzzleWidget::SetTextPuzzleRank3Nickname(FString Nickname)
 {
 	Txt_Nickname_3->SetText(FText::FromString(Nickname));
+	UE_LOG(LogTemp , Log , TEXT("UI Rank3 Nickname: %s"), *Nickname);
 }
 
 void UHM_PuzzleWidget::SetTextPuzzleRank3(UTexture2D* StickerImg, FString StickerRarity,
@@ -168,4 +174,31 @@ void UHM_PuzzleWidget::SetTextPuzzleRank3(UTexture2D* StickerImg, FString Sticke
 void UHM_PuzzleWidget::SetWidgetSwitcher(int32 num)
 {
 	WS_PuzzleSwitcher->SetActiveWidgetIndex(num);
+}
+
+void UHM_PuzzleWidget::SetTextVisibility(int32 Rank, ESlateVisibility InVisibility)
+{
+	switch (Rank)
+	{
+	case 1:
+		if (VerticalBox_1)
+			VerticalBox_1->SetVisibility(InVisibility);
+		break;
+	case 2:
+		if (VerticalBox_2)
+			VerticalBox_2->SetVisibility(InVisibility);
+		break;
+	case 3:
+		if (VerticalBox_3)
+			VerticalBox_3->SetVisibility(InVisibility);
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("Invalid rank for visibility setting: %d"), Rank);
+		break;
+	}
+}
+
+void UHM_PuzzleWidget::OnClickedExitButton()
+{
+	this->SetVisibility(ESlateVisibility::Hidden);
 }
