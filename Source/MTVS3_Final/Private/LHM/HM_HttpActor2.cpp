@@ -331,7 +331,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 	{
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
-
+		
 		if ( Response->GetResponseCode() == 200 )
 		{
 			// JSON 응답 파싱
@@ -359,7 +359,12 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 					UE_LOG(LogTemp , Log , TEXT("CompetitionRate: %d") , CompetitionRate);
 					UE_LOG(LogTemp , Log , TEXT("SeatPrice: %d") , SeatPrice);
 
-
+					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+					if(GI)
+					{
+						GI->SetIsReceived(IsReceived);
+					}
+					
 					if(MainUI) MainUI->SetTextSeatNum1(SeatInfo);
 					
 					if(MainUI->GetBuyTicketWidget())
@@ -388,7 +393,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						TicketingUI->SetTickettingDate(Year , Month , Day);
 						TicketingUI->SetTextGameStartTime(Time);
 					}
-					if(IsReceived) // 접수한 좌석일 때 접수취소 버튼
+					if(GI->GetIsReceived() == true) // 접수한 좌석일 때 접수취소 버튼
 					{
 						// MainUI 숨기기
 						MainUI->SetVisibleCanvas(false);
@@ -396,12 +401,13 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						TicketingUI->SetVisibleSwitcher(true , 0);
 						TicketingUI->SetCompletedVisible(true);
 					}
-					else // 접수한 좌석이 아닐 때 접수하기 버튼
+					else if(GI->GetIsReceived() == false) // 접수한 좌석이 아닐 때 접수하기 버튼
 					{
 						// MainUI 숨기기
 						MainUI->SetVisibleCanvas(false);
 						// 좌석 경쟁 UI 표시(테스트용)
 						TicketingUI->SetVisibleSwitcher(true , 0);
+						TicketingUI->SetCompletedVisible(false);
 					}
 				}
 			}
@@ -444,8 +450,6 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 {
 	if ( bWasSuccessful && Response.IsValid() )
 	{
-		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
@@ -467,11 +471,19 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 					int32 SeatPrice = ResponseObject->GetIntegerField(TEXT("seatPrice"));
 					int32 RemainingTicket = ResponseObject->GetNumberField(TEXT("remainingTicket"));
 					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
+					bool IsReceived = ResponseObject->GetBoolField(TEXT("isReceived"));
 
 					UE_LOG(LogTemp , Log , TEXT("seatPrice : %d") , SeatPrice);
 					UE_LOG(LogTemp , Log , TEXT("RemainingTicket : %d") , RemainingTicket);
 					UE_LOG(LogTemp , Log , TEXT("CompetitionRate : %d") , CompetitionRate);
+					UE_LOG(LogTemp , Log , TEXT("IsReceived: %s") , IsReceived ? TEXT("true") : TEXT("false"));
 
+					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+					if(GI)
+					{
+						GI->SetIsReceived(IsReceived);
+					}
+					
 					MyReceptionSeats.seatId = 1;
 					if( MainUI )
 					{
@@ -635,6 +647,13 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 				{
 					// 받아올 정보 추출
 					int32 RemainingTicket = ResponseObject->GetIntegerField(TEXT("remainingTicket"));
+					bool IsReceived = ResponseObject->GetBoolField(TEXT("isReceived"));
+					UE_LOG(LogTemp , Log , TEXT("IsReceived: %s") , IsReceived ? TEXT("true") : TEXT("false"));
+
+					if(GI)
+					{
+						GI->SetIsReceived(IsReceived);
+					}
 					
 					if ( GI && TicketingUI )
 					{
@@ -705,6 +724,13 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request, F
 				{
 					// 받아올 정보 추출
 					int32 RemainingTicket = ResponseObject->GetIntegerField(TEXT("remainingTicket"));
+					bool IsReceived = ResponseObject->GetBoolField(TEXT("isReceived"));
+					UE_LOG(LogTemp , Log , TEXT("IsReceived: %s") , IsReceived ? TEXT("true") : TEXT("false"));
+
+					if(GI)
+					{
+						GI->SetIsReceived(IsReceived);
+					}
 					
 					if ( GI && TicketingUI )
 					{

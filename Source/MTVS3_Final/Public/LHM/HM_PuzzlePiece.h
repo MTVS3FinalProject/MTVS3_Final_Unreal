@@ -31,7 +31,6 @@ public:
 	TArray<UBoxComponent*> CollisionBoxComps;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	//TArray<UStaticMeshComponent*> Pieces;
 	TMap<UStaticMeshComponent*, int32> Pieces;
 
 	// 각 컴포넌트의 소유자를 저장하는 맵 추가
@@ -60,11 +59,7 @@ public:
 		return Keys;
 	}
 
-	// void InitializePieces();
     void InitializeRandomSetting();
-
-	// 모든 피스가 파괴된 상태
-	bool AreAllPiecesDestroyed() const;
 	
 	// --------------- Multiplayer 요소들 ---------------
 	

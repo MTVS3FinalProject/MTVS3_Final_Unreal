@@ -59,11 +59,14 @@ struct FPlayerData
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString LuckyDrawSeatID;
+	
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	bool IsReceived;
 
 	// 기본 생성자
 	FPlayerData()
 		: bIsHost(false) , nickname(TEXT("Ticketaka")), titleName(TEXT("")), titleRarity(TEXT("Common")), accessToken(TEXT("-1")) ,
-		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1"))
+		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), IsReceived(false)
 	{}
 };
 
@@ -168,5 +171,10 @@ public:
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
 	FString GetLuckyDrawSeatID() const { return PlayerData.LuckyDrawSeatID; };
+
+	// 좌석 접수 여부
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetIsReceived(const bool _IsReceived) { PlayerData.IsReceived = _IsReceived; };
+	bool GetIsReceived() const { return PlayerData.IsReceived; };
 #pragma endregion
 };
