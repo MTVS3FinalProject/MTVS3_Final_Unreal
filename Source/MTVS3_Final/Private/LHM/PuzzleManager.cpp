@@ -125,19 +125,33 @@ void APuzzleManager::SortAndUpdateRanking()
 	// 플레이어 수에 따라 텍스트 숨기기/보이기 설정
 	if (PuzzleUI)
 	{
-		int32 PlayerCount = PlayerScoresInfo.Num();
-
-		// 1위 텍스트는 항상 표시
-		PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
-
-		// 2위와 3위 가시성 조정
-		PuzzleUI->SetTextVisibility(2, PlayerCount >= 2 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-		PuzzleUI->SetTextVisibility(3, PlayerCount >= 3 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		int32 PlayerCount = PlayerScoresInfo.Num()+1;
+		if(PlayerCount == 1)
+		{
+			PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
+			PuzzleUI->SetTextVisibility(2, ESlateVisibility::Hidden);
+			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
+			return;
+		}
+		else if(PlayerCount == 2)
+		{
+			PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
+			PuzzleUI->SetTextVisibility(2, ESlateVisibility::Visible);
+			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
+			return;
+		}
+		else if(PlayerCount <= 3)
+		{
+			PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
+			PuzzleUI->SetTextVisibility(2, ESlateVisibility::Visible);
+			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Visible);
+			return;
+		}
 	}
 	
 	// 순위별 작업 수행
-	//for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)
-	for (int32 i = 0; i < FMath::Min(PlayerScoresInfo.Num(), 3); i++) // 최대 3위까지만 처리
+	for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)
+	//for (int32 i = 0; i < FMath::Min(PlayerScoresInfo.Num(), 3); i++) // 최대 3위까지만 처리
 	{
 		UTTGameInstance* GI = Cast<UTTGameInstance>(PlayerScoresInfo[i].Player->GetGameInstance());
 		if (!GI)
@@ -160,7 +174,7 @@ void APuzzleManager::SortAndUpdateRanking()
 		ProcessPlayerRanking(i + 1, NickName, GI->GetAccessToken(), HttpActor3);
 		
 		// 순위가 3위까지 끝나면 종료
-		//if (i + 1 == 3) break;
+		if (i + 1 == 3) break;
 	}
 }
 
