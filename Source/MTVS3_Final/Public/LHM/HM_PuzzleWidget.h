@@ -39,33 +39,31 @@ public:
 	class UTextBlock* Text_Piece8;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Piece9;
-	
-	// TextPlayerScore 포인터 배열
-	class UTextBlock* TextPlayerScores[9];
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Player1Score;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Player2Score;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Player3Score;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Player4Score;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Player5Score;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Player6Score;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Player7Score;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Player8Score;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Player9Score;
-
 	UFUNCTION()
 	void SetTextPieceInfo(FString PieceName, int32 Score, int32 Index);
 	
-	UFUNCTION()
-	void UpdatePlayerScores(const TArray<FPlayerScoreInfo>& PlayerScoresInfo);
+	// // TextPlayerScore 포인터 배열
+	// class UTextBlock* TextPlayerScores[9];
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UTextBlock* Text_Player1Score;
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UTextBlock* Text_Player2Score;
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UTextBlock* Text_Player3Score;
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UTextBlock* Text_Player4Score;
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UTextBlock* Text_Player5Score;
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UTextBlock* Text_Player6Score;
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UTextBlock* Text_Player7Score;
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UTextBlock* Text_Player8Score;
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UTextBlock* Text_Player9Score;
+	//UFUNCTION()
+	//void UpdatePlayerScores(const TArray<FPlayerScoreInfo>& PlayerScoresInfo);
 
 	
 	// 1#
@@ -138,7 +136,20 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UWidgetSwitcher* WS_PuzzleSwitcher;
 	
-	// 최종 퍼즐 종료 method
 	UFUNCTION()
 	void SetWidgetSwitcher(int32 num);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UVerticalBox* VerticalBox_1;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UVerticalBox* VerticalBox_2;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UVerticalBox* VerticalBox_3;
+	UFUNCTION()
+	void SetTextVisibility(int32 Rank, ESlateVisibility InVisibility);
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	class UButton* Btn_Exit;
+	UFUNCTION()
+	void OnClickedExitButton();
 };
