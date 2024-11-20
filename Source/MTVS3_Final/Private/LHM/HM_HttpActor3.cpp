@@ -12,6 +12,7 @@
 #include "JMH/MH_Inventory.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
+#include "LHM/HM_PuzzleWidget.h"
 #include "LHM/HM_TicketCustom.h"
 
 // Sets default values
@@ -45,6 +46,11 @@ void AHM_HttpActor3::SetMainUI(UMainWidget* InMainUI)
 void AHM_HttpActor3::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 {
 	TicketingUI = InTicketingUI;
+}
+
+void AHM_HttpActor3::SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI)
+{
+	PuzzleUI = InPuzzleUI;
 }
 
 // 인벤토리 정보 요청
@@ -181,9 +187,14 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 	}
 }
 
+TMap<TSharedPtr<IHttpRequest>, int32> RequestRankMap;
+//TMap<TSharedPtr<IHttpRequest>, UHM_PuzzleWidget*> RequestUIMap;
+
 // Puzzle 결과, Sticker 획득 요청
 void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
+	
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 
@@ -214,7 +225,11 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 
 		// 요청 본문에 JSON 데이터를 설정
 		Request->SetContentAsString(ContentString);
-	
+
+		// Rank를 추적
+		RequestRankMap.Add(Request, Rank);
+		//RequestUIMap.Add(Request, PuzzleUI);
+		
 		// 응답받을 함수를 연결
 		Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker);
 
@@ -224,38 +239,52 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 }
 
 // Puzzle 결과, Sticker 획득 요청에 대한 응답
-void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
-	if ( bWasSuccessful && Response.IsValid() )
+	int32 Rank = RequestRankMap.Contains(Request) ? RequestRankMap[Request] : -1;
+	//UHM_PuzzleWidget* PuzzleUI = RequestUIMap.Contains(Request) ? RequestUIMap[Request] : nullptr;
+
+	// Rank 맵에서 제거
+	RequestRankMap.Remove(Request);
+	//RequestUIMap.Remove(Request);
+
+	if (!PuzzleUI || Rank < 1 || Rank > 3)
+	{
+		UE_LOG(LogTemp , Warning , TEXT("Invalid rank or PuzzleUI is null"));
+		return;
+	}
+
+	if (bWasSuccessful && Response.IsValid())
 	{
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
 		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
 
-		if ( Response->GetResponseCode() == 200 )
+		if (Response->GetResponseCode() == 200)
 		{
 			// JSON 응답 파싱
 			FString ResponseBody = Response->GetContentAsString();
 			TSharedPtr<FJsonObject> JsonObject;
 			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
 
-			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			if (FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid())
 			{
-				// "response" 객체에 접근
 				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
 				if (ResponseObject.IsValid())
 				{
+					FStickers NewStickers;
+					FTitles NewTitles;
+
 					// 타이틀 정보 처리
 					TSharedPtr<FJsonObject> TitleObject = ResponseObject->GetObjectField(TEXT("titleInfo"));
 					if (TitleObject.IsValid())
 					{
-						FTitles NewTitles;
-						if (FJsonObjectConverter::JsonObjectToUStruct(TitleObject.ToSharedRef(), &NewTitles, 0, 0))
+						if (FJsonObjectConverter::JsonObjectToUStruct(TitleObject.ToSharedRef() , &NewTitles))
 						{
-							UE_LOG(LogTemp, Log, TEXT("Titles Info | Id: %d, Name: %s, Script: %s, Rarity: %s"),
-								NewTitles.titleId,
-								*NewTitles.titleName,
-								*NewTitles.titleScript,
-								*NewTitles.titleRarity);
+							UE_LOG(LogTemp , Log , TEXT("Titles Info | Id: %d, Name: %s, Script: %s, Rarity: %s") ,
+							       NewTitles.titleId ,
+							       *NewTitles.titleName ,
+							       *NewTitles.titleScript ,
+							       *NewTitles.titleRarity);
 
 							// 기존 TitleItems 배열에 추가
 							TitleItems.Add(NewTitles);
@@ -266,26 +295,97 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request,
 					TSharedPtr<FJsonObject> StickerObject = ResponseObject->GetObjectField(TEXT("stickerInfo"));
 					if (StickerObject.IsValid())
 					{
-						FStickers NewStickers;
-						if (FJsonObjectConverter::JsonObjectToUStruct(StickerObject.ToSharedRef(), &NewStickers, 0, 0))
+						if (FJsonObjectConverter::JsonObjectToUStruct(StickerObject.ToSharedRef() , &NewStickers))
 						{
-							UE_LOG(LogTemp, Log, TEXT("Stikers Info | Id: %d, Name: %s, Script: %s, Rarity: %s, StickerImg: %s"),
-								NewStickers.stickerId,
-								*NewStickers.stickerName,
-								*NewStickers.stickerScript,
-								*NewStickers.stickerRarity,
-								*NewStickers.stickerImage);
+							UE_LOG(LogTemp , Log ,
+							       TEXT("Stikers Info | Id: %d, Name: %s, Script: %s, Rarity: %s, StickerImg: %s") ,
+							       NewStickers.stickerId ,
+							       *NewStickers.stickerName ,
+							       *NewStickers.stickerScript ,
+							       *NewStickers.stickerRarity ,
+							       *NewStickers.stickerImage);
 
 							// 기존 StickerItems 배열에 추가
 							StickerItems.Add(NewStickers);
 						}
 					}
+					
+					// stickerImage URL 가져오기
+					FString StickerImageUrl = StickerObject->GetStringField(TEXT("stickerImage"));
+
+					// URL에서 이미지 다운로드
+					TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
+					ImageRequest->SetURL(StickerImageUrl);
+					ImageRequest->SetVerb(TEXT("GET"));
+
+					// 다운로드 완료 시 콜백 설정
+					ImageRequest->OnProcessRequestComplete().BindLambda(
+						[this, Rank, NewStickers, NewTitles](FHttpRequestPtr ImageRequest , FHttpResponsePtr ImageResponse , bool bImageSuccessful)
+						{
+							if (bImageSuccessful && ImageResponse.IsValid())
+							{
+								// 이미지 데이터 가져오기
+								TArray<uint8> ImageData = ImageResponse->GetContent();
+
+								// 데이터로부터 텍스처 생성
+								UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+								if (Texture)
+								{
+									// UI 업데이트
+									switch (Rank)
+									{
+									case 1:
+										PuzzleUI->SetTextPuzzleRank1(Texture ,
+										                             NewStickers.stickerRarity ,
+										                             NewStickers.stickerName ,
+										                             NewStickers.stickerScript ,
+										                             NewTitles.titleRarity , NewTitles.titleName ,
+										                             NewTitles.titleScript);
+										break;
+									case 2:
+										PuzzleUI->SetTextPuzzleRank2(Texture ,
+										                             NewStickers.stickerRarity ,
+										                             NewStickers.stickerName ,
+										                             NewStickers.stickerScript ,
+										                             NewTitles.titleRarity , NewTitles.titleName ,
+										                             NewTitles.titleScript);
+										break;
+									case 3:
+										PuzzleUI->SetTextPuzzleRank3(Texture ,
+										                             NewStickers.stickerRarity ,
+										                             NewStickers.stickerName ,
+										                             NewStickers.stickerScript ,
+										                             NewTitles.titleRarity , NewTitles.titleName ,
+										                             NewTitles.titleScript);
+										break;
+									default:
+										break;
+									}
+
+									PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+									PuzzleUI->SetWidgetSwitcher(1);
+									
+									UE_LOG(LogTemp , Log , TEXT("UI 업데이트 완료: Rank %d") , Rank);
+								}
+								else
+								{
+									UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
+								}
+							}
+							else
+							{
+								UE_LOG(LogTemp , Warning , TEXT("Failed to download sticker image."));
+							}
+						});
+
+					ImageRequest->ProcessRequest();
 				}
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp , Error , TEXT("Failed to Post Puzzle Result And Get Sticker: %s") , *Response->GetContentAsString());
+			UE_LOG(LogTemp , Error , TEXT("Failed to Post Puzzle Result And Get Sticker: %s") ,
+			       *Response->GetContentAsString());
 		}
 	}
 }
@@ -804,7 +904,7 @@ void AHM_HttpActor3::OnResGetNotEquipTheTitle(FHttpRequestPtr Request, FHttpResp
 }
 
 // 좌석 결제 미루기 요청
-void AHM_HttpActor3::ReqGetPostponePaymentSeat(int32 ConcertId, int32 SeatId, FString AccessToken)
+void AHM_HttpActor3::ReqPostponePaymentSeat(int32 ConcertId, int32 SeatId, FString AccessToken)
 {
 	UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 요청"));
 	
@@ -817,7 +917,7 @@ void AHM_HttpActor3::ReqGetPostponePaymentSeat(int32 ConcertId, int32 SeatId, FS
 
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/postpone") , *_url, ConcertId, SeatId);
 	Request->SetURL(FormattedUrl);
-	Request->SetVerb(TEXT("GET"));
+	Request->SetVerb(TEXT("POST"));
 
 	// 헤더 설정
 	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
@@ -870,6 +970,29 @@ void AHM_HttpActor3::OnResGetPostponePaymentSeat(FHttpRequestPtr Request, FHttpR
 
 			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
 			{
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				if (ResponseObject.IsValid())
+				{
+					TArray<TSharedPtr<FJsonValue>> MailListDTO = ResponseObject->GetArrayField(TEXT("mailListDTO"));
+					for (int32 i = 0; i < MailListDTO.Num(); i++)
+					{
+						TSharedPtr<FJsonObject> MailObject = MailListDTO[i]->AsObject();
+						if (MailObject.IsValid())
+						{
+							int32 MailId = MailObject->GetIntegerField(TEXT("mailId"));
+							FString Subject = MailObject->GetStringField(TEXT("subject"));
+							FString MailCategory = MailObject->GetStringField(TEXT("mailCategory"));
+							bool IsRead = MailObject->GetBoolField(TEXT("isRead"));
+
+							UE_LOG(LogTemp , Log , TEXT("MailId: %d"), MailId);
+							UE_LOG(LogTemp , Log , TEXT("Subject: %s"), *Subject)
+							UE_LOG(LogTemp , Log , TEXT("MailCategory: %s"), *MailCategory);
+							UE_LOG(LogTemp , Log , TEXT("IsRead: %s"), IsRead ? TEXT("true") : TEXT("false"));
+							
+						}
+					}
+				}
+
 				UE_LOG(LogTemp , Log , TEXT("우편함 조회 성공"));
 			}
 		}
@@ -891,7 +1014,7 @@ void AHM_HttpActor3::ReqGetSpecificMail(int32 MailId, FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/mails/%d") , *_url, MailId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/mails/%d") , *_url, MailId); 
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -922,6 +1045,20 @@ void AHM_HttpActor3::OnResGetSpecificMail(FHttpRequestPtr Request, FHttpResponse
 
 			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
 			{
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				if (ResponseObject.IsValid())
+				{
+					int32 MailId = ResponseObject->GetIntegerField(TEXT("mailId"));
+					FString Subject = ResponseObject->GetStringField(TEXT("subject"));
+					FString MailCategory = ResponseObject->GetStringField(TEXT("mailCategory"));
+					bool IsRead = ResponseObject->GetBoolField(TEXT("isRead"));
+
+					UE_LOG(LogTemp , Log , TEXT("MailId: %d") , MailId);
+					UE_LOG(LogTemp , Log , TEXT("Subject: %s") , *Subject)
+					UE_LOG(LogTemp , Log , TEXT("MailCategory: %s") , *MailCategory);
+					UE_LOG(LogTemp , Log , TEXT("IsRead: %s") , IsRead ? TEXT("true") : TEXT("false"));
+				}
+
 				UE_LOG(LogTemp , Log , TEXT("특정 우편함 조회 성공"));
 			}
 		}

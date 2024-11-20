@@ -64,13 +64,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Puzzle")
 	void AddScoreToPlayer(AActor* Player, int32 Score);
 
-	// 랭킹업데이트
+	// 퍼즐종료 & 랭킹업데이트
 	UFUNCTION(BlueprintCallable, Category = "Puzzle")
 	void SortAndUpdateRanking();
 
-	// 퍼즐 게임 종료
 	UFUNCTION(BlueprintCallable, Category = "Puzzle")
-	void GameOver();
+	void ProcessPlayerRanking(int32 Rank, const FString& NickName, const FString& AccessToken, AHM_HttpActor3* HttpActor3);
 
 public:
 	TMap<UStaticMeshComponent*, int32> Pieces;

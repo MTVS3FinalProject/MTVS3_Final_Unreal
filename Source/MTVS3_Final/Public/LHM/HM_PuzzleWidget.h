@@ -18,10 +18,9 @@ class MTVS3_FINAL_API UHM_PuzzleWidget : public UUserWidget
 public:
 
 	virtual void NativeConstruct() override;
-
+	
 	// TextPiece 포인터 배열
 	class UTextBlock* TextPieces[9];
-	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Piece1;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -41,10 +40,8 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Piece9;
 	
-	
 	// TextPlayerScore 포인터 배열
 	class UTextBlock* TextPlayerScores[9];
-	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Player1Score;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -63,9 +60,85 @@ public:
 	class UTextBlock* Text_Player8Score;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Player9Score;
-	
+
+	UFUNCTION()
 	void SetTextPieceInfo(FString PieceName, int32 Score, int32 Index);
 	
-	//UFUNCTION()
+	UFUNCTION()
 	void UpdatePlayerScores(const TArray<FPlayerScoreInfo>& PlayerScoresInfo);
+
+	
+	// 1#
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_Nickname_1;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_StickerImg_1;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerRarity_1;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerName_1;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerScript_1;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleRarity_1;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleName_1;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleScript_1;
+	UFUNCTION()
+    void SetTextPuzzleRank1Nickname(FString Nickname);
+	UFUNCTION()
+	void SetTextPuzzleRank1(UTexture2D* StickerImg, FString StickerRarity , FString StickerName, FString StickerScript, FString TitleRarity, FString TitleName, FString TitleScript);
+	
+	// 2#
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_Nickname_2;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_StickerImg_2;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerRarity_2;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerName_2;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerScript_2;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleRarity_2;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleName_2;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleScript_2;
+	UFUNCTION()
+    void SetTextPuzzleRank2Nickname(FString Nickname);
+	UFUNCTION()
+	void SetTextPuzzleRank2(UTexture2D* StickerImg, FString StickerRarity , FString StickerName, FString StickerScript, FString TitleRarity, FString TitleName, FString TitleScript);
+
+	// 3#
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_Nickname_3;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_StickerImg_3;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerRarity_3;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerName_3;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerScript_3;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleRarity_3;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleName_3;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleScript_3;
+	UFUNCTION()
+    void SetTextPuzzleRank3Nickname(FString Nickname);
+    UFUNCTION()
+	void SetTextPuzzleRank3(UTexture2D* StickerImg, FString StickerRarity , FString StickerName, FString StickerScript, FString TitleRarity, FString TitleName, FString TitleScript);
+
+	// 0: 피스 스코어, 1: 퍼즐 결과
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UWidgetSwitcher* WS_PuzzleSwitcher;
+	
+	// 최종 퍼즐 종료 method
+	UFUNCTION()
+	void SetWidgetSwitcher(int32 num);
 };

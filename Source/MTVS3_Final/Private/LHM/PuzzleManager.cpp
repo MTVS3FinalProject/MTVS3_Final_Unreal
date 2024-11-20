@@ -5,6 +5,7 @@
 
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
 
@@ -93,15 +94,15 @@ void APuzzleManager::AddScoreToPlayer(AActor* Player, int32 Score)
 	// UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *Player->GetName(), PlayerScores[Player]);
 	// GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
 	// 			FString::Printf(TEXT("Player %s new score: %d"),*Player->GetName(), PlayerScores[Player]));
-
-
 	
 	// 랭킹 산정 및 UI 업데이트
-	SortAndUpdateRanking();
+	//SortAndUpdateRanking();
 }
 
 void APuzzleManager::SortAndUpdateRanking()
 {
+	UE_LOG(LogTemp, Log, TEXT("Game Over"));
+	
 	// 점수 기준으로 내림차순 정렬
 	PlayerScoresInfo.Sort([](const FPlayerScoreInfo& A, const FPlayerScoreInfo& B) {
 		if (A.Score == B.Score)
@@ -111,39 +112,80 @@ void APuzzleManager::SortAndUpdateRanking()
 		}
 		return A.Score > B.Score;  // 높은 점수가 우선 ('>' 는 내림차순, '<' 는 오름차순)
 	});
-
-	// UI 업데이트
-	if (PuzzleUI)
+	
+        AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+            UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
+        
+        if (!HttpActor3)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("HttpActor3 is null!"));
+            return;
+        }
+	
+	// 순위별 작업 수행
+	for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)
 	{
-		//PuzzleUI->UpdatePlayerScores(PlayerScoresInfo);
+		UTTGameInstance* GI = Cast<UTTGameInstance>(PlayerScoresInfo[i].Player->GetGameInstance());
+		if (!GI)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("GameInstance is null for player %d!"), i + 1);
+			continue;
+		}
 		
 		// 디버그 로그로 정렬된 점수 출력
-		for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)
-		{
-			FString TimeString = PlayerScoresInfo[i].Timestamp.ToString(TEXT("%M:%S"));
+		FString NickName = GI->GetNickname();
+		FString TimeString = PlayerScoresInfo[i].Timestamp.ToString(TEXT("%M:%S"));
+		UE_LOG(LogTemp , Log , TEXT("Rank %d - Player: %s, Score: %d, Time %s") ,
+		       i + 1 ,
+		       //*PlayerScoresInfo[i].Player->GetName(),
+		       *NickName ,
+		       PlayerScoresInfo[i].Score ,
+		       *TimeString)
 
-			UTTGameInstance* GI = Cast<UTTGameInstance>(PlayerScoresInfo[i].Player->GetGameInstance());
-			FString NickName;
-			if (GI)
-			{
-				NickName = GI->GetNickname();
-			}
-			
-			UE_LOG(LogTemp, Log, TEXT("Rank %d - Player: %s, Score: %d, Time %s"), 
-				i + 1, 
-				//*PlayerScoresInfo[i].Player->GetName(),
-				*NickName,
-				PlayerScoresInfo[i].Score,
-				*TimeString);
-		}
+		// 순위별 UI 및 서버 요청 처리
+		ProcessPlayerRanking(i + 1, NickName, GI->GetAccessToken(), HttpActor3);
+		
+		// 순위가 3위까지 끝나면 종료
+		if (i + 1 == 3)
+			break;
 	}
 }
 
-void APuzzleManager::GameOver()
+void APuzzleManager::ProcessPlayerRanking(int32 Rank, const FString& NickName, const FString& AccessToken,
+	AHM_HttpActor3* HttpActor3)
 {
-	UE_LOG(LogTemp, Log, TEXT("Game Over"));
+	UE_LOG(LogTemp, Log, TEXT("ProcessPlayerRanking"));
 	
-	// 퍼즐 종료 UI 스위쳐
-	//if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+	if (!PuzzleUI)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PuzzleUI is null!"));
+		return;
+	}
+
+	// UI 업데이트
+	switch (Rank)
+	{
+	case 1:
+		PuzzleUI->SetTextPuzzleRank1Nickname(NickName);
+		UE_LOG(LogTemp , Log , TEXT("PuzzleUI->SetTextPuzzleRank1Nickname"));
+		break;
+	case 2:
+		PuzzleUI->SetTextPuzzleRank2Nickname(NickName);
+		UE_LOG(LogTemp , Log , TEXT("PuzzleUI->SetTextPuzzleRank2Nickname"));
+		break;
+	case 3:
+		PuzzleUI->SetTextPuzzleRank3Nickname(NickName);
+		UE_LOG(LogTemp , Log , TEXT("PuzzleUI->SetTextPuzzleRank3Nickname"));
+		break;
+	default:
+		return;
+	}
+
+	// 서버 요청
+	if (HttpActor3)
+	{
+		HttpActor3->ReqPostPuzzleResultAndGetSticker(Rank, AccessToken);
+		UE_LOG(LogTemp , Log , TEXT("HttpActor3->ReqPostPuzzleResultAndGetSticker"));
+	}
 }
 
