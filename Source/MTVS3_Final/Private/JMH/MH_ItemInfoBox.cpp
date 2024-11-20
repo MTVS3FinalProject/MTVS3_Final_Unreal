@@ -18,6 +18,7 @@ void UMH_ItemInfoBox::SetTextItemInfo(FString Info)
 
 void UMH_ItemInfoBox::SetTextItemRarity(FString Rarity)
 {
+	ChangeColorTitleName(Rarity);
 	Text_titleRarity->SetText(FText::FromString(Rarity));
 }
 
@@ -31,5 +32,25 @@ void UMH_ItemInfoBox::PlayInfoTextAnim(bool forward)
 	else if (!forward)
 	{
 		PlayAnimation(InfoBoxTextAnim , 0 , 1 , EUMGSequencePlayMode::Reverse);
+	}
+}
+
+void UMH_ItemInfoBox::ChangeColorTitleName(const FString& _TitleRarity)
+{
+	if (_TitleRarity == "Common")
+	{
+		Text_titleRarity->SetColorAndOpacity(FSlateColor(FColor(111 , 111 , 111)));
+	}
+	else if (_TitleRarity == "Rare")
+	{
+		Text_titleRarity->SetColorAndOpacity(FSlateColor(FColor(5 , 177 , 216)));
+	}
+	else if (_TitleRarity == "Unique")
+	{
+		Text_titleRarity->SetColorAndOpacity(FSlateColor(FColor(216 , 5 , 188)));
+	}
+	else
+	{
+		Text_titleRarity->SetColorAndOpacity(FSlateColor(FColor(111 , 111 , 111))); // 기본값
 	}
 }

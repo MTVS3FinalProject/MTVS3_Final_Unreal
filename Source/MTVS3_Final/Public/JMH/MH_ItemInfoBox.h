@@ -35,6 +35,9 @@ public:
 	
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* InfoBoxTextAnim;
+
+	UFUNCTION()
+	void ChangeColorTitleName(const FString& _TitleRarity);
 	
 	
 };

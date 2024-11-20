@@ -422,13 +422,14 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 	{
 		if (InfoBoxMap.Contains(HoveredItem))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("InfoBoxMap!"));
+			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("InfoBoxMap!"));
 			return;
 		}
 		UMH_ItemInfoBox* WBP_HoveredInfoTitlebox = CreateWidget<UMH_ItemInfoBox>(this , InfoBoxFac);
 		if (WBP_HoveredInfoTitlebox)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("OnHoveredTitleBtn WBP_HoveredInfoTitlebox!"));
+			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red ,
+			                                 TEXT("OnHoveredTitleBtn WBP_HoveredInfoTitlebox!"));
 			Can_00->AddChildToCanvas(WBP_HoveredInfoTitlebox);
 			// HoveredItem의 절대 위치를 가져오기
 			FGeometry CachedGeometry = HoveredItem->GetCachedGeometry();
@@ -460,15 +461,19 @@ void UMH_Inventory::OnUnHoveredTitleBtn(UMH_ItemBox_Title* UnHoveredItem)
 		UMH_ItemInfoBox* WBP_HoveredInfoTitlebox = InfoBoxMap[UnHoveredItem];
 		if (WBP_HoveredInfoTitlebox)
 		{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("WBP_HoveredInfoTitlebox OnUnHoveredTitleBtn!"));
+			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red ,
+			                                 TEXT("WBP_HoveredInfoTitlebox OnUnHoveredTitleBtn!"));
 			WBP_HoveredInfoTitlebox->PlayInfoTextAnim(false);
 			FTimerHandle TimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(
 				TimerHandle ,
 				[this, WBP_HoveredInfoTitlebox, UnHoveredItem]()
 				{
-					DestroyInfo(WBP_HoveredInfoTitlebox);
-					InfoBoxMap.Remove(UnHoveredItem);
+					if (IsValid(this) && IsValid(WBP_HoveredInfoTitlebox))
+					{
+						DestroyInfo(WBP_HoveredInfoTitlebox);
+						InfoBoxMap.Remove(UnHoveredItem);
+					}
 				} ,
 				1.0f , false);
 		}
