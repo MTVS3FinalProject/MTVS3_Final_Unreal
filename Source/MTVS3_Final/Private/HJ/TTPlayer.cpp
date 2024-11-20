@@ -870,7 +870,11 @@ void ATTPlayer::MyTakePiece()
 							}
 						}
 					}
-					if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+					if (PuzzleUI)
+					{
+						PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+						PuzzleUI->SetWidgetSwitcher(0);
+					}
 				}
 			}
 		}
@@ -1702,6 +1706,7 @@ void ATTPlayer::InitMainUI()
 	{
 		HttpActor3->SetMainUI(MainUI);
 		HttpActor3->SetTicketingUI(TicketingUI);
+		HttpActor3->SetPuzzleUI(PuzzleUI);
 	}
 }
 
