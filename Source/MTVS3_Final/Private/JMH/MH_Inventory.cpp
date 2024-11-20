@@ -5,9 +5,11 @@
 
 #include "HttpModule.h"
 #include "ImageUtils.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
+#include "Components/CanvasPanelSlot.h"
 #include "Components/HorizontalBox.h"
 #include "Components/Image.h"
 #include "Components/Overlay.h"
@@ -46,9 +48,9 @@ void UMH_Inventory::NativeConstruct()
 	Btn_Ticket_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket_Test);
 	Btn_Sticker_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker_Test);
 	// 초기 상태 설정
-	if (HoveredInfoTitle)
+	if (WBP_HoveredInfoTitle)
 	{
-		HoveredInfoTitle->SetVisibility(ESlateVisibility::Hidden);
+		WBP_HoveredInfoTitle->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -67,7 +69,6 @@ void UMH_Inventory::HideTitleWin()
 	Can_TitleEquipWin->SetVisibility(ESlateVisibility::Hidden);
 }
 
-
 void UMH_Inventory::ShowTitleUnequipWin()
 {
 	Can_TitleUnequipWin->SetVisibility(ESlateVisibility::Visible);
@@ -78,44 +79,43 @@ void UMH_Inventory::HideTitleUnequipWin()
 	Can_TitleUnequipWin->SetVisibility(ESlateVisibility::Hidden);
 }
 
-
 void UMH_Inventory::InitializeTabs()
 {
-	
-		//데이터들이 저장될 HTTPInvenActor에서 정보 TArray로 받아오기
-		AHM_HttpActor3* HTTP_Inven = Cast<AHM_HttpActor3>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-		if (!HTTP_Inven)
+	//데이터들이 저장될 HTTPInvenActor에서 정보 TArray로 받아오기
+	AHM_HttpActor3* HTTP_Inven = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if (!HTTP_Inven)
+	{
+		return;
+	}
+	if (HTTP_Inven)
+	{
+		// 받은 데이터가 비어 있지 않은지 확인
+		const TArray<FTitles>& TitleItems = HTTP_Inven->GetTitleItems();
+		const TArray<FTickets>& TicketItems = HTTP_Inven->GetTicketItems();
+		const TArray<FStickers>& StickerItems = HTTP_Inven->GetStickerItems();
+
+		if (TitleItems.Num() > 0)
 		{
-			return;
+			InitializeTitleTabs(TitleItems);
 		}
-		if (HTTP_Inven)
+		if (TicketItems.Num() > 0)
 		{
-			// 받은 데이터가 비어 있지 않은지 확인
-			const TArray<FTitles>& TitleItems = HTTP_Inven->GetTitleItems();
-			const TArray<FTickets>& TicketItems = HTTP_Inven->GetTicketItems();
-			const TArray<FStickers>& StickerItems = HTTP_Inven->GetStickerItems();
-	
-			if (TitleItems.Num() > 0)
-			{
-				InitializeTitleTabs(TitleItems);
-			}
-			if (TicketItems.Num() > 0)
-			{
-				InitializeTicketTabs(TicketItems);
-			}
-			if (StickerItems.Num() > 0)
-			{
-				InitializeStickerTabs(StickerItems);
-			}
+			InitializeTicketTabs(TicketItems);
 		}
+		if (StickerItems.Num() > 0)
+		{
+			InitializeStickerTabs(StickerItems);
+		}
+	}
 }
+
 //현민
 void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
 	Hori_InvenBox_00_Title->ClearChildren();
-	
+
 	for (const FTitles& ItemData : TitleItem)
 	{
 		//타이틀 호리젠탈에 아이템 박스 넣어주기.
@@ -128,7 +128,8 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 			ItemBox_Title->Text_Title->SetText(FText::FromString(ItemData.titleName));
 			ItemBox_Title->OnClickedTitleBtn.AddDynamic(this , &UMH_Inventory::OnClickedTitleBtn);
 			// 아이템박스 위젯을 가져와 델리게이트에 바인딩
-			//ItemBox_Title->OnItemHovered_Title.AddDynamic(this, &UMH_Inventory::OnHoveredTitleBtn);
+			ItemBox_Title->OnItemHovered_Title.AddDynamic(this , &UMH_Inventory::OnHoveredTitleBtn);
+			ItemBox_Title->OnItemUnHovered_Title.AddDynamic(this , &UMH_Inventory::OnUnHoveredTitleBtn);
 			ItemBox_Title->SetInfoString(ItemData.titleScript);
 			ItemBox_Title->SetTitleID(ItemData.titleId);
 			if (OverlayTitle)
@@ -169,7 +170,8 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 
 			// 다운로드 완료 시 콜백 설정
 			ImageRequest->OnProcessRequestComplete().BindLambda(
-				[ItemBox_Ticket](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful) {
+				[ItemBox_Ticket](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+				{
 					if (bWasSuccessful && Response.IsValid())
 					{
 						// 이미지 데이터 가져오기
@@ -181,20 +183,22 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 						{
 							// 이미지 위젯에 텍스처 적용
 							ItemBox_Ticket->Img_Item_Ticket->SetBrushFromTexture(StickerTexture);
-							UE_LOG(LogTemp, Log, TEXT("Ticket image set successfully"));
+							UE_LOG(LogTemp , Log , TEXT("Ticket image set successfully"));
 						}
 						else
 						{
-							UE_LOG(LogTemp, Warning, TEXT("Failed to create TicketTexture or Img_Item_Ticket is null"));
+							UE_LOG(LogTemp , Warning ,
+							       TEXT("Failed to create TicketTexture or Img_Item_Ticket is null"));
 						}
 					}
 					else
 					{
-						UE_LOG(LogTemp, Warning, TEXT("Failed to download Ticket image from URL: %s"), *Request->GetURL());
+						UE_LOG(LogTemp , Warning , TEXT("Failed to download Ticket image from URL: %s") ,
+						       *Request->GetURL());
 					}
 				});
 			ImageRequest->ProcessRequest();
-			
+
 			ItemBox_Ticket->Text_Ticket->SetText(FText::FromString(ItemData.concertName));
 			ItemBox_Ticket->Text_SeatInfo->SetText(FText::FromString(ItemData.seatInfo));
 			//ItemBox_Ticket->SetTicketData(ItemData); // 타이틀 데이터를 설정
@@ -220,7 +224,8 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 
 			// 다운로드 완료 시 콜백 설정
 			ImageRequest->OnProcessRequestComplete().BindLambda(
-				[ItemBox_Sticker](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful) {
+				[ItemBox_Sticker](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+				{
 					if (bWasSuccessful && Response.IsValid())
 					{
 						// 이미지 데이터 가져오기
@@ -232,20 +237,22 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 						{
 							// 이미지 위젯에 텍스처 적용
 							ItemBox_Sticker->Img_Item_Sticker->SetBrushFromTexture(StickerTexture);
-							UE_LOG(LogTemp, Log, TEXT("Sticker image set successfully"));
+							UE_LOG(LogTemp , Log , TEXT("Sticker image set successfully"));
 						}
 						else
 						{
-							UE_LOG(LogTemp, Warning, TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
+							UE_LOG(LogTemp , Warning ,
+							       TEXT("Failed to create StickerTexture or Img_Item_Sticker is null"));
 						}
 					}
 					else
 					{
-						UE_LOG(LogTemp, Warning, TEXT("Failed to download sticker image from URL: %s"), *Request->GetURL());
+						UE_LOG(LogTemp , Warning , TEXT("Failed to download sticker image from URL: %s") ,
+						       *Request->GetURL());
 					}
 				});
 			ImageRequest->ProcessRequest();
-			
+
 			ItemBox_Sticker->Text_Sticker->SetText(FText::FromString(ItemData.stickerName));
 			UE_LOG(LogTemp , Log , TEXT("Sticker image set successfully"));
 			Hori_InvenBox_02_Sticker->AddChild(ItemBox_Sticker);
@@ -258,6 +265,7 @@ void UMH_Inventory::OnClicked_PlayerTitle()
 {
 	//타이틀
 	SetWidgetSwitcher(0);
+	//플레이어 정보 타이틀 셋 되어있으면 해당 타이틀 프레임 생성 해주기. 
 }
 
 void UMH_Inventory::OnClicked_Ticket()
@@ -337,9 +345,9 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 	if (SelectedTitle)
 	{
 		// 이전에 선택된 아이템에서 프레임 제거
-		
+
 		RemoveFrame();
-		
+
 		//타이틀을 제거하시겠습니까? 창 뜨기
 		//플레이어한테 칭호 해제
 		//해제할 때 필요
@@ -348,35 +356,30 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 		// 타이틀 해제 요청 통신
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 		if (HttpActor3 && GI)
 		{
 			HttpActor3->ReqGetNotEquipTheTitle(GI->GetAccessToken());
 		}
-		
 	}
 
 	SelectedTitle = CurrentTitle;
 
 	if (SelectedTitle)
 	{
-		
 		//플레이어한테 칭호 추가,
 		// 현재 선택된 아이템에 프레임 추가
 		AddFrame(CurrentTitle);
 		// 프레임 위치 업데이트
 		SetFramePosition(CurrentTitle);
 		//등록할 때 필요
-		//CurrentTitle->GetTitleID();
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 		if (HttpActor3 && GI)
 		{
-			HttpActor3->ReqGetEquipTheTitle(CurrentTitle->GetTitleID(), GI->GetAccessToken());
+			HttpActor3->ReqGetEquipTheTitle(CurrentTitle->GetTitleID() , GI->GetAccessToken());
 		}
-
-		
 	}
 
 	OnClickedTilteNoBtn();
@@ -400,12 +403,11 @@ void UMH_Inventory::OnClickedTilteYes2Btn()
 	// 타이틀 해제 요청 통신
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 	if (HttpActor3 && GI)
 	{
 		HttpActor3->ReqGetNotEquipTheTitle(GI->GetAccessToken());
 	}
-	//CurrentTitle->GetTitleID();
 }
 
 void UMH_Inventory::OnClickedTilteNo2Btn()
@@ -416,24 +418,46 @@ void UMH_Inventory::OnClickedTilteNo2Btn()
 
 void UMH_Inventory::SetInfoVisibility(bool bVisible)
 {
-	if (HoveredInfoTitle)
+	if (WBP_HoveredInfoTitle && bVisible)
 	{
 		// 가시성 설정
-		//HoveredInfoTitle->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		WBP_HoveredInfoTitle->SetVisibility(ESlateVisibility::Visible);
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Visible!"));
 	}
-	if (HoveredInfoTitle)
+	else if (WBP_HoveredInfoTitle && !bVisible)
 	{
-		//HoveredInfoTitle->SetVisibility(ESlateVisibility::Hidden);
+		WBP_HoveredInfoTitle->SetVisibility(ESlateVisibility::Hidden);
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Hidden!"));
 	}
 }
 
 void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 {
 	//인포 창 뜸.
-	if (HoveredItem)
+	if (HoveredItem && WBP_HoveredInfoTitle)
 	{
-		//HoveredInfoTitle->SetTextItemInfo(HoveredItem->GetInfoString());
-		//SetInfoVisibility(true);
+		// HoveredItem의 CanvasSlot 정보 가져오기
+		UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(HoveredItem);
+
+		if (CanvasSlot)
+		{
+			// HoveredItem의 현재 위치 가져오기
+			FVector2D ItemPosition = CanvasSlot->GetPosition();
+			// InfoBox를 HoveredItem의 아래로 일정 거리 떨어진 위치에 배치
+			FVector2D InfoBoxPosition = ItemPosition + FVector2D(0.0f , 50.0f); // 아래로 50픽셀 이동
+			WBP_HoveredInfoTitle->SetRenderTranslation(InfoBoxPosition);
+			WBP_HoveredInfoTitle->SetTextItemInfo(HoveredItem->GetInfoString());
+			SetInfoVisibility(true);
+		}
+	}
+}
+
+void UMH_Inventory::OnUnHoveredTitleBtn(UMH_ItemBox_Title* UnHoveredItem)
+{
+	//인포 창 사라짐.
+	if (UnHoveredItem)
+	{
+		SetInfoVisibility(false);
 	}
 }
 
@@ -496,7 +520,7 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 					}
 				}
 			}
-					// Img_Frame의 크기를 부모 오버레이 크기에 맞추기
+			// Img_Frame의 크기를 부모 오버레이 크기에 맞추기
 			Img_Frame->SetRenderScale(FVector2D(1.0f , 1.0f));
 			Img_Frame->SetRenderTransformPivot(FVector2D(0.5f , 0.5f));
 

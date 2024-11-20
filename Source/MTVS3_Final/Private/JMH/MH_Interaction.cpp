@@ -22,7 +22,7 @@ void UMH_Interaction::TextOnAnimPlay()
 		PlayAnimation(TextOnAnim);
 		FTimerHandle RouletteTimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UMH_Interaction::OnAnimationFinished ,
-											   0.7f , false);
+											   0.5f , false);
 	}
 }
 
@@ -35,7 +35,7 @@ void UMH_Interaction::TextOffAnimPlay()
 		PlayAnimation(TextOffAnim);
 		FTimerHandle RouletteTimerHandle;
 		GetWorld()->GetTimerManager().SetTimer(RouletteTimerHandle , this , &UMH_Interaction::OnAnimationFinished ,
-											   .7f , false);
+											   .5f , false);
 
 	}
 }
