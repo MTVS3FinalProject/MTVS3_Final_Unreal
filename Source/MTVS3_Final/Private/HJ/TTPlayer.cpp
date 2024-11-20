@@ -560,8 +560,10 @@ void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 	FVector TargetLocation = bIsToConcertHall ? FVector(19 , -4962 , 516) : FVector(18055 , 2000 , 3132);
 	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , -45 , 0);
 	
-	TeleportTo(TargetLocation , TargetRotation);
-
+	// TeleportTo(TargetLocation , TargetRotation);
+	SetActorLocation(TargetLocation, false); // bSweep = false로 콜리전 체크 무시
+	SetActorRotation(TargetRotation);
+	
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		ClientAdjustCamera(TargetRotation);
