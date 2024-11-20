@@ -238,7 +238,7 @@ void ATTLuckyDrawGameState::StartNextRound()
 		&ATTLuckyDrawGameState::EliminatePlayers, EliminatePlayersDelayTime, false);
 
 	// Set timer for next roulette round
-	float Delay = (CurrentRound == 0) ? StartPlayRouletteDelayTime : PlayRouletteDelayTime;
+	float Delay = (CurrentRound == 0) ? FirstPlayRouletteDelayTime : PlayRouletteDelayTime;
 	GetWorldTimerManager().SetTimer(RoundTimerHandle, this, 
 		&ATTLuckyDrawGameState::PlayRoulette, Delay, false);
 
