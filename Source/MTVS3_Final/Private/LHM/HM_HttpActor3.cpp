@@ -188,7 +188,6 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 }
 
 TMap<TSharedPtr<IHttpRequest>, int32> RequestRankMap;
-//TMap<TSharedPtr<IHttpRequest>, UHM_PuzzleWidget*> RequestUIMap;
 
 // Puzzle 결과, Sticker 획득 요청
 void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken)
@@ -242,11 +241,9 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	int32 Rank = RequestRankMap.Contains(Request) ? RequestRankMap[Request] : -1;
-	//UHM_PuzzleWidget* PuzzleUI = RequestUIMap.Contains(Request) ? RequestUIMap[Request] : nullptr;
 
 	// Rank 맵에서 제거
 	RequestRankMap.Remove(Request);
-	//RequestUIMap.Remove(Request);
 
 	if (!PuzzleUI || Rank < 1 || Rank > 3)
 	{
