@@ -163,6 +163,11 @@ public:
 	UFUNCTION()
 	void OnClickedCancelButton2();
 
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_Back1_1;
+	//UFUNCTION()
+	//void OnClickedBack1_1();
+
 	//설정
 	//PlayerVisible
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))

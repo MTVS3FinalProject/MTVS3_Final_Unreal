@@ -739,7 +739,7 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 		if (MainUI) MainUI->SetVisibleCanvas(false);
 		if (TicketingUI)
 		{
-			TicketingUI->SetVisibleSwitcher(true , 1);
+			TicketingUI->SetVisibleSwitcher(true , 1);//이부분 수정해야함 매희
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 		}
 	}
@@ -1500,7 +1500,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 				// MainUI 숨기기
 				MainUI->SetVisibleCanvas(false);
 				// 좌석 경쟁 UI 표시
-				TicketingUI->SetVisibleSwitcher(true , 1);
+				TicketingUI->SetVisibleSwitcher(true , 1);//이부분 수정해야함 매희
 			}
 			else
 			{
