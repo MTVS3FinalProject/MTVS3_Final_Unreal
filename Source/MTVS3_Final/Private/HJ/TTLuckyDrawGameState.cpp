@@ -48,6 +48,10 @@ void ATTLuckyDrawGameState::BeginPlay()
 	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
 }
 
+void ATTLuckyDrawGameState::ResetChair()
+{
+}
+
 void ATTLuckyDrawGameState::AssignSeatNumber(APlayerState* PlayerState)
 {
 	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
@@ -83,7 +87,8 @@ void ATTLuckyDrawGameState::StartLuckyDraw()
 {
 	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
 	if (!GameMode) return;
-	GameMode->StartLuckyDraw(CurrentSeatNumber);
+	// GameMode->StartLuckyDraw(CurrentSeatNumber);
+	GameMode->StartLuckyDraw(30);
 }
 
 void ATTLuckyDrawGameState::MovePlayersToChairs()
@@ -313,65 +318,124 @@ void ATTLuckyDrawGameState::EliminatePlayers()
 
 		if (!ChairManager || !TableManager) return;
 
-		for (int32 PlayerID : GameMode->EliminatedPlayersPerRound[LastRoundIndex])
-		{
-			for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-			{
-				ATTPlayer* Player = *It;
-				if (Player && Player->GetRandomSeatNumber() == PlayerID)
-				{
-					Player->ClientLuckyDrawLose();
-					// 탈락자는 빨간색으로 바꾸기
-					Player->MulticastSetColorTextRender(FColor(255 , 0 , 235));
+		 // 탈락자 번호 배열
+        const TArray<int32>& EliminatedNumbers = GameMode->EliminatedPlayersPerRound[LastRoundIndex];
+        UE_LOG(LogTemp, Log, TEXT("Processing eliminated numbers in round %d"), LastRoundIndex + 1);
+        
+        // 현재 실제 좌석 배치 상태 가져오기
+        const TArray<TArray<FSeat>>& CurrentSeats = GameMode->GetShuffledSeats();
 
-					// 탈락한 플레이어의 의자 태그 찾기
-					FString* TargetChairTag = ChairManager->PlayerToChairMap.Find(PlayerID);
-					if (TargetChairTag)
-					{
-						// ChildActorComponent에서 해당 태그를 가진 LuckyDrawChair 찾기
-						TArray<UChildActorComponent*> ChairComponents;
-						ChairManager->GetComponents(ChairComponents);
+        // 탈락된 번호들의 의자 태그를 찾기 위한 배열
+        TArray<FString> ChairTagsToThrow;
+        
+        // 1. 탈락된 번호들의 실제 의자 태그를 찾습니다
+        for (int32 EliminatedNumber : EliminatedNumbers)
+        {
+            UE_LOG(LogTemp, Log, TEXT("Looking for eliminated player: %d"), EliminatedNumber);
+            bool bFound = false;
+            // CurrentSeats에서 탈락한 번호의 위치 찾기
+            for (int32 i = 0; i < CurrentSeats.Num() && !bFound; ++i)
+            {
+                for (int32 j = 0; j < CurrentSeats[i].Num() && !bFound; ++j)
+                {
+                    if (CurrentSeats[i][j].PlayerNumber == EliminatedNumber)
+                    {
+                        // 배치가 3x10 형태이므로 다음과 같이 계산
+                        int32 ChairNumber = i * 10 + j + 1;
+                        FString ChairTag = FString::Printf(TEXT("Chair_%d"), ChairNumber);
+                        ChairTagsToThrow.Add(ChairTag);
+                        UE_LOG(LogTemp, Log, TEXT("Found player %d at position (%d,%d), Chair_%d"), 
+                            EliminatedNumber, i, j, ChairNumber);
+                        bFound = true;
+                    }
+                }
+            }
+        }
 
-						for (UChildActorComponent* ChairComponent : ChairComponents)
-						{
-							if (ChairComponent && ChairComponent->ComponentTags.Contains(FName(**TargetChairTag)))
-							{
-								ALuckyDrawChair* TargetChair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor());
-								if (TargetChair)
-								{
-									Player->AttachToActor(TargetChair , FAttachmentTransformRules::KeepWorldTransform);
-									TargetChair->ThrowChair();
-									UE_LOG(LogTemp , Log , TEXT("Function called on chair %s") , **TargetChairTag);
-								}
-								break;
-							}
-						}
-					}
+        // 2. 플레이어 UI/애니메이션 처리
+        for (int32 PlayerID : EliminatedNumbers)
+        {
+            for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+            {
+                ATTPlayer* Player = *It;
+                if (Player && Player->GetRandomSeatNumber() == PlayerID)
+                {
+                    Player->ClientLuckyDrawLose();
+                    Player->MulticastSetColorTextRender(FColor(255, 0, 235));
 
-					// Chair 태그를 기반으로 Table 태그 생성 (예: Chair_1 -> Table_1)
-					FString TargetTableTag = TEXT("Table_") + TargetChairTag->RightChop(6);
+                    // 탈락한 플레이어의 의자 태그 찾기
+                    FString* TargetChairTag = ChairManager->PlayerToChairMap.Find(PlayerID);
+                    if (TargetChairTag)
+                    {
+                        // 플레이어를 의자에 부착
+                        TArray<UChildActorComponent*> ChairComponents;
+                        ChairManager->GetComponents(ChairComponents);
 
-					// TableManager의 ChildComponent에서 테이블 찾기 및 함수 호출
-					TArray<UChildActorComponent*> TableComponents;
-					TableManager->GetComponents(TableComponents);
+                        for (UChildActorComponent* ChairComponent : ChairComponents)
+                        {
+                            if (ChairComponent && ChairComponent->ComponentTags.Contains(FName(**TargetChairTag)))
+                            {
+                                if (ALuckyDrawChair* TargetChair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
+                                {
+                                    Player->AttachToActor(TargetChair, FAttachmentTransformRules::KeepWorldTransform);
+                                    UE_LOG(LogTemp, Log, TEXT("Player %d attached and thrown with chair %s"), 
+                                        PlayerID, **TargetChairTag);
+                                }
+                                break;
+                            }
+                        }
 
-					for (UChildActorComponent* TableComponent : TableComponents)
-					{
-						if (TableComponent && TableComponent->ComponentTags.Contains(FName(*TargetTableTag)))
-						{
-							ALuckyDrawTable* TargetTable = Cast<ALuckyDrawTable>(TableComponent->GetChildActor());
-							if (TargetTable)
-							{
-								TargetTable->SetColorRed();
-								UE_LOG(LogTemp , Log , TEXT("Function called on table %s") , *TargetTableTag);
-							}
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
+                        // 테이블 색상 변경
+                        FString TargetTableTag = TEXT("Table_") + TargetChairTag->RightChop(6);
+                        TArray<UChildActorComponent*> TableComponents;
+                        TableManager->GetComponents(TableComponents);
+
+                        for (UChildActorComponent* TableComponent : TableComponents)
+                        {
+                            if (TableComponent && TableComponent->ComponentTags.Contains(FName(*TargetTableTag)))
+                            {
+                                if (ALuckyDrawTable* TargetTable = Cast<ALuckyDrawTable>(TableComponent->GetChildActor()))
+                                {
+                                    TargetTable->SetColorRed();
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. 찾은 의자들 날리기
+        UE_LOG(LogTemp, Log, TEXT("Found %d chairs to throw"), ChairTagsToThrow.Num());
+        TArray<UChildActorComponent*> ChairComponents;
+        ChairManager->GetComponents(ChairComponents);
+
+        for (const FString& ChairTag : ChairTagsToThrow)
+        {
+            bool bFoundChair = false;
+            for (UChildActorComponent* ChairComponent : ChairComponents)
+            {
+                if (!ChairComponent) continue;
+
+                if (ChairComponent->ComponentTags.Contains(FName(*ChairTag)))
+                {
+                    if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
+                    {
+                        Chair->ThrowChair();
+                        UE_LOG(LogTemp, Log, TEXT("Successfully threw chair: %s"), *ChairTag);
+                        bFoundChair = true;
+                    }
+                    break;
+                }
+            }
+            
+            if (!bFoundChair)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Could not find chair with tag: %s"), *ChairTag);
+            }
+        }
+    }
 }
 
 void ATTLuckyDrawGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -445,11 +509,11 @@ void ATTLuckyDrawGameState::EndRounds()
 			break;
 		}
 	}
-
+	
 	// 모든 테이블을 검정색으로 설정하고 텍스트 초기화
 	ALDTableManager* TableManager = Cast<ALDTableManager>(
 		UGameplayStatics::GetActorOfClass(GetWorld(), ALDTableManager::StaticClass()));
-    
+	
 	if (TableManager)
 	{
 		TArray<UChildActorComponent*> TableComponents;
@@ -472,6 +536,33 @@ void ATTLuckyDrawGameState::EndRounds()
 	// 게임 종료 시 타이머 정리
 	GetWorldTimerManager().ClearTimer(RoundTimerHandle);
 	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
+
+	FTimerHandle EndLuckyDrawTimerHandle;
+	GetWorldTimerManager().SetTimer(EndLuckyDrawTimerHandle , this , &ATTLuckyDrawGameState::InitializeChairs , 5.0f ,
+									false);
+}
+
+void ATTLuckyDrawGameState::InitializeChairs()
+{
+	// 모든 의자 원위치 및 테이블 초기화
+	ALuckyDrawManager* ChairManager = Cast<ALuckyDrawManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawManager::StaticClass()));
+	
+	if (ChairManager)
+	{
+		TArray<UChildActorComponent*> ChairComponents;
+		ChairManager->GetComponents(ChairComponents);
+	
+		for (UChildActorComponent* ChairComponent : ChairComponents)
+		{
+			if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
+			{
+				Chair->ResetChair(); // LuckyDrawChair에 추가할 함수
+			}
+		}
+	}
+
+	bIsStartRound = false;
 }
 
 void ATTLuckyDrawGameState::MulticastEndRounds_Implementation()

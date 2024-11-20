@@ -41,4 +41,13 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void ThrowChair();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetChair();
+	
+private:
+	FVector OriginalLocation;
+	FRotator OriginalRotation;
+	bool bIsThrown;
+
 };
