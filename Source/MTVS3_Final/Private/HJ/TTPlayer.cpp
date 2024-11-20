@@ -1520,7 +1520,8 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 	case EPlaceState::LuckyDrawRoom:
 		if (GetbIsHost())
 		{
-			if (GI)
+			ATTLuckyDrawGameState* GameState = GetWorld()->GetGameState<ATTLuckyDrawGameState>();
+			if (GI && GameState && GameState->bIsStartRound != true)
 			{
 				GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 				GI->SwitchSession(EPlaceState::Plaza);
