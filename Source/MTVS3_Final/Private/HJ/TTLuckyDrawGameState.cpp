@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerState.h"
 #include "HJ/LDTableManager.h"
 #include "HJ/LuckyDrawChair.h"
+#include "HJ/LuckyDrawLine.h"
 #include "HJ/LuckyDrawManager.h"
 #include "HJ/LuckyDrawTable.h"
 #include "HJ/TTLuckyDrawGameMode.h"
@@ -220,6 +221,15 @@ void ATTLuckyDrawGameState::StartNextRound()
 	// Clear any existing EliminatePlayers timer
 	GetWorldTimerManager().ClearTimer(LuckyDrawLoseTimerHandle);
 
+	// *** 추가
+	// 라인 비활성화 - 새로운 라운드 시작 전에 수행
+	if (ALuckyDrawLine* LineManager = Cast<ALuckyDrawLine>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawLine::StaticClass())))
+	{
+		LineManager->DeactivateAllLines();
+	}
+	// *** 추가
+	
 	// 마지막 라운드에서 실행
 	if (CurrentRound >= TotalRounds)
 	{
@@ -238,7 +248,7 @@ void ATTLuckyDrawGameState::StartNextRound()
 		&ATTLuckyDrawGameState::EliminatePlayers, EliminatePlayersDelayTime, false);
 
 	// Set timer for next roulette round
-	float Delay = (CurrentRound == 0) ? StartPlayRouletteDelayTime : PlayRouletteDelayTime;
+	float Delay = (CurrentRound == 0) ? FirstPlayRouletteDelayTime : PlayRouletteDelayTime;
 	GetWorldTimerManager().SetTimer(RoundTimerHandle, this, 
 		&ATTLuckyDrawGameState::PlayRoulette, Delay, false);
 
@@ -300,78 +310,80 @@ void ATTLuckyDrawGameState::MulticastUpdatePlayerNumUI_Implementation(int32 Play
 void ATTLuckyDrawGameState::EliminatePlayers()
 {
 	MulticastPlayRouletteEndSound();
-	
-	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
-	if (!GameMode) return;
-	if (CurrentRound > 0 && GameMode->EliminatedPlayersPerRound.Num() >= CurrentRound)
-	{
-		int32 LastRoundIndex = CurrentRound - 1;
-		ALuckyDrawManager* ChairManager = Cast<ALuckyDrawManager>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , ALuckyDrawManager::StaticClass()));
-		ALDTableManager* TableManager = Cast<ALDTableManager>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , ALDTableManager::StaticClass()));
+    
+    ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
+    if (!GameMode) return;
 
-		if (!ChairManager || !TableManager) return;
+    if (CurrentRound > 0 && GameMode->EliminatedPlayersPerRound.Num() >= CurrentRound)
+    {
+	    int32 LastRoundIndex = CurrentRound - 1;
+    	ALuckyDrawManager* ChairManager = Cast<ALuckyDrawManager>(
+			UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawManager::StaticClass()));
+    	ALDTableManager* TableManager = Cast<ALDTableManager>(
+			UGameplayStatics::GetActorOfClass(GetWorld(), ALDTableManager::StaticClass()));
+        
+    	// LuckyDrawLine 액터 찾기
+    	ALuckyDrawLine* LineManager = Cast<ALuckyDrawLine>(
+			UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawLine::StaticClass()));
 
-		for (int32 PlayerID : GameMode->EliminatedPlayersPerRound[LastRoundIndex])
-		{
-			for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-			{
-				ATTPlayer* Player = *It;
-				if (Player && Player->GetRandomSeatNumber() == PlayerID)
-				{
-					Player->ClientLuckyDrawLose();
-					// 탈락자는 빨간색으로 바꾸기
-					Player->MulticastSetColorTextRender(FColor(255 , 0 , 235));
+    	if (!ChairManager || !TableManager || !LineManager) return;
 
-					// 탈락한 플레이어의 의자 태그 찾기
-					FString* TargetChairTag = ChairManager->PlayerToChairMap.Find(PlayerID);
-					if (TargetChairTag)
-					{
-						// ChildActorComponent에서 해당 태그를 가진 LuckyDrawChair 찾기
-						TArray<UChildActorComponent*> ChairComponents;
-						ChairManager->GetComponents(ChairComponents);
+    	// 현재 라운드의 룰렛 정보 가져오기
+    	const FRouletteInfo& CurrentRoundInfo = GameMode->GetRouletteInfoForRound(LastRoundIndex);
+        
+    	// 선택된 플레이어의 위치 찾기
+    	int32 SelectedRow = -1;
+    	int32 SelectedCol = -1;
+    	GameMode->GetPlayerPosition(CurrentRoundInfo.Player, SelectedRow, SelectedCol);
 
-						for (UChildActorComponent* ChairComponent : ChairComponents)
-						{
-							if (ChairComponent && ChairComponent->ComponentTags.Contains(FName(**TargetChairTag)))
-							{
-								ALuckyDrawChair* TargetChair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor());
-								if (TargetChair)
-								{
-									Player->AttachToActor(TargetChair , FAttachmentTransformRules::KeepWorldTransform);
-									TargetChair->ThrowChair();
-									UE_LOG(LogTemp , Log , TEXT("Function called on chair %s") , **TargetChairTag);
-								}
-								break;
-							}
-						}
-					}
+    	// 룰렛 규칙에 따라 라인 활성화
+    	LineManager->ActivateLinesByRule(CurrentRoundInfo.Rule, SelectedRow, SelectedCol);
 
-					// Chair 태그를 기반으로 Table 태그 생성 (예: Chair_1 -> Table_1)
-					FString TargetTableTag = TEXT("Table_") + TargetChairTag->RightChop(6);
+    	// 오버랩된 모든 의자 가져오기
+    	TArray<ALuckyDrawChair*> AffectedChairs = LineManager->GetOverlappingChairs();
 
-					// TableManager의 ChildComponent에서 테이블 찾기 및 함수 호출
-					TArray<UChildActorComponent*> TableComponents;
-					TableManager->GetComponents(TableComponents);
+    	for (int32 PlayerID : GameMode->EliminatedPlayersPerRound[LastRoundIndex])
+    	{
+    		// 기존 탈락 플레이어 처리 로직...
+    		for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+    		{
+    			ATTPlayer* Player = *It;
+    			if (Player && Player->GetRandomSeatNumber() == PlayerID)
+    			{
+    				Player->ClientLuckyDrawLose();
+    				Player->MulticastSetColorTextRender(FColor(255, 0, 235));
 
-					for (UChildActorComponent* TableComponent : TableComponents)
-					{
-						if (TableComponent && TableComponent->ComponentTags.Contains(FName(*TargetTableTag)))
-						{
-							ALuckyDrawTable* TargetTable = Cast<ALuckyDrawTable>(TableComponent->GetChildActor());
-							if (TargetTable)
-							{
-								TargetTable->SetColorRed();
-								UE_LOG(LogTemp , Log , TEXT("Function called on table %s") , *TargetTableTag);
-							}
-							break;
-						}
-					}
-				}
-			}
-		}
-	}
+    				// 테이블 색상 변경
+    				FString* TargetChairTag = ChairManager->PlayerToChairMap.Find(PlayerID);
+    				if (TargetChairTag)
+    				{
+    					FString TargetTableTag = TEXT("Table_") + TargetChairTag->RightChop(6);
+    					TArray<UChildActorComponent*> TableComponents;
+    					TableManager->GetComponents(TableComponents);
+
+    					for (UChildActorComponent* TableComponent : TableComponents)
+    					{
+    						if (TableComponent && TableComponent->ComponentTags.Contains(FName(*TargetTableTag)))
+    						{
+    							if (ALuckyDrawTable* TargetTable = Cast<ALuckyDrawTable>(TableComponent->GetChildActor()))
+    							{
+    								TargetTable->SetColorRed();
+    							}
+    							break;
+    						}
+    					}
+    				}
+    			}
+    		}
+    	}
+
+    	// 영향을 받은 모든 의자 날리기
+    	for (ALuckyDrawChair* Chair : AffectedChairs)
+    	{
+    		UE_LOG(LogTemp, Log, TEXT("Throwing chair: %s"), *Chair->GetName());
+    		Chair->ThrowChair();
+    	}
+    }
 }
 
 void ATTLuckyDrawGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -428,6 +440,15 @@ void ATTLuckyDrawGameState::EndRounds()
 	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
 	if (!GameMode || GameMode->RemainingPlayers.Num() == 0) return;
 
+	// *** 추가
+	// 라인 비활성화 - 새로운 라운드 시작 전에 수행
+	if (ALuckyDrawLine* LineManager = Cast<ALuckyDrawLine>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawLine::StaticClass())))
+	{
+		LineManager->DeactivateAllLines();
+	}
+	// *** 추가
+	
 	MulticastEndRounds();
 
 	// 우승자 플레이어의 좌석 번호

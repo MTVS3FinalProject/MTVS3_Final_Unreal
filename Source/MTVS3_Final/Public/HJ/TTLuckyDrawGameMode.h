@@ -105,7 +105,8 @@ public:
     TArray<int32> RoundEliminatedPlayers;
 
     const FRouletteInfo& GetRouletteInfoForRound(int32 RoundIndex) const;
-    
+
+    void GetPlayerPosition(int32 Player , int32& OutRow , int32& OutCol);
 private:
 
     FTimerHandle RouletteTimer;
@@ -125,5 +126,4 @@ private:
     void PrintSeats();
     bool IsGameOver() const;
     bool CheckSingleRowOrColRemaining();
-    void GetPlayerPosition(int32 Player , int32& OutRow , int32& OutCol);
 };
