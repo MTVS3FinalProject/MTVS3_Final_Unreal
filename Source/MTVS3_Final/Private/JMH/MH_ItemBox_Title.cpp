@@ -48,6 +48,16 @@ int32 UMH_ItemBox_Title::GetTitleID()
 	return TitleID;
 }
 
+void UMH_ItemBox_Title::SetTitleRarity(FString TitleRarity)
+{
+	RarityString = TitleRarity;
+}
+
+FString UMH_ItemBox_Title::GetTitleRarity()
+{
+	return RarityString;
+}
+
 FString UMH_ItemBox_Title::GetInfoString()
 {
 	return InfoTextString;

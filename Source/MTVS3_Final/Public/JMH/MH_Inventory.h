@@ -57,6 +57,9 @@ public:
 	//타이틀을 해제하시겠습니까?
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Can_TitleUnequipWin;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_00;
+	
 	UFUNCTION()
 	void ShowTitleEquipWin();
 	UFUNCTION()
@@ -163,10 +166,6 @@ public:
 	void OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem);
 	UFUNCTION()
 	void OnUnHoveredTitleBtn(UMH_ItemBox_Title* UnHoveredItem);
-	
-	//타이틀 박스 더블클릭시
-	//UFUNCTION()
-	//void HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem);
 
 	UFUNCTION()
 	void OnClickedTitleBtn(UMH_ItemBox_Title* ClickedItem);

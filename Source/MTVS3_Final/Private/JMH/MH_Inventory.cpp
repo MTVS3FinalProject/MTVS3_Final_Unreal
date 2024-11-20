@@ -127,6 +127,7 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 			ItemBox_Title->OnItemUnHovered_Title.AddDynamic(this , &UMH_Inventory::OnUnHoveredTitleBtn);
 			ItemBox_Title->SetInfoString(ItemData.titleScript);
 			ItemBox_Title->SetTitleID(ItemData.titleId);
+			ItemBox_Title->SetTitleRarity(ItemData.titleRarity);
 			if (OverlayTitle)
 			{
 				// Overlay에 ItemBox_Title 추가
@@ -340,13 +341,7 @@ void UMH_Inventory::OnClickedTilteYesBtn()
 	if (SelectedTitle)
 	{
 		// 이전에 선택된 아이템에서 프레임 제거
-
 		RemoveFrame();
-
-		//타이틀을 제거하시겠습니까? 창 뜨기
-		//플레이어한테 칭호 해제
-		//해제할 때 필요
-		//CurrentTitle->GetTitleID();
 
 		// 타이틀 해제 요청 통신
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -411,22 +406,6 @@ void UMH_Inventory::OnClickedTilteNo2Btn()
 	HideTitleUnequipWin();
 }
 
-/*
-void UMH_Inventory::SetInfoVisibility(bool bVisible)
-{
-	if (WBP_HoveredInfoTitlebox && bVisible)
-	{
-		// 가시성 설정
-		WBP_HoveredInfoTitlebox->SetVisibility(ESlateVisibility::Visible);
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Visible!"));
-	}
-	else if (WBP_HoveredInfoTitlebox && !bVisible)
-	{
-		WBP_HoveredInfoTitlebox->SetVisibility(ESlateVisibility::Hidden);
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Hidden!"));
-	}
-}*/
-
 void UMH_Inventory::DestroyInfo(UMH_ItemInfoBox* DestroyBox)
 {
 	// UI에서 제거
@@ -443,11 +422,14 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 	{
 		if (InfoBoxMap.Contains(HoveredItem))
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("InfoBoxMap!"));
 			return;
 		}
 		UMH_ItemInfoBox* WBP_HoveredInfoTitlebox = CreateWidget<UMH_ItemInfoBox>(this , InfoBoxFac);
 		if (WBP_HoveredInfoTitlebox)
 		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("OnHoveredTitleBtn WBP_HoveredInfoTitlebox!"));
+			Can_00->AddChildToCanvas(WBP_HoveredInfoTitlebox);
 			// HoveredItem의 절대 위치를 가져오기
 			FGeometry CachedGeometry = HoveredItem->GetCachedGeometry();
 			FVector2D AbsolutePosition = CachedGeometry.GetAbsolutePosition();
@@ -457,11 +439,12 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 			FVector2D LocalPosition = ParentGeometry.AbsoluteToLocal(AbsolutePosition);
 
 			// InfoBox를 HoveredItem 아래로 배치 (예: 50픽셀 아래)
-			FVector2D Offset(20.f , 90.0f);
+			FVector2D Offset(-250.f , -170.0f);
 			FVector2D InfoBoxPosition = LocalPosition + Offset;
 
 			WBP_HoveredInfoTitlebox->SetRenderTranslation(InfoBoxPosition);
 			WBP_HoveredInfoTitlebox->SetTextItemInfo(HoveredItem->GetInfoString());
+			WBP_HoveredInfoTitlebox->SetTextItemRarity(HoveredItem->GetTitleRarity());
 			WBP_HoveredInfoTitlebox->PlayInfoTextAnim(true);
 			InfoBoxMap.Add(HoveredItem , WBP_HoveredInfoTitlebox);
 		}
@@ -477,6 +460,7 @@ void UMH_Inventory::OnUnHoveredTitleBtn(UMH_ItemBox_Title* UnHoveredItem)
 		UMH_ItemInfoBox* WBP_HoveredInfoTitlebox = InfoBoxMap[UnHoveredItem];
 		if (WBP_HoveredInfoTitlebox)
 		{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("WBP_HoveredInfoTitlebox OnUnHoveredTitleBtn!"));
 			WBP_HoveredInfoTitlebox->PlayInfoTextAnim(false);
 			FTimerHandle TimerHandle;
 			GetWorld()->GetTimerManager().SetTimer(

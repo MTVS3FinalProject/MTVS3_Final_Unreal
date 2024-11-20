@@ -16,6 +16,11 @@ void UMH_ItemInfoBox::SetTextItemInfo(FString Info)
 	Text_ItemInfo->SetText(FText::FromString(Info));
 }
 
+void UMH_ItemInfoBox::SetTextItemRarity(FString Rarity)
+{
+	Text_titleRarity->SetText(FText::FromString(Rarity));
+}
+
 void UMH_ItemInfoBox::PlayInfoTextAnim(bool forward)
 {
 	if(forward)

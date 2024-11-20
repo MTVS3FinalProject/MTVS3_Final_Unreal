@@ -87,8 +87,18 @@ public:
 	
 	UFUNCTION()
 	int32 GetTitleID();
+	
+	//타이틀 등급
+	UFUNCTION()
+	void SetTitleRarity(FString TitleRarity);
+	
+	UFUNCTION()
+	FString GetTitleRarity();
+	
+	UPROPERTY()
+	FString RarityString;
 
-
+//타이틀 설명
 	UPROPERTY()
 	FString InfoTextString;
 	
