@@ -124,6 +124,16 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 {
 	bIsNoticeVisible = !bIsNoticeVisible;
 
+	// 우편함 열기
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if (HttpActor3)
+	{
+		// 우편함 조회 요청
+		HttpActor3->ReqGetMailbox(GI->GetAccessToken());
+	}
+	
 	if (bIsNoticeVisible)
 	{
 		SetVisibleSwitcher(true);
