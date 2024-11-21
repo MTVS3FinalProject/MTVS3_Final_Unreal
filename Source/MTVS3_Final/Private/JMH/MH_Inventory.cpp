@@ -195,7 +195,7 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 				});
 			ImageRequest->ProcessRequest();
 
-			ItemBox_Ticket->Text_Ticket->SetText(FText::FromString(ItemData.concertName));
+			ItemBox_Ticket->Text_TicketName->SetText(FText::FromString(ItemData.concertName));
 			ItemBox_Ticket->Text_SeatInfo->SetText(FText::FromString(ItemData.seatInfo));
 			//ItemBox_Ticket->SetTicketData(ItemData); // 타이틀 데이터를 설정
 			Hori_InvenBox_01_Ticket->AddChild(ItemBox_Ticket);
@@ -380,11 +380,14 @@ void UMH_Inventory::OnClickedTilteNo2Btn()
 
 void UMH_Inventory::DestroyInfo(UMH_ItemInfoBox* DestroyBox)
 {
-	// UI에서 제거
-	DestroyBox->RemoveFromParent();
+	if (DestroyBox)
+	{
+		// UI에서 제거
+		DestroyBox->RemoveFromParent();
 
-	// 이후 가비지 컬렉터가 파괴하도록 둠
-	DestroyBox = nullptr;
+		// 이후 가비지 컬렉터가 파괴하도록 둠
+		DestroyBox = nullptr;
+	}
 }
 
 void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
@@ -397,12 +400,14 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("InfoBoxMap!"));
 			return;
 		}
+		
 		UMH_ItemInfoBox* WBP_HoveredInfoTitlebox = CreateWidget<UMH_ItemInfoBox>(this , InfoBoxFac);
 		if (WBP_HoveredInfoTitlebox)
 		{
 			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red ,
 			                                 TEXT("OnHoveredTitleBtn WBP_HoveredInfoTitlebox!"));
 			Can_00->AddChildToCanvas(WBP_HoveredInfoTitlebox);
+			
 			// HoveredItem의 절대 위치를 가져오기
 			FGeometry CachedGeometry = HoveredItem->GetCachedGeometry();
 			FVector2D AbsolutePosition = CachedGeometry.GetAbsolutePosition();
@@ -471,7 +476,8 @@ void UMH_Inventory::OnHoveredStickerBtn(UMH_ItemBox_Sticker* HoveredItem_Sticker
 	//인포 창 뜸.
 	if (HoveredItem_Sticker)
 	{
-		HoveredItem_Sticker->Text_ItemInfo_Sticker->SetText(FText::FromString(HoveredItem_Sticker->GetInfoString_Sticker()));
+		HoveredItem_Sticker->Text_ItemInfo_Sticker->SetText(
+			FText::FromString(HoveredItem_Sticker->GetInfoString_Sticker()));
 		HoveredItem_Sticker->Text_StickerRarity->SetText(FText::FromString(HoveredItem_Sticker->GetStickerRarity()));
 		HoveredItem_Sticker->ShowInfo_Sticker();
 	}
@@ -483,6 +489,24 @@ void UMH_Inventory::OnUnHoveredStickerBtn(UMH_ItemBox_Sticker* UnHoveredItem_Sti
 	if (UnHoveredItem_Sticker)
 	{
 		UnHoveredItem_Sticker->HideInfo_Sticker();
+	}
+}
+
+void UMH_Inventory::OnHoveredTicketBtn(UMH_ItemBox_Ticket* HoveredItem_Ticket)
+{
+	if(HoveredItem_Ticket)
+	{
+		HoveredItem_Ticket->Text_TicketName->SetText(FText::FromString(HoveredItem_Ticket->GetInfoNameString_Ticket()));
+		HoveredItem_Ticket->Text_SeatInfo->SetText(FText::FromString(HoveredItem_Ticket->GetInfoString_Ticket()));
+		HoveredItem_Ticket->ShowInfo_Ticket();
+	}
+}
+
+void UMH_Inventory::OnUnHoveredTicketBtn(UMH_ItemBox_Ticket* UnHoveredItem_Ticket)
+{
+	if(UnHoveredItem_Ticket)
+	{
+		UnHoveredItem_Ticket->HideInfo_Ticket();
 	}
 }
 
