@@ -374,7 +374,7 @@ void ATTLuckyDrawGameState::EliminatePlayers()
 						TargetTable->SetColorRed();
 						
 						// 랜덤한 딜레이로 물리 시뮬레이션 활성화
-						float RandomDelay = FMath::FRandRange(0.0f, 1.0f);
+						float RandomDelay = FMath::FRandRange(0.0f, MaxRandomFallDelay);
 						FTimerHandle ThrowTableTimerHandle;
 						FTimerDelegate TableTimerCallback;
 						
@@ -465,7 +465,7 @@ void ATTLuckyDrawGameState::EliminatePlayers()
 					if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
 					{
 						// 랜덤한 딜레이 생성
-						float RandomDelay = FMath::FRandRange(0.0f, 1.0f);
+						float RandomDelay = FMath::FRandRange(0.0f, MaxRandomFallDelay);
                 
 						// 타이머를 통해 랜덤한 시간 후에 피직스 활성화
 						FTimerHandle ThrowTimerHandle;
