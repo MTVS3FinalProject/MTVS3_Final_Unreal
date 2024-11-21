@@ -163,6 +163,8 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 			TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
 			ImageRequest->SetURL(ItemData.ticketImage);
 			ImageRequest->SetVerb(TEXT("GET"));
+			ItemBox_Ticket->OnItemHovered_Ticket.AddDynamic(this,&UMH_Inventory::OnHoveredTicketBtn);
+			ItemBox_Ticket->OnItemUnHovered_Ticket.AddDynamic(this,&UMH_Inventory::OnUnHoveredTicketBtn);
 
 			// 다운로드 완료 시 콜백 설정
 			ImageRequest->OnProcessRequestComplete().BindLambda(
@@ -195,8 +197,7 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 				});
 			ImageRequest->ProcessRequest();
 
-			ItemBox_Ticket->Text_TicketName->SetText(FText::FromString(ItemData.concertName));
-			ItemBox_Ticket->Text_SeatInfo->SetText(FText::FromString(ItemData.seatInfo));
+			ItemBox_Ticket->SetInfoString_Ticket(ItemData.concertName,ItemData.seatInfo);
 			//ItemBox_Ticket->SetTicketData(ItemData); // 타이틀 데이터를 설정
 			Hori_InvenBox_01_Ticket->AddChild(ItemBox_Ticket);
 		}

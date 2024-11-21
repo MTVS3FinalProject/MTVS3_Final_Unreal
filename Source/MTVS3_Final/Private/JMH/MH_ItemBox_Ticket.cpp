@@ -11,12 +11,11 @@ void UMH_ItemBox_Ticket::NativeConstruct()
 	Super::NativeConstruct();
 	
 	Btn_Item_Ticket->OnClicked.AddDynamic(this,&UMH_ItemBox_Ticket::OnClickedTicketBtn);
+	Btn_Item_Ticket->OnHovered.AddDynamic(this,&UMH_ItemBox_Ticket::OnButtonHovered_Ticket);
+	Btn_Item_Ticket->OnUnhovered.AddDynamic(this,&UMH_ItemBox_Ticket::OnButtonUnHovered_Ticket);
 
 	// 버튼이 호버될 때 델리게이트 호출
-	if (UButton* Button = Cast<UButton>(GetWidgetFromName(TEXT("Btn_Item_Ticket"))))
-	{
-		Button->OnHovered.AddDynamic(this, &UMH_ItemBox_Ticket::OnButtonHovered_Ticket);
-	}
+
 	HideInfo_Ticket();
 }
 
