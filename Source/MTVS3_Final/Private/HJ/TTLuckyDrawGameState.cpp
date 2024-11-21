@@ -431,25 +431,46 @@ void ATTLuckyDrawGameState::EliminatePlayers()
         TArray<UChildActorComponent*> ChairComponents;
         ChairManager->GetComponents(ChairComponents);
 
-        for (const FString& ChairTag : ChairTagsToThrow)
-        {
-            bool bFoundChair = false;
-            for (UChildActorComponent* ChairComponent : ChairComponents)
-            {
-                if (!ChairComponent) continue;
+		for (const FString& ChairTag : ChairTagsToThrow)
+		{
+			bool bFoundChair = false;
+			for (UChildActorComponent* ChairComponent : ChairComponents)
+			{
+				if (!ChairComponent) continue;
 
-                if (ChairComponent->ComponentTags.Contains(FName(*ChairTag)))
-                {
-                    if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
-                    {
-                        // Chair->ThrowChair();
-                    	Chair->MulticastSetPhysicsState(true);
-                        UE_LOG(LogTemp, Log, TEXT("Successfully threw chair: %s"), *ChairTag);
-                        bFoundChair = true;
-                    }
-                    break;
-                }
-            }
+				if (ChairComponent->ComponentTags.Contains(FName(*ChairTag)))
+				{
+					if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
+					{
+						// 0~3초 사이의 랜덤한 딜레이 생성
+						float RandomDelay = FMath::FRandRange(0.0f, 1.5f);
+                
+						// 타이머를 통해 랜덤한 시간 후에 피직스 활성화
+						FTimerHandle ThrowTimerHandle;
+						FTimerDelegate TimerCallback;
+                
+						// 람다를 사용하여 현재 Chair 포인터를 캡처
+						TimerCallback.BindLambda([Chair]()
+						{
+							if (Chair)
+							{
+								Chair->MulticastSetPhysicsState(true);
+							}
+						});
+                
+						GetWorld()->GetTimerManager().SetTimer(
+							ThrowTimerHandle, 
+							TimerCallback, 
+							RandomDelay, 
+							false);
+                
+						UE_LOG(LogTemp, Log, TEXT("Chair %s will be thrown after %.2f seconds"), 
+							*ChairTag, RandomDelay);
+						bFoundChair = true;
+					}
+					break;
+				}
+			}
             
             if (!bFoundChair)
             {
