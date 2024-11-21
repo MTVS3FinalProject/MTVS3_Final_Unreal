@@ -517,12 +517,12 @@ void ATTPlayer::OnRep_RandomSeatNumber()
 		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
 	}
 
-	// 닉네임UI, TextRenderComp 업데이트
-	if (NicknameUI)
-	{
-		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
-	}
+	// // 닉네임UI, TextRenderComp 업데이트
+	// if (NicknameUI)
+	// {
+	// 	NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
+	// 	TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
+	// }
 }
 
 void ATTPlayer::ServerSetNewSkeletalMesh_Implementation(const int32& _AvatarData)
