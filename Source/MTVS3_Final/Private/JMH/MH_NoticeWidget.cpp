@@ -8,6 +8,7 @@
 #include "Components/Spacer.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_NoticeMessage.h"
@@ -35,7 +36,6 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 
 		if (Mails.Num() > 0)
 		{
-			//스티커 호리젠탈에 아이템 박스 넣어주기.
 			Vertical_MessageBox->ClearChildren();
 	
 			for (const FMails& Messageinfo : Mails)
@@ -45,9 +45,10 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 				if (MessageBox)
 				{
 					MessageBox->Text_Message->SetText(FText::FromString(Messageinfo.subject));
-					UE_LOG(LogTemp , Log , TEXT("Text_Message set successfully"));
+					MessageBox->SetMailId(Messageinfo.mailId);
+					// OnMessageClicked 이벤트 바인딩
+					MessageBox->OnMessageClicked.AddDynamic(this, &UMH_NoticeWidget::OnMessageSelected);
 					Vertical_MessageBox->AddChild(MessageBox);
-					UE_LOG(LogTemp , Log , TEXT("InitializeMessageTabs"));
 				}
 
 				// 2. 스페이서 추가
@@ -57,9 +58,21 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 					Spacer->SetSize(FVector2D(0.0f, 15.0f)); // 세로 방향으로 15px 간격 추가
 					Vertical_MessageBox->AddChild(Spacer);
 				}
-
-				UE_LOG(LogTemp, Log, TEXT("InitializeMessageTabs: Added spacer"));
 			}
 		}
+	}
+}
+
+void UMH_NoticeWidget::OnMessageSelected(int32 MailId)
+{
+	UE_LOG(LogTemp, Log, TEXT("Selected MailId: %d"), MailId);
+
+	// 특정 우편함 조회 요청
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if (GI && HttpActor3)
+	{
+		HttpActor3->ReqGetSpecificMail(MailId, GI->GetAccessToken());
 	}
 }
