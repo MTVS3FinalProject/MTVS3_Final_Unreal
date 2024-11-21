@@ -1446,6 +1446,11 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자가 없습니다."));
+		return;
+	}
 }
 
 void ATTPlayer::OnMyActionInventory(const FInputActionValue& Value)
