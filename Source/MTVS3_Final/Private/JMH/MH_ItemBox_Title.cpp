@@ -48,14 +48,24 @@ int32 UMH_ItemBox_Title::GetTitleID()
 	return TitleID;
 }
 
-FString UMH_ItemBox_Title::GetInfoString()
+void UMH_ItemBox_Title::SetTitleRarity(FString TitleRarity)
 {
-	return InfoTextString;
+	RarityString_Title = TitleRarity;
 }
 
-void UMH_ItemBox_Title::SetInfoString(FString infoString)
+FString UMH_ItemBox_Title::GetTitleRarity()
 {
-	InfoTextString = infoString;
+	return RarityString_Title;
+}
+
+FString UMH_ItemBox_Title::GetInfoString_Title()
+{
+	return InfoTextString_Title;
+}
+
+void UMH_ItemBox_Title::SetInfoString_Title(FString infoString_Title)
+{
+	InfoTextString_Title = infoString_Title;
 }
 
 

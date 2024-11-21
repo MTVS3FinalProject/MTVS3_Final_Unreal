@@ -116,6 +116,39 @@ public:
 	{}
 };
 
+USTRUCT()
+struct FMails
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Titles")
+	int32 mailId;
+    
+	UPROPERTY(VisibleAnywhere, Category = "Default|Titles")
+	FString subject;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Titles")
+	FString mailCategory;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Titles")
+	bool isRead;
+	
+	FMails()
+		: mailId(0)
+		, subject(TEXT(""))
+		, mailCategory(TEXT(""))
+		, isRead(false)
+	{}
+	// 매개 변수를 받는 생성자
+	FMails(int32 InId, const FString& InSubject, const FString& InCategory, bool InIsRead)
+		: mailId(InId)
+		, subject(InSubject)
+		, mailCategory(InCategory)
+		, isRead(InIsRead)
+	{}
+};
+
 UCLASS()
 class MTVS3_FINAL_API AHM_HttpActor3 : public AActor
 {
@@ -150,18 +183,21 @@ public:
 	const FString _url = "https://ticketaka.shop/api";
 #pragma endregion
 
-#pragma region FTitles/FStickers/FTickets/BackgroundId Getter & Setter Methods
+#pragma region FTitles/FStickers/FTickets/FMails/BackgroundId Getter & Setter Methods
 	TArray<FTitles> TitleItems;
 	TArray<FStickers> StickerItems;
 	TArray<FTickets> TicketItems;
+	TArray<FMails> Mails;
 	
-	// 인벤토리 데이터를 가져오는 함수
+	// 인벤토리, 우편함 데이터를 가져오는 함수
 	TArray<FTitles>& GetTitleItems() { return TitleItems; }
 	void SetTitleItems(TArray<FTitles>& NewTitleItems ) { TitleItems = NewTitleItems; };
 	TArray<FStickers>& GetStickerItems() { return StickerItems; }
 	void SetStickerItems(TArray<FStickers>& NewStickerItems ) { StickerItems = NewStickerItems; };
 	TArray<FTickets>& GetTicketItems() { return TicketItems; }
 	void SetTicketItems(TArray<FTickets>& NewTicketItems ) { TicketItems = NewTicketItems; };
+	TArray<FMails>& GetMails() { return Mails; }
+	void SetMails(TArray<FMails>& NewMails ) { Mails = NewMails; };
 
 	// 스티커 아이디 리스트를 가져오는 함수
 	TArray<int32> GetStickerIds() const
