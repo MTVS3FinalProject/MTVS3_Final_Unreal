@@ -482,7 +482,6 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 						GI->SetIsReceived(IsReceived);
 					}
 					
-					MyReceptionSeats.seatId = 1;
 					if( MainUI )
 					{
 						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
@@ -671,7 +670,7 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 }
 
 // 좌석 취소 요청2
-void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat2(FString SeatId, FString AccessToken)
+void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat2(int32 SeatId, FString AccessToken)
 {
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -680,7 +679,7 @@ void AHM_HttpActor2::ReqDeleteCancelRegisteredSeat2(FString SeatId, FString Acce
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d") , *_url, GetConcertId(), GetMyReceptionSeatId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d") , *_url, GetConcertId(), SeatId);
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId()); // 임의 SeatId(1)
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("DELETE"));
@@ -759,7 +758,7 @@ void AHM_HttpActor2::ReqPostNoticeGameStart(FString SeatId , FString AccessToken
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/drawing") , *_url, GetConcertId(), *SeatId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/drawing") , *_url, GetConcertId(), GetMyReceptionSeatId());
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/drawing") , *_url, GetConcertId()); // 임의 SeatId(1)
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
@@ -1187,7 +1186,7 @@ void AHM_HttpActor2::ReqPostPaymentSeat(int32 SeatId , FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/payment") , *_url, GetConcertId(), SeatId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/payment") , *_url, GetConcertId(), GetMyReceptionSeatId());
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/payment") , *_url, GetConcertId()); // 임의 SeatId(1)
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));

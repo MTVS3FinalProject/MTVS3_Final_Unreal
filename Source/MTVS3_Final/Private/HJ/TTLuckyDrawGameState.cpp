@@ -3,6 +3,7 @@
 #include <HJ/TTPlayer.h>
 #include "EngineUtils.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "HJ/LDTableManager.h"
 #include "HJ/LuckyDrawChair.h"
@@ -384,21 +385,18 @@ void ATTLuckyDrawGameState::EliminatePlayers()
                             {
                                 if (ALuckyDrawChair* TargetChair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
                                 {
-                                	/*// 플레이어의 물리 시뮬레이션 활성화
-                                	if (Player->GetRootComponent())
+                                	// 플레이어의 모든 콜리전을 비활성화
+                                	Player->SetActorEnableCollision(false);
+    
+                                	if (UCharacterMovementComponent* MovementComp = Player->GetCharacterMovement())
                                 	{
-                                		UPrimitiveComponent* RootAsPrimitive = Cast<UPrimitiveComponent>(Player->GetRootComponent());
-                                		if (RootAsPrimitive)
-                                		{
-                                			RootAsPrimitive->SetSimulatePhysics(true);
-                                		}
+                                		// 캐릭터 무브먼트의 중력 스케일을 증가시켜 빠르게 떨어지도록 함
+                                		MovementComp->GravityScale = 2.0f;
+                                		// 캐릭터 무브먼트의 이동 모드를 Falling으로 변경
+                                		MovementComp->SetMovementMode(MOVE_Falling);
                                 	}
                                 	
-                                	// AttachmentRules를 물리 시뮬레이션에 맞게 수정
-                                	FAttachmentTransformRules AttachRules(EAttachmentRule::KeepWorld, true);
-                                	Player->AttachToActor(TargetChair, AttachRules);*/
-                                	
-                                    Player->AttachToActor(TargetChair, FAttachmentTransformRules::KeepWorldTransform);
+                                    // Player->AttachToActor(TargetChair, FAttachmentTransformRules::KeepWorldTransform);
                                     UE_LOG(LogTemp, Log, TEXT("Player %d attached and thrown with chair %s"), 
                                         PlayerID, **TargetChairTag);
                                 }
@@ -443,8 +441,8 @@ void ATTLuckyDrawGameState::EliminatePlayers()
                 {
                     if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
                     {
-                        Chair->ThrowChair();
-                        // Chair->BoxComp->SetSimulatePhysics(true);
+                        // Chair->ThrowChair();
+                    	Chair->MulticastSetPhysicsState(true);
                         UE_LOG(LogTemp, Log, TEXT("Successfully threw chair: %s"), *ChairTag);
                         bFoundChair = true;
                     }
@@ -610,8 +608,8 @@ void ATTLuckyDrawGameState::InitializeChairs()
 		{
 			if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
 			{
-				// Chair->BoxComp->SetSimulatePhysics(false);
-				Chair->ResetChair(); // LuckyDrawChair에 추가할 함수
+				Chair->MulticastResetChair();
+				// Chair->ResetChair(); // LuckyDrawChair에 추가할 함수
 			}
 		}
 	}

@@ -121,25 +121,6 @@ void APuzzleManager::SortAndUpdateRanking()
             UE_LOG(LogTemp, Warning, TEXT("HttpActor3 is null!"));
             return;
         }
-
-	// 플레이어 수에 따라 텍스트 숨기기/보이기 설정
-	if (PuzzleUI)
-	{
-		PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
-		PuzzleUI->SetTextVisibility(2, ESlateVisibility::Visible);
-		PuzzleUI->SetTextVisibility(3, ESlateVisibility::Visible);
-		
-		int32 PlayerCount = PlayerScoresInfo.Num();
-		if(PlayerCount == 1)
-		{
-			PuzzleUI->SetTextVisibility(2, ESlateVisibility::Hidden);
-			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
-		}
-		else if(PlayerCount == 2)
-		{
-			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
-		}
-	}
 	
 	// 순위별 작업 수행
 	//for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)
@@ -167,6 +148,25 @@ void APuzzleManager::SortAndUpdateRanking()
 		
 		// 순위가 3위까지 끝나면 종료
 		//if (i + 1 == 3) break;
+	}
+
+	// 플레이어 수에 따라 텍스트 숨기기/보이기 설정
+	if (PuzzleUI)
+	{
+		PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
+		PuzzleUI->SetTextVisibility(2, ESlateVisibility::Visible);
+		PuzzleUI->SetTextVisibility(3, ESlateVisibility::Visible);
+		
+		int32 PlayerCount = PlayerScoresInfo.Num();
+		if(PlayerCount == 1)
+		{
+			PuzzleUI->SetTextVisibility(2, ESlateVisibility::Hidden);
+			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
+		}
+		else if(PlayerCount == 2)
+		{
+			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
+		}
 	}
 }
 
