@@ -471,8 +471,8 @@ void UMH_Inventory::OnHoveredStickerBtn(UMH_ItemBox_Sticker* HoveredItem_Sticker
 	//인포 창 뜸.
 	if (HoveredItem_Sticker)
 	{
-		HoveredItem_Sticker->SetInfoString_Sticker(HoveredItem_Sticker->GetInfoString_Sticker());
-		HoveredItem_Sticker->SetStickerRarity(HoveredItem_Sticker->GetStickerRarity());
+		HoveredItem_Sticker->Text_ItemInfo_Sticker->SetText(FText::FromString(HoveredItem_Sticker->GetInfoString_Sticker()));
+		HoveredItem_Sticker->Text_StickerRarity->SetText(FText::FromString(HoveredItem_Sticker->GetStickerRarity()));
 		HoveredItem_Sticker->ShowInfo_Sticker();
 	}
 }
