@@ -120,13 +120,14 @@ public:
 	void OnClicked_Sticker();
 
 	//칭호,티켓,스티커 정보 받아오기
+	/*
 	UFUNCTION()
 	void SetPlayerTitleInfo();
 	UFUNCTION()
 	void SetPlayerTicketsInfo();
 	UFUNCTION()
 	void SetPlayerStickerInfo();
-
+*/
 	//플레이어 칭호 적용
 	UFUNCTION()
 	void SetPlayerTitle(int32 TitleID);
@@ -161,6 +162,7 @@ public:
 	// 인포 위젯 가시성 설정 함수
 	UFUNCTION()
 	void DestroyInfo(UMH_ItemInfoBox* DestroyBox);
+	
 //타이틀
 	UFUNCTION()
 	void OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem);
@@ -169,6 +171,7 @@ public:
 
 	UFUNCTION()
 	void OnClickedTitleBtn(UMH_ItemBox_Title* ClickedItem);
+	
 //스티커
 	UFUNCTION()
 	void OnHoveredStickerBtn(UMH_ItemBox_Sticker* HoveredItem_Sticker);
@@ -185,9 +188,8 @@ public:
 	void RemoveFrame();
 	UFUNCTION()
 	void SetFramePosition(UMH_ItemBox_Title* ClickedItem);
-
-
-
+	
+/*
 	//test 버튼들 //아이템박스 생성해주기
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Title_Test;
@@ -203,7 +205,7 @@ public:
 	class UButton* Btn_Sticker_Test;
 	UFUNCTION()
 	void OnClicked_Sticker_Test();
-	
+	*/
 	int32 Counter_Title = 1;
 	int32 Counter_Ticket = 1;
 	int32 Counter_Sticker = 1;
@@ -214,8 +216,6 @@ public:
 	UPROPERTY()
 	TMap<class UMH_ItemBox_Title*, class UMH_ItemInfoBox*> InfoBoxMap_Title;
 	
-	UPROPERTY()
-	TMap<class UMH_ItemBox_Sticker*, class UMH_ItemInfoBox*> InfoBoxMap_Sticker;
 	
 	
 };

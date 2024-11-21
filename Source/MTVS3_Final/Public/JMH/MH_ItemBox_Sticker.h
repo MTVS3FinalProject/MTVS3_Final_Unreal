@@ -51,17 +51,39 @@ public:
 
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* Text_Sticker;
+	
+	UPROPERTY(meta=(BindWidget))
+	class UCanvasPanel* Can_StickerInfo;
 
 	UFUNCTION()
 	void OnClickedStickerBtn();
-
-	//스티커 설명
-	UPROPERTY()
-	FString InfoTextString_Title;
 	
 	UFUNCTION()
-	FString GetInfoString_Sticker();
-
+	void ChangeColorStickerName(const FString& StickerRarity);
+	
+	//스티커 설명
+	UPROPERTY()
+	FString InfoTextString_Sticker;
+	
 	UFUNCTION()
 	void SetInfoString_Sticker(FString infoString_Sticker);
+
+	UFUNCTION()
+	FString GetInfoString_Sticker();
+	
+	UFUNCTION()
+	void ShowInfo_Sticker();
+	UFUNCTION()
+	void HideInfo_Sticker();
+
+	//타이틀 등급
+	UFUNCTION()
+	void SetStickerRarity(FString StickerRarity);
+	
+	UFUNCTION()
+	FString GetStickerRarity();
+	
+	UPROPERTY()
+	FString RarityString_Sticker;
+	
 };

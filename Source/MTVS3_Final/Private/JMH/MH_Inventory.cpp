@@ -44,9 +44,9 @@ void UMH_Inventory::NativeConstruct()
 	Btn_Title_no2->OnClicked.AddDynamic(this , &UMH_Inventory::OnClickedTilteNo2Btn);
 
 	//test
-	Btn_Title_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Title_Test);
-	Btn_Ticket_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket_Test);
-	Btn_Sticker_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker_Test);
+	//Btn_Title_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Title_Test);
+	//Btn_Ticket_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket_Test);
+	//Btn_Sticker_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker_Test);
 }
 
 void UMH_Inventory::SetWidgetSwitcher(int32 num)
@@ -218,6 +218,10 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 			ImageRequest->SetURL(ItemData.stickerImage);
 			ImageRequest->SetVerb(TEXT("GET"));
 
+			// 아이템박스 위젯을 가져와 델리게이트에 바인딩
+			ItemBox_Sticker->OnItemHovered_Sticker.AddDynamic(this , &UMH_Inventory::OnHoveredStickerBtn);
+			ItemBox_Sticker->OnItemUnHovered_Sticker.AddDynamic(this , &UMH_Inventory::OnUnHoveredStickerBtn);
+
 			// 다운로드 완료 시 콜백 설정
 			ImageRequest->OnProcessRequestComplete().BindLambda(
 				[ItemBox_Sticker](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
@@ -250,6 +254,9 @@ void UMH_Inventory::InitializeStickerTabs(const TArray<FStickers>& StickerItems)
 			ImageRequest->ProcessRequest();
 
 			ItemBox_Sticker->Text_Sticker->SetText(FText::FromString(ItemData.stickerName));
+			ItemBox_Sticker->SetStickerRarity(ItemData.stickerRarity);
+			ItemBox_Sticker->SetInfoString_Sticker(ItemData.stickerScript);
+
 			UE_LOG(LogTemp , Log , TEXT("Sticker image set successfully"));
 			Hori_InvenBox_02_Sticker->AddChild(ItemBox_Sticker);
 			UE_LOG(LogTemp , Log , TEXT("InitializeStickerTabs"));
@@ -274,41 +281,6 @@ void UMH_Inventory::OnClicked_Sticker()
 {
 	//스티커
 	SetWidgetSwitcher(2);
-}
-
-void UMH_Inventory::SetPlayerTitleInfo()
-{
-	//WBP_ItemBox에 타이틀 텍스트 넣어서(매개변수 1. Text or Image) 저장
-	//생성
-	//Hori_InvenBox_00_PlayerTitle 자식으로 셋해주기
-	//여러개 일 수 있음.(배열로 받아오기?) for문 돌려서 셋해주기?
-
-	//On Hovered되면 플레이어 타이틀에 대한 정보 표시(매개변수 2. String) 저장
-
-
-	//>여기는 칭호 box 부분
-	//더블클릭하면 칭호 적용시켜주기. 또 더블클릭하면 해제 해주기.
-	//인벤토리 위젯에서는 프레임 씌워주기, 지워주기.
-}
-
-void UMH_Inventory::SetPlayerTicketsInfo()
-{
-	//WBP_ItemBox에 티켓이미지 넣어서(매개변수 1. Image)
-	//생성
-	//Hori_InvenBox_01_Ticket 자식으로 셋해주기
-	//여러개 일 수 있음.(배열로 받아오기?) for문 돌려서 셋해주기?
-
-	//On Hovered되면 티켓에 대한 정보 표시(매개변수 2. String) 
-}
-
-void UMH_Inventory::SetPlayerStickerInfo()
-{
-	//WBP_ItemBox에 스티커 이미지 넣어서 (매개변수 1. Image)
-	//생성
-	//Hori_InvenBox_02_Sticker 자식으로 셋해주기
-	//여러개 일 수 있음.(배열로 받아오기?) for문 돌려서 셋해주기?
-
-	//On Hovered되면 스티커에 대한 정보 표시(매개변수 2. String) 
 }
 
 void UMH_Inventory::SetPlayerTitle(int32 TitleID)
@@ -440,7 +412,7 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 			FVector2D LocalPosition = ParentGeometry.AbsoluteToLocal(AbsolutePosition);
 
 			// InfoBox를 HoveredItem 아래로 배치 (예: 50픽셀 아래)
-			FVector2D Offset(-250.f , -170.0f);
+			FVector2D Offset(-250.f , -120.0f);
 			FVector2D InfoBoxPosition = LocalPosition + Offset;
 
 			WBP_HoveredInfoTitlebox->SetRenderTranslation(InfoBoxPosition);
@@ -499,40 +471,19 @@ void UMH_Inventory::OnHoveredStickerBtn(UMH_ItemBox_Sticker* HoveredItem_Sticker
 	//인포 창 뜸.
 	if (HoveredItem_Sticker)
 	{
-		if (InfoBoxMap_Sticker.Contains(HoveredItem_Sticker))
-		{
-			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("InfoBoxMap_Sticker!"));
-			return;
-		}
-		UMH_ItemInfoBox* WBP_HoveredInfoStickerbox = CreateWidget<UMH_ItemInfoBox>(this , InfoBoxFac);
-		if (WBP_HoveredInfoStickerbox)
-		{
-			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red ,
-											 TEXT("OnHoveredTitleBtn WBP_HoveredInfoTitlebox!"));
-			Can_00->AddChildToCanvas(WBP_HoveredInfoStickerbox);
-			// HoveredItem의 절대 위치를 가져오기
-			FGeometry CachedGeometry = HoveredItem_Sticker->GetCachedGeometry();
-			FVector2D AbsolutePosition = CachedGeometry.GetAbsolutePosition();
-
-			// 부모 패널의 좌표계로 변환
-			FGeometry ParentGeometry = GetCachedGeometry(); // UMH_Inventory의 부모 패널
-			FVector2D LocalPosition = ParentGeometry.AbsoluteToLocal(AbsolutePosition);
-
-			// InfoBox를 HoveredItem 아래로 배치 (예: 50픽셀 아래)
-			FVector2D Offset(-250.f , -170.0f);
-			FVector2D InfoBoxPosition = LocalPosition + Offset;
-
-			WBP_HoveredInfoStickerbox->SetRenderTranslation(InfoBoxPosition);
-			WBP_HoveredInfoStickerbox->SetTextItemInfo(HoveredItem_Sticker->GetInfoString_Sticker());
-			WBP_HoveredInfoStickerbox->PlayInfoTextAnim(true);
-			InfoBoxMap_Sticker.Add(HoveredItem_Sticker , WBP_HoveredInfoStickerbox);
-		}
+		HoveredItem_Sticker->SetInfoString_Sticker(HoveredItem_Sticker->GetInfoString_Sticker());
+		HoveredItem_Sticker->SetStickerRarity(HoveredItem_Sticker->GetStickerRarity());
+		HoveredItem_Sticker->ShowInfo_Sticker();
 	}
 }
 
 void UMH_Inventory::OnUnHoveredStickerBtn(UMH_ItemBox_Sticker* UnHoveredItem_Sticker)
 {
-	
+	//인포 창 지움
+	if (UnHoveredItem_Sticker)
+	{
+		UnHoveredItem_Sticker->HideInfo_Sticker();
+	}
 }
 
 void UMH_Inventory::AddFrame(UMH_ItemBox_Title* ClickedItem)
@@ -588,6 +539,7 @@ void UMH_Inventory::SetFramePosition(UMH_ItemBox_Title* ClickedItem)
 	}
 }
 
+/*
 void UMH_Inventory::OnClicked_Title_Test()
 {
 	//타이틀 호리젠탈에 아이템 박스 넣어주기.
@@ -644,4 +596,4 @@ void UMH_Inventory::OnClicked_Sticker_Test()
 		//ItemBox_Sticker->SetStickerData(ItemData); // 타이틀 데이터를 설정
 		Hori_InvenBox_02_Sticker->AddChild(ItemBox_Sticker);
 	}
-}
+}*/

@@ -41,6 +41,8 @@ public:
 	
 	UFUNCTION()
 	void OnClickedTicketBtn();
+	UFUNCTION()
+	void ShowInfo_Ticket();
 	
 private:
 	UFUNCTION()
