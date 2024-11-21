@@ -2,6 +2,7 @@
 #include "HJ/TTGameInstance.h"
 #include <HJ/TTPlayer.h>
 #include "EngineUtils.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "HJ/LDTableManager.h"
 #include "HJ/LuckyDrawChair.h"
@@ -383,6 +384,20 @@ void ATTLuckyDrawGameState::EliminatePlayers()
                             {
                                 if (ALuckyDrawChair* TargetChair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
                                 {
+                                	/*// 플레이어의 물리 시뮬레이션 활성화
+                                	if (Player->GetRootComponent())
+                                	{
+                                		UPrimitiveComponent* RootAsPrimitive = Cast<UPrimitiveComponent>(Player->GetRootComponent());
+                                		if (RootAsPrimitive)
+                                		{
+                                			RootAsPrimitive->SetSimulatePhysics(true);
+                                		}
+                                	}
+                                	
+                                	// AttachmentRules를 물리 시뮬레이션에 맞게 수정
+                                	FAttachmentTransformRules AttachRules(EAttachmentRule::KeepWorld, true);
+                                	Player->AttachToActor(TargetChair, AttachRules);*/
+                                	
                                     Player->AttachToActor(TargetChair, FAttachmentTransformRules::KeepWorldTransform);
                                     UE_LOG(LogTemp, Log, TEXT("Player %d attached and thrown with chair %s"), 
                                         PlayerID, **TargetChairTag);
@@ -429,6 +444,7 @@ void ATTLuckyDrawGameState::EliminatePlayers()
                     if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
                     {
                         Chair->ThrowChair();
+                        // Chair->BoxComp->SetSimulatePhysics(true);
                         UE_LOG(LogTemp, Log, TEXT("Successfully threw chair: %s"), *ChairTag);
                         bFoundChair = true;
                     }
@@ -594,6 +610,7 @@ void ATTLuckyDrawGameState::InitializeChairs()
 		{
 			if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
 			{
+				// Chair->BoxComp->SetSimulatePhysics(false);
 				Chair->ResetChair(); // LuckyDrawChair에 추가할 함수
 			}
 		}
