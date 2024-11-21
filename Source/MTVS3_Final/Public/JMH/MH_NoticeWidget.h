@@ -40,4 +40,5 @@ public:
 	// 메세지 생성 및 초기화 함수
 	UFUNCTION()
 	void InitializeMessageTabs();
+	void OnMessageSelected(int32 MailId);
 };
