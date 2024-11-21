@@ -50,22 +50,22 @@ int32 UMH_ItemBox_Title::GetTitleID()
 
 void UMH_ItemBox_Title::SetTitleRarity(FString TitleRarity)
 {
-	RarityString = TitleRarity;
+	RarityString_Title = TitleRarity;
 }
 
 FString UMH_ItemBox_Title::GetTitleRarity()
 {
-	return RarityString;
+	return RarityString_Title;
 }
 
-FString UMH_ItemBox_Title::GetInfoString()
+FString UMH_ItemBox_Title::GetInfoString_Title()
 {
-	return InfoTextString;
+	return InfoTextString_Title;
 }
 
-void UMH_ItemBox_Title::SetInfoString(FString infoString)
+void UMH_ItemBox_Title::SetInfoString_Title(FString infoString_Title)
 {
-	InfoTextString = infoString;
+	InfoTextString_Title = infoString_Title;
 }
 
 

@@ -161,7 +161,7 @@ public:
 	// 인포 위젯 가시성 설정 함수
 	UFUNCTION()
 	void DestroyInfo(UMH_ItemInfoBox* DestroyBox);
-
+//타이틀
 	UFUNCTION()
 	void OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem);
 	UFUNCTION()
@@ -169,6 +169,11 @@ public:
 
 	UFUNCTION()
 	void OnClickedTitleBtn(UMH_ItemBox_Title* ClickedItem);
+//스티커
+	UFUNCTION()
+	void OnHoveredStickerBtn(UMH_ItemBox_Sticker* HoveredItem_Sticker);
+	UFUNCTION()
+	void OnUnHoveredStickerBtn(UMH_ItemBox_Sticker* UnHoveredItem_Sticker);
 	
 	//타이틀에 프레임 적용
 	UPROPERTY(meta = (BindWidget))
@@ -207,7 +212,10 @@ public:
 	TMap<class UMH_ItemBox_Title*, class UOverlaySlot*> OverlaySlotMap;
 	
 	UPROPERTY()
-	TMap<class UMH_ItemBox_Title*, class UMH_ItemInfoBox*> InfoBoxMap;
+	TMap<class UMH_ItemBox_Title*, class UMH_ItemInfoBox*> InfoBoxMap_Title;
+	
+	UPROPERTY()
+	TMap<class UMH_ItemBox_Sticker*, class UMH_ItemInfoBox*> InfoBoxMap_Sticker;
 	
 	
 };

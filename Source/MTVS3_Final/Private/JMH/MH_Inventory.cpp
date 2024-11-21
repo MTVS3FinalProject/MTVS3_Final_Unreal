@@ -125,7 +125,7 @@ void UMH_Inventory::InitializeTitleTabs(const TArray<FTitles>& TitleItem)
 			// 아이템박스 위젯을 가져와 델리게이트에 바인딩
 			ItemBox_Title->OnItemHovered_Title.AddDynamic(this , &UMH_Inventory::OnHoveredTitleBtn);
 			ItemBox_Title->OnItemUnHovered_Title.AddDynamic(this , &UMH_Inventory::OnUnHoveredTitleBtn);
-			ItemBox_Title->SetInfoString(ItemData.titleScript);
+			ItemBox_Title->SetInfoString_Title(ItemData.titleScript);
 			ItemBox_Title->SetTitleID(ItemData.titleId);
 			ItemBox_Title->SetTitleRarity(ItemData.titleRarity);
 			if (OverlayTitle)
@@ -420,7 +420,7 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 	//인포 창 뜸.
 	if (HoveredItem)
 	{
-		if (InfoBoxMap.Contains(HoveredItem))
+		if (InfoBoxMap_Title.Contains(HoveredItem))
 		{
 			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("InfoBoxMap!"));
 			return;
@@ -444,10 +444,10 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 			FVector2D InfoBoxPosition = LocalPosition + Offset;
 
 			WBP_HoveredInfoTitlebox->SetRenderTranslation(InfoBoxPosition);
-			WBP_HoveredInfoTitlebox->SetTextItemInfo(HoveredItem->GetInfoString());
+			WBP_HoveredInfoTitlebox->SetTextItemInfo(HoveredItem->GetInfoString_Title());
 			WBP_HoveredInfoTitlebox->SetTextItemRarity(HoveredItem->GetTitleRarity());
 			WBP_HoveredInfoTitlebox->PlayInfoTextAnim(true);
-			InfoBoxMap.Add(HoveredItem , WBP_HoveredInfoTitlebox);
+			InfoBoxMap_Title.Add(HoveredItem , WBP_HoveredInfoTitlebox);
 		}
 	}
 }
@@ -455,10 +455,10 @@ void UMH_Inventory::OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem)
 void UMH_Inventory::OnUnHoveredTitleBtn(UMH_ItemBox_Title* UnHoveredItem)
 {
 	//인포 창 사라짐.
-	if (UnHoveredItem && InfoBoxMap.Contains(UnHoveredItem))
+	if (UnHoveredItem && InfoBoxMap_Title.Contains(UnHoveredItem))
 	{
 		// 매핑에서 InfoBox 가져오기
-		UMH_ItemInfoBox* WBP_HoveredInfoTitlebox = InfoBoxMap[UnHoveredItem];
+		UMH_ItemInfoBox* WBP_HoveredInfoTitlebox = InfoBoxMap_Title[UnHoveredItem];
 		if (WBP_HoveredInfoTitlebox)
 		{
 			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red ,
@@ -472,7 +472,7 @@ void UMH_Inventory::OnUnHoveredTitleBtn(UMH_ItemBox_Title* UnHoveredItem)
 					if (IsValid(this) && IsValid(WBP_HoveredInfoTitlebox))
 					{
 						DestroyInfo(WBP_HoveredInfoTitlebox);
-						InfoBoxMap.Remove(UnHoveredItem);
+						InfoBoxMap_Title.Remove(UnHoveredItem);
 					}
 				} ,
 				1.0f , false);
@@ -492,6 +492,47 @@ void UMH_Inventory::OnClickedTitleBtn(UMH_ItemBox_Title* ClickedItem)
 	}
 	CurrentTitle = ClickedItem;
 	ShowTitleEquipWin();
+}
+
+void UMH_Inventory::OnHoveredStickerBtn(UMH_ItemBox_Sticker* HoveredItem_Sticker)
+{
+	//인포 창 뜸.
+	if (HoveredItem_Sticker)
+	{
+		if (InfoBoxMap_Sticker.Contains(HoveredItem_Sticker))
+		{
+			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("InfoBoxMap_Sticker!"));
+			return;
+		}
+		UMH_ItemInfoBox* WBP_HoveredInfoStickerbox = CreateWidget<UMH_ItemInfoBox>(this , InfoBoxFac);
+		if (WBP_HoveredInfoStickerbox)
+		{
+			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red ,
+											 TEXT("OnHoveredTitleBtn WBP_HoveredInfoTitlebox!"));
+			Can_00->AddChildToCanvas(WBP_HoveredInfoStickerbox);
+			// HoveredItem의 절대 위치를 가져오기
+			FGeometry CachedGeometry = HoveredItem_Sticker->GetCachedGeometry();
+			FVector2D AbsolutePosition = CachedGeometry.GetAbsolutePosition();
+
+			// 부모 패널의 좌표계로 변환
+			FGeometry ParentGeometry = GetCachedGeometry(); // UMH_Inventory의 부모 패널
+			FVector2D LocalPosition = ParentGeometry.AbsoluteToLocal(AbsolutePosition);
+
+			// InfoBox를 HoveredItem 아래로 배치 (예: 50픽셀 아래)
+			FVector2D Offset(-250.f , -170.0f);
+			FVector2D InfoBoxPosition = LocalPosition + Offset;
+
+			WBP_HoveredInfoStickerbox->SetRenderTranslation(InfoBoxPosition);
+			WBP_HoveredInfoStickerbox->SetTextItemInfo(HoveredItem_Sticker->GetInfoString_Sticker());
+			WBP_HoveredInfoStickerbox->PlayInfoTextAnim(true);
+			InfoBoxMap_Sticker.Add(HoveredItem_Sticker , WBP_HoveredInfoStickerbox);
+		}
+	}
+}
+
+void UMH_Inventory::OnUnHoveredStickerBtn(UMH_ItemBox_Sticker* UnHoveredItem_Sticker)
+{
+	
 }
 
 void UMH_Inventory::AddFrame(UMH_ItemBox_Title* ClickedItem)

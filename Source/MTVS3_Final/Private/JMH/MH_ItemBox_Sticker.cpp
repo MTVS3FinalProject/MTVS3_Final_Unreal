@@ -26,13 +26,18 @@ void UMH_ItemBox_Sticker::NativeConstruct()
 
 void UMH_ItemBox_Sticker::OnClickedStickerBtn()
 {
-	
+	//?
 }
 
-
-void UMH_ItemBox_Sticker::OnButtonHovered_Sticker()
+void UMH_ItemBox_Sticker::SetInfoString_Sticker(FString infoString_Sticker)
 {
-	OnItemHovered_Sticker.Broadcast(true);  // 델리게이트 호출
+	InfoTextString_Title = infoString_Sticker;
 }
+
+FString UMH_ItemBox_Sticker::GetInfoString_Sticker()
+{
+	return InfoTextString_Title;
+}
+
 
 

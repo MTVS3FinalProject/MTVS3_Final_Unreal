@@ -10,8 +10,9 @@
  * 
  */
 
-//struct FTitleItemData;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemHovered_Sticker, bool, bHovered);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemHovered_Sticker , UMH_ItemBox_Sticker* , HoveredItem_Sticker);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemUnHovered_Sticker , UMH_ItemBox_Sticker* , UnHoveredItem_Sticker);
 
 UCLASS()
 class MTVS3_FINAL_API UMH_ItemBox_Sticker : public UUserWidget
@@ -19,17 +20,29 @@ class MTVS3_FINAL_API UMH_ItemBox_Sticker : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	virtual void NativeConstruct() override;
+
+public:
 	// 아이템 박스 버튼에 마우스 호버 이벤트 델리게이트
 	UPROPERTY(BlueprintAssignable)
 	FOnItemHovered_Sticker OnItemHovered_Sticker;
 
-	
-public:
-	virtual void NativeConstruct() override;
+	UFUNCTION()
+	void OnButtonHovered_Sticker()
+	{
+		OnItemHovered_Sticker.Broadcast(this); // 델리게이트 호출
+	}
+
+	// 아이템 박스 버튼에 마우스 언호버 이벤트 델리게이트
+	UPROPERTY(BlueprintAssignable)
+	FOnItemUnHovered_Sticker OnItemUnHovered_Sticker;
 
 	UFUNCTION()
-	void OnButtonHovered_Sticker();
-	
+	void OnButtonUnHovered_Sticker()
+	{
+		OnItemUnHovered_Sticker.Broadcast(this); // 델리게이트 호출
+	}
+
 	UPROPERTY(meta=(BindWidget))
 	class UImage* Img_Item_Sticker;
 
@@ -39,11 +52,16 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* Text_Sticker;
 
-	//UFUNCTION()
-	//void SetStickerData(const FStickerItemData& InStickerData);
-
-	
 	UFUNCTION()
 	void OnClickedStickerBtn();
+
+	//스티커 설명
+	UPROPERTY()
+	FString InfoTextString_Title;
 	
+	UFUNCTION()
+	FString GetInfoString_Sticker();
+
+	UFUNCTION()
+	void SetInfoString_Sticker(FString infoString_Sticker);
 };
