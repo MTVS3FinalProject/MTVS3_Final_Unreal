@@ -14,12 +14,12 @@ class MTVS3_FINAL_API UHM_NoticeMessage : public UUserWidget
 {
 	GENERATED_BODY()
 
-// public:
-// 	virtual void NativeConstruct() override;
-// 	
-// 	UPROPERTY(meta=(BindWidget))
-// 	class UButton* Btn_Message;
-//
-// 	UPROPERTY(meta=(BindWidget))
-// 	class UTextBlock* Text_Message;
+public:
+	virtual void NativeConstruct() override;
+	
+	UPROPERTY(meta=(BindWidget))
+	class UButton* Btn_Message;
+
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Text_Message;
 };

@@ -10,6 +10,7 @@
 #include "JsonObjectConverter.h"
 #include "JMH/MainWidget.h"
 #include "JMH/MH_Inventory.h"
+#include "JMH/MH_NoticeWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_PuzzleWidget.h"
@@ -970,23 +971,51 @@ void AHM_HttpActor3::OnResGetPostponePaymentSeat(FHttpRequestPtr Request, FHttpR
 				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
 				if (ResponseObject.IsValid())
 				{
-					TArray<TSharedPtr<FJsonValue>> MailListDTO = ResponseObject->GetArrayField(TEXT("mailListDTO"));
-					for (int32 i = 0; i < MailListDTO.Num(); i++)
-					{
-						TSharedPtr<FJsonObject> MailObject = MailListDTO[i]->AsObject();
-						if (MailObject.IsValid())
-						{
-							int32 MailId = MailObject->GetIntegerField(TEXT("mailId"));
-							FString Subject = MailObject->GetStringField(TEXT("subject"));
-							FString MailCategory = MailObject->GetStringField(TEXT("mailCategory"));
-							bool IsRead = MailObject->GetBoolField(TEXT("isRead"));
+					// TArray<TSharedPtr<FJsonValue>> MailListDTO = ResponseObject->GetArrayField(TEXT("mailListDTO"));
+					// for (int32 i = 0; i < MailListDTO.Num(); i++)
+					// {
+					// 	TSharedPtr<FJsonObject> MailObject = MailListDTO[i]->AsObject();
+					// 	if (MailObject.IsValid())
+					// 	{
+					// 		int32 MailId = MailObject->GetIntegerField(TEXT("mailId"));
+					// 		FString Subject = MailObject->GetStringField(TEXT("subject"));
+					// 		FString MailCategory = MailObject->GetStringField(TEXT("mailCategory"));
+					// 		bool IsRead = MailObject->GetBoolField(TEXT("isRead"));
+					//
+					// 		UE_LOG(LogTemp , Log , TEXT("MailId: %d"), MailId);
+					// 		UE_LOG(LogTemp , Log , TEXT("Subject: %s"), *Subject)
+					// 		UE_LOG(LogTemp , Log , TEXT("MailCategory: %s"), *MailCategory);
+					// 		UE_LOG(LogTemp , Log , TEXT("IsRead: %s"), IsRead ? TEXT("true") : TEXT("false"));
+					// 		
+					// 	}
+					// }
 
-							UE_LOG(LogTemp , Log , TEXT("MailId: %d"), MailId);
-							UE_LOG(LogTemp , Log , TEXT("Subject: %s"), *Subject)
-							UE_LOG(LogTemp , Log , TEXT("MailCategory: %s"), *MailCategory);
-							UE_LOG(LogTemp , Log , TEXT("IsRead: %s"), IsRead ? TEXT("true") : TEXT("false"));
+					// 티켓 목록
+					TArray<TSharedPtr<FJsonValue>> MailList = ResponseObject->GetArrayField(TEXT("mailListDTO"));
+					TArray<FMails> TempMails;
+					for ( const TSharedPtr<FJsonValue>& MailValue : MailList )
+					{
+						TSharedPtr<FJsonObject> MailObject = MailValue->AsObject();
+
+						// JSON 문자열을 FTitles 구조체로 변환
+						FMails NewMails;
+						if (FJsonObjectConverter::JsonObjectToUStruct(MailObject.ToSharedRef() , &NewMails , 0 , 0))
+						{
+							// 변환된 FTitles 구조체를 임시 배열에 추가
+							TempMails.Add(NewMails);
 							
+							UE_LOG(LogTemp , Log , TEXT("Mail Info | Id: %d, Subject: %s, Category: %s, IsRead: %s") ,
+								   NewMails.mailId ,
+								   *NewMails.subject ,
+								   *NewMails.mailCategory ,
+								   NewMails.isRead ? TEXT("true") : TEXT("false"));
 						}
+					}
+					SetMails(TempMails);
+					if (MainUI)
+					{
+						MainUI->WBP_MH_MainBar->WBP_NoticeUI->InitializeMessageTabs();
+						UE_LOG(LogTemp , Log , TEXT("NoticeUI->InitializeMessageTabs()"));
 					}
 				}
 
