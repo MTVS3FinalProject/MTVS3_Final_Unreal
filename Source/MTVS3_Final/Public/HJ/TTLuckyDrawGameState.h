@@ -79,6 +79,7 @@ public:
 
 	void EndRounds();
 	void InitializeChairs();
+	
 	bool bIsStartRound = false;
 
 	void EliminatePlayers();
@@ -109,6 +110,9 @@ public:
 
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastShowOnlyNumPlayers();
+
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastDisableAllPhysics();
 #pragma endregion
 
 #pragma region 사운드
