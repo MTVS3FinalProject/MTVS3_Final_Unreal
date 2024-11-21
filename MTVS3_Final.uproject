@@ -33,6 +33,39 @@
 		{
 			"Name": "MediaFrameworkUtilities",
 			"Enabled": true
+		},
+		{
+			"Name": "DMXControlConsole",
+			"Enabled": true
+		},
+		{
+			"Name": "DMXDisplayCluster",
+			"Enabled": true
+		},
+		{
+			"Name": "DMXEngine",
+			"Enabled": true
+		},
+		{
+			"Name": "DMXFixtures",
+			"Enabled": true
+		},
+		{
+			"Name": "DMXPixelMapping",
+			"Enabled": true
+		},
+		{
+			"Name": "DMXProtocol",
+			"Enabled": true
+		},
+		{
+			"Name": "RemoteControlProtocolDMX",
+			"Enabled": true
+		},
+		{
+			"Name": "AsyncLoadingScreen",
+			"Enabled": true,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/01f39767dc6b4290877f38365787cbf8"
 		}
 	]
 }
