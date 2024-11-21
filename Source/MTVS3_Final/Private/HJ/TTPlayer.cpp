@@ -1785,7 +1785,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Chair && Anim)
 	{
-		UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
+		// UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
 		Chair->bIsOccupied = true;
 		Chair->RotateChair(true);
 		FTransform SittingTransform = Chair->GetSittingTransform();
