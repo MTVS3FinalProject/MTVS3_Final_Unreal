@@ -41,4 +41,19 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void ThrowChair();
+
+	UFUNCTION(BlueprintCallable)
+	void ResetChair();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastSetPhysicsState(bool bSimulate);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastResetChair();
+	
+private:
+	FVector OriginalLocation;
+	FRotator OriginalRotation;
+	bool bIsThrown;
+
 };

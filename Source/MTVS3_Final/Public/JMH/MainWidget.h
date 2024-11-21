@@ -189,7 +189,7 @@ public:
 	class UButton* Btn_SelectConcertBack;
 
 	UPROPERTY()
-	int32 ConcertNum = 0;
+	int32 ConcertNum = 3;
 
 	//왼쪽 버튼 클릭
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))

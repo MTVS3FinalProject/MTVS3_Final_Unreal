@@ -16,7 +16,6 @@
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "HJ/TTGameInstance.h"
-#include "JMH/MainWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor3.h"
 

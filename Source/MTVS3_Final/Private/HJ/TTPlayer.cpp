@@ -560,8 +560,12 @@ void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 	FVector TargetLocation = bIsToConcertHall ? FVector(19 , -4962 , 516) : FVector(18055 , 2000 , 3132);
 	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , -45 , 0);
 	
+	this->SetActorEnableCollision(false);
 	TeleportTo(TargetLocation , TargetRotation);
-
+	this->SetActorEnableCollision(true);
+	// SetActorLocation(TargetLocation, false); // bSweep = false로 콜리전 체크 무시
+	// SetActorRotation(TargetRotation);
+	
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		ClientAdjustCamera(TargetRotation);
@@ -671,7 +675,7 @@ void ATTPlayer::ServerLuckyDrawWin_Implementation()
 
 void ATTPlayer::MulticastLuckyDrawWin_Implementation()
 {
-	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 490.0f) , FRotator(0.0f , -90.0f , 0.0f));
+	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 390.000108f) , FRotator(0.0f , -90.0f , 0.0f));
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Anim) Anim->PlayDancingMontage();
 }
@@ -739,7 +743,7 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 		if (MainUI) MainUI->SetVisibleCanvas(false);
 		if (TicketingUI)
 		{
-			TicketingUI->SetVisibleSwitcher(true , 1);
+			TicketingUI->SetVisibleSwitcher(true , 1);//이부분 수정해야함 매희
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 		}
 	}
@@ -870,7 +874,11 @@ void ATTPlayer::MyTakePiece()
 							}
 						}
 					}
-					if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+					if (PuzzleUI)
+					{
+						PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+						PuzzleUI->SetWidgetSwitcher(0);
+					}
 				}
 			}
 		}
@@ -1438,6 +1446,11 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자가 없습니다."));
+		return;
+	}
 }
 
 void ATTPlayer::OnMyActionInventory(const FInputActionValue& Value)
@@ -1500,7 +1513,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 				// MainUI 숨기기
 				MainUI->SetVisibleCanvas(false);
 				// 좌석 경쟁 UI 표시
-				TicketingUI->SetVisibleSwitcher(true , 1);
+				TicketingUI->SetVisibleSwitcher(true , 1);//이부분 수정해야함 매희
 			}
 			else
 			{
@@ -1516,7 +1529,8 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 	case EPlaceState::LuckyDrawRoom:
 		if (GetbIsHost())
 		{
-			if (GI)
+			ATTLuckyDrawGameState* GameState = GetWorld()->GetGameState<ATTLuckyDrawGameState>();
+			if (GI && GameState && GameState->bIsStartRound != true)
 			{
 				GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 				GI->SwitchSession(EPlaceState::Plaza);
@@ -1702,6 +1716,7 @@ void ATTPlayer::InitMainUI()
 	{
 		HttpActor3->SetMainUI(MainUI);
 		HttpActor3->SetTicketingUI(TicketingUI);
+		HttpActor3->SetPuzzleUI(PuzzleUI);
 	}
 }
 
@@ -1775,7 +1790,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Chair && Anim)
 	{
-		UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
+		// UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
 		Chair->bIsOccupied = true;
 		Chair->RotateChair(true);
 		FTransform SittingTransform = Chair->GetSittingTransform();

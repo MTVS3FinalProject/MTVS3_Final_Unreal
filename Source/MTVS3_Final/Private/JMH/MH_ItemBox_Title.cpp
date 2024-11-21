@@ -13,7 +13,8 @@ void UMH_ItemBox_Title::NativeConstruct()
 	Btn_Item_Title->OnClicked.AddDynamic(this , &UMH_ItemBox_Title::OnClickedTitle);
 
 	// 버튼이 호버될 때 델리게이트 호출
-	//Btn_Item_Title->OnHovered.AddDynamic(this, &UMH_ItemBox_Title::OnButtonHovered_Title);
+	Btn_Item_Title->OnHovered.AddDynamic(this, &UMH_ItemBox_Title::OnButtonHovered_Title);
+	Btn_Item_Title->OnUnhovered.AddDynamic(this, &UMH_ItemBox_Title::OnButtonUnHovered_Title);
 	
 }
 
@@ -47,14 +48,24 @@ int32 UMH_ItemBox_Title::GetTitleID()
 	return TitleID;
 }
 
-FString UMH_ItemBox_Title::GetInfoString()
+void UMH_ItemBox_Title::SetTitleRarity(FString TitleRarity)
 {
-	return InfoTextString;
+	RarityString_Title = TitleRarity;
 }
 
-void UMH_ItemBox_Title::SetInfoString(FString infoString)
+FString UMH_ItemBox_Title::GetTitleRarity()
 {
-	InfoTextString = infoString;
+	return RarityString_Title;
+}
+
+FString UMH_ItemBox_Title::GetInfoString_Title()
+{
+	return InfoTextString_Title;
+}
+
+void UMH_ItemBox_Title::SetInfoString_Title(FString infoString_Title)
+{
+	InfoTextString_Title = infoString_Title;
 }
 
 

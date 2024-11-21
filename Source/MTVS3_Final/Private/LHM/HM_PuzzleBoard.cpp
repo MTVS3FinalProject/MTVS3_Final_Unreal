@@ -163,7 +163,7 @@ void AHM_PuzzleBoard::ServerSetBoardAreaVisibility_Implementation(int32 BoardInd
 				APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
 				if (Manager)
 				{
-					Manager->GameOver(); // 퍼즐 종료 로직 호출
+					Manager->SortAndUpdateRanking(); // 퍼즐 종료 로직 호출
 				}
 			}
 		}

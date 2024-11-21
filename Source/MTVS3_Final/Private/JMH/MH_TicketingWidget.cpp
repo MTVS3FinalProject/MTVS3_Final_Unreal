@@ -3,6 +3,7 @@
 
 #include "JMH/MH_TicketingWidget.h"
 #include "Components/Button.h"
+#include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
@@ -16,6 +17,7 @@ void UMH_TicketingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	Btn_Back1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedBackButton);
+	//Btn_Back1_1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedBack1_1);
 	//Btn_Back2->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedBackButton);
 	Btn_Confirm_Ticketting->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedConfirmButton);
 	Btn_Cancel_Ticketting1->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedCancelButton);
@@ -84,6 +86,8 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 			bIsVisible = true;
 			WS_RegisterSwitcher->SetActiveWidgetIndex(1);
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
+			//추첨장 입장 비지블온
+			SetBattleEntryVisible(true);
 			
 			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 			if (Local)
@@ -104,6 +108,8 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 		{
 			bIsVisible = false;
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+			//추첨장 입장 비지블오프
+			SetBattleEntryVisible(false);
 			
 			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 			if (Local)
@@ -209,18 +215,27 @@ void UMH_TicketingWidget::OnClickedConfirmButton()
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		AMH_Chair* Chair = Cast<AMH_Chair>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
-		if (HttpActor2 && Chair)
+		// 플레이어 캐릭터를 가져옵니다.
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (PlayerController)
 		{
-			// Chair의 태그를 가져와서 매개변수로 넘김
-			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
+			ATTPlayer* Player = Cast<ATTPlayer>(PlayerController->GetPawn());
+			if (Player)
+			{
+				// 플레이어에서 GetOverlappingActor 호출
+				AMH_Chair* Chair = Cast<AMH_Chair>(Player->GetOverlappingActor());
+				if (HttpActor2 && Chair)
+				{
+					// Chair의 태그를 가져와서 매개변수로 넘김
+					FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 
-			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
+					UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-			HttpActor2->ReqGetRegisterSeat(ChairTag , gi->GetAccessToken());
-			//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
-			//SetCompletedVisible(true); 응답 완료했을 때 호출하게 해줬음
+					HttpActor2->ReqGetRegisterSeat(ChairTag , gi->GetAccessToken());
+					//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
+					//SetCompletedVisible(true); 응답 완료했을 때 호출하게 해줬음
+				}
+			}
 		}
 	}
 	//접수오류가 생기는 경우도 있나?
@@ -235,18 +250,27 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		AMH_Chair* Chair = Cast<AMH_Chair>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
-		if (HttpActor2 && Chair)
+		// 플레이어 캐릭터를 가져옵니다.
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (PlayerController)
 		{
-			// Chair의 태그를 가져와서 매개변수로 넘김
-			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
+			ATTPlayer* Player = Cast<ATTPlayer>(PlayerController->GetPawn());
+			if (Player)
+			{
+				// 플레이어에서 GetOverlappingActor 호출
+				AMH_Chair* Chair = Cast<AMH_Chair>(Player->GetOverlappingActor());
+				if (HttpActor2 && Chair)
+				{
+					// Chair의 태그를 가져와서 매개변수로 넘김
+					FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 
-			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
+					UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-			HttpActor2->ReqDeleteCancelRegisteredSeat(ChairTag , gi->GetAccessToken());
-			//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
-			//SetCompletedVisible(false);
+					HttpActor2->ReqDeleteCancelRegisteredSeat(ChairTag , gi->GetAccessToken());
+					//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
+					//SetCompletedVisible(false);
+				}
+			}
 		}
 	}
 }
@@ -259,19 +283,27 @@ void UMH_TicketingWidget::OnClickedCancelButton2()
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		AMH_Chair* Chair = Cast<AMH_Chair>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
-		if (HttpActor2 && Chair)
+		//AMH_Chair* Chair = Cast<AMH_Chair>(
+		//	UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
+		//if (HttpActor2 && Chair)
+		if(HttpActor2)
 		{
 			// Chair의 태그를 가져와서 매개변수로 넘김
-			FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
+			//FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 
-			UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
+			//UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-			HttpActor2->ReqDeleteCancelRegisteredSeat2(ChairTag , gi->GetAccessToken());
+			//HttpActor2->ReqDeleteCancelRegisteredSeat2(ChairTag , gi->GetAccessToken());
+			
+			HttpActor2->ReqDeleteCancelRegisteredSeat2(HttpActor2->GetMyReceptionSeatId() , gi->GetAccessToken());
 		}
 	}
 }
+
+//void UMH_TicketingWidget::OnClickedBack1_1()
+//{
+//	SetVisibleSwitcher(false,1);
+//}
 
 void UMH_TicketingWidget::SetTextGameCountDown(FString GameCountDown)
 {
@@ -338,6 +370,20 @@ void UMH_TicketingWidget::OnClickedSoundButton()
 void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 {
 	//소리 들리게, 안들리게.
+}
+
+//추첨장 입장 UI띄우기 비지블로 변경
+void UMH_TicketingWidget::SetBattleEntryVisible(bool bVisible)
+{
+	if(bVisible)
+	{
+		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	else if(!bVisible)
+	{
+		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 /*

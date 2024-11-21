@@ -163,6 +163,11 @@ public:
 	UFUNCTION()
 	void OnClickedCancelButton2();
 
+	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	//class UButton*  Btn_Back1_1;
+	//UFUNCTION()
+	//void OnClickedBack1_1();
+
 	//설정
 	//PlayerVisible
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -193,6 +198,14 @@ public:
 
 	UPROPERTY()
 	bool bIsVisible;
+
+	//추첨장 입장 알림
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_TicketBattleEntry;
+
+	UFUNCTION()
+	void SetBattleEntryVisible(bool bVisible);
+	
 	
 	// ==================================
 	// HttpActor2 공연장 입장 통신 테스트용
