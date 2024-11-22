@@ -20,6 +20,19 @@
 #include "LHM/HM_HttpActor3.h"
 
 
+void UHM_TicketCustom::OnClickedSaveButton()
+{
+	// Img_CopiedImgs 내 모든 요소의 Outline, RenderAngle, RenderScale, Delete 숨기기
+	for (FUsedImage& ImageSet : Img_CopiedImgs)
+	{
+		if (ImageSet.Outline) ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
+		if (ImageSet.RenderAngle) ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
+		if (ImageSet.RenderScale) ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
+		if (ImageSet.Delete) ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
+	}
+	OnClickedTicketCustomSave.Broadcast();
+}
+
 void UHM_TicketCustom::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -91,12 +104,16 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 	GroupSlot->SetAlignment(FVector2d(0.5f));
 	GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 1); // 필요 시 ZOrder 조정
 	
+	// 초기 Scale 값 설정
+	ImageGroupOverlay->SetRenderScale(FVector2D(1.0f, 1.0f)); // 초기 Scale 명시
+	
 	// 새 이미지 생성
 	UImage* CopiedImage = NewObject<UImage>(this, UImage::StaticClass());
 	UImage* OutlineImage = NewObject<UImage>(this , UImage::StaticClass());
 	UImage* RenderAngleImage = NewObject<UImage>(this , UImage::StaticClass());
 	UImage* RenderScaleImage = NewObject<UImage>(this , UImage::StaticClass());
 	UImage* RenderDeleteImage = NewObject<UImage>(this , UImage::StaticClass());
+	FVector2d CurrentScale = FVector2d(1.0f, 1.0f);
 
 	if (CopiedImage && OutlineImage && RenderAngleImage && RenderScaleImage && RenderDeleteImage)
 	{
@@ -109,13 +126,13 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			if (CopiedTexture)
 			{
 				CopiedImage->SetBrushFromTexture(CopiedTexture);
+				UE_LOG(LogTemp , Log , TEXT("SetBrushFromTexture(CopiedTexture)"));
 			}
-			else
-			{
-				CopiedImage->SetBrushFromTexture(TextureResource); // 복사 실패 시 기존 리소스 사용
-			}
+
 			CopiedImage->SetBrushFromTexture(TextureResource);
-			CopiedImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
+			//CopiedImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
+			CopiedImage->SetDesiredSizeOverride(FVector2D(100.0f, 100.0f)); // 초기 크기 설정 (적절히 조정)
+			CopiedImage->SetRenderScale(FVector2D(1.0f, 1.0f)); // 초기 Scale 설정
 			CopiedImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
 			CopiedImage->SetVisibility(ESlateVisibility::Visible);
 			CopiedImage->bIsVariable = true;
@@ -156,12 +173,12 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		RenderScaleImage->SetIsEnabled(true);
 		RenderDeleteImage->SetIsEnabled(true);
 
-		CopiedImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
-		CopiedImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
-		OutlineImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
-		RenderAngleImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
-		RenderScaleImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
-		RenderDeleteImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		// CopiedImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		// CopiedImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		// OutlineImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		// RenderAngleImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		// RenderScaleImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
+		// RenderDeleteImage->SetColorAndOpacity(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
 		
 
 		// UOverlay에 이미지를 자식으로 추가
@@ -218,7 +235,7 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		
 		// Img_CopiedImgs에 추가
-		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage);
+		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage, CurrentScale);
 		Img_CopiedImgs.Add(NewImageSet);
 		
 		return NewImageSet;
@@ -228,15 +245,20 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 
 void UHM_TicketCustom::SetRenderScale(FUsedImage& ImageSet, const FVector2D& MouseDelta)
 {
-	if(bIsRenderingScale)
+	if(bIsRenderingScale && ImageSet.CopiedImage)
 	{
-		if(ImageSet.CopiedImage)
-		{
-			// 마우스 이동 거리의 크기에 따라 Scale 조정
-			//float ScaleFactor = 1.0f + (MouseDelta.X * 0.01f);
-			float ScaleFactor = FMath::Clamp(1.0f + (MouseDelta.X * 0.005f), 0.5f, 5);
-			ImageSet.ImageGroupOverlay->SetRenderScale(FVector2D(ScaleFactor));
-		}	
+		// 마우스 이동량을 제한
+		float AdjustedMouseDelta = MouseDelta.X * 0.001f; // 스케일 변화율을 줄임
+		float ScaleFactor = FMath::Clamp(0.001f + AdjustedMouseDelta, 0.5f, 5.0f);
+		
+		// 초기 Scale을 기준으로 새로운 스케일 계산
+		FVector2D NewScale = ImageSet.CurrentScale * ScaleFactor;
+		
+		// Scale 값 제한
+		NewScale.X = FMath::Clamp(NewScale.X, 0.5f, 5.0f);
+		NewScale.Y = FMath::Clamp(NewScale.Y, 0.5f, 5.0f);
+		
+		ImageSet.ImageGroupOverlay->SetRenderScale(NewScale);
 	}
 }
 
@@ -248,7 +270,7 @@ void UHM_TicketCustom::SetRenderAngle(FUsedImage& ImageSet, const FVector2D& Mou
 		{
 			// 마우스 이동에 따라 회전 각도 조정
 			// 임의 조절 비율 0.5
-			float AngleDelta = MouseDelta.X * 0.5f;
+			float AngleDelta = MouseDelta.X * 0.1f;
 			float CurrentImageAngle = ImageSet.ImageGroupOverlay->GetRenderTransformAngle();
 			ImageSet.ImageGroupOverlay->SetRenderTransformAngle(CurrentImageAngle + AngleDelta);
 		}	
@@ -270,12 +292,7 @@ void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet, int32 Index)
 			}
 			if (ImageSet.OriginImage)
 			{
-				//ImageSet.OriginImage->SetVisibility(ESlateVisibility::Visible);
-
-				// 원본 이미지를 숨기지 않고 투명도로 설정
-				FLinearColor TransparentColor = FLinearColor::White;
-				TransparentColor.A = 100.0f; // 투명도 설정
-				ImageSet.OriginImage->SetColorAndOpacity(TransparentColor);
+				ImageSet.OriginImage->SetVisibility(ESlateVisibility::Visible);
 			}
 
 			// 구조체의 이미지 포인터를 nullptr로 설정하여 이후 접근 방지
@@ -311,12 +328,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
 					//OriginImage = Image;
-					//Image->SetVisibility(ESlateVisibility::Hidden);
-
-					// 원본 이미지를 숨기지 않고 투명도로 설정
-					FLinearColor TransparentColor = FLinearColor::White;
-					TransparentColor.A = 0.0f; // 투명도 설정
-					Image->SetColorAndOpacity(TransparentColor);
+					Image->SetVisibility(ESlateVisibility::Hidden);
 					
 					// 이미지 복사본 생성 (UOverlay 포함된 ImageSet 생성)
 					FUsedImage ImageSet = CreateCompleteImageSet(Image);
@@ -402,7 +414,17 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 					bIsRenderingScale = true;
 					CurrentImage = CopiedImg;; // 스케일값 조정할 이미지를 설정
 					PreviousMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-
+					
+					// CurrentScale 초기화 및 기준점 설정
+					for (FUsedImage& ImageSets : Img_CopiedImgs)
+					{
+						if (ImageSets.CopiedImage == CurrentImage)
+						{
+							ImageSets.CurrentScale = ImageSets.ImageGroupOverlay->GetRenderTransform().Scale;
+							UE_LOG(LogTemp, Log, TEXT("Initial Scale: %s"), *ImageSet.CurrentScale.ToString());
+							break;
+						}
+					}
 					return FReply::Handled().CaptureMouse(this->TakeWidget());
 				}
 			}
@@ -438,8 +460,26 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 					if (ImageSet.RenderScale) ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
 					if (ImageSet.Delete) ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
 				}
+				return FReply::Handled().CaptureMouse(this->TakeWidget());
+			}
+		}
+		// 백그라운드(인포) 클릭 시
+		if (Img_TicketInfo && Img_TicketInfo->IsVisible() && Img_TicketInfo->GetIsEnabled() == true)
+		{
+			FGeometry BGGeometry = Img_TicketInfo->GetCachedGeometry();
+			if (BGGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
+			{
+				bIsBackground = true;
+				CurrentImage = Img_TicketInfo;
 
-				// 마우스 캡처 설정
+				// Img_CopiedImgs 내 모든 요소의 Outline, RenderAngle, RenderScale, Delete 숨기기
+				for(FUsedImage& ImageSet : Img_CopiedImgs)
+				{
+					if (ImageSet.Outline) ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
+					if (ImageSet.RenderAngle) ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
+					if (ImageSet.RenderScale) ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
+					if (ImageSet.Delete) ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
+				}
 				return FReply::Handled().CaptureMouse(this->TakeWidget());
 			}
 		}
@@ -453,7 +493,7 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	{
 		// 마우스의 현재 위치를 로컬 좌표로 변환
 		FVector2D LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		FVector2D AdjustedPosition = LocalMousePosition - (FVector2D(100));
+		FVector2D AdjustedPosition = LocalMousePosition;
 
 		// Img_CopiedImgs 배열에서 CurrentImage와 매칭되는 쌍을 찾음
 		for (FUsedImage& ImageSet : Img_CopiedImgs)
@@ -491,7 +531,6 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 	if (bIsRenderingScale && CurrentImage)
 	{
 		FVector2d LocalMousePosition = MyGeometry.AbsoluteToLocal(MouseEvent.GetScreenSpacePosition());
-		//FVector2D MouseDelta = PreviousMousePosition - LocalMousePosition;
 		FVector2D MouseDelta = LocalMousePosition - PreviousMousePosition;
 		
 		for (FUsedImage& ImageSet : Img_CopiedImgs)
@@ -500,8 +539,8 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 			{
 				FVector2D LerpedMousePosition = FMath::Lerp(PreviousMousePosition, MouseDelta, 0.1f);
 				SetRenderScale(ImageSet, LerpedMousePosition);
-				//PreviousMousePosition = LerpedMousePosition;
 				PreviousMousePosition = LocalMousePosition;
+
 				return FReply::Handled();
 			}
 		}
@@ -549,6 +588,15 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 					ImageSet.RenderAngle->SetVisibility(ESlateVisibility::Hidden);
 					ImageSet.RenderScale->SetVisibility(ESlateVisibility::Hidden);
 					ImageSet.Delete->SetVisibility(ESlateVisibility::Hidden);
+				}
+
+				if (bIsRenderingScale && CurrentImage)
+				{
+					// 현재 크기를 저장
+					ImageSet.CurrentScale = ImageSet.ImageGroupOverlay->GetRenderTransform().Scale;
+					UE_LOG(LogTemp , Log , TEXT("Mouse Released: Saved Current Scale: %s") ,
+					       *ImageSet.CurrentScale.ToString());
+					break;
 				}
 			}
 		}
