@@ -74,5 +74,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void RotateChair(bool bIsSitting);
+
+	// bAvailable true면 초록색, false면 빨간색
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void ChangeLightColor(bool bAvailable);
 #pragma endregion
 };

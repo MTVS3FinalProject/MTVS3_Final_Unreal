@@ -4,6 +4,7 @@
 #include "JMH/MH_TicketingWidget.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
+#include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
@@ -32,6 +33,9 @@ void UMH_TicketingWidget::NativeConstruct()
 	//현민 : 작업 완료후 지우기
 	SetCompletedVisible(false);
 
+	// KHJ
+	Img_Loading->SetVisibility(ESlateVisibility::Hidden);
+	
 	//콘서트정보 담아오기
 	//SetConcertInfo();
 
@@ -44,12 +48,14 @@ void UMH_TicketingWidget::NativeConstruct()
 
 void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
 {
+	if (!WS_RegisterSwitcher) return;
 	//서버에서 불러와서 입력
 	WS_RegisterSwitcher->SetActiveWidgetIndex(num);
 }
 
 void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 {
+	if (!WS_RegisterSwitcher) return;
 	switch (index)
 	{
 	case 0:
@@ -329,6 +335,15 @@ void UMH_TicketingWidget::SetTextCompetitionRate(int32 CompetitionRate)
 	Text_CompetitionRate->SetText(FText::AsNumber(CompetitionRate));
 }
 
+void UMH_TicketingWidget::SetLoadingActive(bool bIsActive)
+{
+	if (bIsActive == true)
+	{
+		Img_Loading->SetVisibility(ESlateVisibility::Visible);
+		PlayAnimation(LoadingAnim);
+	}
+}
+
 void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 {
 	//게임맵으로 세션이동
@@ -340,6 +355,8 @@ void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 	{
 		gi->SwitchSession(EPlaceState::LuckyDrawRoom);
 	}
+
+	SetLoadingActive(true);
 }
 
 void UMH_TicketingWidget::OnClickedPlayerVisibleButton()
