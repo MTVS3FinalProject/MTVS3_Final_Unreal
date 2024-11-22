@@ -66,21 +66,9 @@ public:
 	FOnClickedTicketCustomBack OnClickedTicketCustomBack;
 	FOnClickedTicketCustomSave OnClickedTicketCustomSave;
 
-	// 닫기 버튼 클릭 이벤트 설정
+	// 닫기, 저장 버튼 클릭 이벤트 설정
 	UFUNCTION()
-	void OnClickedExitButton()
-	{
-		// 델리게이트 호출
-		OnClickedTicketCustomBack.Broadcast();
-	}
-	
-	// // 저장 버튼 클릭 이벤트 설정
-	// UFUNCTION()
-	// void OnClickedSaveButton()
-	// {
-	// 	// 델리게이트 호출
-	// 	OnClickedTicketCustomSave.Broadcast();
-	// }
+	void OnClickedExitButton();
 	UFUNCTION()
 	void OnClickedSaveButton();
 	
@@ -113,6 +101,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
+
+	UPROPERTY()
+	TArray<UTexture2D*> CopiedTextures;
 	
 	// 드래그 앤 드롭, 회전, 크기조정, 삭제
 	UPROPERTY()

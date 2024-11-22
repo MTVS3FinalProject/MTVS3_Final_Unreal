@@ -20,9 +20,14 @@
 #include "LHM/HM_HttpActor3.h"
 
 
+void UHM_TicketCustom::OnClickedExitButton()
+{
+	OnClickedTicketCustomBack.Broadcast();
+}
+
 void UHM_TicketCustom::OnClickedSaveButton()
 {
-	// Img_CopiedImgs 내 모든 요소의 Outline, RenderAngle, RenderScale, Delete 숨기기
+	// 티켓 저장할 때 Img_CopiedImgs 내 모든 요소의 Outline, RenderAngle, RenderScale, Delete 숨기기
 	for (FUsedImage& ImageSet : Img_CopiedImgs)
 	{
 		if (ImageSet.Outline) ImageSet.Outline->SetVisibility(ESlateVisibility::Hidden);
@@ -43,7 +48,6 @@ void UHM_TicketCustom::NativeConstruct()
 	Btn_Exit->OnClicked.AddDynamic(this , &UHM_TicketCustom::OnClickedExitButton);
 
 	RootCanvas = Cast<UCanvasPanel>(GetRootWidget());
-	//TicketCanvas = Cast<UCanvasPanel>(GetRootWidget());
 	
 	bIsDragging = false;
 	bIsRenderingAngle = false;
@@ -52,17 +56,11 @@ void UHM_TicketCustom::NativeConstruct()
 	bIsBackground = false;
 	CurrentImage = nullptr;
 
-	 if (!ScrollBox_Stickers || !VerticalBox_Stickers)
-	 {
-	 	UE_LOG(LogTemp, Error, TEXT("ScrollBox or VerticalBox is not bound in widget blueprint"));
-	 	return;
-	 }
-
 	// 스크롤박스 설정
+	if (!ScrollBox_Stickers || !VerticalBox_Stickers) return;
 	ScrollBox_Stickers->SetScrollBarVisibility(ESlateVisibility::Visible);
 	ScrollBox_Stickers->SetAnimateWheelScrolling(true);
 	ScrollBox_Stickers->SetAllowOverscroll(true);
-	
 }
 
 void UHM_TicketCustom::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -121,16 +119,8 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		UTexture2D* TextureResource = Cast<UTexture2D>(SourceImage->GetBrush().GetResourceObject());
 		if (TextureResource)
 		{
-			// 텍스처를 강제로 복사해서 새로운 인스턴스 생성
-			UTexture2D* CopiedTexture = DuplicateObject<UTexture2D>(TextureResource, nullptr);
-			if (CopiedTexture)
-			{
-				CopiedImage->SetBrushFromTexture(CopiedTexture);
-				UE_LOG(LogTemp , Log , TEXT("SetBrushFromTexture(CopiedTexture)"));
-			}
-
 			CopiedImage->SetBrushFromTexture(TextureResource);
-			//CopiedImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
+			CopiedTextures.Add(TextureResource); // 텍스처를 배열에 추가
 			CopiedImage->SetDesiredSizeOverride(FVector2D(100.0f, 100.0f)); // 초기 크기 설정 (적절히 조정)
 			CopiedImage->SetRenderScale(FVector2D(1.0f, 1.0f)); // 초기 Scale 설정
 			CopiedImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
@@ -139,7 +129,16 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			CopiedImage->SetIsEnabled(true);
 		}
 
-		// 아웃라인, 조정버튼 이미지의 텍스처 설정
+		// 아웃라인, 조정버튼 이미지들의 텍스처 설정
+		// ConstructorHelpers::FObjectFinder<UTexture2D> OutlineTextureObj(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerOutline.T_StickerOutline'"));
+		// if (OutlineTextureObj.Succeeded()) OutlineImage->SetBrushFromTexture(OutlineTextureObj.Object);
+		// ConstructorHelpers::FObjectFinder<UTexture2D> AngleTextureObj(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerAngle.T_StickerAngle'"));
+		// if (AngleTextureObj.Succeeded()) RenderAngleImage->SetBrushFromTexture(AngleTextureObj.Object);
+		// ConstructorHelpers::FObjectFinder<UTexture2D> ScaleTextureObj(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerScale.T_StickerScale'"));
+		// if (ScaleTextureObj.Succeeded()) RenderScaleImage->SetBrushFromTexture(ScaleTextureObj.Object);
+		// ConstructorHelpers::FObjectFinder<UTexture2D> DeleteTextureObj(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerDelete.T_StickerDelete'"));
+		// if (DeleteTextureObj.Succeeded()) RenderDeleteImage->SetBrushFromTexture(DeleteTextureObj.Object);
+		
 		UTexture2D* OutlineTexture  = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
 		                                                                 TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerOutline.T_StickerOutline'")));
 		UTexture2D* AngleTexture  = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
@@ -155,6 +154,7 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 			RenderScaleImage->SetBrushFromTexture(ScaleTexture);
 			RenderDeleteImage->SetBrushFromTexture(DeleteTexture);
 		}
+		
 		// 속성 설정
 		OutlineImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
 		RenderAngleImage->SetDesiredSizeOverride(FVector2d(45));
@@ -234,7 +234,7 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		RenderScaleImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		RenderDeleteImage->SetRenderTransformPivot(FVector2D(0.5f, 0.5f));
 		
-		// Img_CopiedImgs에 추가
+		// 참조를 유지하도록 구조체 배열 Img_CopiedImgs에 추가
 		FUsedImage NewImageSet(CopiedImage, OutlineImage, RenderAngleImage, RenderScaleImage, RenderDeleteImage, ImageGroupOverlay, SourceImage, CurrentScale);
 		Img_CopiedImgs.Add(NewImageSet);
 		
@@ -573,7 +573,8 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 		for(FUsedImage& ImageSet : Img_CopiedImgs)
 		{
 			// 이미지가 삭제되지 않았는지 (nullptr가 아닌지) 확인
-			if (ImageSet.CopiedImage && ImageSet.Outline && ImageSet.RenderAngle && ImageSet.RenderScale && ImageSet.Delete)
+			if (ImageSet.CopiedImage && ImageSet.Outline && ImageSet.RenderAngle
+					&& ImageSet.RenderScale && ImageSet.Delete && ImageSet.ImageGroupOverlay && ImageSet.OriginImage)
 			{
 				if (ImageSet.CopiedImage == CurrentImage)
 				{
@@ -594,10 +595,40 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 				{
 					// 현재 크기를 저장
 					ImageSet.CurrentScale = ImageSet.ImageGroupOverlay->GetRenderTransform().Scale;
-					UE_LOG(LogTemp , Log , TEXT("Mouse Released: Saved Current Scale: %s") ,
-					       *ImageSet.CurrentScale.ToString());
 					break;
 				}
+
+				// 흰색 브러쉬로 보이는 문제: 모든 텍스쳐를 강제로 재설정하기
+				// 원본 텍스처 가져오기
+				UTexture2D* OriginalTexture = Cast<UTexture2D>(ImageSet.OriginImage->GetBrush().GetResourceObject());
+				if (OriginalTexture)
+				{
+					ImageSet.CopiedImage->SetBrushFromTexture(OriginalTexture);
+				}
+
+				// 텍스처 로드 유틸리티 함수
+				auto LoadTexture = [](const FString& Path) -> UTexture2D*
+				{
+					UTexture2D* Texture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass(), nullptr, *Path));
+					if (!Texture)
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Failed to load texture at path: %s"), *Path);
+					}
+					return Texture;
+				};
+
+				// 각 텍스처 로드 및 적용
+				UTexture2D* OutlineTexture = LoadTexture(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerOutline.T_StickerOutline'"));
+				if (OutlineTexture) ImageSet.Outline->SetBrushFromTexture(OutlineTexture);
+
+				UTexture2D* AngleTexture = LoadTexture(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerAngle.T_StickerAngle'"));
+				if (AngleTexture) ImageSet.RenderAngle->SetBrushFromTexture(AngleTexture);
+
+				UTexture2D* ScaleTexture = LoadTexture(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerScale.T_StickerScale'"));
+				if (ScaleTexture) ImageSet.RenderScale->SetBrushFromTexture(ScaleTexture);
+
+				UTexture2D* DeleteTexture = LoadTexture(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerDelete.T_StickerDelete'"));
+				if (DeleteTexture) ImageSet.Delete->SetBrushFromTexture(DeleteTexture);
 			}
 		}
 		return FReply::Handled().ReleaseMouseCapture();
