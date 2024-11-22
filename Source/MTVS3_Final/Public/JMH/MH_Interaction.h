@@ -39,6 +39,6 @@ public:
 	UFUNCTION()
 	void TextOffAnimPlay();
 	
-	virtual void OnAnimationFinished();
+	void OnAnimationFinished();
 	
 };
