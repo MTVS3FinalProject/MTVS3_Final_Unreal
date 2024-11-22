@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "LHM/PuzzleManager.h"
 #include "Components/Button.h"
+#include "Components/CanvasPanel.h"
 #include "Components/VerticalBox.h"
 
 class APuzzleManager;
@@ -181,24 +182,24 @@ void UHM_PuzzleWidget::SetTextVisibility(int32 Rank, ESlateVisibility InVisibili
 	switch (Rank)
 	{
 	case 1:
-		if (VerticalBox_1)
+		if (Canvas_1)
 		{
-			VerticalBox_1->SetVisibility(InVisibility);
-			VerticalBox_1->InvalidateLayoutAndVolatility(); // 레이아웃 강제 업데이트
+			Canvas_1->SetVisibility(InVisibility);
+			Canvas_1->InvalidateLayoutAndVolatility(); // 레이아웃 강제 업데이트
 		}
 		break;
 	case 2:
-		if (VerticalBox_2)
+		if (Canvas_2)
 		{
-			VerticalBox_2->SetVisibility(InVisibility);
-			VerticalBox_2->InvalidateLayoutAndVolatility(); // 레이아웃 강제 업데이트
+			Canvas_2->SetVisibility(InVisibility);
+			Canvas_2->InvalidateLayoutAndVolatility(); // 레이아웃 강제 업데이트
 		}
 		break;
 	case 3:
-		if (VerticalBox_3)
+		if (Canvas_3)
 		{
-			VerticalBox_3->SetVisibility(InVisibility);
-			VerticalBox_3->InvalidateLayoutAndVolatility(); // 레이아웃 강제 업데이트
+			Canvas_3->SetVisibility(InVisibility);
+			Canvas_3->InvalidateLayoutAndVolatility(); // 레이아웃 강제 업데이트
 		}
 		break;
 	default:

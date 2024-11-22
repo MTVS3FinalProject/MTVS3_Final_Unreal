@@ -8,6 +8,7 @@
 #include "Engine/Texture2D.h"
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
+#include "HJ/TTGameInstance.h"
 #include "JMH/MainWidget.h"
 #include "JMH/MH_Inventory.h"
 #include "JMH/MH_NoticeWidget.h"
@@ -906,6 +907,7 @@ void AHM_HttpActor3::ReqPostponePaymentSeat(FString AccessToken)
 	UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 요청"));
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -914,8 +916,8 @@ void AHM_HttpActor3::ReqPostponePaymentSeat(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	UE_LOG(LogTemp , Log , TEXT("HttpActor2->GetReceptionSeatId(): %d"), HttpActor2->GetReceptionSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/postpone") , *_url, HttpActor2->GetConcertId(),HttpActor2->GetReceptionSeatId());
+	UE_LOG(LogTemp , Log , TEXT("GI->GetReceivedSeatId(): %d"), GI->GetReceivedSeatId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/postpone") , *_url, HttpActor2->GetConcertId(), GI->GetReceivedSeatId());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1131,6 +1133,13 @@ void AHM_HttpActor3::OnResGetPostponePaymentSeatMail(FHttpRequestPtr Request, FH
 
 					UE_LOG(LogTemp , Log , TEXT("concertId: %d") , ConcertId);
 					UE_LOG(LogTemp , Log , TEXT("seatId: %d") , SeatId)
+
+					AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+							UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor2::StaticClass()));
+					if(HttpActor2)
+					{
+						HttpActor2->SetPostponeSeatId(SeatId);
+					}
 				}
 				UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 우편 조회 성공"));
 			}

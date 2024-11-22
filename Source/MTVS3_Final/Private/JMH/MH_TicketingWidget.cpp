@@ -283,19 +283,9 @@ void UMH_TicketingWidget::OnClickedCancelButton2()
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		//AMH_Chair* Chair = Cast<AMH_Chair>(
-		//	UGameplayStatics::GetActorOfClass(GetWorld() , AMH_Chair::StaticClass()));
-		//if (HttpActor2 && Chair)
 		if(HttpActor2)
 		{
-			// Chair의 태그를 가져와서 매개변수로 넘김
-			//FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
-
-			//UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
-
-			//HttpActor2->ReqDeleteCancelRegisteredSeat2(ChairTag , gi->GetAccessToken());
-			
-			HttpActor2->ReqDeleteCancelRegisteredSeat2(HttpActor2->GetMyReceptionSeatId() , gi->GetAccessToken());
+			HttpActor2->ReqDeleteCancelRegisteredSeat2(gi->GetReceivedSeatId() , gi->GetAccessToken());
 		}
 	}
 }
