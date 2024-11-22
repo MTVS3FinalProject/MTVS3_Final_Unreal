@@ -194,8 +194,8 @@ public:
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
 	bool bHideOtherPlayersWhileSitting = false;
 
-	UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
-	bool bMuteSoundWhileSitting = false;
+	// UPROPERTY(EditAnywhere , Category = "TTSettings|Custom")
+	// bool bMuteSoundWhileSitting = false;
 #pragma endregion
 
 #pragma region 플레이어 정보 및 복제 설정
