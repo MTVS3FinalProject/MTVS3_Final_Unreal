@@ -104,6 +104,16 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		UTexture2D* TextureResource = Cast<UTexture2D>(SourceImage->GetBrush().GetResourceObject());
 		if (TextureResource)
 		{
+			// 텍스처를 강제로 복사해서 새로운 인스턴스 생성
+			UTexture2D* CopiedTexture = DuplicateObject<UTexture2D>(TextureResource, nullptr);
+			if (CopiedTexture)
+			{
+				CopiedImage->SetBrushFromTexture(CopiedTexture);
+			}
+			else
+			{
+				CopiedImage->SetBrushFromTexture(TextureResource); // 복사 실패 시 기존 리소스 사용
+			}
 			CopiedImage->SetBrushFromTexture(TextureResource);
 			CopiedImage->SetDesiredSizeOverride(SourceImage->GetBrush().GetImageSize());
 			CopiedImage->SetColorAndOpacity(SourceImage->GetColorAndOpacity());
@@ -260,7 +270,12 @@ void UHM_TicketCustom::DeleteImage(FUsedImage& ImageSet, int32 Index)
 			}
 			if (ImageSet.OriginImage)
 			{
-				ImageSet.OriginImage->SetVisibility(ESlateVisibility::Visible);
+				//ImageSet.OriginImage->SetVisibility(ESlateVisibility::Visible);
+
+				// 원본 이미지를 숨기지 않고 투명도로 설정
+				FLinearColor TransparentColor = FLinearColor::White;
+				TransparentColor.A = 100.0f; // 투명도 설정
+				ImageSet.OriginImage->SetColorAndOpacity(TransparentColor);
 			}
 
 			// 구조체의 이미지 포인터를 nullptr로 설정하여 이후 접근 방지
@@ -296,7 +311,12 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
 					//OriginImage = Image;
-					Image->SetVisibility(ESlateVisibility::Hidden);
+					//Image->SetVisibility(ESlateVisibility::Hidden);
+
+					// 원본 이미지를 숨기지 않고 투명도로 설정
+					FLinearColor TransparentColor = FLinearColor::White;
+					TransparentColor.A = 0.0f; // 투명도 설정
+					Image->SetColorAndOpacity(TransparentColor);
 					
 					// 이미지 복사본 생성 (UOverlay 포함된 ImageSet 생성)
 					FUsedImage ImageSet = CreateCompleteImageSet(Image);
