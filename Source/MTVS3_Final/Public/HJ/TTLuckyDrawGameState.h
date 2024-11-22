@@ -46,6 +46,10 @@ public:
 	// 결과 나오고 우승자 시퀀스 나올 때까지의 딜레이
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Timer")
 	float EndRoundsDelayTime = 8.0f;
+
+	// 랜덤으로 떨어지는 최대 딜레이
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Timer")
+	float MaxRandomFallDelay = 1.5f;
 	
 	UFUNCTION(BlueprintCallable)
 	void ResetChair();
@@ -79,6 +83,7 @@ public:
 
 	void EndRounds();
 	void InitializeChairs();
+	
 	bool bIsStartRound = false;
 
 	void EliminatePlayers();
@@ -109,6 +114,9 @@ public:
 
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastShowOnlyNumPlayers();
+
+	UFUNCTION(NetMulticast , Reliable)
+	void MulticastDisableAllPhysics();
 #pragma endregion
 
 #pragma region 사운드

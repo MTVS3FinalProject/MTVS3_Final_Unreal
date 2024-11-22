@@ -357,12 +357,13 @@ void ATTLuckyDrawGameState::EliminatePlayers()
         }
 
 		// 2. 테이블 색상 변경 (플레이어 처리 전에 수행)
+		TArray<UChildActorComponent*> TableComponents;
+		TableManager->GetComponents(TableComponents);
+		
 		for (const FString& ChairTag : ChairTagsToThrow)
 		{
 			// Chair_ 태그를 Table_ 태그로 변환
 			FString TableTag = TEXT("Table_") + ChairTag.RightChop(6);
-			TArray<UChildActorComponent*> TableComponents;
-			TableManager->GetComponents(TableComponents);
 
 			for (UChildActorComponent* TableComponent : TableComponents)
 			{
@@ -371,7 +372,28 @@ void ATTLuckyDrawGameState::EliminatePlayers()
 					if (ALuckyDrawTable* TargetTable = Cast<ALuckyDrawTable>(TableComponent->GetChildActor()))
 					{
 						TargetTable->SetColorRed();
-						UE_LOG(LogTemp, Log, TEXT("Table %s color set to red"), *TableTag);
+						
+						// 랜덤한 딜레이로 물리 시뮬레이션 활성화
+						float RandomDelay = FMath::FRandRange(0.0f, MaxRandomFallDelay);
+						FTimerHandle ThrowTableTimerHandle;
+						FTimerDelegate TableTimerCallback;
+						
+						TableTimerCallback.BindLambda([TargetTable]()
+						{
+							if (TargetTable)
+							{
+								TargetTable->MulticastSetPhysicsState(true);
+							}
+						});
+						
+						GetWorld()->GetTimerManager().SetTimer(
+							ThrowTableTimerHandle,
+							TableTimerCallback,
+							RandomDelay,
+							false);
+						
+						UE_LOG(LogTemp, Log, TEXT("Table %s will be thrown after %.2f seconds"), 
+							*TableTag, RandomDelay);
 					}
 					break;
 				}
@@ -442,8 +464,8 @@ void ATTLuckyDrawGameState::EliminatePlayers()
 				{
 					if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
 					{
-						// 0~3초 사이의 랜덤한 딜레이 생성
-						float RandomDelay = FMath::FRandRange(0.0f, 1.5f);
+						// 랜덤한 딜레이 생성
+						float RandomDelay = FMath::FRandRange(0.0f, MaxRandomFallDelay);
                 
 						// 타이머를 통해 랜덤한 시간 후에 피직스 활성화
 						FTimerHandle ThrowTimerHandle;
@@ -617,26 +639,97 @@ void ATTLuckyDrawGameState::EndRounds()
 
 void ATTLuckyDrawGameState::InitializeChairs()
 {
-	// 모든 의자 원위치 및 테이블 초기화
+	// 서버에서만 실행되도록 체크
+    if (!HasAuthority()) return;
+    
+    // 의자와 테이블 매니저 찾기
+    ALuckyDrawManager* ChairManager = Cast<ALuckyDrawManager>(
+        UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawManager::StaticClass()));
+    ALDTableManager* TableManager = Cast<ALDTableManager>(
+        UGameplayStatics::GetActorOfClass(GetWorld(), ALDTableManager::StaticClass()));
+    
+    if (!ChairManager || !TableManager)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Failed to find ChairManager or TableManager in InitializeChairs"));
+        return;
+    }
+
+    // 먼저 모든 물리 시뮬레이션을 비활성화
+    MulticastDisableAllPhysics();
+
+    // 잠시 대기 후 위치 리셋 실행
+    FTimerHandle ResetPositionsTimerHandle;
+    GetWorld()->GetTimerManager().SetTimer(
+        ResetPositionsTimerHandle,
+        [this, ChairManager, TableManager]()
+        {
+            // 의자 리셋
+            TArray<UChildActorComponent*> ChairComponents;
+            ChairManager->GetComponents(ChairComponents);
+            for (UChildActorComponent* ChairComponent : ChairComponents)
+            {
+                if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
+                {
+                    Chair->MulticastResetChair();
+                    UE_LOG(LogTemp, Log, TEXT("Reset chair position: %s"), *ChairComponent->GetName());
+                }
+            }
+
+            // 테이블 리셋
+            TArray<UChildActorComponent*> TableComponents;
+            TableManager->GetComponents(TableComponents);
+            for (UChildActorComponent* TableComponent : TableComponents)
+            {
+                if (ALuckyDrawTable* Table = Cast<ALuckyDrawTable>(TableComponent->GetChildActor()))
+                {
+                    Table->MulticastResetTable();
+                    Table->SetColorBlack();
+                    Table->MulticastSetTextRender(FText::FromString(TEXT(" ")));
+                    UE_LOG(LogTemp, Log, TEXT("Reset table position: %s"), *TableComponent->GetName());
+                }
+            }
+
+            // 게임 상태 초기화
+            bIsStartRound = false;
+        },
+        1.0f, // 물리 비활성화 후 1초 대기
+        false
+    );
+}
+
+void ATTLuckyDrawGameState::MulticastDisableAllPhysics_Implementation()
+{
+	// 의자와 테이블 매니저 찾기
 	ALuckyDrawManager* ChairManager = Cast<ALuckyDrawManager>(
 		UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawManager::StaticClass()));
-	
-	if (ChairManager)
+	ALDTableManager* TableManager = Cast<ALDTableManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), ALDTableManager::StaticClass()));
+    
+	if (!ChairManager || !TableManager) return;
+
+	// 의자 물리 비활성화
+	TArray<UChildActorComponent*> ChairComponents;
+	ChairManager->GetComponents(ChairComponents);
+	for (UChildActorComponent* ChairComponent : ChairComponents)
 	{
-		TArray<UChildActorComponent*> ChairComponents;
-		ChairManager->GetComponents(ChairComponents);
-	
-		for (UChildActorComponent* ChairComponent : ChairComponents)
+		if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
 		{
-			if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
-			{
-				Chair->MulticastResetChair();
-				// Chair->ResetChair(); // LuckyDrawChair에 추가할 함수
-			}
+			Chair->MulticastSetPhysicsState(false);
+			UE_LOG(LogTemp, Log, TEXT("Disabled physics for chair: %s"), *ChairComponent->GetName());
 		}
 	}
 
-	bIsStartRound = false;
+	// 테이블 물리 비활성화
+	TArray<UChildActorComponent*> TableComponents;
+	TableManager->GetComponents(TableComponents);
+	for (UChildActorComponent* TableComponent : TableComponents)
+	{
+		if (ALuckyDrawTable* Table = Cast<ALuckyDrawTable>(TableComponent->GetChildActor()))
+		{
+			Table->MulticastSetPhysicsState(false);
+			UE_LOG(LogTemp, Log, TEXT("Disabled physics for table: %s"), *TableComponent->GetName());
+		}
+	}
 }
 
 void ATTLuckyDrawGameState::MulticastEndRounds_Implementation()

@@ -19,6 +19,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
+	FTransform InitialMeshTransform;
+
+	virtual void OnConstruction(const FTransform& Transform) override;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -54,6 +59,4 @@ public:
 private:
 	FVector OriginalLocation;
 	FRotator OriginalRotation;
-	bool bIsThrown;
-
 };
