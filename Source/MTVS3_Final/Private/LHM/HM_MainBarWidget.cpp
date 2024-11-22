@@ -9,7 +9,6 @@
 #include "JMH/MH_Inventory.h"
 #include "JMH/MH_NoticeWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_HttpActor3.h"
 
 void UHM_MainBarWidget::NativeConstruct()

@@ -1131,6 +1131,13 @@ void AHM_HttpActor3::OnResGetPostponePaymentSeatMail(FHttpRequestPtr Request, FH
 
 					UE_LOG(LogTemp , Log , TEXT("concertId: %d") , ConcertId);
 					UE_LOG(LogTemp , Log , TEXT("seatId: %d") , SeatId)
+
+					AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+							UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor2::StaticClass()));
+					if(HttpActor2)
+					{
+						HttpActor2->SetPostponeSeatId(SeatId);
+					}
 				}
 				UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 우편 조회 성공"));
 			}
