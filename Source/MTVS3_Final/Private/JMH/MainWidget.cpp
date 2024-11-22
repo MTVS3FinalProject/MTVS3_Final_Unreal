@@ -214,12 +214,15 @@ void UMainWidget::OnClickedBack_Map()
 	//나중에 예매하기버튼-> 위젯 끄기 Map 0으로 이동
 	//알림 등록하고, 알림에서 클릭시 결제 진행 가능.
 	SetWidgetSwitcher(0);
-
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if (!GI || !Local || !PS) return;
+	if (!GI || !Local || !PS || !HttpActor3) return;
 
+	HttpActor3->ReqPostponePaymentSeat(GI->GetAccessToken());
+	
 	GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 }
 

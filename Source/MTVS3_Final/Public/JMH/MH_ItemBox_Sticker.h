@@ -51,6 +51,12 @@ public:
 
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* Text_Sticker;
+
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Text_ItemInfo_Sticker;
+
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Text_StickerRarity;
 	
 	UPROPERTY(meta=(BindWidget))
 	class UCanvasPanel* Can_StickerInfo;

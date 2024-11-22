@@ -12,9 +12,3 @@ void UHM_NoticeMessage::NativeConstruct()
 	Btn_Message->OnClicked.AddDynamic(this, &UHM_NoticeMessage::HandleMessageClicked);
 	
 }
-
-void UHM_NoticeMessage::HandleMessageClicked()
-{
-	// 클릭 이벤트 발생 시 저장된 MailId를 넘겨줌
-	OnMessageClicked.Broadcast(MailId);
-}

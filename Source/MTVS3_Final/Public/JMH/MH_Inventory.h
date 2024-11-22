@@ -178,6 +178,12 @@ public:
 	UFUNCTION()
 	void OnUnHoveredStickerBtn(UMH_ItemBox_Sticker* UnHoveredItem_Sticker);
 	
+//티켓
+	UFUNCTION()
+	void OnHoveredTicketBtn(UMH_ItemBox_Ticket* HoveredItem_Ticket);
+	UFUNCTION()
+	void OnUnHoveredTicketBtn(UMH_ItemBox_Ticket* UnHoveredItem_Ticket);
+	
 	//타이틀에 프레임 적용
 	UPROPERTY(meta = (BindWidget))
 	class UImage* Img_Frame;

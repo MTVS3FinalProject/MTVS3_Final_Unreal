@@ -9,6 +9,9 @@
 /**
  * 
  */
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMessageClicked, int32, ClickedMailId);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPostponeMessageClicked, FString, ClickedPostponeMail);
+
 UCLASS()
 class MTVS3_FINAL_API UHM_NoticeMessage : public UUserWidget
 {
@@ -16,19 +19,38 @@ class MTVS3_FINAL_API UHM_NoticeMessage : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-
-	int32 MailId;
-	void SetMailId(int32 InMailId) { MailId = InMailId; };
 	
 	UPROPERTY(meta=(BindWidget))
 	class UButton* Btn_Message;
 
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* Text_Message;
+
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Text_Category;
 	
 	// 클릭 이벤트 처리
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMessageClicked, int32, ClickedMailId);
 	UPROPERTY(BlueprintAssignable, Category = "Event")
 	FOnMessageClicked OnMessageClicked;
-	void HandleMessageClicked();
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnPostponeMessageClicked OnPostponeMessageClicked;
+
+	int32 MailId;
+	void SetMailId(int32 InMailId) { MailId = InMailId; };
+	FString MailCategory;
+	void SetMailCategory(FString InMailCategory) { MailCategory = InMailCategory; };
+
+	UFUNCTION()
+	void HandleMessageClicked()
+	{
+		UE_LOG(LogTemp, Log, TEXT("Button clicked! MailId: %d"), MailId);
+		UE_LOG(LogTemp, Log, TEXT("Button clicked! MailId: %s"), *MailCategory);
+		OnMessageClicked.Broadcast(MailId);
+		
+		// POSTPONE 관련 추가 델리게이트 호출
+		if (MailCategory == TEXT("POSTPONE"))
+		{
+			OnPostponeMessageClicked.Broadcast(MailCategory);
+		}
+	}
 };

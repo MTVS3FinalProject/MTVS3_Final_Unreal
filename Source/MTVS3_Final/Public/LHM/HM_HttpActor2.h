@@ -98,7 +98,7 @@ public:
 };
 
 USTRUCT()
-struct FReceptionSeats
+struct FReservedSeats
 {
 	GENERATED_BODY()
 
@@ -112,14 +112,43 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
 	FString drawingTime;
 	
-	FReceptionSeats()
+	FReservedSeats()
 		: seatId(0)
 		, seatName(TEXT(""))
 		, drawingTime(TEXT(""))
 	{}
 	
 	// 매개 변수를 받는 생성자
-	FReceptionSeats(int32 InId, const FString&  InName, const FString& InTime)
+	FReservedSeats(int32 InId, const FString&  InName, const FString& InTime)
+		: seatId(InId)
+		, seatName(InName)
+		, drawingTime(InTime)
+	{}
+};
+
+USTRUCT()
+struct FMyReceptionSeats
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	int32 seatId;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	FString seatName;
+    
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	FString drawingTime;
+	
+	FMyReceptionSeats()
+		: seatId(0)
+		, seatName(TEXT(""))
+		, drawingTime(TEXT(""))
+	{}
+	
+	// 매개 변수를 받는 생성자
+	FMyReceptionSeats(int32 InId, const FString&  InName, const FString& InTime)
 		: seatId(InId)
 		, seatName(InName)
 		, drawingTime(InTime)
@@ -135,7 +164,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
 	TArray<FAvailableSeats> availableSeats;
 	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-	TArray<FReceptionSeats> receptionSeats;
+	TArray<FReservedSeats> reservedSeats;
+	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
+	TArray<FMyReceptionSeats> myReceptionSeats;
 	
 	FSeatsList() {}
 };
@@ -144,7 +175,7 @@ public:
 #pragma region struct FMyReceptionSeatInfo
 
 USTRUCT()
-struct FMyReceptionTime
+struct FReceptionTime
 {
 	GENERATED_BODY()
 
@@ -161,14 +192,14 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
 	FString time;
 	
-	FMyReceptionTime()
+	FReceptionTime()
 		: year(0)
 		, month(0)
 		, day(0)
 		, time(TEXT(""))
 	{}
 	// 매개 변수를 받는 생성자
-	FMyReceptionTime(int32 InYear, int32 InMonth, int32 InDay, const FString& InTime)
+	FReceptionTime(int32 InYear, int32 InMonth, int32 InDay, const FString& InTime)
 		: year(InYear)
 		, month(InMonth)
 		, day(InDay)
@@ -177,7 +208,7 @@ public:
 };
 
 USTRUCT()
-struct FMyReceptionSeats
+struct FReceptionSeats
 {
 	GENERATED_BODY()
 
@@ -192,12 +223,12 @@ public:
 	FString seatInfo;
 
 	UPROPERTY(VisibleAnywhere, Category = "Default|Concert")
-	FMyReceptionTime drawingTime;
+	FReceptionTime drawingTime;
 
 	UPROPERTY(VisibleAnywhere, Category = "Default|MyReceptionSeatInfo")
 	int32 competitionRate;
 
-	FMyReceptionSeats()
+	FReceptionSeats()
 		: seatId(0)
 		, seatName(TEXT(""))
 		, seatInfo(TEXT(""))
@@ -250,40 +281,47 @@ public:
 	TArray<FAvailableSeats> GetAvailableSeats() const { return SeatsList.availableSeats; };
 	void SetAvailableSeats(TArray<FAvailableSeats>& NewAvailableSeats ) { SeatsList.availableSeats = NewAvailableSeats; };
 	
-	TArray<FReceptionSeats> GetReceptionSeats() const { return SeatsList.receptionSeats; }
-	void SetReceptionSeats(const TArray<FReceptionSeats>& NewReceptionSeats) { SeatsList.receptionSeats = NewReceptionSeats; }
+	TArray<FReservedSeats> GetReservedSeats() const { return SeatsList.reservedSeats; }
+	void SetReservedSeats(const TArray<FReservedSeats>& NewReceptionSeats) { SeatsList.reservedSeats = NewReceptionSeats; }
+	
+	TArray<FMyReceptionSeats> GetMyReceptionSeats() const { return SeatsList.myReceptionSeats; }
+	void SetMyReceptionSeats(const TArray<FMyReceptionSeats>& NewMyReceptionSeats) { SeatsList.myReceptionSeats = NewMyReceptionSeats; }
+
+	FMyReceptionSeats MySeats; // 내가 접수한 좌석 정보를 저장할 변수
+	int32 GetMyReceptionSeatId() const { return MySeats.seatId; }
+	
 #pragma endregion
 
-#pragma region FMyReceptionSeatInfo Getter & Setter Methods
-	FMyReceptionSeats MyReceptionSeats; // 내가 접수한 좌석 정보를 저장할 변수
-	//FMyReceptionSeats GetMyReceptionSeats() const { return  MyReceptionSeats; };
-	void SetMyReceptionSeats(const FMyReceptionSeats& NewMyReceptionSeatInfo)
+#pragma region FReceptionSeatInfo Getter & Setter Methods
+	FReceptionSeats ReceptionSeats; // 내가 접수한 좌석 정보를 저장할 변수
+	//FReceptionSeats GetReceptionSeats() const { return ReceptionSeats; };
+	void SetReceptionSeats(const FReceptionSeats& NewReceptionSeatInfo)
 	{
-		MyReceptionSeats = NewMyReceptionSeatInfo;
-		SetMyReceptionDate(NewMyReceptionSeatInfo.drawingTime);
+		ReceptionSeats = NewReceptionSeatInfo;
+		SetReceptionDate(NewReceptionSeatInfo.drawingTime);
 	};
 	
-	//void SetMyReceptionSeatId(int32 _SeatId) { MyReceptionSeats.seatId = _SeatId; SetMyReceptionSeats(MyReceptionSeats); }
-	int32 GetMyReceptionSeatId() const { return MyReceptionSeats.seatId; }
-	//void SetMyReceptionSeatName(const FString& _SeatName) { MyReceptionSeats.seatName = _SeatName; SetMyReceptionSeats(MyReceptionSeats); }
-	//const FString& GetMyReceptionSeatName() const { return MyReceptionSeats.seatName; }
-	//void SetMyReceptionSeatInfo(const FString& _SeatInfo) { MyReceptionSeats.seatInfo = _SeatInfo; SetMyReceptionSeats(MyReceptionSeats); }
-	//const FString& GetMyReceptionSeatInfo() const { return MyReceptionSeats.seatInfo; }
-	//void SetMyReceptionCompetitionRate(int32 _CompetitionRate) { MyReceptionSeats.competitionRate = _CompetitionRate; SetMyReceptionSeats(MyReceptionSeats); }
-	//int32 GetMyReceptionCompetitionRate() const { return MyReceptionSeats.competitionRate; }
+	//void SetReceptionSeatId(int32 _SeatId) { ReceptionSeats.seatId = _SeatId; SetReceptionSeats(ReceptionSeats); }
+	int32 GetReceptionSeatId() const { return ReceptionSeats.seatId; }
+	//void SetReceptionSeatName(const FString& _SeatName) { ReceptionSeats.seatName = _SeatName; SetReceptionSeats(ReceptionSeats); }
+	//const FString& GetReceptionSeatName() const { return ReceptionSeats.seatName; }
+	//void SetReceptionSeatInfo(const FString& _SeatInfo) { ReceptionSeats.seatInfo = _SeatInfo; SetReceptionSeats(ReceptionSeats); }
+	//const FString& GetReceptionSeatInfo() const { return ReceptionSeats.seatInfo; }
+	//void SetReceptionCompetitionRate(int32 _CompetitionRate) { ReceptionSeats.competitionRate = _CompetitionRate; SetReceptionSeats(ReceptionSeats); }
+	//int32 GetReceptionCompetitionRate() const { return ReceptionSeats.competitionRate; }
 
-	FMyReceptionTime MyReceptionTime;
-	//FMyReceptionTime GetMyReceptionDate() const { return MyReceptionTime; };
-	void SetMyReceptionDate(const FMyReceptionTime& NewMyReceptionTime) { MyReceptionTime = NewMyReceptionTime; };
+	FReceptionTime ReceptionTime;
+	//FReceptionTime GetReceptionDate() const { return ReceptionTime; };
+	void SetReceptionDate(const FReceptionTime& NewReceptionTime) { ReceptionTime = NewReceptionTime; };
 	
-	//void SetMyReceptionYear(int32 _Year) { MyReceptionTime.year = _Year; SetMyReceptionDate(MyReceptionTime); }
-	//int32 GetMyReceptionYear() const { return MyReceptionTime.year; }
-	//void SetMyReceptionMonth(int32 _Month) { MyReceptionTime.month = _Month; SetMyReceptionDate(MyReceptionTime); }
-	//int32 GetMyReceptionMonth() const { return MyReceptionTime.month; }
-	//void SetMyReceptionDay(int32 _Day) { MyReceptionTime.day = _Day; SetMyReceptionDate(MyReceptionTime); }
-	//int32 GetMyReceptionDay() const { return MyReceptionTime.day; }
-	//void SetMyReceptionTime(const FString& _time) { MyReceptionTime.time = _time; SetMyReceptionDate(MyReceptionTime); }
-	//const FString& GetMyReceptionTime() const { return MyReceptionTime.time; }
+	//void SetReceptionYear(int32 _Year) { ReceptionTime.year = _Year; SetReceptionDate(ReceptionTime); }
+	//int32 GetReceptionYear() const { return ReceptionTime.year; }
+	//void SetReceptionMonth(int32 _Month) { ReceptionTime.month = _Month; SetReceptionDate(ReceptionTime); }
+	//int32 GetReceptionMonth() const { return ReceptionTime.month; }
+	//void SetReceptionDay(int32 _Day) { ReceptionTime.day = _Day; SeReceptionDate(ReceptionTime); }
+	//int32 GetReceptionDay() const { return ReceptionTime.day; }
+	//void SetReceptionTime(const FString& _time) { ReceptionTime.time = _time; SetReceptionDate(ReceptionTime); }
+	//const FString& GetReceptionTime() const { return ReceptionTime.time; }
 #pragma endregion
 	
 	UPROPERTY(VisibleAnywhere, Category = "Default|params")
