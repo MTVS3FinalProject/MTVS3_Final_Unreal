@@ -403,4 +403,16 @@ void UTTGameInstance::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 	PlayerData.LuckyDrawSeatID = _LuckyDrawSeatID;
 	SetPlayerData(PlayerData);
 }
+
+void UTTGameInstance::SetIsReceived(const bool _IsReceived)
+{
+	PlayerData.IsReceived = _IsReceived;
+	SetPlayerData(PlayerData);
+}
+
+void UTTGameInstance::SetReceivedSeatId(const int32& _ReceivedSeatId)
+{
+	PlayerData.ReceivedSeatId = _ReceivedSeatId;
+	SetPlayerData(PlayerData);
+}
 #pragma endregion
