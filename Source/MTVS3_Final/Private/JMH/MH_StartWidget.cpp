@@ -47,14 +47,14 @@ void UMH_StartWidget::NativeConstruct()
 	EText_SignupBirth->OnTextChanged.AddDynamic(this , &UMH_StartWidget::OnTextChanged);
 
 	// KHJ
-	SetLoadingActive(false);
+	Img_Loading->SetVisibility(ESlateVisibility::Hidden);
 
-	// 게임 인스턴스를 가져와서
-	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
-	if (gi)
-	{
-		gi->OnFindSignatureCompleteDelegate.AddDynamic(this , &UMH_StartWidget::SetLoadingActive); // 세션 탐색 또는 생성
-	}
+	// // 게임 인스턴스를 가져와서
+	// auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	// if (gi)
+	// {
+	// 	gi->OnFindSignatureCompleteDelegate.AddDynamic(this , &UMH_StartWidget::SetLoadingActive); // 세션 탐색 또는 생성
+	// }
 	
 }
 
@@ -75,6 +75,8 @@ void UMH_StartWidget::GoToLobby()
 	{
 		gi->FindOrCreateSession(TEXT("TTHallSession") , 100); // 세션 탐색 또는 생성
 	}
+
+	SetLoadingActive(true);
 }
 
 //로그인 버튼
@@ -377,4 +379,9 @@ void UMH_StartWidget::PlayerImgOffAnim(int32 AnimNum)
 
 void UMH_StartWidget::SetLoadingActive(bool bIsActive)
 {
+	if (bIsActive == true)
+	{
+		Img_Loading->SetVisibility(ESlateVisibility::Visible);
+		PlayAnimation(LoadingAnim);
+	}
 }
