@@ -772,6 +772,8 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request, F
 // 추첨 시작 알림 요청
 void AHM_HttpActor2::ReqPostNoticeGameStart(FString SeatId , FString AccessToken)
 {
+    if(AccessToken == TEXT("-1")) return;
+	
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if ( !Http ) return;
