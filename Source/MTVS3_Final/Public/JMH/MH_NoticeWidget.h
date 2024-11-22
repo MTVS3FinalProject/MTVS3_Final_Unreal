@@ -29,4 +29,36 @@ public:
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Back_Notice;
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UVerticalBox* Vertical_MessageBox;
+	
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	TSubclassOf<class UHM_NoticeMessage> NoticeMessageFac;
+	
+	// 메세지 생성 및 초기화 함수
+	UFUNCTION()
+	void InitializeMessageTabs();
+	UFUNCTION()
+	void OnMessageSelected(int32 MailId);
+	UFUNCTION()
+	void OnPostponeMessageSelected(int32 MailId);
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Canvas_content;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_Subject;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_Content;
+	
+	UFUNCTION()
+	void OnMailDetailReceived(FString Subject, FString Content);
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Back_Content;
+
+	UFUNCTION()
+	void CloseBtn_Content();
 };

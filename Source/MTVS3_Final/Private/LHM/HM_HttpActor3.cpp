@@ -10,6 +10,7 @@
 #include "JsonObjectConverter.h"
 #include "JMH/MainWidget.h"
 #include "JMH/MH_Inventory.h"
+#include "JMH/MH_NoticeWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_PuzzleWidget.h"
@@ -187,9 +188,8 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 	}
 }
 
-TMap<TSharedPtr<IHttpRequest>, int32> RequestRankMap;
-
 // Puzzle 결과, Sticker 획득 요청
+TMap<TSharedPtr<IHttpRequest>, int32> RequestRankMap;
 void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken)
 {
 	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
@@ -901,9 +901,11 @@ void AHM_HttpActor3::OnResGetNotEquipTheTitle(FHttpRequestPtr Request, FHttpResp
 }
 
 // 좌석 결제 미루기 요청
-void AHM_HttpActor3::ReqPostponePaymentSeat(int32 ConcertId, int32 SeatId, FString AccessToken)
+void AHM_HttpActor3::ReqPostponePaymentSeat(FString AccessToken)
 {
 	UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 요청"));
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
@@ -912,7 +914,8 @@ void AHM_HttpActor3::ReqPostponePaymentSeat(int32 ConcertId, int32 SeatId, FStri
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/postpone") , *_url, ConcertId, SeatId);
+	UE_LOG(LogTemp , Log , TEXT("HttpActor2->GetReceptionSeatId(): %d"), HttpActor2->GetReceptionSeatId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/postpone") , *_url, HttpActor2->GetConcertId(),HttpActor2->GetReceptionSeatId());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -970,23 +973,31 @@ void AHM_HttpActor3::OnResGetPostponePaymentSeat(FHttpRequestPtr Request, FHttpR
 				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
 				if (ResponseObject.IsValid())
 				{
-					TArray<TSharedPtr<FJsonValue>> MailListDTO = ResponseObject->GetArrayField(TEXT("mailListDTO"));
-					for (int32 i = 0; i < MailListDTO.Num(); i++)
+					// 메일 목록
+					TArray<TSharedPtr<FJsonValue>> MailList = ResponseObject->GetArrayField(TEXT("mailListDTO"));
+					TArray<FMails> TempMails;
+					for ( const TSharedPtr<FJsonValue>& MailValue : MailList )
 					{
-						TSharedPtr<FJsonObject> MailObject = MailListDTO[i]->AsObject();
-						if (MailObject.IsValid())
-						{
-							int32 MailId = MailObject->GetIntegerField(TEXT("mailId"));
-							FString Subject = MailObject->GetStringField(TEXT("subject"));
-							FString MailCategory = MailObject->GetStringField(TEXT("mailCategory"));
-							bool IsRead = MailObject->GetBoolField(TEXT("isRead"));
+						TSharedPtr<FJsonObject> MailObject = MailValue->AsObject();
 
-							UE_LOG(LogTemp , Log , TEXT("MailId: %d"), MailId);
-							UE_LOG(LogTemp , Log , TEXT("Subject: %s"), *Subject)
-							UE_LOG(LogTemp , Log , TEXT("MailCategory: %s"), *MailCategory);
-							UE_LOG(LogTemp , Log , TEXT("IsRead: %s"), IsRead ? TEXT("true") : TEXT("false"));
+						// JSON 문자열을 FTitles 구조체로 변환
+						FMails NewMails;
+						if (FJsonObjectConverter::JsonObjectToUStruct(MailObject.ToSharedRef() , &NewMails , 0 , 0))
+						{
+							// 변환된 FTitles 구조체를 임시 배열에 추가
+							TempMails.Add(NewMails);
 							
+							UE_LOG(LogTemp , Log , TEXT("Mail Info | Id: %d, Subject: %s, Category: %s, IsRead: %s") ,
+								   NewMails.mailId ,
+								   *NewMails.subject ,
+								   *NewMails.mailCategory ,
+								   NewMails.isRead ? TEXT("true") : TEXT("false"));
 						}
+					}
+					SetMails(TempMails);
+					if (MainUI)
+					{
+						MainUI->WBP_MH_MainBar->WBP_NoticeUI->InitializeMessageTabs();
 					}
 				}
 
@@ -1026,6 +1037,7 @@ void AHM_HttpActor3::ReqGetSpecificMail(int32 MailId, FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// 특정 우편함 조회 요청에 대한 응답
 void AHM_HttpActor3::OnResGetSpecificMail(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -1047,15 +1059,16 @@ void AHM_HttpActor3::OnResGetSpecificMail(FHttpRequestPtr Request, FHttpResponse
 				{
 					int32 MailId = ResponseObject->GetIntegerField(TEXT("mailId"));
 					FString Subject = ResponseObject->GetStringField(TEXT("subject"));
+					FString Content = ResponseObject->GetStringField(TEXT("content"));
 					FString MailCategory = ResponseObject->GetStringField(TEXT("mailCategory"));
-					bool IsRead = ResponseObject->GetBoolField(TEXT("isRead"));
 
 					UE_LOG(LogTemp , Log , TEXT("MailId: %d") , MailId);
 					UE_LOG(LogTemp , Log , TEXT("Subject: %s") , *Subject)
+					UE_LOG(LogTemp , Log , TEXT("Content: %s") , *Content);
 					UE_LOG(LogTemp , Log , TEXT("MailCategory: %s") , *MailCategory);
-					UE_LOG(LogTemp , Log , TEXT("IsRead: %s") , IsRead ? TEXT("true") : TEXT("false"));
-				}
 
+					MainUI->WBP_MH_MainBar->WBP_NoticeUI->OnMailDetailReceived(Subject, Content);
+				}
 				UE_LOG(LogTemp , Log , TEXT("특정 우편함 조회 성공"));
 			}
 		}
@@ -1066,6 +1079,68 @@ void AHM_HttpActor3::OnResGetSpecificMail(FHttpRequestPtr Request, FHttpResponse
 	}
 }
 
+// 좌석 결제 미루기 우편 조회 요청
+void AHM_HttpActor3::ReqGetPostponePaymentSeatMail(int32 MailId, FString AccessToken)
+{
+	UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 우편 조회 요청"));
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/mails/%d/postpone") , *_url, MailId); 
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetPostponePaymentSeatMail);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+// 좌석 결제 미루기 우편 조회 요청에 대한 응답
+void AHM_HttpActor3::OnResGetPostponePaymentSeatMail(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				if (ResponseObject.IsValid())
+				{
+					int32 ConcertId = ResponseObject->GetIntegerField(TEXT("concertId"));
+					int32 SeatId = ResponseObject->GetIntegerField(TEXT("seatId"));
+
+					UE_LOG(LogTemp , Log , TEXT("concertId: %d") , ConcertId);
+					UE_LOG(LogTemp , Log , TEXT("seatId: %d") , SeatId)
+				}
+				UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 우편 조회 성공"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 우편 조회 실패"));
+		}
+	}
+}
 
 
 // ================================================================================================================================

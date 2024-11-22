@@ -21,7 +21,23 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UTextBlock* Text_ItemInfo;
 
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Text_titleRarity;
+
 	UFUNCTION()
 	void SetTextItemInfo(FString Info);
+
+	UFUNCTION()
+	void SetTextItemRarity(FString Rarity);
+
+	UFUNCTION()
+	void PlayInfoTextAnim(bool forward);
+	
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* InfoBoxTextAnim;
+
+	UFUNCTION()
+	void ChangeColorTitleName(const FString& _TitleRarity);
+	
 	
 };

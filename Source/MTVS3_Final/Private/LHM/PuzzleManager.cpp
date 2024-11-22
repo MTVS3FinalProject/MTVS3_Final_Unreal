@@ -104,7 +104,7 @@ void APuzzleManager::SortAndUpdateRanking()
 	UE_LOG(LogTemp, Log, TEXT("Game Over"));
 	
 	// 점수 기준으로 내림차순 정렬
-	PlayerScoresInfo.Sort([](const FPlayerScoreInfo& A, const FPlayerScoreInfo& B) {
+ 	PlayerScoresInfo.Sort([](const FPlayerScoreInfo& A, const FPlayerScoreInfo& B) {
 		if (A.Score == B.Score)
 		{
 			// 점수가 같다면 Timestamp로 정렬 (먼저 도달한 순서대로)
@@ -121,37 +121,10 @@ void APuzzleManager::SortAndUpdateRanking()
             UE_LOG(LogTemp, Warning, TEXT("HttpActor3 is null!"));
             return;
         }
-
-	// 플레이어 수에 따라 텍스트 숨기기/보이기 설정
-	if (PuzzleUI)
-	{
-		int32 PlayerCount = PlayerScoresInfo.Num()+1;
-		if(PlayerCount == 1)
-		{
-			PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
-			PuzzleUI->SetTextVisibility(2, ESlateVisibility::Hidden);
-			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
-			return;
-		}
-		else if(PlayerCount == 2)
-		{
-			PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
-			PuzzleUI->SetTextVisibility(2, ESlateVisibility::Visible);
-			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
-			return;
-		}
-		else if(PlayerCount <= 3)
-		{
-			PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
-			PuzzleUI->SetTextVisibility(2, ESlateVisibility::Visible);
-			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Visible);
-			return;
-		}
-	}
 	
 	// 순위별 작업 수행
-	for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)
-	//for (int32 i = 0; i < FMath::Min(PlayerScoresInfo.Num(), 3); i++) // 최대 3위까지만 처리
+	//for (int32 i = 0; i < PlayerScoresInfo.Num(); i++)
+	for (int32 i = 0; i < FMath::Min(PlayerScoresInfo.Num(), 3); i++) // 최대 3위까지만 처리
 	{
 		UTTGameInstance* GI = Cast<UTTGameInstance>(PlayerScoresInfo[i].Player->GetGameInstance());
 		if (!GI)
@@ -170,11 +143,33 @@ void APuzzleManager::SortAndUpdateRanking()
 		       PlayerScoresInfo[i].Score ,
 		       *TimeString)
 
+		// 서버 요청
+		if (HttpActor3)
+		{
+			HttpActor3->ReqPostPuzzleResultAndGetSticker(i + 1, GI->GetAccessToken());
+			UE_LOG(LogTemp , Log , TEXT("HttpActor3->ReqPostPuzzleResultAndGetSticker"));
+		}
+		
 		// 순위별 UI 및 서버 요청 처리
 		ProcessPlayerRanking(i + 1, NickName, GI->GetAccessToken(), HttpActor3);
 		
 		// 순위가 3위까지 끝나면 종료
-		if (i + 1 == 3) break;
+		//if (i + 1 == 3) break;
+	}
+
+	// 플레이어 수에 따라 텍스트 숨기기/보이기 설정
+	if (PuzzleUI)
+	{
+		int32 PlayerCount = PlayerScoresInfo.Num();
+		if(PlayerCount == 1)
+		{
+			PuzzleUI->SetTextVisibility(2, ESlateVisibility::Hidden);
+			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
+		}
+		else if(PlayerCount == 2)
+		{
+			PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
+		}
 	}
 }
 
@@ -198,21 +193,14 @@ void APuzzleManager::ProcessPlayerRanking(int32 Rank, const FString& NickName, c
 		break;
 	case 2:
 		PuzzleUI->SetTextPuzzleRank2Nickname(NickName);
-		UE_LOG(LogTemp , Log , TEXT("1# NickName: %s"), *NickName);
+		UE_LOG(LogTemp , Log , TEXT("2# NickName: %s"), *NickName);
 		break;
 	case 3:
 		PuzzleUI->SetTextPuzzleRank3Nickname(NickName);
-		UE_LOG(LogTemp , Log , TEXT("1# NickName: %s"), *NickName);
+		UE_LOG(LogTemp , Log , TEXT("3# NickName: %s"), *NickName);
 		break;
 	default:
 		return;
-	}
-
-	// 서버 요청
-	if (HttpActor3)
-	{
-		HttpActor3->ReqPostPuzzleResultAndGetSticker(Rank, AccessToken);
-		UE_LOG(LogTemp , Log , TEXT("HttpActor3->ReqPostPuzzleResultAndGetSticker"));
 	}
 }
 

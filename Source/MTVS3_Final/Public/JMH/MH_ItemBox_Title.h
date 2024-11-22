@@ -10,7 +10,6 @@
  * 
  */
 
-//DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDoubleClicked, UMH_ItemBox_Title*, ClickedItem);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnClickedTitleBtn, UMH_ItemBox_Title*, ClickedItem);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemHovered_Title,UMH_ItemBox_Title*, HoveredItem);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemUnHovered_Title,UMH_ItemBox_Title*, UnHoveredItem);
@@ -59,8 +58,6 @@ public:
 	UPROPERTY()
 	int32 TitleID=0;
 
-	//UFUNCTION()
-	//void SetTitleData(const FTitleItemData& InTitleData);
 	UPROPERTY(BlueprintAssignable, Category="Events")
 	FOnClickedTitleBtn OnClickedTitleBtn;
 
@@ -71,12 +68,6 @@ public:
 	}
 
 public:
-	// 더블 클릭 델리게이트 선언
-	//UPROPERTY(BlueprintAssignable, Category="Events")
-	//FOnDoubleClicked OnDoubleClicked;
-
-	// 더블 클릭 이벤트 함수 오버라이드
-	//virtual FReply OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent);
 
 	UFUNCTION()
 	void ChangeColorTitleName(const FString& _TitleRarity);
@@ -87,15 +78,25 @@ public:
 	
 	UFUNCTION()
 	int32 GetTitleID();
-
-
-	UPROPERTY()
-	FString InfoTextString;
+	
+	//타이틀 등급
+	UFUNCTION()
+	void SetTitleRarity(FString TitleRarity);
 	
 	UFUNCTION()
-	FString GetInfoString();
+	FString GetTitleRarity();
+	
+	UPROPERTY()
+	FString RarityString_Title;
+
+    //타이틀 설명
+	UPROPERTY()
+	FString InfoTextString_Title;
+	
+	UFUNCTION()
+	FString GetInfoString_Title();
 
 	UFUNCTION()
-	void SetInfoString(FString infoString);
+	void SetInfoString_Title(FString infoString_Title);
 	
 };

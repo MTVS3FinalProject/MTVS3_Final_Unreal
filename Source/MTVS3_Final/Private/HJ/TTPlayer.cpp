@@ -517,12 +517,12 @@ void ATTPlayer::OnRep_RandomSeatNumber()
 		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
 	}
 
-	// 닉네임UI, TextRenderComp 업데이트
-	if (NicknameUI)
-	{
-		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
-	}
+	// // 닉네임UI, TextRenderComp 업데이트
+	// if (NicknameUI)
+	// {
+	// 	NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
+	// 	TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
+	// }
 }
 
 void ATTPlayer::ServerSetNewSkeletalMesh_Implementation(const int32& _AvatarData)
@@ -560,8 +560,12 @@ void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 	FVector TargetLocation = bIsToConcertHall ? FVector(19 , -4962 , 516) : FVector(18055 , 2000 , 3132);
 	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , -45 , 0);
 	
+	this->SetActorEnableCollision(false);
 	TeleportTo(TargetLocation , TargetRotation);
-
+	this->SetActorEnableCollision(true);
+	// SetActorLocation(TargetLocation, false); // bSweep = false로 콜리전 체크 무시
+	// SetActorRotation(TargetRotation);
+	
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		ClientAdjustCamera(TargetRotation);
@@ -671,7 +675,7 @@ void ATTPlayer::ServerLuckyDrawWin_Implementation()
 
 void ATTPlayer::MulticastLuckyDrawWin_Implementation()
 {
-	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 490.0f) , FRotator(0.0f , -90.0f , 0.0f));
+	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 390.000108f) , FRotator(0.0f , -90.0f , 0.0f));
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Anim) Anim->PlayDancingMontage();
 }
@@ -1442,6 +1446,11 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자가 없습니다."));
+		return;
+	}
 }
 
 void ATTPlayer::OnMyActionInventory(const FInputActionValue& Value)
@@ -1560,7 +1569,10 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 			MainUI->SetWidgetSwitcher(1);
 
 			// HTTP 통신 요청
-			HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
+			//HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
+
+			// 치트아님 추후 추첨 종료 로직에서 호출하기
+			HttpActor2->ReqPostGameResult(GetLuckyDrawSeatID(), GI->GetAccessToken());
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
@@ -1781,7 +1793,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Chair && Anim)
 	{
-		UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
+		// UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
 		Chair->bIsOccupied = true;
 		Chair->RotateChair(true);
 		FTransform SittingTransform = Chair->GetSittingTransform();

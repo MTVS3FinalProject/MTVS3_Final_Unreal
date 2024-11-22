@@ -73,3 +73,28 @@ void ALuckyDrawChair::ResetChair()
 	// 필요한 경우 추가 프로퍼티 리셋
 	bIsThrown = false; // 던져진 상태 리셋
 }
+
+void ALuckyDrawChair::MulticastSetPhysicsState_Implementation(bool bSimulate)
+{
+	if (BoxComp)
+	{
+		BoxComp->SetSimulatePhysics(bSimulate);
+	}
+}
+
+void ALuckyDrawChair::MulticastResetChair_Implementation()
+{
+	if (BoxComp)
+	{
+		BoxComp->SetSimulatePhysics(false);
+	}
+
+	// 원래 위치와 회전값으로 리셋
+	SetActorLocationAndRotation(
+		OriginalLocation , // BeginPlay에서 저장해둔 초기 위치
+		OriginalRotation , // BeginPlay에서 저장해둔 초기 회전값
+		false , // 물리적 충돌 체크 안함
+		nullptr , // 충돌 결과 필요 없음
+		ETeleportType::ResetPhysics // 물리 상태 리셋
+	);
+}

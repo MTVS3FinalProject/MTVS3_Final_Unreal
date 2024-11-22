@@ -57,6 +57,9 @@ public:
 	//타이틀을 해제하시겠습니까?
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Can_TitleUnequipWin;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_00;
+	
 	UFUNCTION()
 	void ShowTitleEquipWin();
 	UFUNCTION()
@@ -117,13 +120,14 @@ public:
 	void OnClicked_Sticker();
 
 	//칭호,티켓,스티커 정보 받아오기
+	/*
 	UFUNCTION()
 	void SetPlayerTitleInfo();
 	UFUNCTION()
 	void SetPlayerTicketsInfo();
 	UFUNCTION()
 	void SetPlayerStickerInfo();
-
+*/
 	//플레이어 칭호 적용
 	UFUNCTION()
 	void SetPlayerTitle(int32 TitleID);
@@ -142,6 +146,9 @@ public:
 
 	UPROPERTY(EditAnywhere , BlueprintReadWrite)
 	TSubclassOf<class UMH_ItemBox_Sticker> StickerItemBoxFac;
+	
+	UPROPERTY(EditAnywhere , BlueprintReadWrite)
+	TSubclassOf<class UMH_ItemInfoBox> InfoBoxFac;
 
 	UPROPERTY()
 	class UMH_ItemBox_Title* SelectedTitle;
@@ -152,27 +159,30 @@ public:
 	UPROPERTY()
 	class UMH_ItemBox_Sticker* SelectedSticker;
 
-	//UPROPERTY(EditAnywhere , BlueprintReadWrite)
-	//TSubclassOf<class UMH_ItemInfoBox> InfoWidget;
-
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UMH_ItemInfoBox* WBP_HoveredInfoTitle;
-
 	// 인포 위젯 가시성 설정 함수
 	UFUNCTION()
-	void SetInfoVisibility(bool bVisible);
-
+	void DestroyInfo(UMH_ItemInfoBox* DestroyBox);
+	
+//타이틀
 	UFUNCTION()
 	void OnHoveredTitleBtn(UMH_ItemBox_Title* HoveredItem);
 	UFUNCTION()
 	void OnUnHoveredTitleBtn(UMH_ItemBox_Title* UnHoveredItem);
-	
-	//타이틀 박스 더블클릭시
-	//UFUNCTION()
-	//void HandleItemDoubleClicked(UMH_ItemBox_Title* ClickedItem);
 
 	UFUNCTION()
 	void OnClickedTitleBtn(UMH_ItemBox_Title* ClickedItem);
+	
+//스티커
+	UFUNCTION()
+	void OnHoveredStickerBtn(UMH_ItemBox_Sticker* HoveredItem_Sticker);
+	UFUNCTION()
+	void OnUnHoveredStickerBtn(UMH_ItemBox_Sticker* UnHoveredItem_Sticker);
+	
+//티켓
+	UFUNCTION()
+	void OnHoveredTicketBtn(UMH_ItemBox_Ticket* HoveredItem_Ticket);
+	UFUNCTION()
+	void OnUnHoveredTicketBtn(UMH_ItemBox_Ticket* UnHoveredItem_Ticket);
 	
 	//타이틀에 프레임 적용
 	UPROPERTY(meta = (BindWidget))
@@ -184,9 +194,8 @@ public:
 	void RemoveFrame();
 	UFUNCTION()
 	void SetFramePosition(UMH_ItemBox_Title* ClickedItem);
-
-
-
+	
+/*
 	//test 버튼들 //아이템박스 생성해주기
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Title_Test;
@@ -202,13 +211,17 @@ public:
 	class UButton* Btn_Sticker_Test;
 	UFUNCTION()
 	void OnClicked_Sticker_Test();
-	
+	*/
 	int32 Counter_Title = 1;
 	int32 Counter_Ticket = 1;
 	int32 Counter_Sticker = 1;
 
 	UPROPERTY()
 	TMap<class UMH_ItemBox_Title*, class UOverlaySlot*> OverlaySlotMap;
+	
+	UPROPERTY()
+	TMap<class UMH_ItemBox_Title*, class UMH_ItemInfoBox*> InfoBoxMap_Title;
+	
 	
 	
 };

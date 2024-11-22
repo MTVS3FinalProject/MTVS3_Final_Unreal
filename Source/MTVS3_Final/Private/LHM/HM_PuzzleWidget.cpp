@@ -182,15 +182,24 @@ void UHM_PuzzleWidget::SetTextVisibility(int32 Rank, ESlateVisibility InVisibili
 	{
 	case 1:
 		if (VerticalBox_1)
+		{
 			VerticalBox_1->SetVisibility(InVisibility);
+			VerticalBox_1->InvalidateLayoutAndVolatility(); // 레이아웃 강제 업데이트
+		}
 		break;
 	case 2:
 		if (VerticalBox_2)
+		{
 			VerticalBox_2->SetVisibility(InVisibility);
+			VerticalBox_2->InvalidateLayoutAndVolatility(); // 레이아웃 강제 업데이트
+		}
 		break;
 	case 3:
 		if (VerticalBox_3)
+		{
 			VerticalBox_3->SetVisibility(InVisibility);
+			VerticalBox_3->InvalidateLayoutAndVolatility(); // 레이아웃 강제 업데이트
+		}
 		break;
 	default:
 		UE_LOG(LogTemp, Warning, TEXT("Invalid rank for visibility setting: %d"), Rank);
