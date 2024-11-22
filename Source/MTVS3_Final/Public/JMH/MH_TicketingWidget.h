@@ -143,6 +143,16 @@ public:
 	UFUNCTION()
 	void SetTextCompetitionRate(int32 CompetitionRate);
 
+	// KHJ
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_Loading;
+	
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* LoadingAnim;
+
+	UFUNCTION()
+	void SetLoadingActive(bool bIsActive);
+	// KHJ
 
 	//게임입장
 	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
