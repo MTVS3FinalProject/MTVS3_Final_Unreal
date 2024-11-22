@@ -55,6 +55,7 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 					if (NicknameList.Contains(TTPlayer->GetNickname()))
 					{
 						TTPlayer->ClientShowLuckyDrawInvitation(true , CompetitionRate);
+						TTPlayer->SetLuckyDrawSeatID("1");
 					}
 				}
 			}

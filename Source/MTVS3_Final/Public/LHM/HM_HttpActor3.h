@@ -259,7 +259,7 @@ public:
 	void OnResGetNotEquipTheTitle(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 결제 미루기
-	void ReqPostponePaymentSeat(int32 ConcertId, int32 SeatId, FString AccessToken);
+	void ReqPostponePaymentSeat(FString AccessToken);
 
 	// 우편함 조회
 	void ReqGetMailbox(FString AccessToken);
@@ -268,5 +268,10 @@ public:
 	// 특정 우편 조회
 	void ReqGetSpecificMail(int32 MailId, FString AccessToken);
 	void OnResGetSpecificMail(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 좌석 결제 미루기 우편 조회
+	void ReqGetPostponePaymentSeatMail(int32 MailId, FString AccessToken);
+	void OnResGetPostponePaymentSeatMail(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
 #pragma endregion
 };

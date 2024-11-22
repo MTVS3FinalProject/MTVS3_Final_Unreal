@@ -179,7 +179,7 @@ void ATTPlayer::BeginPlay()
 			case ELuckyDrawState::Winner:
 				// 추첨 당첨 UI 표시
 				if (MainUI) MainUI->SetWidgetSwitcher(1);
-			// HTTP 요청
+				// HTTP 요청
 				HttpActor2->ReqPostGameResult(GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
 			case ELuckyDrawState::Loser:
@@ -1570,6 +1570,9 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 
 			// HTTP 통신 요청
 			HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
+
+			// 치트아님 추후 추첨 종료 로직에서 호출하기
+			// HttpActor2->ReqPostGameResult(GetLuckyDrawSeatID(), GI->GetAccessToken());
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
