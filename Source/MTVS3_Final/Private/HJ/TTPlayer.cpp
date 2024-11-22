@@ -1373,6 +1373,10 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
 
+			AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+			if (HallSoundManager) HallSoundManager->SetbPlayConcertBGM(true);
+
 			// MainUI 표시
 			if (MainUI) MainUI->SetVisibleCanvas(true);
 			// 좌석 접수 UI 숨기기
@@ -1777,6 +1781,10 @@ void ATTPlayer::ForceStandUp()
 		TicketingUI->SetVisibleSwitcher(false , 0);
 		ServerSetSitting(false); // 서버에서 상태 업데이트
 		SwitchCamera(bIsThirdPerson); // 3인칭 시점 복원
+
+		AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+		if (HallSoundManager) HallSoundManager->SetbPlayConcertBGM(true);
 	}
 }
 
