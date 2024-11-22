@@ -517,12 +517,12 @@ void ATTPlayer::OnRep_RandomSeatNumber()
 		NicknameUI = Cast<UPlayerNicknameWidget>(NicknameUIComp->GetWidget());
 	}
 
-	// 닉네임UI, TextRenderComp 업데이트
-	if (NicknameUI)
-	{
-		NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
-		TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
-	}
+	// // 닉네임UI, TextRenderComp 업데이트
+	// if (NicknameUI)
+	// {
+	// 	NicknameUI->UpdateNicknameUI(FString::FromInt(GetRandomSeatNumber()));
+	// 	TextRenderComp->SetText(FText::FromString(FString::FromInt(GetRandomSeatNumber())));
+	// }
 }
 
 void ATTPlayer::ServerSetNewSkeletalMesh_Implementation(const int32& _AvatarData)
@@ -675,7 +675,7 @@ void ATTPlayer::ServerLuckyDrawWin_Implementation()
 
 void ATTPlayer::MulticastLuckyDrawWin_Implementation()
 {
-	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 490.0f) , FRotator(0.0f , -90.0f , 0.0f));
+	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 390.000108f) , FRotator(0.0f , -90.0f , 0.0f));
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Anim) Anim->PlayDancingMontage();
 }
@@ -1446,6 +1446,11 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
+	else
+	{
+		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자가 없습니다."));
+		return;
+	}
 }
 
 void ATTPlayer::OnMyActionInventory(const FInputActionValue& Value)
@@ -1785,7 +1790,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Chair && Anim)
 	{
-		UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
+		// UE_LOG(LogTemp , Warning , TEXT("멀티캐스트 싯 다운"));
 		Chair->bIsOccupied = true;
 		Chair->RotateChair(true);
 		FTransform SittingTransform = Chair->GetSittingTransform();
