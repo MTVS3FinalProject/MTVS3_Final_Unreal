@@ -780,8 +780,8 @@ void AHM_HttpActor2::ReqPostNoticeGameStart(FString SeatId , FString AccessToken
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("GetReceptionSeatId(): %d"), GetReceptionSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/drawing") , *_url, GetConcertId(), GetReceptionSeatId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1/drawing") , *_url, GetConcertId()); // 임의 SeatId(1)
+	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/drawing") , *_url, GetConcertId(), GetReceptionSeatId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/drawing") , *_url, GetConcertId(), *SeatId); // 임의 SeatId(1)
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
