@@ -1531,18 +1531,18 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 				ServerNoticeLucyDrawStart();
 
 				// MainUI 숨기기
-				MainUI->SetVisibleCanvas(false);
+				if (MainUI) MainUI->SetVisibleCanvas(false);
 				// 좌석 경쟁 UI 표시
-				TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
+				if (TicketingUI) TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
 			}
 			else
 			{
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Disable Cheat1"));
 
 				// MainUI 표시
-				MainUI->SetVisibleCanvas(true);
+				if (MainUI) MainUI->SetVisibleCanvas(true);
 				// 좌석 경쟁 UI 숨기기
-				TicketingUI->SetVisibleSwitcher(false , 1);
+				if (TicketingUI) TicketingUI->SetVisibleSwitcher(false , 1);
 			}
 		}
 		break;
@@ -1692,13 +1692,13 @@ void ATTPlayer::InitMainUI()
 		MainUI->AddToViewport();
 	}
 
-	TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
+	TicketingUI = Cast<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
 	if (TicketingUI)
 	{
 		TicketingUI->AddToViewport();
 	}
 
-	WorldMapUI = CastChecked<UMH_WorldMap>(CreateWidget(GetWorld() , WorldMapUIFactory));
+	WorldMapUI = Cast<UMH_WorldMap>(CreateWidget(GetWorld() , WorldMapUIFactory));
 	if (WorldMapUI)
 	{
 		WorldMapUI->AddToViewport();
