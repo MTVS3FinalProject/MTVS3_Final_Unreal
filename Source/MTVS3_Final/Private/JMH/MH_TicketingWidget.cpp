@@ -295,7 +295,7 @@ void UMH_TicketingWidget::OnClickedCancelButton2()
 
 			//HttpActor2->ReqDeleteCancelRegisteredSeat2(ChairTag , gi->GetAccessToken());
 			
-			HttpActor2->ReqDeleteCancelRegisteredSeat2(HttpActor2->GetMyReceptionSeatId() , gi->GetAccessToken());
+			HttpActor2->ReqDeleteCancelRegisteredSeat2(HttpActor2->GetReceptionSeatId() , gi->GetAccessToken());
 		}
 	}
 }

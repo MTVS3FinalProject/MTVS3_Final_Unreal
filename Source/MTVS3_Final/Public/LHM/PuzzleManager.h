@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "HJ/TTGameInstance.h"
 #include "PuzzleManager.generated.h"
 
 USTRUCT()
@@ -27,6 +28,15 @@ struct FPlayerScoreInfo
 	// 생성자 오버로드: 초기화 시점 설정
 	FPlayerScoreInfo(AActor* InPlayer, int32 InScore)
 		: Player(InPlayer), Score(InScore), Timestamp(FDateTime::Now()) {}
+};
+
+UENUM(BlueprintType)
+enum class EPlayerRank : uint8
+{
+	First UMETA(DisplayName = "1st"),	// 1등
+	Second UMETA(DisplayName = "2nd"),	// 2등
+	Third UMETA(DisplayName = "3rd"),	// 3등
+	None UMETA(DisplayName = "No Rank") // 순위 없음
 };
 
 UCLASS()
@@ -69,7 +79,9 @@ public:
 	void SortAndUpdateRanking();
 
 	UFUNCTION(BlueprintCallable, Category = "Puzzle")
-	void ProcessPlayerRanking(int32 Rank, const FString& NickName, const FString& AccessToken, AHM_HttpActor3* HttpActor3);
+	void ProcessPlayerRanking(int32 Rank, const FString& NickName);
+	UFUNCTION(BlueprintCallable, Category = "Puzzle")
+	void HandleRankedPlayer(EPlayerRank PlayerRank , UTTGameInstance* GI , AHM_HttpActor3* HttpActor3);
 
 public:
 	TMap<UStaticMeshComponent*, int32> Pieces;

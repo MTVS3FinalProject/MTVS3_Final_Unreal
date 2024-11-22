@@ -301,7 +301,7 @@ public:
 		SetReceptionDate(NewReceptionSeatInfo.drawingTime);
 	};
 	
-	//void SetReceptionSeatId(int32 _SeatId) { ReceptionSeats.seatId = _SeatId; SetReceptionSeats(ReceptionSeats); }
+	void SetReceptionSeatId(int32 _SeatId) { ReceptionSeats.seatId = _SeatId; }
 	int32 GetReceptionSeatId() const { return ReceptionSeats.seatId; }
 	//void SetReceptionSeatName(const FString& _SeatName) { ReceptionSeats.seatName = _SeatName; SetReceptionSeats(ReceptionSeats); }
 	//const FString& GetReceptionSeatName() const { return ReceptionSeats.seatName; }
@@ -329,7 +329,10 @@ public:
 	const FString& GetUserCode() const { return UserCode; }
 	void SetUserCode(const FString& _UserCode) { UserCode = _UserCode; }
 
-	
+	UPROPERTY(VisibleAnywhere, Category = "Default|params")
+	int32 PostponeSeatId;
+	int32 GetPostponeSeatId() const { return PostponeSeatId; }
+	void SetPostponeSeatId(int32 _PostponeSeatId) { PostponeSeatId = _PostponeSeatId; }
 public:	
 	// Sets default values for this actor's properties
 	AHM_HttpActor2();

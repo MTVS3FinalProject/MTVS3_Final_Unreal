@@ -297,6 +297,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							// 변환된 NewMySeatInfo 구조체에 대한 디버그 메시지 출력
 							UE_LOG(LogTemp , Log , TEXT("My Reception Seat | ID: %d, Name: %s, DrawingTime: %s")
 										,MySeatInfo.seatId, *MySeatInfo.seatName, *MySeatInfo.drawingTime);
+							SetReceptionSeatId(MySeatInfo.seatId);
 						}
 					}
 					// 우편함에 내가 접수한 좌석 정보 확인하는 UI Switcher & 정보 SetText
@@ -857,7 +858,7 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 	}
 }
 
-// 좌석 게임 결과 요청
+// 좌석 추첨 결과 요청
 void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 {
 	UE_LOG(LogTemp , Log , TEXT("Request Post Game Result"));
@@ -870,10 +871,11 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("GetConcertId(): %d"), GetConcertId());
-	UE_LOG(LogTemp , Log , TEXT("GetReceptionSeatId(): %d"), GetReceptionSeatId());
+	UE_LOG(LogTemp , Log , TEXT("SeatId: %s"), *SeatId);
+	//UE_LOG(LogTemp , Log , TEXT("GetReceptionSeatId(): %d"), GetReceptionSeatId());
 	
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/result") , *_url, GetConcertId(), GetReceptionSeatId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/result") , *_url, GetConcertId(), *SeatId); // SeatId가 LuckyDrawSeatID (?)
+	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/result") , *_url, GetConcertId(), GetReceptionSeatId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/result") , *_url, GetConcertId(), *SeatId); // SeatId가 LuckyDrawSeatID (?)
 	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/1/seats/1/result") , *_url); // 임의 SeatId(1) ChairTag에서 SeatId로 변경해야함
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
@@ -889,7 +891,7 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 	Request->ProcessRequest();
 }
 
-// 좌석 게임 결과 요청에 대한 응답인데 일단 당첨자, 탈락자 클라이언트에서 처리해줘서 필요없을지도
+// 좌석 추첨 결과 요청에 대한 응답인데 일단 당첨자, 탈락자 클라이언트에서 처리해줘서 필요없을지도
 void AHM_HttpActor2::OnResPostGameResult(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )

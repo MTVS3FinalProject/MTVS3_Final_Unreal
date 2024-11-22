@@ -140,11 +140,11 @@ public:
 	void SetWidgetSwitcher(int32 num);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UVerticalBox* VerticalBox_1;
+	class UCanvasPanel* Canvas_1;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UVerticalBox* VerticalBox_2;
+	class UCanvasPanel* Canvas_2;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
-	class UVerticalBox* VerticalBox_3;
+	class UCanvasPanel* Canvas_3;
 	UFUNCTION()
 	void SetTextVisibility(int32 Rank, ESlateVisibility InVisibility);
 	

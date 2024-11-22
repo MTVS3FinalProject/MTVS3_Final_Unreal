@@ -272,6 +272,6 @@ public:
 	//Interaction 캔버스 비지블
 	UFUNCTION()
 	void SetVisibleInteractionCan(bool visible);
-
-	
+	UFUNCTION()
+	void HandlePaymentPostpone();
 };
