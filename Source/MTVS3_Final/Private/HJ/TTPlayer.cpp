@@ -91,6 +91,11 @@ ATTPlayer::ATTPlayer()
 	//MH
 	EmojiComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("EmojiWidget"));
 	EmojiComp->SetupAttachment(GetMesh() , TEXT("head"));
+	
+	if (this->GetCharacterMovement())
+	{
+		this->GetCharacterMovement()->NetworkSmoothingMode = ENetworkSmoothingMode::Exponential;
+	}
 }
 
 // Called when the game starts or when spawned
