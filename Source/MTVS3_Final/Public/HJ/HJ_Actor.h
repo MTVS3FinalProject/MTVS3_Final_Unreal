@@ -47,4 +47,8 @@ public:
 
 	class UMainWidget* MainUI;
 	void SetMainUI(UMainWidget* InMainUI);
+
+	//MH
+	UPROPERTY()
+	bool bIsInteractionUI = false;
 };
