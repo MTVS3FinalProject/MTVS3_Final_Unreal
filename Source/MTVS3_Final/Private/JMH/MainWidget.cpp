@@ -15,6 +15,7 @@
 #include "HJ/HallSoundManager.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_Chatting.h"
+#include "JMH/MH_NoticeWidget.h"
 #include "LHM/HM_FinalTicket.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_TicketCustom.h"
@@ -54,9 +55,10 @@ void UMainWidget::NativeConstruct()
 		BuyCoinsWidget->OnClickedBuyCoinBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
 
-	if (WBP_MH_MainBar)
+	if (WBP_MH_MainBar && WBP_MH_MainBar->WBP_NoticeUI)
 	{
 		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this , &UMainWidget::ShowChatUI);
+		WBP_MH_MainBar->WBP_NoticeUI->OnClickedPaymentPostpone.AddDynamic(this, &UMainWidget::HandlePaymentPostpone);
 	}
 
 	if (TicketCustomWidget)
@@ -214,12 +216,15 @@ void UMainWidget::OnClickedBack_Map()
 	//나중에 예매하기버튼-> 위젯 끄기 Map 0으로 이동
 	//알림 등록하고, 알림에서 클릭시 결제 진행 가능.
 	SetWidgetSwitcher(0);
-
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 	ATTPlayerState* PS = Cast<ATTPlayerState>(GetWorld()->GetFirstPlayerController()->PlayerState);
-	if (!GI || !Local || !PS) return;
+	if (!GI || !Local || !PS || !HttpActor3) return;
 
+	HttpActor3->ReqPostponePaymentSeat(GI->GetAccessToken());
+	
 	GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 }
 
@@ -256,6 +261,18 @@ void UMainWidget::OnClickedConcert04()
 
 void UMainWidget::OnClickedConcert05()
 {
+	GoToConcertHall();
+}
+
+void UMainWidget::SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas)
+{
+
+	
+}
+
+void UMainWidget::OnClickedConfirm_Concert()
+{
+	//일단 그냥 뉴진스 공연장으로 간닷
 	GoToConcertHall();
 }
 
@@ -373,5 +390,18 @@ void UMainWidget::SetVisibleInteractionCan(bool visible)
 	else
 	{
 		Can_Interaction->SetVisibility(ESlateVisibility::Hidden);
+	} 
+}
+
+void UMainWidget::HandlePaymentPostpone()
+{
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	if (HttpActor2)
+	{
+		FString PostponeSeatId = FString::FromInt(HttpActor2->GetPostponeSeatId());
+		HttpActor2->ReqPostGameResult(PostponeSeatId, GI->GetAccessToken());
 	}
+	SetWidgetSwitcher(1);
 }

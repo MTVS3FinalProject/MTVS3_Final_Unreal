@@ -8,8 +8,10 @@
 #include "Components/Spacer.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "Components/CanvasPanel.h"
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_NoticeMessage.h"
 
@@ -17,7 +19,10 @@ void UMH_NoticeWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Btn_Back_Notice->OnClicked.AddDynamic(this,&UMH_NoticeWidget::CloseBtn_Notice);
+	Btn_Back_Notice->OnClicked.AddDynamic(this , &UMH_NoticeWidget::CloseBtn_Notice);
+	Btn_Back_Content->OnClicked.AddDynamic(this , &UMH_NoticeWidget::CloseBtn_Content);
+	Btn_Payment->OnClicked.AddDynamic(this , &UMH_NoticeWidget::CloseBtn_Content);
+	Btn_Payment->OnClicked.AddDynamic(this, &UMH_NoticeWidget::Payment_Postpone);
 }
 
 void UMH_NoticeWidget::InitializeMessageTabs()
@@ -37,7 +42,7 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 		if (Mails.Num() > 0)
 		{
 			Vertical_MessageBox->ClearChildren();
-	
+
 			for (const FMails& Messageinfo : Mails)
 			{
 				// 1. 메세지 위젯 생성
@@ -45,9 +50,12 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 				if (MessageBox)
 				{
 					MessageBox->Text_Message->SetText(FText::FromString(Messageinfo.subject));
+					MessageBox->Text_Category->SetText(FText::FromString(Messageinfo.mailCategory));
 					MessageBox->SetMailId(Messageinfo.mailId);
+					MessageBox->SetMailCategory(Messageinfo.mailCategory);
 					// OnMessageClicked 이벤트 바인딩
-					MessageBox->OnMessageClicked.AddDynamic(this, &UMH_NoticeWidget::OnMessageSelected);
+					MessageBox->OnMessageClicked.AddDynamic(this , &UMH_NoticeWidget::OnMessageSelected);
+					MessageBox->OnMessageClicked.AddDynamic(this , &UMH_NoticeWidget::OnPostponeMessageSelected);
 					Vertical_MessageBox->AddChild(MessageBox);
 				}
 
@@ -55,7 +63,7 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 				USpacer* Spacer = NewObject<USpacer>(this);
 				if (Spacer)
 				{
-					Spacer->SetSize(FVector2D(0.0f, 15.0f)); // 세로 방향으로 15px 간격 추가
+					Spacer->SetSize(FVector2D(0.0f , 15.0f)); // 세로 방향으로 15px 간격 추가
 					Vertical_MessageBox->AddChild(Spacer);
 				}
 			}
@@ -65,7 +73,7 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 
 void UMH_NoticeWidget::OnMessageSelected(int32 MailId)
 {
-	UE_LOG(LogTemp, Log, TEXT("Selected MailId: %d"), MailId);
+	UE_LOG(LogTemp , Log , TEXT("Selected MailId: %d") , MailId);
 
 	// 특정 우편함 조회 요청
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -73,6 +81,49 @@ void UMH_NoticeWidget::OnMessageSelected(int32 MailId)
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 	if (GI && HttpActor3)
 	{
-		HttpActor3->ReqGetSpecificMail(MailId, GI->GetAccessToken());
+		HttpActor3->ReqGetSpecificMail(MailId , GI->GetAccessToken());
 	}
+}
+
+void UMH_NoticeWidget::OnPostponeMessageSelected(int32 MailId)
+{
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
+	if (GI && HttpActor3)
+	{
+		// MailCategory 값을 가져오는 추가 로직
+		FString MailCategory = TEXT(""); // 초기값 설정
+		const TArray<FMails>& Mails = HttpActor3->GetMails();
+		for (const FMails& Mail : Mails)
+		{
+			if (Mail.mailId == MailId)
+			{
+				MailCategory = Mail.mailCategory;
+				break;
+			}
+		}
+
+		if (MailCategory == TEXT("POSTPONE"))
+		{
+			HttpActor3->ReqGetPostponePaymentSeatMail(MailId, GI->GetAccessToken());
+			Btn_Payment->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+}
+
+void UMH_NoticeWidget::OnMailDetailReceived(FString Subject , FString Content)
+{
+	if (Text_Subject && Text_Content)
+	{
+		Text_Subject->SetText(FText::FromString(Subject));
+		Text_Content->SetText(FText::FromString(Content));
+		Canvas_content->SetVisibility(ESlateVisibility::Visible);
+	}
+}
+
+void UMH_NoticeWidget::CloseBtn_Content()
+{
+	Canvas_content->SetVisibility(ESlateVisibility::Hidden);
+	Btn_Payment->SetVisibility(ESlateVisibility::Hidden);
 }

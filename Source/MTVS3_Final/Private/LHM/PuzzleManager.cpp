@@ -132,6 +132,24 @@ void APuzzleManager::SortAndUpdateRanking()
 			UE_LOG(LogTemp, Warning, TEXT("GameInstance is null for player %d!"), i + 1);
 			continue;
 		}
+
+		// 랭킹 상태 설정
+		EPlayerRank PlayerRank;
+		switch (i)
+		{
+		case 0:
+			PlayerRank = EPlayerRank::First;
+			break;
+		case 1:
+			PlayerRank = EPlayerRank::Second;
+			break;
+		case 2:
+			PlayerRank = EPlayerRank::Third;
+			break;
+		default:
+			PlayerRank = EPlayerRank::None;
+			break;
+		}
 		
 		// 디버그 로그로 정렬된 점수 출력
 		FString NickName = GI->GetNickname();
@@ -143,8 +161,8 @@ void APuzzleManager::SortAndUpdateRanking()
 		       PlayerScoresInfo[i].Score ,
 		       *TimeString)
 
-		// 순위별 UI 및 서버 요청 처리
-		ProcessPlayerRanking(i + 1, NickName, GI->GetAccessToken(), HttpActor3);
+		ProcessPlayerRanking(i+1, NickName);
+		HandleRankedPlayer(PlayerRank, GI, HttpActor3);
 		
 		// 순위가 3위까지 끝나면 종료
 		//if (i + 1 == 3) break;
@@ -153,10 +171,6 @@ void APuzzleManager::SortAndUpdateRanking()
 	// 플레이어 수에 따라 텍스트 숨기기/보이기 설정
 	if (PuzzleUI)
 	{
-		PuzzleUI->SetTextVisibility(1, ESlateVisibility::Visible);
-		PuzzleUI->SetTextVisibility(2, ESlateVisibility::Visible);
-		PuzzleUI->SetTextVisibility(3, ESlateVisibility::Visible);
-		
 		int32 PlayerCount = PlayerScoresInfo.Num();
 		if(PlayerCount == 1)
 		{
@@ -170,17 +184,8 @@ void APuzzleManager::SortAndUpdateRanking()
 	}
 }
 
-void APuzzleManager::ProcessPlayerRanking(int32 Rank, const FString& NickName, const FString& AccessToken,
-	AHM_HttpActor3* HttpActor3)
+void APuzzleManager::ProcessPlayerRanking(int32 Rank, const FString& NickName)
 {
-	UE_LOG(LogTemp, Log, TEXT("ProcessPlayerRanking"));
-	
-	if (!PuzzleUI)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PuzzleUI is null!"));
-		return;
-	}
-
 	// UI 업데이트
 	switch (Rank)
 	{
@@ -199,12 +204,37 @@ void APuzzleManager::ProcessPlayerRanking(int32 Rank, const FString& NickName, c
 	default:
 		return;
 	}
+}
 
-	// 서버 요청
-	if (HttpActor3)
+void APuzzleManager::HandleRankedPlayer(EPlayerRank PlayerRank, UTTGameInstance* GI, AHM_HttpActor3* HttpActor3)
+{
+	if (!GI || !HttpActor3)
 	{
-		HttpActor3->ReqPostPuzzleResultAndGetSticker(Rank, AccessToken);
-		UE_LOG(LogTemp , Log , TEXT("HttpActor3->ReqPostPuzzleResultAndGetSticker"));
+		UE_LOG(LogTemp, Warning, TEXT("Invalid parameters in HandleRankedPlayer"));
+		return;
+	}
+
+	switch (PlayerRank)
+	{
+	case EPlayerRank::First:
+		UE_LOG(LogTemp, Log, TEXT("1st Place: Sending first-place request"));
+		HttpActor3->ReqPostPuzzleResultAndGetSticker(1, GI->GetAccessToken());
+		break;
+
+	case EPlayerRank::Second:
+		UE_LOG(LogTemp, Log, TEXT("2nd Place: Sending second-place request"));
+		HttpActor3->ReqPostPuzzleResultAndGetSticker(2, GI->GetAccessToken());
+		break;
+
+	case EPlayerRank::Third:
+		UE_LOG(LogTemp, Log, TEXT("3rd Place: Sending third-place request"));
+		HttpActor3->ReqPostPuzzleResultAndGetSticker(3, GI->GetAccessToken());
+		break;
+
+	case EPlayerRank::None:
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("Unhandled rank state"));
+		break;
 	}
 }
 

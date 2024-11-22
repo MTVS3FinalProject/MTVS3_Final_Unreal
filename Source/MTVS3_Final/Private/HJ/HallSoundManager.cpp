@@ -54,6 +54,11 @@ void AHallSoundManager::Tick(float DeltaTime)
 
 }
 
+void AHallSoundManager::SetbPlayConcertBGM(bool _bPlayConcertBGM)
+{
+	bPlayConcertBGM = _bPlayConcertBGM;
+}
+
 void AHallSoundManager::PlayConcertBGM()
 {
 	if (ConcertBGMCue && bPlayConcertBGM)

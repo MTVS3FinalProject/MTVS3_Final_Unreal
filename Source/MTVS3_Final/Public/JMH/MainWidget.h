@@ -189,7 +189,19 @@ public:
 	class UButton* Btn_SelectConcertBack;
 
 	UPROPERTY()
-	int32 ConcertNum = 3;
+	TArray<UCanvasPanel*> ConcertInfoCanvas;
+
+	UFUNCTION()
+	void SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas);
+	
+	//입장하기 버튼
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Confirm_Concert;
+	UFUNCTION()
+	void OnClickedConfirm_Concert();
+
+	UPROPERTY()
+	int32 ConcertNum = 0;
 
 	//왼쪽 버튼 클릭
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -260,6 +272,6 @@ public:
 	//Interaction 캔버스 비지블
 	UFUNCTION()
 	void SetVisibleInteractionCan(bool visible);
-
-	
+	UFUNCTION()
+	void HandlePaymentPostpone();
 };

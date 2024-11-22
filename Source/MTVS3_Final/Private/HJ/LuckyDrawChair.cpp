@@ -18,10 +18,10 @@ ALuckyDrawChair::ALuckyDrawChair()
 	BoxComp->SetupAttachment(RootComponent);
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
-	MeshComp->SetupAttachment(RootComponent);
+	MeshComp->SetupAttachment(BoxComp);
 
 	NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("NiagaraComp"));
-	NiagaraComp->SetupAttachment(RootComponent);
+	NiagaraComp->SetupAttachment(BoxComp);
 }
 
 // Called when the game starts or when spawned
@@ -69,9 +69,6 @@ void ALuckyDrawChair::ResetChair()
 		nullptr , // 충돌 결과 필요 없음
 		ETeleportType::ResetPhysics // 물리 상태 리셋
 	);
-
-	// 필요한 경우 추가 프로퍼티 리셋
-	bIsThrown = false; // 던져진 상태 리셋
 }
 
 void ALuckyDrawChair::MulticastSetPhysicsState_Implementation(bool bSimulate)
@@ -82,19 +79,43 @@ void ALuckyDrawChair::MulticastSetPhysicsState_Implementation(bool bSimulate)
 	}
 }
 
+// 새로운 함수 구현
+void ALuckyDrawChair::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	if (MeshComp)
+	{
+		InitialMeshTransform = MeshComp->GetRelativeTransform();
+	}
+}
+
 void ALuckyDrawChair::MulticastResetChair_Implementation()
 {
-	if (BoxComp)
-	{
-		BoxComp->SetSimulatePhysics(false);
-	}
-
-	// 원래 위치와 회전값으로 리셋
+	if (!BoxComp) return;
+    
+	// 1. 모든 물리 시뮬레이션 완전히 정지
+	BoxComp->SetSimulatePhysics(false);
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+    
+	// 2. 속도 초기화
+	BoxComp->SetPhysicsLinearVelocity(FVector::ZeroVector);
+	BoxComp->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+    
+	// 3. 위치 리셋
 	SetActorLocationAndRotation(
-		OriginalLocation , // BeginPlay에서 저장해둔 초기 위치
-		OriginalRotation , // BeginPlay에서 저장해둔 초기 회전값
-		false , // 물리적 충돌 체크 안함
-		nullptr , // 충돌 결과 필요 없음
-		ETeleportType::ResetPhysics // 물리 상태 리셋
+		OriginalLocation,
+		OriginalRotation,
+		false,
+		nullptr,
+		ETeleportType::TeleportPhysics  // ResetPhysics 대신 TeleportPhysics 사용
 	);
+    
+	// 4. Mesh 위치 리셋
+	if (MeshComp)
+	{
+		MeshComp->SetRelativeTransform(InitialMeshTransform);
+	}
+    
+	// 5. 물리 상태 복원
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 }

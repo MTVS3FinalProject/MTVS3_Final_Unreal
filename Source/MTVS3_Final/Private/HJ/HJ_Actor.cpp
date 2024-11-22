@@ -95,20 +95,34 @@ void AHJ_Actor::ShowText()
 		if (ActorHasTag("SelectConcert"))
 		{
 			InteractionUI->SetActiveWidgetIndex(1);
-			// 애니메이션 적용
-			InteractionUI->TextOnAnimPlay();
+			if (!bIsInteractionUI)
+			{
+				bIsInteractionUI = true;
+				// 애니메이션 적용
+				InteractionUI->TextOnAnimPlay();
+			}
 		}
 		else if (ActorHasTag("Customizing"))
 		{
 			InteractionUI->SetActiveWidgetIndex(2);
-			// 애니메이션 적용
-			InteractionUI->TextOnAnimPlay();
+			if (!bIsInteractionUI)
+			{
+				bIsInteractionUI = true;
+				// 애니메이션 적용
+				InteractionUI->TextOnAnimPlay();
+
+			}
 		}
 		else if (ActorHasTag("PlazaTeleport"))
 		{
 			InteractionUI->SetActiveWidgetIndex(3);
-			// 애니메이션 적용
-			InteractionUI->TextOnAnimPlay();
+			if (!bIsInteractionUI)
+			{
+				bIsInteractionUI = true;
+				// 애니메이션 적용
+				InteractionUI->TextOnAnimPlay();
+
+			}
 		}
 	}
 
@@ -174,8 +188,11 @@ void AHJ_Actor::HideText()
 	// 	return;
 	// }
 	//
-	InteractionUI->TextOffAnimPlay();
-
+	if (bIsInteractionUI)
+	{
+		InteractionUI->TextOffAnimPlay();
+		bIsInteractionUI = false;
+	}
 	// WidgetComp(삭제)
 	// WidgetComp->SetVisibility(false);
 }
