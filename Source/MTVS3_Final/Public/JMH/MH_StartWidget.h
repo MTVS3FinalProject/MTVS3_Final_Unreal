@@ -24,6 +24,14 @@ public:
 	
 	//Login
 
+	// KHJ
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UImage* Img_Loading;
+	
+	UPROPERTY(meta=(BindWidgetAnim),Transient)
+	UWidgetAnimation* LoadingAnim;
+	// KHJ
+
 	//아이디 비번 비교없이 바로 세션 접속하도록 버튼 생성 -> 테스트모드
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_test_Login;
