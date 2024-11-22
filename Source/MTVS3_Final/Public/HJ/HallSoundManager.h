@@ -34,7 +34,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
 	bool bPlayConcertBGM = true;
-
+	void SetbPlayConcertBGM(bool _bPlayConcertBGM);
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TTSettings|Sound")
 	class USoundCue* PlazaBGMCue;
 

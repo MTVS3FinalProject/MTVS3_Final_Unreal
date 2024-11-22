@@ -1373,6 +1373,10 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
 
+			AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+			if (HallSoundManager) HallSoundManager->SetbPlayConcertBGM(true);
+
 			// MainUI 표시
 			if (MainUI) MainUI->SetVisibleCanvas(true);
 			// 좌석 접수 UI 숨기기
@@ -1569,10 +1573,10 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 			MainUI->SetWidgetSwitcher(1);
 
 			// HTTP 통신 요청
-			HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
+			// HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
 
 			// 치트아님 추후 추첨 종료 로직에서 호출하기
-			// HttpActor2->ReqPostGameResult(GetLuckyDrawSeatID(), GI->GetAccessToken());
+			HttpActor2->ReqPostGameResult(GetLuckyDrawSeatID(), GI->GetAccessToken());
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
@@ -1777,6 +1781,10 @@ void ATTPlayer::ForceStandUp()
 		TicketingUI->SetVisibleSwitcher(false , 0);
 		ServerSetSitting(false); // 서버에서 상태 업데이트
 		SwitchCamera(bIsThirdPerson); // 3인칭 시점 복원
+
+		AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+		if (HallSoundManager) HallSoundManager->SetbPlayConcertBGM(true);
 	}
 }
 
