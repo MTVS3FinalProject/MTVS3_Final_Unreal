@@ -262,6 +262,18 @@ void UMainWidget::OnClickedConcert05()
 	GoToConcertHall();
 }
 
+void UMainWidget::SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas)
+{
+
+	
+}
+
+void UMainWidget::OnClickedConfirm_Concert()
+{
+	//일단 그냥 뉴진스 공연장으로 간닷
+	GoToConcertHall();
+}
+
 void UMainWidget::OnTicketWidgetClose()
 {
 	SetWidgetSwitcher(0);
