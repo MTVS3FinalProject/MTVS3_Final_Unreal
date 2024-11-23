@@ -92,6 +92,7 @@ void ALuckyDrawTable::MulticastSetPhysicsState_Implementation(bool bSimulate)
 	{
 		// 물리 시뮬레이션 활성화 시 충돌 활성화
 		BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		PlaySpark();
 	}
 	else 
 	{
