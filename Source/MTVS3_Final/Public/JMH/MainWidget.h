@@ -253,6 +253,44 @@ public:
 	UPROPERTY()
 	AMH_TTHUD* TTHUD;
 
+	//콘서트 정보 애니메이션
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim01;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim02;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim03;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim04;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim05;
+	
+	UFUNCTION()
+	void SelectConcertInfoAnim(int32 InfoAnimNum);
+
+	//이전 애니메이션이 있다면 없어지고 -> 새로운건 생기게
+	//UPROPERTY()
+	//bool 
+//이전 캔버스가 있었는지 없었는지 기억하는 불변수. 초기화는 콘서트셀렉창 닫을 때.
+	
+	//Info canvas
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo01;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo02;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo03;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo04;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo05;
+
+	UPROPERTY()
+	TArray<UCanvasPanel*> InfoCanvasPanels;
+	
+	UFUNCTION()
+	void SetInfoCanvasVisibility(UCanvasPanel* TargetCanvas);
+
 	//티켓예매 알람
 	//티켓팅 시간대
 	//상호작용 버튼
@@ -328,4 +366,6 @@ public:
 	class UButton* Btn_TutorialEnd;
 	UFUNCTION()
 	void OnClickedTutorialEnd();
+
+	
 };
