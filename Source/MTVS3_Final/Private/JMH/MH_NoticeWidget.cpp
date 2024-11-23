@@ -11,6 +11,7 @@
 #include "Components/CanvasPanel.h"
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_NoticeMessage.h"
 
@@ -20,6 +21,8 @@ void UMH_NoticeWidget::NativeConstruct()
 
 	Btn_Back_Notice->OnClicked.AddDynamic(this , &UMH_NoticeWidget::CloseBtn_Notice);
 	Btn_Back_Content->OnClicked.AddDynamic(this , &UMH_NoticeWidget::CloseBtn_Content);
+	Btn_Payment->OnClicked.AddDynamic(this , &UMH_NoticeWidget::CloseBtn_Content);
+	Btn_Payment->OnClicked.AddDynamic(this, &UMH_NoticeWidget::Payment_Postpone);
 }
 
 void UMH_NoticeWidget::InitializeMessageTabs()
@@ -104,6 +107,7 @@ void UMH_NoticeWidget::OnPostponeMessageSelected(int32 MailId)
 		if (MailCategory == TEXT("POSTPONE"))
 		{
 			HttpActor3->ReqGetPostponePaymentSeatMail(MailId, GI->GetAccessToken());
+			Btn_Payment->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 }
@@ -121,4 +125,5 @@ void UMH_NoticeWidget::OnMailDetailReceived(FString Subject , FString Content)
 void UMH_NoticeWidget::CloseBtn_Content()
 {
 	Canvas_content->SetVisibility(ESlateVisibility::Hidden);
+	Btn_Payment->SetVisibility(ESlateVisibility::Hidden);
 }

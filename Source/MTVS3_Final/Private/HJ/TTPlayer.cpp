@@ -91,6 +91,11 @@ ATTPlayer::ATTPlayer()
 	//MH
 	EmojiComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("EmojiWidget"));
 	EmojiComp->SetupAttachment(GetMesh() , TEXT("head"));
+
+	if (this->GetCharacterMovement())
+	{
+		this->GetCharacterMovement()->NetworkSmoothingMode = ENetworkSmoothingMode::Exponential;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -179,7 +184,7 @@ void ATTPlayer::BeginPlay()
 			case ELuckyDrawState::Winner:
 				// 추첨 당첨 UI 표시
 				if (MainUI) MainUI->SetWidgetSwitcher(1);
-				// HTTP 요청
+			// HTTP 요청
 				HttpActor2->ReqPostGameResult(GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
 			case ELuckyDrawState::Loser:
@@ -559,13 +564,13 @@ void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 {
 	FVector TargetLocation = bIsToConcertHall ? FVector(19 , -4962 , 516) : FVector(18055 , 2000 , 3132);
 	FRotator TargetRotation = bIsToConcertHall ? FRotator(0 , 90 , 0) : FRotator(0 , -45 , 0);
-	
+
 	this->SetActorEnableCollision(false);
 	TeleportTo(TargetLocation , TargetRotation);
 	this->SetActorEnableCollision(true);
 	// SetActorLocation(TargetLocation, false); // bSweep = false로 콜리전 체크 무시
 	// SetActorRotation(TargetRotation);
-	
+
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
 	{
 		ClientAdjustCamera(TargetRotation);
@@ -576,7 +581,7 @@ void ATTPlayer::ClientAdjustCamera_Implementation(FRotator NewRotation)
 {
 	if (!IsLocallyControlled())
 		return;
-        
+
 	if (ATTPlayerController* PC = Cast<ATTPlayerController>(Controller))
 	{
 		PC->SetControlRotation(NewRotation);
@@ -609,7 +614,10 @@ void ATTPlayer::MulticastLuckyDrawStart_Implementation()
 
 void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& TargetTransform)
 {
-	this->SetActorTransform(TargetTransform);
+	// this->SetActorTransform(TargetTransform);
+	FTransform NewTransform = TargetTransform;
+	NewTransform.SetRotation(FRotator(0.0f, 90.0f, 0.0f).Quaternion());
+	this->SetActorTransform(NewTransform);
 	GetCharacterMovement()->DisableMovement(); // 이동 비활성화
 }
 
@@ -620,6 +628,9 @@ void ATTPlayer::ClientLuckyDrawLose_Implementation()
 	{
 		GameUI->HideWidget();
 	}
+
+	GetMesh()->SetOwnerNoSee(true);
+
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI)
 	{
@@ -675,7 +686,12 @@ void ATTPlayer::ServerLuckyDrawWin_Implementation()
 
 void ATTPlayer::MulticastLuckyDrawWin_Implementation()
 {
-	SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 390.000108f) , FRotator(0.0f , -90.0f , 0.0f));
+	// SetActorLocationAndRotation(FVector(0.0f , 2510.0f , 390.000108f) , FRotator(0.0f , -90.0f , 0.0f));
+	SetActorLocationAndRotation(
+		FVector(0.0f , 2510.0f , 390.000108f) ,
+		FRotator(0.0f , -90.0f , 0.0f).Quaternion() ,
+		false
+	);
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Anim) Anim->PlayDancingMontage();
 }
@@ -743,7 +759,7 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 		if (MainUI) MainUI->SetVisibleCanvas(false);
 		if (TicketingUI)
 		{
-			TicketingUI->SetVisibleSwitcher(true , 1);//이부분 수정해야함 매희
+			TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 		}
 	}
@@ -1374,7 +1390,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
 
 			AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+				UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
 			if (HallSoundManager) HallSoundManager->SetbPlayConcertBGM(true);
 
 			// MainUI 표시
@@ -1406,7 +1422,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	{
 		ServerTeleportPlayer(false);
 		AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
 		if (HallSoundManager)
 		{
 			HallSoundManager->PlayPlazaBGM();
@@ -1439,7 +1455,7 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 		UE_LOG(LogTemp , Warning , TEXT("큐브를 내려놓으세요."));
 		return;
 	}
-	
+
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
@@ -1515,18 +1531,18 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 				ServerNoticeLucyDrawStart();
 
 				// MainUI 숨기기
-				MainUI->SetVisibleCanvas(false);
+				if (MainUI) MainUI->SetVisibleCanvas(false);
 				// 좌석 경쟁 UI 표시
-				TicketingUI->SetVisibleSwitcher(true , 1);//이부분 수정해야함 매희
+				if (TicketingUI) TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
 			}
 			else
 			{
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Disable Cheat1"));
 
 				// MainUI 표시
-				MainUI->SetVisibleCanvas(true);
+				if (MainUI) MainUI->SetVisibleCanvas(true);
 				// 좌석 경쟁 UI 숨기기
-				TicketingUI->SetVisibleSwitcher(false , 1);
+				if (TicketingUI) TicketingUI->SetVisibleSwitcher(false , 1);
 			}
 		}
 		break;
@@ -1576,7 +1592,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 			// HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
 
 			// 치트아님 추후 추첨 종료 로직에서 호출하기
-			HttpActor2->ReqPostGameResult(GetLuckyDrawSeatID(), GI->GetAccessToken());
+			HttpActor2->ReqPostGameResult(GetLuckyDrawSeatID() , GI->GetAccessToken());
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
@@ -1676,13 +1692,13 @@ void ATTPlayer::InitMainUI()
 		MainUI->AddToViewport();
 	}
 
-	TicketingUI = CastChecked<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
+	TicketingUI = Cast<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
 	if (TicketingUI)
 	{
 		TicketingUI->AddToViewport();
 	}
 
-	WorldMapUI = CastChecked<UMH_WorldMap>(CreateWidget(GetWorld() , WorldMapUIFactory));
+	WorldMapUI = Cast<UMH_WorldMap>(CreateWidget(GetWorld() , WorldMapUIFactory));
 	if (WorldMapUI)
 	{
 		WorldMapUI->AddToViewport();
@@ -1783,7 +1799,7 @@ void ATTPlayer::ForceStandUp()
 		SwitchCamera(bIsThirdPerson); // 3인칭 시점 복원
 
 		AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
 		if (HallSoundManager) HallSoundManager->SetbPlayConcertBGM(true);
 	}
 }
