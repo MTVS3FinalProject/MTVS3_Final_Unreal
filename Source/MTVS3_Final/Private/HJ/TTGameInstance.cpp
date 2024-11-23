@@ -415,4 +415,10 @@ void UTTGameInstance::SetReceivedSeatId(const int32& _ReceivedSeatId)
 	PlayerData.ReceivedSeatId = _ReceivedSeatId;
 	SetPlayerData(PlayerData);
 }
+
+void UTTGameInstance::SetbIsNewPlayer(const bool _bIsNewPlayer)
+{
+	PlayerData.bIsNewPlayer = _bIsNewPlayer;
+	SetPlayerData(PlayerData);
+}
 #pragma endregion

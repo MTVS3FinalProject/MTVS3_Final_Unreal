@@ -41,6 +41,16 @@ void UMainWidget::NativeConstruct()
 	Btn_ConcertL->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertL);
 	//Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 
+	Btn_Right0->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight0);
+	Btn_Left1->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft1);
+	Btn_Right1->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight1);
+	Btn_Left2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft2);
+	Btn_Right2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight2);
+	Btn_Left3->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft3);
+	Btn_Right3->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight3);
+	Btn_Left4->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft4);
+	Btn_TutorialEnd->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialEnd);
+
 	// 현민 HTTP TEST: 퍼즐 결과, 타이틀과 스티커 획득 요청
 	Btn_HttpTest_Puzzle->OnClicked.AddDynamic(this , &UMainWidget::OnClickedHttpTest_Puzzle);
 
@@ -404,4 +414,51 @@ void UMainWidget::HandlePaymentPostpone()
 		HttpActor2->ReqPostGameResult(PostponeSeatId, GI->GetAccessToken());
 	}
 	SetWidgetSwitcher(1);
+}
+
+void UMainWidget::OnClickedRight0()
+{
+	WS_Tutorial->SetActiveWidgetIndex(1);
+}
+
+void UMainWidget::OnClickedLeft1()
+{
+	WS_Tutorial->SetActiveWidgetIndex(0);
+}
+
+void UMainWidget::OnClickedRight1()
+{
+	WS_Tutorial->SetActiveWidgetIndex(2);
+}
+
+void UMainWidget::OnClickedLeft2()
+{
+	WS_Tutorial->SetActiveWidgetIndex(1);
+}
+
+void UMainWidget::OnClickedRight2()
+{
+	WS_Tutorial->SetActiveWidgetIndex(3);
+}
+
+void UMainWidget::OnClickedLeft3()
+{
+	WS_Tutorial->SetActiveWidgetIndex(2);
+}
+
+void UMainWidget::OnClickedRight3()
+{
+	WS_Tutorial->SetActiveWidgetIndex(4);
+}
+
+void UMainWidget::OnClickedLeft4()
+{
+	WS_Tutorial->SetActiveWidgetIndex(3);
+}
+
+void UMainWidget::OnClickedTutorialEnd()
+{
+	SetWidgetSwitcher(0);
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI) GI->SetbIsNewPlayer(false);
 }
