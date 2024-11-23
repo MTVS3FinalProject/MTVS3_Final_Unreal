@@ -105,7 +105,7 @@ void ATTPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-
+	
 	if (!IsLocallyControlled())
 	{
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
@@ -249,6 +249,7 @@ void ATTPlayer::Tick(float DeltaTime)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 	case EPlaceState::StyleLounge:
+	case EPlaceState::CommunityHall:
 		OnRep_bIsHost();
 		OnRep_Nickname();
 		OnRep_TitleNameAndRarity();
@@ -426,7 +427,7 @@ void ATTPlayer::OnRep_TitleNameAndRarity()
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
-	ServerSetbIsHost(_bIsHost);
+	if (HasAuthority()) ServerSetbIsHost(_bIsHost);
 }
 
 void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
@@ -480,7 +481,7 @@ void ATTPlayer::OnRep_bIsHost()
 
 void ATTPlayer::SetAvatarData(const int32& _AvatarData)
 {
-	ServerSetAvatarData(_AvatarData);
+	if (HasAuthority()) ServerSetAvatarData(_AvatarData);
 }
 
 void ATTPlayer::ServerSetAvatarData_Implementation(const int32& _AvatarData)
@@ -1522,6 +1523,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 	case EPlaceState::StyleLounge:
+	case EPlaceState::CommunityHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTHallMap"));
 		if (GetbIsHost() || HasAuthority())
 		{
@@ -1580,6 +1582,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 	case EPlaceState::StyleLounge:
+	case EPlaceState::CommunityHall:
 		if (!HttpActor2) return;
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Enable Cheat2 in TTHallMap"));
 		if (GetbIsHost() || HasAuthority())
@@ -1613,6 +1616,7 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 	case EPlaceState::StyleLounge:
+	case EPlaceState::CommunityHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
 		bIsHost = !bIsHost;
 		if (GI) GI->SetbIsHost(bIsHost);

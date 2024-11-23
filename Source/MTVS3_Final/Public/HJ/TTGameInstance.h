@@ -21,6 +21,7 @@ enum class EPlaceState : uint8
 	ConcertHall = 1 ,  // 콘서트홀
 	LuckyDrawRoom = 2 ,      // 추첨방
 	StyleLounge = 3,	// 스타일 라운지
+	CommunityHall = 4,	// 커뮤니티 홀
 };
 
 UENUM(BlueprintType)
