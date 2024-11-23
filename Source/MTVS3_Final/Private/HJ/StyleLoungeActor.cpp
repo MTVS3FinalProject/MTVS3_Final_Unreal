@@ -37,6 +37,14 @@ void AStyleLoungeActor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, A
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI) return;
-	if (GI->GetPlaceState() == EPlaceState::Plaza) GI->SetPlaceState(EPlaceState::StyleLounge);
-	else GI->SetPlaceState(EPlaceState::Plaza);
+	if (ActorHasTag("StyleLoungeDoor"))
+	{
+		if (GI->GetPlaceState() == EPlaceState::Plaza) GI->SetPlaceState(EPlaceState::StyleLounge);
+		else GI->SetPlaceState(EPlaceState::Plaza);
+	}
+	else if (ActorHasTag("CommunityHallDoor"))
+	{
+		if (GI->GetPlaceState() == EPlaceState::Plaza) GI->SetPlaceState(EPlaceState::CommunityHall);
+		else GI->SetPlaceState(EPlaceState::Plaza);
+	}
 }
