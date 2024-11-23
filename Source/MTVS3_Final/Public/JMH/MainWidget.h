@@ -280,23 +280,14 @@ public:
 	class UWidgetSwitcher* WS_Tutorial;
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UCanvasPanel* Can_Tutorial0;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UCanvasPanel* Can_Tutorial1;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UCanvasPanel* Can_Tutorial2;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UCanvasPanel* Can_Tutorial3;
-
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_Right0;
+	class UButton* Btn_TutorialStart;
 	UFUNCTION()
-	void OnClickedRight0();
+	void OnClickedTutorialStart();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_TutorialSkip;
+	UFUNCTION()
+	void OnClickedTutorialSkip();
 	
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_Left1;
-	UFUNCTION()
-	void OnClickedLeft1();
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Right1;
 	UFUNCTION()
@@ -324,6 +315,15 @@ public:
 	class UButton* Btn_Left4;
 	UFUNCTION()
 	void OnClickedLeft4();
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
+	class UButton* Btn_Right4;
+	UFUNCTION()
+	void OnClickedRight4();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left5;
+	UFUNCTION()
+	void OnClickedLeft5();
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_TutorialEnd;
 	UFUNCTION()
