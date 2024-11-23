@@ -17,6 +17,7 @@
 #include "GameFramework/PlayerState.h"
 #include "HJ/TTHallGameState.h"
 #include "JMH/MainWidget.h"
+#include "JMH/MH_Chair.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "LHM/HM_HttpActor3.h"
@@ -304,6 +305,29 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					// 우편함에 내가 접수한 좌석 정보 확인하는 UI Switcher & 정보 SetText
 					SetSeatsList(NewSeatsList);
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("뉴진스 콘서트 입장~~~")));
+
+					// KHJ: 의자 라이트 업데이트
+					// 월드의 모든 MH_Chair 찾기
+					TArray<AActor*> FoundChairs;
+					UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMH_Chair::StaticClass(), FoundChairs);
+
+					// Reserved Seats 처리 (예약된 좌석은 false로 설정)
+					for (const FReservedSeats& ReservedSeat : NewSeatsList.reservedSeats)
+					{
+						FString TagToFind = FString::FromInt(ReservedSeat.seatId);
+						for (AActor* Actor : FoundChairs)
+						{
+							if (Actor->ActorHasTag(*TagToFind))
+							{
+								if (AMH_Chair* Chair = Cast<AMH_Chair>(Actor))
+								{
+									UE_LOG(LogTemp, Log, TEXT("Found matching chair! Name: %s, Tag: %s"), *Chair->GetName(), *TagToFind);
+									Chair->ChangeLightColor(false);
+									//break;
+								}
+							}
+						}
+					}
 				}
 			}
 		}
