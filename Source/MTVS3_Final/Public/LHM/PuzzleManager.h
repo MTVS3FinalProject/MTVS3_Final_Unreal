@@ -30,6 +30,24 @@ struct FPlayerScoreInfo
 		: Player(InPlayer), Score(InScore), Timestamp(FDateTime::Now()) {}
 };
 
+// 복제될 플레이어 정보 구조체
+USTRUCT(BlueprintType)
+struct FPlayerRankInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString NickName;
+
+	UPROPERTY()
+	int32 Rank;
+
+	UPROPERTY()
+	int32 Score;
+
+	FPlayerRankInfo() : NickName(TEXT("")), Rank(0), Score(0) {}
+};
+
 UENUM(BlueprintType)
 enum class EPlayerRank : uint8
 {
@@ -55,6 +73,11 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	//EPlayerRank PlayerRank;
+	//EPlayerRank GetPlayerRank() const { return PlayerRank; }
+	//void SetPlayerRank(EPlayerRank NewRank) { PlayerRank = NewRank; }
+	
 
 #pragma region UI
 	UPROPERTY(EditAnywhere, Category = "Defalut|UI")
@@ -74,15 +97,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Puzzle")
 	void AddScoreToPlayer(AActor* Player, int32 Score);
 
-	// 퍼즐종료 & 랭킹업데이트
-	UFUNCTION(BlueprintCallable, Category = "Puzzle")
-	void SortAndUpdateRanking();
-
-	UFUNCTION(BlueprintCallable, Category = "Puzzle")
-	void ProcessPlayerRanking(int32 Rank, const FString& NickName);
-	UFUNCTION(BlueprintCallable, Category = "Puzzle")
-	void HandleRankedPlayer(EPlayerRank PlayerRank , UTTGameInstance* GI , AHM_HttpActor3* HttpActor3);
-
 public:
 	TMap<UStaticMeshComponent*, int32> Pieces;
 
@@ -92,6 +106,33 @@ public:
 
 	// 플레이어 점수 정보를 저장할 배열
 	TArray<FPlayerScoreInfo> PlayerScoresInfo;
+
+#pragma region 퍼즐 종료 동기화 method
+	
+	// 퍼즐종료 & 랭킹업데이트
+	UFUNCTION(BlueprintCallable, Category = "Puzzle")
+	void SortAndUpdateRanking();
+	
+	UFUNCTION(BlueprintCallable, Category = "Puzzle")
+	void UpdateUINickname(EPlayerRank Rank, const FString& NickName);
+
+	UFUNCTION(BlueprintCallable, Category = "Puzzle")
+	
+	void UpdatePlayerRankInfo();
+	
+	UFUNCTION(Client, Reliable)
+	void Client_ReceiveRank(EPlayerRank Rank);
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdateUI(const TArray<FPlayerScoreInfo>& SortedScores);
+	
+	// 복제될 배열
+	UPROPERTY(Replicated)
+	TArray<FPlayerRankInfo> ReplicatedRankInfo;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+#pragma endregion
 
 private:
 	bool bPuzzleCompleted = false;
