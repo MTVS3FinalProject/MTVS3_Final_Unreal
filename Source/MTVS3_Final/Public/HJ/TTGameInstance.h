@@ -21,6 +21,7 @@ enum class EPlaceState : uint8
 	ConcertHall = 1 ,  // 콘서트홀
 	LuckyDrawRoom = 2 ,      // 추첨방
 	StyleLounge = 3,	// 스타일 라운지
+	CommunityHall = 4,	// 커뮤니티 홀
 };
 
 UENUM(BlueprintType)
@@ -72,7 +73,7 @@ struct FPlayerData
 	// 기본 생성자
 	FPlayerData()
 		: bIsHost(false) , nickname(TEXT("Ticketaka")), titleName(TEXT("")), titleRarity(TEXT("Common")), accessToken(TEXT("-1")) ,
-		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), IsReceived(false), ReceivedSeatId(0), bIsNewPlayer(true)
+		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), IsReceived(false), ReceivedSeatId(1), bIsNewPlayer(true)
 	{}
 };
 
