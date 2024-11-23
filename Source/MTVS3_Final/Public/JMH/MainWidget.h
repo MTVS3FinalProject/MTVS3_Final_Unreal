@@ -274,4 +274,58 @@ public:
 	void SetVisibleInteractionCan(bool visible);
 	UFUNCTION()
 	void HandlePaymentPostpone();
+
+	// 10: 튜토리얼
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UWidgetSwitcher* WS_Tutorial;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_Tutorial0;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_Tutorial1;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_Tutorial2;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_Tutorial3;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Right0;
+	UFUNCTION()
+	void OnClickedRight0();
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left1;
+	UFUNCTION()
+	void OnClickedLeft1();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Right1;
+	UFUNCTION()
+	void OnClickedRight1();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left2;
+	UFUNCTION()
+	void OnClickedLeft2();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Right2;
+	UFUNCTION()
+	void OnClickedRight2();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left3;
+	UFUNCTION()
+	void OnClickedLeft3();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Right3;
+	UFUNCTION()
+	void OnClickedRight3();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left4;
+	UFUNCTION()
+	void OnClickedLeft4();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_TutorialEnd;
+	UFUNCTION()
+	void OnClickedTutorialEnd();
 };

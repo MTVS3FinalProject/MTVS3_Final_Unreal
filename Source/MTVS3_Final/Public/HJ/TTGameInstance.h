@@ -65,11 +65,14 @@ struct FPlayerData
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	int32 ReceivedSeatId;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	bool bIsNewPlayer;
 	
 	// 기본 생성자
 	FPlayerData()
 		: bIsHost(false) , nickname(TEXT("Ticketaka")), titleName(TEXT("")), titleRarity(TEXT("Common")), accessToken(TEXT("-1")) ,
-		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), IsReceived(false), ReceivedSeatId(0)
+		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), IsReceived(false), ReceivedSeatId(0), bIsNewPlayer(true)
 	{}
 };
 
@@ -184,5 +187,10 @@ public:
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetReceivedSeatId(const int32& _ReceivedSeatId);
 	int32 GetReceivedSeatId() const { return PlayerData.ReceivedSeatId; };
+
+	// 신규 플레이어 여부
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetbIsNewPlayer(const bool _bIsNewPlayer);
+	bool GetbIsNewPlayer() const { return PlayerData.bIsNewPlayer; };
 #pragma endregion
 };
