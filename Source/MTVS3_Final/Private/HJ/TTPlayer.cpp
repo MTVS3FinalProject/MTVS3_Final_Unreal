@@ -93,9 +93,14 @@ ATTPlayer::ATTPlayer()
 	EmojiComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("EmojiWidget"));
 	EmojiComp->SetupAttachment(GetMesh() , TEXT("head"));
 
-	if (this->GetCharacterMovement())
+	// 네트워크 이동 보간 설정
+	if (GetCharacterMovement())
 	{
-		this->GetCharacterMovement()->NetworkSmoothingMode = ENetworkSmoothingMode::Exponential;
+		GetCharacterMovement()->NetworkSmoothingMode = ENetworkSmoothingMode::Exponential;
+		GetCharacterMovement()->NetworkMaxSmoothUpdateDistance = 92.f;
+		GetCharacterMovement()->NetworkNoSmoothUpdateDistance = 140.f;
+		GetCharacterMovement()->NetworkSimulatedSmoothLocationTime = 0.1f;
+		GetCharacterMovement()->NetworkSimulatedSmoothRotationTime = 0.03f;
 	}
 }
 
@@ -105,7 +110,7 @@ void ATTPlayer::BeginPlay()
 	Super::BeginPlay();
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	
+
 	if (!IsLocallyControlled())
 	{
 		if (GI->GetPlaceState() == EPlaceState::Plaza)
@@ -616,11 +621,36 @@ void ATTPlayer::MulticastLuckyDrawStart_Implementation()
 
 void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& TargetTransform)
 {
+	if (LDTutorialUI) LDTutorialUI->SetVisibility(ESlateVisibility::Hidden);
+
 	// this->SetActorTransform(TargetTransform);
-	FTransform NewTransform = TargetTransform;
-	NewTransform.SetRotation(FRotator(0.0f, 90.0f, 0.0f).Quaternion());
-	this->SetActorTransform(NewTransform);
-	GetCharacterMovement()->DisableMovement(); // 이동 비활성화
+	// 이동 중인 상태라면 즉시 정지
+	GetCharacterMovement()->StopMovementImmediately();
+
+	// 명시적인 회전값 설정 (90도)
+	FRotator TargetRotation = FRotator(0.0f , 90.0f , 0.0f);
+
+	// 위치와 회전을 함께 설정
+	SetActorLocationAndRotation(
+		TargetTransform.GetLocation() ,
+		TargetRotation.Quaternion() ,
+		false , // sweep 비활성화
+		nullptr ,
+		ETeleportType::ResetPhysics // 부드러운 물리 상태 리셋
+	);
+
+	// CharacterMovement 회전 관련 설정
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->UpdateComponentToWorld();
+
+	// 컨트롤러 회전도 동기화
+	if (Controller)
+	{
+		Controller->SetControlRotation(TargetRotation);
+	}
+
+	// 이동 비활성화
+	GetCharacterMovement()->DisableMovement();
 }
 
 void ATTPlayer::ClientLuckyDrawLose_Implementation()
@@ -1692,12 +1722,12 @@ void ATTPlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 void ATTPlayer::InitMainUI()
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	
+
 	MainUI = Cast<UMainWidget>(CreateWidget(GetWorld() , MainUIFactory));
 	if (MainUI)
 	{
 		MainUI->AddToViewport();
-		if (GI->GetbIsNewPlayer()==true) MainUI->SetWidgetSwitcher(10);
+		if (GI->GetbIsNewPlayer() == true) MainUI->SetWidgetSwitcher(10);
 	}
 
 	TicketingUI = Cast<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
