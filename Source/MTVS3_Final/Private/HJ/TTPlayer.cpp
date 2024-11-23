@@ -1686,10 +1686,13 @@ void ATTPlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 
 void ATTPlayer::InitMainUI()
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	
 	MainUI = Cast<UMainWidget>(CreateWidget(GetWorld() , MainUIFactory));
 	if (MainUI)
 	{
 		MainUI->AddToViewport();
+		if (GI->GetbIsNewPlayer()==true) MainUI->SetWidgetSwitcher(10);
 	}
 
 	TicketingUI = Cast<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
