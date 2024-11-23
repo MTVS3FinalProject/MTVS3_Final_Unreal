@@ -70,7 +70,7 @@ void UMainWidget::NativeConstruct()
 	if (WBP_MH_MainBar && WBP_MH_MainBar->WBP_NoticeUI)
 	{
 		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this , &UMainWidget::ShowChatUI);
-		WBP_MH_MainBar->WBP_NoticeUI->OnClickedPaymentPostpone.AddDynamic(this, &UMainWidget::HandlePaymentPostpone);
+		WBP_MH_MainBar->WBP_NoticeUI->OnClickedPaymentPostpone.AddDynamic(this , &UMainWidget::HandlePaymentPostpone);
 	}
 
 	if (TicketCustomWidget)
@@ -78,11 +78,14 @@ void UMainWidget::NativeConstruct()
 		TicketCustomWidget->OnClickedTicketCustomBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 		TicketCustomWidget->OnClickedTicketCustomSave.AddDynamic(this , &UMainWidget::OnClickedCustomTicketSaveButton);
 	}
-	
+
 	if (FinalTicketWidget)
 	{
 		FinalTicketWidget->OnClickedFinalTicketBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
+
+	//info Canvas TArray
+	InfoCanvasPanels = {Can_ConcertInfo01,Can_ConcertInfo02,Can_ConcertInfo03,Can_ConcertInfo04,Can_ConcertInfo05};
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -93,7 +96,6 @@ void UMainWidget::SetWidgetSwitcher(int32 num)
 		//PlayAnimation(TicketImgAnim01,0,0,EUMGSequencePlayMode::Reverse;
 		PlayAnimation(TicketImgAnim01);
 	}
-	
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
@@ -236,7 +238,7 @@ void UMainWidget::OnClickedBack_Map()
 	if (!GI || !Local || !PS || !HttpActor3) return;
 
 	HttpActor3->ReqPostponePaymentSeat(GI->GetAccessToken());
-	
+
 	GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 }
 
@@ -278,8 +280,6 @@ void UMainWidget::OnClickedConcert05()
 
 void UMainWidget::SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas)
 {
-
-	
 }
 
 void UMainWidget::OnClickedConfirm_Concert()
@@ -310,6 +310,8 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 		{
 		case 1:
 			PlayAnimation(ConcertAnim1);
+			SelectConcertInfoAnim(AnimNum);
+			SetInfoCanvasVisibility(Can_ConcertInfo01);
 			break;
 		case 2:
 			PlayAnimation(ConcertAnim2);
@@ -336,7 +338,7 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 			PlayAnimation(ConcertAnim1_0);
 			break;
 		case 2:
-			PlayAnimation(ConcertAnim2_1); 
+			PlayAnimation(ConcertAnim2_1);
 			break;
 		case 3:
 			PlayAnimation(ConcertAnim3_2);
@@ -353,6 +355,47 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 	}
 }
 
+void UMainWidget::SelectConcertInfoAnim(int32 InfoAnimNum)
+{
+	//이전 애니메이션이 있다면 없어지고 -> 새로운건 생기게
+	switch (InfoAnimNum)
+	{
+	case 1:
+		PlayAnimation(ConcertInfoAnim01);
+		break;
+	case 2:
+		PlayAnimation(ConcertInfoAnim02);
+		break;
+	case 3:
+		PlayAnimation(ConcertInfoAnim03);
+		break;
+	case 4:
+		PlayAnimation(ConcertInfoAnim04);
+		break;
+	case 5:
+		PlayAnimation(ConcertInfoAnim05);
+		break;
+	default:
+		break;
+	}
+}
+
+void UMainWidget::SetInfoCanvasVisibility(UCanvasPanel* TargetCanvas)
+{
+	// TargetCanvas Visible, 나머지는 Hidden
+	for (UCanvasPanel* Canvas : InfoCanvasPanels)
+	{
+		if (Canvas == TargetCanvas)
+		{
+			Canvas->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			Canvas->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
 void UMainWidget::OnClickedHttpTest_Puzzle()
 {
 	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
@@ -361,9 +404,8 @@ void UMainWidget::OnClickedHttpTest_Puzzle()
 	if (!GI && !HttpActor3) return;
 	// Puzzle 결과, Sticker 획득 요청
 	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
-	HttpActor3->ReqPostPuzzleResultAndGetSticker(1, GI->GetAccessToken());
+	HttpActor3->ReqPostPuzzleResultAndGetSticker(1 , GI->GetAccessToken());
 }
-
 
 void UMainWidget::OnClickedConcertL()
 {
@@ -388,6 +430,7 @@ void UMainWidget::OnClickedConcertR()
 	{
 		ConcertNum = 5;
 		SelectConcertAnim(false , ConcertNum);
+		
 	}
 	else
 	{
@@ -397,25 +440,25 @@ void UMainWidget::OnClickedConcertR()
 
 void UMainWidget::SetVisibleInteractionCan(bool visible)
 {
-	if(visible)
+	if (visible)
 	{
 		Can_Interaction->SetVisibility(ESlateVisibility::Visible);
 	}
 	else
 	{
 		Can_Interaction->SetVisibility(ESlateVisibility::Hidden);
-	} 
+	}
 }
 
 void UMainWidget::HandlePaymentPostpone()
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if (HttpActor2)
 	{
 		FString PostponeSeatId = FString::FromInt(HttpActor2->GetPostponeSeatId());
-		HttpActor2->ReqPostGameResult(PostponeSeatId, GI->GetAccessToken());
+		HttpActor2->ReqPostGameResult(PostponeSeatId , GI->GetAccessToken());
 	}
 	SetWidgetSwitcher(1);
 }
