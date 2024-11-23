@@ -28,6 +28,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/TextRenderComponent.h"
 #include "HJ/HallSoundManager.h"
+#include "HJ/LDTutorialWidget.h"
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_EmojiImg.h"
@@ -1750,6 +1751,11 @@ void ATTPlayer::InitGameUI()
 {
 	SetTextMyNum();
 
+	LDTutorialUI = Cast<ULDTutorialWidget>(CreateWidget(GetWorld() , LDTutorialUIFactory));
+	if (LDTutorialUI)
+	{
+		LDTutorialUI->AddToViewport(1);
+	}
 	/*FTimerHandle SetTextMyNumTimerHandle;
 	GetWorldTimerManager().SetTimer(SetTextMyNumTimerHandle , this , &ATTPlayer::SetTextMyNum , 4.0f , false);*/
 }
