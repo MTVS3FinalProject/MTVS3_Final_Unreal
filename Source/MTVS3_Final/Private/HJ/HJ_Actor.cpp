@@ -62,7 +62,7 @@ void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 	{
 		OverlappingPlayer = nullptr; // 오버랩 해제 시 플레이어 초기화
 		HideText();
-		if (MainUI) MainUI->SetWidgetSwitcher(0);
+		// if (MainUI) MainUI->SetWidgetSwitcher(0);
 	}
 }
 
