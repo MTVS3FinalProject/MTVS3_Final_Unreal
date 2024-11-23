@@ -437,6 +437,12 @@ public:
 	class UMH_GameWidget* GameUI;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class ULDTutorialWidget> LDTutorialUIFactory;
+	UPROPERTY()
+	class ULDTutorialWidget* LDTutorialUI;
+
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UHM_AimingWidget> AimingUIFactory;
 	UPROPERTY()
 	class UHM_AimingWidget* AimingUI;
