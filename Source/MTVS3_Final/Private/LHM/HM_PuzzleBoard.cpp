@@ -3,6 +3,7 @@
 
 #include "LHM/HM_PuzzleBoard.h"
 
+#include "HJ/TTPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/PuzzleManager.h"
@@ -216,17 +217,19 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 						UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(OtherComp);
 						if (MeshComp && PuzzlePiece->LastOwners.Contains(MeshComp))
 						{
-							AActor* LastOwner = PuzzlePiece->LastOwners[MeshComp];
-							if(LastOwner)
+							// LastOwners에서 닉네임 가져오기
+							FString PlayerNickname = PuzzlePiece->LastOwners[MeshComp];
+							if (!PlayerNickname.IsEmpty())
 							{
 								// 피스의 점수 가져오기
 								int32 PieceScore = Manager->GetPieceScore(MeshComp);
 								
-								GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
-				FString::Printf(TEXT("Hit Piece Score : %d"),PieceScore));
-                            
+								GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow,
+																 FString::Printf(TEXT("Hit Piece Score : %d"), PieceScore));
+								UE_LOG(LogTemp, Log, TEXT("Player %s scored %d points."), *PlayerNickname, PieceScore);
+
 								// 마지막 소유자에게 점수 부여
-								Manager->AddScoreToPlayer(LastOwner, PieceScore);
+								Manager->AddScoreToPlayer(PlayerNickname, PieceScore);
 							}
 						}
 					}

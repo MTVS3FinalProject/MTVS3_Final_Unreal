@@ -196,6 +196,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 		{
 			TargetPlayer->ServerTeleportPlayer(true);
 			TargetPlayer->PlayConcertBGM();
+			TargetPlayer->MainUI->PlayTitleAnim(2);
 			GI->SetPlaceState(EPlaceState::ConcertHall);
 			
 			// JSON 응답 파싱
