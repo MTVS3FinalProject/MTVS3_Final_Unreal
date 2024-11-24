@@ -26,7 +26,6 @@
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/TextRenderComponent.h"
 #include "HJ/HallSoundManager.h"
 #include "HJ/LDTutorialWidget.h"
 #include "HJ/PlayerTitleWidget.h"
@@ -39,6 +38,7 @@
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
+// #include "Components/TextRenderComponent.h"
 
 class ALuckyDrawManager;
 // Sets default values
@@ -75,9 +75,10 @@ ATTPlayer::ATTPlayer()
 	// 머리 본(Bone)에 부착
 	TitleUIComp->SetupAttachment(GetMesh() , TEXT("head"));
 
-	TextRenderComp = CreateDefaultSubobject<UTextRenderComponent>(TEXT("RandomSeatNumberComp"));
-	TextRenderComp->SetupAttachment(GetMesh() , TEXT("head"));
-	TextRenderComp->SetVisibility(false);
+	// TextRenderComp 사용 X
+	// TextRenderComp = CreateDefaultSubobject<UTextRenderComponent>(TEXT("RandomSeatNumberComp"));
+	// TextRenderComp->SetupAttachment(GetMesh() , TEXT("head"));
+	// TextRenderComp->SetVisibility(false);
 
 	// 머리 위로 약간 올리기 위한 위치 조정
 	NicknameUIComp->
@@ -133,9 +134,9 @@ void ATTPlayer::BeginPlay()
 	{
 		if (HasAuthority()) GI->SetbIsHost(true);
 		SetbIsHost(GI->GetbIsHost());
-
 		SetAvatarData(GI->GetAvatarData());
-		MulticastSetVisibilityTextRender(false);
+		SetAccessToken(GI->GetAccessToken());
+		// MulticastSetVisibilityTextRender(false); // TextRenderComp 사용 X
 
 		if (NicknameUIFactory)
 		{
@@ -432,27 +433,43 @@ void ATTPlayer::OnRep_TitleNameAndRarity()
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
-	if (HasAuthority()) ServerSetbIsHost(_bIsHost);
+	// 클라이언트에서 호출된 경우 서버에 요청
+	if (!HasAuthority())
+	{
+		ServerSetbIsHost(_bIsHost);
+		return;
+	}
+    
+	// 서버에서 직접 처리
+	bIsHost = _bIsHost;
+	OnRep_bIsHost();
 }
 
 void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
 {
 	bIsHost = _bIsHost;
-	MulticastSetbIsHost(bIsHost);
-
-	if (bIsHost == true)
-	{
-		ServerSetNewSkeletalMesh(0);
-	}
-	else
-	{
-		ServerSetNewSkeletalMesh(GetAvatarData());
-	}
+	OnRep_bIsHost();
 }
 
-void ATTPlayer::MulticastSetbIsHost_Implementation(bool _bIsHost)
+void ATTPlayer::OnRep_bIsHost()
 {
-	if (bIsHost == true)
+	// 스켈레탈 메시 업데이트
+	if (GetbIsHost())
+	{
+		SetNewSkeletalMesh(0); // Manager mesh
+	}
+	else 
+	{
+		SetNewSkeletalMesh(GetAvatarData()); // Avatar mesh
+	}
+
+	// 가시성 업데이트
+	UpdateHostVisibility();
+}
+
+void ATTPlayer::UpdateHostVisibility()
+{
+	if (GetbIsHost())
 	{
 		GetMesh()->SetOnlyOwnerSee(true);
 		GetCapsuleComponent()->SetOnlyOwnerSee(true);
@@ -470,23 +487,26 @@ void ATTPlayer::MulticastSetbIsHost_Implementation(bool _bIsHost)
 	}
 }
 
-void ATTPlayer::OnRep_bIsHost()
-{
-	if (GetbIsHost() == true)
-	{
-		SetNewSkeletalMesh(0);
-		MulticastSetbIsHost(true);
-	}
-	else
-	{
-		SetNewSkeletalMesh(GetAvatarData());
-		MulticastSetbIsHost(false);
-	}
-}
-
 void ATTPlayer::SetAvatarData(const int32& _AvatarData)
 {
 	if (HasAuthority()) ServerSetAvatarData(_AvatarData);
+}
+
+void ATTPlayer::SetAccessToken(const FString& _AccessToken)
+{
+	if (HasAuthority())
+	{
+		AccessToken = _AccessToken;
+	}
+	else
+	{
+		ServerSetAccessToken(_AccessToken);
+	}
+}
+
+void ATTPlayer::ServerSetAccessToken_Implementation(const FString& _AccessToken)
+{
+	AccessToken = _AccessToken;
 }
 
 void ATTPlayer::ServerSetAvatarData_Implementation(const int32& _AvatarData)
@@ -743,15 +763,16 @@ void ATTPlayer::ClientLDWinnerExitSession_Implementation()
 	}
 }
 
-void ATTPlayer::MulticastSetVisibilityTextRender_Implementation(bool bIsVisible)
-{
-	TextRenderComp->SetVisibility(bIsVisible);
-}
-
-void ATTPlayer::MulticastSetColorTextRender_Implementation(const FLinearColor& NewColor)
-{
-	TextRenderComp->SetTextRenderColor(NewColor.ToFColor(true));
-}
+// TextRenderComp 사용 X
+// void ATTPlayer::MulticastSetVisibilityTextRender_Implementation(bool bIsVisible)
+// {
+// 	TextRenderComp->SetVisibility(bIsVisible);
+// }
+//
+// void ATTPlayer::MulticastSetColorTextRender_Implementation(const FLinearColor& NewColor)
+// {
+// 	TextRenderComp->SetTextRenderColor(NewColor.ToFColor(true));
+// }
 
 void ATTPlayer::ServerChangeWalkSpeed_Implementation(bool bIsRunning)
 {
@@ -1818,6 +1839,7 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , RandomSeatNumber);
 	DOREPLIFETIME(ATTPlayer , AvatarData);
 	DOREPLIFETIME(ATTPlayer , bIsHost);
+	DOREPLIFETIME(ATTPlayer, AccessToken);
 
 	// 퍼즐
 	DOREPLIFETIME(ATTPlayer , bHasPiece);
