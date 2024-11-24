@@ -34,6 +34,10 @@ void UMainWidget::NativeConstruct()
 	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
 	Btn_SelectConcertBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_Concert01->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert01);
+	Btn_Concert02->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert02);
+	Btn_Concert03->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert03);
+	Btn_Concert04->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert04);
+	Btn_Concert05->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert05);
 	Btn_ExitMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExitMainWin);
 	Btn_ExitMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExit);
 	Btn_BackMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
