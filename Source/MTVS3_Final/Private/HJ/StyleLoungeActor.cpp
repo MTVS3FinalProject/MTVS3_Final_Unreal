@@ -5,6 +5,8 @@
 
 #include "Components/BoxComponent.h"
 #include "HJ/TTGameInstance.h"
+#include "HJ/TTPlayer.h"
+#include "JMH/MainWidget.h"
 
 // Sets default values
 AStyleLoungeActor::AStyleLoungeActor()
@@ -35,16 +37,35 @@ void AStyleLoungeActor::Tick(float DeltaTime)
 void AStyleLoungeActor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
+	if (!TTPlayer) return;
+	
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI) return;
 	if (ActorHasTag("StyleLoungeDoor"))
 	{
-		if (GI->GetPlaceState() == EPlaceState::Plaza) GI->SetPlaceState(EPlaceState::StyleLounge);
-		else GI->SetPlaceState(EPlaceState::Plaza);
+		if (GI->GetPlaceState() == EPlaceState::Plaza)
+		{
+			GI->SetPlaceState(EPlaceState::StyleLounge);
+			TTPlayer->MainUI->PlayTitleAnim(4);
+		}
+		else
+		{
+			GI->SetPlaceState(EPlaceState::Plaza);
+			TTPlayer->MainUI->PlayTitleAnim(1);
+		}
 	}
 	else if (ActorHasTag("CommunityHallDoor"))
 	{
-		if (GI->GetPlaceState() == EPlaceState::Plaza) GI->SetPlaceState(EPlaceState::CommunityHall);
-		else GI->SetPlaceState(EPlaceState::Plaza);
+		if (GI->GetPlaceState() == EPlaceState::Plaza)
+		{
+			GI->SetPlaceState(EPlaceState::CommunityHall);
+			TTPlayer->MainUI->PlayTitleAnim(3);
+		}
+		else
+		{
+			GI->SetPlaceState(EPlaceState::Plaza);
+			TTPlayer->MainUI->PlayTitleAnim(1);
+		}
 	}
 }
