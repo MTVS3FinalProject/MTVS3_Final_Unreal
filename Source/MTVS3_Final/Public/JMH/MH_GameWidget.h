@@ -105,5 +105,7 @@ public:
 	//처음 어떻게 있을지 정해야함.
 	//결과 바뀔때 애니메이션 해야함.
 	
-	
+	// KHJ
+	UPROPERTY(meta = (BindWidgetAnim), Transient)
+	UWidgetAnimation* FadeInAnim;
 };

@@ -76,6 +76,9 @@ public:
 	void MulticastLuckyDrawWin();
 
 	UFUNCTION(Client , Reliable)
+	void ClientLDWinnerFadeInAnim();
+	
+	UFUNCTION(Client , Reliable)
 	void ClientLDWinnerExitSession();
 
 	// TextRenderComp 사용 X
