@@ -3,10 +3,10 @@
 
 #include "LHM/PuzzleManager.h"
 
-#include "HJ/TTGameInstance.h"
+#include "EngineUtils.h"
+#include "HJ/TTPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor3.h"
-#include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
 #include "Net/UnrealNetwork.h"
 
@@ -48,28 +48,28 @@ int32 APuzzleManager::GetPieceScore(UStaticMeshComponent* Piece) const
 	return Score ? *Score : 0;
 }
 
-void APuzzleManager::AddScoreToPlayer(AActor* Player, int32 Score)
+void APuzzleManager::AddScoreToPlayer(const FString& PlayerNickname, int32 Score)
 {
-	if (!Player) return;
+	if (PlayerNickname.IsEmpty()) return;
 
 	// 점수 추가 및 관리
-	int32* CurrentScore = PlayerScores.Find(Player);
+	int32* CurrentScore = PlayerScores.Find(PlayerNickname);
 	if (CurrentScore)
 	{
 		*CurrentScore += Score;
 	}
 	else
 	{
-		PlayerScores.Add(Player, Score);
+		PlayerScores.Add(PlayerNickname, Score);
 	}
 
 	// PlayerScoresInfo 업데이트
 	bool bPlayerFound = false;
 	for(FPlayerScoreInfo& PlayerInfo : PlayerScoresInfo)
 	{
-		if(PlayerInfo.Player == Player)
+		if(PlayerInfo.Player == PlayerNickname)
 		{
-			PlayerInfo.Score = PlayerScores[Player];
+			PlayerInfo.Score = PlayerScores[PlayerNickname];
 			bPlayerFound = true;
 			break;
 		}
@@ -77,23 +77,13 @@ void APuzzleManager::AddScoreToPlayer(AActor* Player, int32 Score)
 
 	if(!bPlayerFound)
 	{
-		FPlayerScoreInfo NewPlayerInfo(Player, PlayerScores[Player]);
+		FPlayerScoreInfo NewPlayerInfo(PlayerNickname, PlayerScores[PlayerNickname]);
 		PlayerScoresInfo.Add(NewPlayerInfo);
 	}
 
-	// Player의 Controller를 가져옴
-	APawn* Pawn = Cast<APawn>(Player);
-	if (!Pawn) return;
-	APlayerController* PC = Cast<APlayerController>(Pawn->GetController());
-	if (!PC) return;
-	UTTGameInstance* GI = Cast<UTTGameInstance>(PC->GetGameInstance());
-	if (!GI) return;
-
-	FString NickName = GI->GetNickname();
-
-	UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *NickName, PlayerScores[Player]);
+	UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *PlayerNickname, PlayerScores[PlayerNickname]);
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
-				FString::Printf(TEXT("Player %s new score: %d"),*NickName, PlayerScores[Player]));
+				FString::Printf(TEXT("Player %s new score: %d"),*PlayerNickname, PlayerScores[PlayerNickname]));
 }
 
 // 퍼즐이 종료됐을 때 호출되는 함수
@@ -115,17 +105,17 @@ void APuzzleManager::SortAndUpdateRanking()
 	// 각 클라이언트에 자신의 순위 전달
 	for (int32 i = 0; i < FMath::Min(3, PlayerScoresInfo.Num()); i++)
 	{
-		if (AActor* Player = PlayerScoresInfo[i].Player)
+		FString RankedPlayerNickname  = PlayerScoresInfo[i].Player;
+		// 월드에 있는 모든 ATTPlayer 순회
+		for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 		{
-			APawn* Pawn = Cast<APawn>(Player);
-			if (!Pawn) continue;
-
-			APlayerController* PC = Cast<APlayerController>(Pawn->GetController());
-			if (!PC) continue;
-
-			//SetPlayerRank(static_cast<EPlayerRank>(i + 1));
-			// 클라이언트에서 자신의 순위를 처리하도록 호출
-			Client_ReceiveRank(static_cast<EPlayerRank>(i + 1));
+			ATTPlayer* TTPlayer = *It;
+			if (TTPlayer && TTPlayer->GetNickname() == RankedPlayerNickname)
+			{
+				// 자신의 순위를 전달
+				Client_ReceiveRank(static_cast<EPlayerRank>(i + 1), TTPlayer->GetNickname());
+				break; // 해당 플레이어를 찾으면 더 이상 순회할 필요 없음
+			}
 		}
 	}
 }
@@ -135,26 +125,20 @@ void APuzzleManager::Multicast_UpdateUI_Implementation(const TArray<FPlayerScore
 {
 	for (int32 i = 0; i < FMath::Min(3, SortedScores.Num()); i++) // 3위까지만 처리
 	{
-		const FPlayerScoreInfo& PlayerInfo = SortedScores[i];
-
 		// 플레이어의 컨트롤러를 가져와 자신의 닉네임을 가져오기
-		if (AActor* Player = PlayerInfo.Player)
+		FString Player = PlayerScoresInfo[i].Player;
+		if(!Player.IsEmpty())
 		{
-			// Player의 Controller를 가져옴
-			APawn* Pawn = Cast<APawn>(Player);
-			if (!Pawn) return;
-
-			APlayerController* PC = Cast<APlayerController>(Pawn->GetController());
-			if (!PC) return;
-
-			// PlayerController의 GameInstance에서 데이터 가져오기
-			UTTGameInstance* GI = Cast<UTTGameInstance>(PC->GetGameInstance());
-			if (!GI) return;
-			
-			FString NickName = GI->GetNickname();
-
-			// UI 업데이트
-			UpdateUINickname(static_cast<EPlayerRank>(i + 1), NickName);
+			// 월드에 있는 모든 ATTPlayer 순회
+			for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+			{
+				ATTPlayer* TTPlayer = *It;
+				if (TTPlayer && TTPlayer->GetNickname() == Player)
+				{
+					// UI 업데이트
+					UpdateUINickname(static_cast<EPlayerRank>(i), TTPlayer->GetNickname());
+				}
+			}	
 		}
 	}
 
@@ -204,87 +188,65 @@ void APuzzleManager::UpdatePlayerRankInfo()
 
 	for (int32 i = 0; i < FMath::Min(PlayerScoresInfo.Num(), 3); i++)
 	{
-		if (AActor* Player = PlayerScoresInfo[i].Player)
+		FString Player = PlayerScoresInfo[i].Player;
+		if (!Player.IsEmpty())
 		{
-			// Player의 Controller를 가져옴
-			APawn* Pawn = Cast<APawn>(Player);
-			if (!Pawn) return;
-
-			APlayerController* PC = Cast<APlayerController>(Pawn->GetController());
-			if (!PC) return;
-
-			// PlayerController의 GameInstance에서 데이터 가져오기
-			UTTGameInstance* GI = Cast<UTTGameInstance>(PC->GetGameInstance());
-			if (GI)
+			// 월드에 있는 모든 ATTPlayer 순회
+			for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 			{
-				FPlayerRankInfo RankInfo;
-				RankInfo.NickName = GI->GetNickname();
-				RankInfo.Rank = i + 1;
-				RankInfo.Score = PlayerScoresInfo[i].Score;
-				ReplicatedRankInfo.Add(RankInfo);
+				ATTPlayer* TTPlayer = *It;
+				if (TTPlayer && TTPlayer->GetNickname() == Player)
+				{
+					FPlayerRankInfo RankInfo;
+					RankInfo.NickName = TTPlayer->GetNickname();
+					RankInfo.Rank = i + 1;
+					RankInfo.Score = PlayerScoresInfo[i].Score;
+					ReplicatedRankInfo.Add(RankInfo);
 
-				UE_LOG(LogTemp, Log, TEXT("Rank Info: Rank %d, Nickname: %s, Score: %d"),
-					RankInfo.Rank, *RankInfo.NickName, RankInfo.Score);
+					UE_LOG(LogTemp, Log, TEXT("Rank Info: Rank %d, Nickname: %s, Score: %d"),
+						RankInfo.Rank, *RankInfo.NickName, RankInfo.Score);
+				}
 			}
 		}
 	}
 }
 
-void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank)
+void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const FString& Nickname)
 {
 	if (Rank == EPlayerRank::None || static_cast<int32>(Rank) > 3) return;
+	// 월드에 있는 모든 ATTPlayer 순회
+	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+	{
+		ATTPlayer* TTPlayer = *It;
+		if (TTPlayer && TTPlayer->GetNickname() == Nickname)
+		{
+			FString AccessToken = TTPlayer->GetAccessToken();
+			FString NickName = TTPlayer->GetNickname();
 
-	// 현재 클라이언트에서 자신의 Controller 및 GameInstance 가져오기
-	APlayerController* LocalPC = GetWorld()->GetFirstPlayerController(); // LocalPlayer만 가져옴
-	if (!LocalPC) return;
-	
-	if (LocalPC && LocalPC->IsLocalController())
-	{
-		UE_LOG(LogTemp, Log, TEXT("This is a local PlayerController."));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("This is not a local PlayerController."));
-	}
-	
-	UTTGameInstance* LocalGI = Cast<UTTGameInstance>(LocalPC->GetGameInstance());
-	if (!LocalGI) return;
+			UE_LOG(LogTemp , Log , TEXT("Client AccessToken: %s, Nickname: %s") , *AccessToken , *NickName);
 
-	FString AccessToken = LocalGI->GetAccessToken();
-	FString NickName = LocalGI->GetNickname();
+			// 자신의 순위와 AccessToken으로 HTTP 요청 처리
+			AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+			if (!HttpActor3) return;
 
-	UE_LOG(LogTemp , Log , TEXT("Client AccessToken: %s, Nickname: %s"), *AccessToken, *NickName);
-	
-	// 자신의 순위와 AccessToken으로 HTTP 요청 처리
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
-	if (!HttpActor3) return;
+			HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) , AccessToken);
+			
+			// 멀티캐스트로 UI 업데이트
+			Multicast_UpdateUIVisibility();
+			break;
+		}
+	}
+}
 
-	HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank), AccessToken);
-	
-	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	if (PC)
+void APuzzleManager::Multicast_UpdateUIVisibility_Implementation()
+{
+	if (PuzzleUI)
 	{
-		UE_LOG(LogTemp, Log, TEXT("PlayerController: %s"), *PC->GetName());
-	}
+		PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+		PuzzleUI->SetWidgetSwitcher(1);
 
-	UTTGameInstance* GI = Cast<UTTGameInstance>(PC->GetGameInstance());
-	if (GI)
-	{
-		UE_LOG(LogTemp, Log, TEXT("AccessToken: %s, Nickname: %s"), *GI->GetAccessToken(), *GI->GetNickname());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GameInstance not found for this PlayerController."));
-	}
-
-	if (HasAuthority())
-	{
-		UE_LOG(LogTemp, Log, TEXT("This is the Server instance."));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("This is a Client instance."));
+		UE_LOG(LogTemp, Log, TEXT("Multicast: UI updated on client"));
 	}
 }
 

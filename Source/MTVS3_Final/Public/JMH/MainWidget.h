@@ -374,5 +374,29 @@ public:
 	UFUNCTION()
 	void OnClickedTutorialEnd();
 
-	
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* FadeOutAnim;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_TitlePlaza;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_TitleConcertHall;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_TitleCommunityHall;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_TitleStyleLounge;
+
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* TitlePlazaAnim;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* TitleConcertHallAnim;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* TitleCommunityHallAnim;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* TitleStyleLoungeAnim;
+
+	void HideAllTitle();
+
+	UFUNCTION(BlueprintCallable)
+	void PlayTitleAnim(int32 TitleNum);
 };

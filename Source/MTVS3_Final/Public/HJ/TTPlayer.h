@@ -404,7 +404,7 @@ public:
 #pragma region UI
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UMainWidget> MainUIFactory;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, Category = "TTSettings|UI")
 	class UMainWidget* MainUI;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")

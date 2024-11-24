@@ -13,7 +13,7 @@ struct FPlayerScoreInfo
 	GENERATED_BODY()
 
 	UPROPERTY()
-	AActor* Player;
+	FString Player;
 
 	UPROPERTY()
 	int32 Score;
@@ -23,10 +23,10 @@ struct FPlayerScoreInfo
 
 	// 기본 생성자
 	FPlayerScoreInfo()
-		: Player(nullptr), Score(0), Timestamp(0) {}
+		: Player(TEXT("")), Score(0), Timestamp(0) {}
 
 	// 생성자 오버로드: 초기화 시점 설정
-	FPlayerScoreInfo(AActor* InPlayer, int32 InScore)
+	FPlayerScoreInfo(FString InPlayer, int32 InScore)
 		: Player(InPlayer), Score(InScore), Timestamp(FDateTime::Now()) {}
 };
 
@@ -95,14 +95,14 @@ public:
 
 	// 플레이어에게 점수 부여
 	UFUNCTION(BlueprintCallable, Category = "Puzzle")
-	void AddScoreToPlayer(AActor* Player, int32 Score);
+	void AddScoreToPlayer(const FString& PlayerNickname, int32 Score);
 
 public:
 	TMap<UStaticMeshComponent*, int32> Pieces;
 
 	// 각 플레이어의 점수 관리
 	UPROPERTY()
-	TMap<AActor*, int32> PlayerScores;
+	TMap<FString, int32> PlayerScores;
 
 	// 플레이어 점수 정보를 저장할 배열
 	TArray<FPlayerScoreInfo> PlayerScoresInfo;
@@ -121,10 +121,13 @@ public:
 	void UpdatePlayerRankInfo();
 	
 	UFUNCTION(Client, Reliable)
-	void Client_ReceiveRank(EPlayerRank Rank);
+	void Client_ReceiveRank(EPlayerRank Rank, const FString& Nickname);
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_UpdateUI(const TArray<FPlayerScoreInfo>& SortedScores);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdateUIVisibility();
 	
 	// 복제될 배열
 	UPROPERTY(Replicated)

@@ -197,9 +197,9 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 	
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-
-	if(HttpActor2)
+	if(HttpActor2) 
 	{
+		UE_LOG(LogTemp , Log , TEXT("HttpActor2 캐스팅"));
 		// HTTP 모듈 가져오기
 		FHttpModule* Http = &FHttpModule::Get();
 		if ( !Http ) return;
