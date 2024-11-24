@@ -706,6 +706,7 @@ void ATTPlayer::ClientLuckyDrawLose_Implementation()
 	if (GameUI)
 	{
 		GameUI->HideWidget();
+		// 탈락하면 다른 방식으로..
 	}
 
 	GetMesh()->SetOwnerNoSee(true);
@@ -752,6 +753,10 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 			SequencePlayer->Play();
 		}
 
+		FTimerHandle LDWinnerFadeInTimerHandle;
+		GetWorldTimerManager().SetTimer(LDWinnerFadeInTimerHandle , this , &ATTPlayer::ClientLDWinnerFadeInAnim , 5.0f ,
+										false);
+		
 		FTimerHandle LDWinnerTimerHandle;
 		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 6.0f ,
 		                                false);
@@ -773,6 +778,14 @@ void ATTPlayer::MulticastLuckyDrawWin_Implementation()
 	);
 	UTTPlayerAnim* Anim = Cast<UTTPlayerAnim>(GetMesh()->GetAnimInstance());
 	if (Anim) Anim->PlayDancingMontage();
+}
+
+void ATTPlayer::ClientLDWinnerFadeInAnim_Implementation()
+{
+	if (GameUI)
+	{
+		GameUI->PlayAnimation(GameUI->FadeInAnim);
+	}
 }
 
 void ATTPlayer::ClientLDWinnerExitSession_Implementation()
