@@ -706,6 +706,7 @@ void ATTPlayer::ClientLuckyDrawLose_Implementation()
 	if (GameUI)
 	{
 		GameUI->HideWidget();
+		// 탈락하면 다른 방식으로..
 	}
 
 	GetMesh()->SetOwnerNoSee(true);
