@@ -377,7 +377,15 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ATTPlayer::SetNickname(const FString& _Nickname)
 {
-	ServerSetNickname(_Nickname);
+	if (HasAuthority())
+	{
+		Nickname = _Nickname;
+		OnRep_Nickname();
+	}
+	else
+	{
+		ServerSetNickname(_Nickname);
+	}
 }
 
 void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
@@ -404,7 +412,16 @@ void ATTPlayer::OnRep_Nickname()
 
 void ATTPlayer::SetTitleNameAndRarity(const FString& _TitleName , const FString& _TitleRarity)
 {
-	ServerSetTitleNameAndRarity(_TitleName , _TitleRarity);
+	if (HasAuthority())
+	{
+		TitleName = _TitleName;
+		TitleRarity = _TitleRarity;
+		OnRep_TitleNameAndRarity();
+	}
+	else
+	{
+		ServerSetTitleNameAndRarity(_TitleName , _TitleRarity);
+	}
 }
 
 void ATTPlayer::ServerSetTitleNameAndRarity_Implementation(const FString& _TitleName , const FString& _TitleRarity)
@@ -433,16 +450,15 @@ void ATTPlayer::OnRep_TitleNameAndRarity()
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
-	// 클라이언트에서 호출된 경우 서버에 요청
-	if (!HasAuthority())
+	if (HasAuthority())
+	{
+		bIsHost = _bIsHost;
+		OnRep_bIsHost();
+	}
+	else
 	{
 		ServerSetbIsHost(_bIsHost);
-		return;
 	}
-    
-	// 서버에서 직접 처리
-	bIsHost = _bIsHost;
-	OnRep_bIsHost();
 }
 
 void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
@@ -468,28 +484,39 @@ void ATTPlayer::OnRep_bIsHost()
 }
 
 void ATTPlayer::UpdateHostVisibility()
-{
+{	
 	if (GetbIsHost())
 	{
 		GetMesh()->SetOnlyOwnerSee(true);
-		GetCapsuleComponent()->SetOnlyOwnerSee(true);
-		CenterCapsuleComp->SetOnlyOwnerSee(true);
 		NicknameUIComp->SetOnlyOwnerSee(true);
 		TitleUIComp->SetOnlyOwnerSee(true);
+
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	}
 	else
 	{
 		GetMesh()->SetOnlyOwnerSee(false);
-		GetCapsuleComponent()->SetOnlyOwnerSee(false);
-		CenterCapsuleComp->SetOnlyOwnerSee(false);
 		NicknameUIComp->SetOnlyOwnerSee(false);
 		TitleUIComp->SetOnlyOwnerSee(false);
+		
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
 }
 
 void ATTPlayer::SetAvatarData(const int32& _AvatarData)
 {
-	if (HasAuthority()) ServerSetAvatarData(_AvatarData);
+	if (HasAuthority())
+	{
+		AvatarData = _AvatarData;
+	}
+	else
+	{
+		ServerSetAvatarData(_AvatarData);
+	}
 }
 
 void ATTPlayer::SetAccessToken(const FString& _AccessToken)
