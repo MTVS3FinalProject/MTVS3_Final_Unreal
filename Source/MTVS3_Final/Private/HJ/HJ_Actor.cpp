@@ -5,6 +5,7 @@
 #include "HJ/TTPlayer.h"
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
+#include "HJ/TTGameInstance.h"
 #include "JMH/MH_Interaction.h"
 #include "JMH/MainWidget.h"
 
@@ -62,7 +63,10 @@ void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 	{
 		OverlappingPlayer = nullptr; // 오버랩 해제 시 플레이어 초기화
 		HideText();
-		if (MainUI) MainUI->SetWidgetSwitcher(0);
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+		if (!GI || !MainUI) return;
+		if (GI->GetbIsNewPlayer() == false) MainUI->SetWidgetSwitcher(0);
+		else MainUI->SetWidgetSwitcher(10);
 	}
 }
 

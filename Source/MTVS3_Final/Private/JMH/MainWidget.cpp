@@ -34,12 +34,28 @@ void UMainWidget::NativeConstruct()
 	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
 	Btn_SelectConcertBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_Concert01->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert01);
+	Btn_Concert02->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert02);
+	Btn_Concert03->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert03);
+	Btn_Concert04->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert04);
+	Btn_Concert05->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert05);
 	Btn_ExitMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExitMainWin);
 	Btn_ExitMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExit);
 	Btn_BackMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	Btn_ConcertR->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertR);
 	Btn_ConcertL->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertL);
 	//Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
+
+	Btn_TutorialStart->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialStart);
+	Btn_TutorialSkip->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialSkip);
+	Btn_Right1->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight1);
+	Btn_Left2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft2);
+	Btn_Right2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight2);
+	Btn_Left3->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft3);
+	Btn_Right3->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight3);
+	Btn_Left4->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft4);
+	Btn_Right4->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight4);
+	Btn_Left5->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft5);
+	Btn_TutorialEnd->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialEnd);
 
 	// 현민 HTTP TEST: 퍼즐 결과, 타이틀과 스티커 획득 요청
 	Btn_HttpTest_Puzzle->OnClicked.AddDynamic(this , &UMainWidget::OnClickedHttpTest_Puzzle);
@@ -58,7 +74,7 @@ void UMainWidget::NativeConstruct()
 	if (WBP_MH_MainBar && WBP_MH_MainBar->WBP_NoticeUI)
 	{
 		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this , &UMainWidget::ShowChatUI);
-		WBP_MH_MainBar->WBP_NoticeUI->OnClickedPaymentPostpone.AddDynamic(this, &UMainWidget::HandlePaymentPostpone);
+		WBP_MH_MainBar->WBP_NoticeUI->OnClickedPaymentPostpone.AddDynamic(this , &UMainWidget::HandlePaymentPostpone);
 	}
 
 	if (TicketCustomWidget)
@@ -66,11 +82,18 @@ void UMainWidget::NativeConstruct()
 		TicketCustomWidget->OnClickedTicketCustomBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 		TicketCustomWidget->OnClickedTicketCustomSave.AddDynamic(this , &UMainWidget::OnClickedCustomTicketSaveButton);
 	}
-	
+
 	if (FinalTicketWidget)
 	{
 		FinalTicketWidget->OnClickedFinalTicketBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
 	}
+
+	//info Canvas TArray
+	InfoCanvasPanels = {
+		Can_ConcertInfo01 , Can_ConcertInfo02 , Can_ConcertInfo03 , Can_ConcertInfo04 , Can_ConcertInfo05
+	};
+
+	HideAllTitle();
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -81,7 +104,6 @@ void UMainWidget::SetWidgetSwitcher(int32 num)
 		//PlayAnimation(TicketImgAnim01,0,0,EUMGSequencePlayMode::Reverse;
 		PlayAnimation(TicketImgAnim01);
 	}
-	
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)
@@ -154,6 +176,8 @@ void UMainWidget::OnClickedBackMain()
 			}
 		}
 	}
+
+	PlayTitleAnim(1);
 }
 
 void UMainWidget::OnClickedExitMainWin()
@@ -224,7 +248,7 @@ void UMainWidget::OnClickedBack_Map()
 	if (!GI || !Local || !PS || !HttpActor3) return;
 
 	HttpActor3->ReqPostponePaymentSeat(GI->GetAccessToken());
-	
+
 	GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 }
 
@@ -264,12 +288,6 @@ void UMainWidget::OnClickedConcert05()
 	GoToConcertHall();
 }
 
-void UMainWidget::SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas)
-{
-
-	
-}
-
 void UMainWidget::OnClickedConfirm_Concert()
 {
 	//일단 그냥 뉴진스 공연장으로 간닷
@@ -278,7 +296,9 @@ void UMainWidget::OnClickedConfirm_Concert()
 
 void UMainWidget::OnTicketWidgetClose()
 {
-	SetWidgetSwitcher(0);
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI->GetbIsNewPlayer() == false) SetWidgetSwitcher(0);
+	else SetWidgetSwitcher(10);
 }
 
 void UMainWidget::OnClickedCustomTicketSaveButton()
@@ -322,7 +342,7 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 			PlayAnimation(ConcertAnim1_0);
 			break;
 		case 2:
-			PlayAnimation(ConcertAnim2_1); 
+			PlayAnimation(ConcertAnim2_1);
 			break;
 		case 3:
 			PlayAnimation(ConcertAnim3_2);
@@ -339,6 +359,71 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 	}
 }
 
+void UMainWidget::SelectConcertInfoAnim(int32 InfoAnimNum)
+{
+	switch (InfoAnimNum)
+	{
+	case 1:
+		PlayAnimation(ConcertInfoAnim01);
+		break;
+	case 2:
+		PlayAnimation(ConcertInfoAnim02);
+		break;
+	case 3:
+		PlayAnimation(ConcertInfoAnim03);
+		break;
+	case 4:
+		PlayAnimation(ConcertInfoAnim04);
+		break;
+	case 5:
+		PlayAnimation(ConcertInfoAnim05);
+		break;
+	default:
+		break;
+	}
+}
+
+void UMainWidget::SetInfoCanvas(int32 InfoAnimNum)
+{
+	switch (InfoAnimNum)
+	{
+	case 1:
+		infoCanvas = Can_ConcertInfo01;
+		break;
+	case 2:
+		infoCanvas = Can_ConcertInfo02;
+		break;
+	case 3:
+		infoCanvas = Can_ConcertInfo03;
+		break;
+	case 4:
+		infoCanvas = Can_ConcertInfo04;
+		break;
+	case 5:
+		infoCanvas = Can_ConcertInfo05;
+		break;
+
+	default:
+		break;
+	}
+}
+
+void UMainWidget::SetInfoCanvasVisibility(UCanvasPanel* TargetCanvas , int32 InfoAnimNum)
+{
+	// TargetCanvas Visible, 나머지는 Hidden
+	for (UCanvasPanel* Canvas : InfoCanvasPanels)
+	{
+		if (Canvas == TargetCanvas)
+		{
+			Canvas->SetVisibility(ESlateVisibility::Visible);
+		}
+		else
+		{
+			Canvas->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
 void UMainWidget::OnClickedHttpTest_Puzzle()
 {
 	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
@@ -347,9 +432,8 @@ void UMainWidget::OnClickedHttpTest_Puzzle()
 	if (!GI && !HttpActor3) return;
 	// Puzzle 결과, Sticker 획득 요청
 	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
-	HttpActor3->ReqPostPuzzleResultAndGetSticker(1, GI->GetAccessToken());
+	HttpActor3->ReqPostPuzzleResultAndGetSticker(1 , GI->GetAccessToken());
 }
-
 
 void UMainWidget::OnClickedConcertL()
 {
@@ -359,10 +443,22 @@ void UMainWidget::OnClickedConcertL()
 	{
 		ConcertNum = 1;
 		SelectConcertAnim(true , ConcertNum);
+		SetInfoCanvas(ConcertNum);
+		SelectConcertInfoAnim(ConcertNum);
+		if (infoCanvas)
+		{
+			SetInfoCanvasVisibility(infoCanvas , ConcertNum);
+		}
 	}
 	else
 	{
+		SetInfoCanvas(ConcertNum);
+		SelectConcertInfoAnim(ConcertNum);
 		SelectConcertAnim(true , ConcertNum);
+		if (infoCanvas)
+		{
+			SetInfoCanvasVisibility(infoCanvas , ConcertNum);
+		}
 	}
 }
 
@@ -374,34 +470,179 @@ void UMainWidget::OnClickedConcertR()
 	{
 		ConcertNum = 5;
 		SelectConcertAnim(false , ConcertNum);
+		SetInfoCanvas(ConcertNum);
+		SelectConcertInfoAnim(ConcertNum);
+		if (infoCanvas)
+		{
+			SetInfoCanvasVisibility(infoCanvas , ConcertNum);
+		}
 	}
 	else
 	{
 		SelectConcertAnim(false , ConcertNum);
+		SetInfoCanvas(ConcertNum);
+		SelectConcertInfoAnim(ConcertNum);
+		if (infoCanvas)
+		{
+			SetInfoCanvasVisibility(infoCanvas , ConcertNum);
+		}
 	}
 }
 
 void UMainWidget::SetVisibleInteractionCan(bool visible)
 {
-	if(visible)
+	if (visible)
 	{
 		Can_Interaction->SetVisibility(ESlateVisibility::Visible);
 	}
 	else
 	{
 		Can_Interaction->SetVisibility(ESlateVisibility::Hidden);
-	} 
+	}
 }
 
 void UMainWidget::HandlePaymentPostpone()
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if (HttpActor2)
 	{
 		FString PostponeSeatId = FString::FromInt(HttpActor2->GetPostponeSeatId());
-		HttpActor2->ReqPostGameResult(PostponeSeatId, GI->GetAccessToken());
+		HttpActor2->ReqPostGameResult(PostponeSeatId , GI->GetAccessToken());
 	}
 	SetWidgetSwitcher(1);
+}
+
+void UMainWidget::OnClickedTutorialStart()
+{
+	WS_Tutorial->SetActiveWidgetIndex(1);
+}
+
+void UMainWidget::OnClickedTutorialSkip()
+{
+	SetWidgetSwitcher(0);
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI) return;
+	GI->SetbIsNewPlayer(false);
+
+	switch (GI->GetPlaceState())
+	{
+	case EPlaceState::Plaza:
+		PlayTitleAnim(1);
+		break;
+	case EPlaceState::ConcertHall:
+		PlayTitleAnim(2);
+		break;
+	case EPlaceState::CommunityHall:
+		PlayTitleAnim(3);
+		break;
+	case EPlaceState::StyleLounge:
+		PlayTitleAnim(4);
+		break;
+	default:
+		break;
+	}
+}
+
+void UMainWidget::OnClickedRight1()
+{
+	WS_Tutorial->SetActiveWidgetIndex(2);
+}
+
+void UMainWidget::OnClickedLeft2()
+{
+	WS_Tutorial->SetActiveWidgetIndex(1);
+}
+
+void UMainWidget::OnClickedRight2()
+{
+	WS_Tutorial->SetActiveWidgetIndex(3);
+}
+
+void UMainWidget::OnClickedLeft3()
+{
+	WS_Tutorial->SetActiveWidgetIndex(2);
+}
+
+void UMainWidget::OnClickedRight3()
+{
+	WS_Tutorial->SetActiveWidgetIndex(4);
+}
+
+void UMainWidget::OnClickedLeft4()
+{
+	WS_Tutorial->SetActiveWidgetIndex(3);
+}
+
+void UMainWidget::OnClickedRight4()
+{
+	WS_Tutorial->SetActiveWidgetIndex(5);
+}
+
+void UMainWidget::OnClickedLeft5()
+{
+	WS_Tutorial->SetActiveWidgetIndex(4);
+}
+
+void UMainWidget::OnClickedTutorialEnd()
+{
+	SetWidgetSwitcher(0);
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI) return;
+	GI->SetbIsNewPlayer(false);
+
+	switch (GI->GetPlaceState())
+	{
+	case EPlaceState::Plaza:
+		PlayTitleAnim(1);
+		break;
+	case EPlaceState::ConcertHall:
+		PlayTitleAnim(2);
+		break;
+	case EPlaceState::CommunityHall:
+		PlayTitleAnim(3);
+		break;
+	case EPlaceState::StyleLounge:
+		PlayTitleAnim(4);
+		break;
+	default:
+		break;
+	}
+}
+
+void UMainWidget::HideAllTitle()
+{
+	Img_TitlePlaza->SetVisibility(ESlateVisibility::Hidden);
+	Img_TitleConcertHall->SetVisibility(ESlateVisibility::Hidden);
+	Img_TitleCommunityHall->SetVisibility(ESlateVisibility::Hidden);
+	Img_TitleStyleLounge->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UMainWidget::PlayTitleAnim(int32 TitleNum)
+{
+	HideAllTitle();
+
+	StopAnimation(TitlePlazaAnim);
+	StopAnimation(TitleConcertHallAnim);
+	StopAnimation(TitleCommunityHallAnim);
+	StopAnimation(TitleStyleLoungeAnim);
+	
+	switch (TitleNum)
+	{
+	case 1:
+		PlayAnimation(TitlePlazaAnim);
+		break;
+	case 2:
+		PlayAnimation(TitleConcertHallAnim);
+		break;
+	case 3:
+		PlayAnimation(TitleCommunityHallAnim);
+		break;
+	case 4:
+		PlayAnimation(TitleStyleLoungeAnim);
+		break;
+	default:
+		break;
+	}
 }

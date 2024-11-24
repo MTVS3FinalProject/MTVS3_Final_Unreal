@@ -215,7 +215,9 @@ public:
 
 	UFUNCTION()
 	void SetBattleEntryVisible(bool bVisible);
-	
+
+
+	//좌석 접수 ui 이미지
 	
 	// ==================================
 	// HttpActor2 공연장 입장 통신 테스트용

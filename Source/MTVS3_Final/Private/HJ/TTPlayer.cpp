@@ -26,8 +26,8 @@
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
 #include "Components/CapsuleComponent.h"
-#include "Components/TextRenderComponent.h"
 #include "HJ/HallSoundManager.h"
+#include "HJ/LDTutorialWidget.h"
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "JMH/MH_EmojiImg.h"
@@ -38,6 +38,7 @@
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
+// #include "Components/TextRenderComponent.h"
 
 class ALuckyDrawManager;
 // Sets default values
@@ -74,9 +75,10 @@ ATTPlayer::ATTPlayer()
 	// 머리 본(Bone)에 부착
 	TitleUIComp->SetupAttachment(GetMesh() , TEXT("head"));
 
-	TextRenderComp = CreateDefaultSubobject<UTextRenderComponent>(TEXT("RandomSeatNumberComp"));
-	TextRenderComp->SetupAttachment(GetMesh() , TEXT("head"));
-	TextRenderComp->SetVisibility(false);
+	// TextRenderComp 사용 X
+	// TextRenderComp = CreateDefaultSubobject<UTextRenderComponent>(TEXT("RandomSeatNumberComp"));
+	// TextRenderComp->SetupAttachment(GetMesh() , TEXT("head"));
+	// TextRenderComp->SetVisibility(false);
 
 	// 머리 위로 약간 올리기 위한 위치 조정
 	NicknameUIComp->
@@ -92,9 +94,14 @@ ATTPlayer::ATTPlayer()
 	EmojiComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("EmojiWidget"));
 	EmojiComp->SetupAttachment(GetMesh() , TEXT("head"));
 
-	if (this->GetCharacterMovement())
+	// 네트워크 이동 보간 설정
+	if (GetCharacterMovement())
 	{
-		this->GetCharacterMovement()->NetworkSmoothingMode = ENetworkSmoothingMode::Exponential;
+		GetCharacterMovement()->NetworkSmoothingMode = ENetworkSmoothingMode::Exponential;
+		GetCharacterMovement()->NetworkMaxSmoothUpdateDistance = 92.f;
+		GetCharacterMovement()->NetworkNoSmoothUpdateDistance = 140.f;
+		GetCharacterMovement()->NetworkSimulatedSmoothLocationTime = 0.1f;
+		GetCharacterMovement()->NetworkSimulatedSmoothRotationTime = 0.03f;
 	}
 }
 
@@ -127,9 +134,9 @@ void ATTPlayer::BeginPlay()
 	{
 		if (HasAuthority()) GI->SetbIsHost(true);
 		SetbIsHost(GI->GetbIsHost());
-
 		SetAvatarData(GI->GetAvatarData());
-		MulticastSetVisibilityTextRender(false);
+		SetAccessToken(GI->GetAccessToken());
+		// MulticastSetVisibilityTextRender(false); // TextRenderComp 사용 X
 
 		if (NicknameUIFactory)
 		{
@@ -248,6 +255,7 @@ void ATTPlayer::Tick(float DeltaTime)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 	case EPlaceState::StyleLounge:
+	case EPlaceState::CommunityHall:
 		OnRep_bIsHost();
 		OnRep_Nickname();
 		OnRep_TitleNameAndRarity();
@@ -369,7 +377,15 @@ void ATTPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ATTPlayer::SetNickname(const FString& _Nickname)
 {
-	ServerSetNickname(_Nickname);
+	if (HasAuthority())
+	{
+		Nickname = _Nickname;
+		OnRep_Nickname();
+	}
+	else
+	{
+		ServerSetNickname(_Nickname);
+	}
 }
 
 void ATTPlayer::ServerSetNickname_Implementation(const FString& _Nickname)
@@ -396,7 +412,16 @@ void ATTPlayer::OnRep_Nickname()
 
 void ATTPlayer::SetTitleNameAndRarity(const FString& _TitleName , const FString& _TitleRarity)
 {
-	ServerSetTitleNameAndRarity(_TitleName , _TitleRarity);
+	if (HasAuthority())
+	{
+		TitleName = _TitleName;
+		TitleRarity = _TitleRarity;
+		OnRep_TitleNameAndRarity();
+	}
+	else
+	{
+		ServerSetTitleNameAndRarity(_TitleName , _TitleRarity);
+	}
 }
 
 void ATTPlayer::ServerSetTitleNameAndRarity_Implementation(const FString& _TitleName , const FString& _TitleRarity)
@@ -425,61 +450,90 @@ void ATTPlayer::OnRep_TitleNameAndRarity()
 
 void ATTPlayer::SetbIsHost(const bool& _bIsHost)
 {
-	ServerSetbIsHost(_bIsHost);
+	if (HasAuthority())
+	{
+		bIsHost = _bIsHost;
+		OnRep_bIsHost();
+	}
+	else
+	{
+		ServerSetbIsHost(_bIsHost);
+	}
 }
 
 void ATTPlayer::ServerSetbIsHost_Implementation(bool _bIsHost)
 {
 	bIsHost = _bIsHost;
-	MulticastSetbIsHost(bIsHost);
-
-	if (bIsHost == true)
-	{
-		ServerSetNewSkeletalMesh(0);
-	}
-	else
-	{
-		ServerSetNewSkeletalMesh(GetAvatarData());
-	}
-}
-
-void ATTPlayer::MulticastSetbIsHost_Implementation(bool _bIsHost)
-{
-	if (bIsHost == true)
-	{
-		GetMesh()->SetOnlyOwnerSee(true);
-		GetCapsuleComponent()->SetOnlyOwnerSee(true);
-		CenterCapsuleComp->SetOnlyOwnerSee(true);
-		NicknameUIComp->SetOnlyOwnerSee(true);
-		TitleUIComp->SetOnlyOwnerSee(true);
-	}
-	else
-	{
-		GetMesh()->SetOnlyOwnerSee(false);
-		GetCapsuleComponent()->SetOnlyOwnerSee(false);
-		CenterCapsuleComp->SetOnlyOwnerSee(false);
-		NicknameUIComp->SetOnlyOwnerSee(false);
-		TitleUIComp->SetOnlyOwnerSee(false);
-	}
+	OnRep_bIsHost();
 }
 
 void ATTPlayer::OnRep_bIsHost()
 {
-	if (GetbIsHost() == true)
+	// 스켈레탈 메시 업데이트
+	if (GetbIsHost())
 	{
-		SetNewSkeletalMesh(0);
-		MulticastSetbIsHost(true);
+		SetNewSkeletalMesh(0); // Manager mesh
+	}
+	else 
+	{
+		SetNewSkeletalMesh(GetAvatarData()); // Avatar mesh
+	}
+
+	// 가시성 업데이트
+	UpdateHostVisibility();
+}
+
+void ATTPlayer::UpdateHostVisibility()
+{	
+	if (GetbIsHost())
+	{
+		GetMesh()->SetOnlyOwnerSee(true);
+		NicknameUIComp->SetOnlyOwnerSee(true);
+		TitleUIComp->SetOnlyOwnerSee(true);
+
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	}
 	else
 	{
-		SetNewSkeletalMesh(GetAvatarData());
-		MulticastSetbIsHost(false);
+		GetMesh()->SetOnlyOwnerSee(false);
+		NicknameUIComp->SetOnlyOwnerSee(false);
+		TitleUIComp->SetOnlyOwnerSee(false);
+		
+		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
 }
 
 void ATTPlayer::SetAvatarData(const int32& _AvatarData)
 {
-	ServerSetAvatarData(_AvatarData);
+	if (HasAuthority())
+	{
+		AvatarData = _AvatarData;
+	}
+	else
+	{
+		ServerSetAvatarData(_AvatarData);
+	}
+}
+
+void ATTPlayer::SetAccessToken(const FString& _AccessToken)
+{
+	if (HasAuthority())
+	{
+		AccessToken = _AccessToken;
+	}
+	else
+	{
+		ServerSetAccessToken(_AccessToken);
+	}
+}
+
+void ATTPlayer::ServerSetAccessToken_Implementation(const FString& _AccessToken)
+{
+	AccessToken = _AccessToken;
 }
 
 void ATTPlayer::ServerSetAvatarData_Implementation(const int32& _AvatarData)
@@ -614,11 +668,36 @@ void ATTPlayer::MulticastLuckyDrawStart_Implementation()
 
 void ATTPlayer::MulticastMovePlayerToChair_Implementation(const FTransform& TargetTransform)
 {
+	if (LDTutorialUI) LDTutorialUI->SetVisibility(ESlateVisibility::Hidden);
+
 	// this->SetActorTransform(TargetTransform);
-	FTransform NewTransform = TargetTransform;
-	NewTransform.SetRotation(FRotator(0.0f, 90.0f, 0.0f).Quaternion());
-	this->SetActorTransform(NewTransform);
-	GetCharacterMovement()->DisableMovement(); // 이동 비활성화
+	// 이동 중인 상태라면 즉시 정지
+	GetCharacterMovement()->StopMovementImmediately();
+
+	// 명시적인 회전값 설정 (90도)
+	FRotator TargetRotation = FRotator(0.0f , 90.0f , 0.0f);
+
+	// 위치와 회전을 함께 설정
+	SetActorLocationAndRotation(
+		TargetTransform.GetLocation() ,
+		TargetRotation.Quaternion() ,
+		false , // sweep 비활성화
+		nullptr ,
+		ETeleportType::ResetPhysics // 부드러운 물리 상태 리셋
+	);
+
+	// CharacterMovement 회전 관련 설정
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	GetCharacterMovement()->UpdateComponentToWorld();
+
+	// 컨트롤러 회전도 동기화
+	if (Controller)
+	{
+		Controller->SetControlRotation(TargetRotation);
+	}
+
+	// 이동 비활성화
+	GetCharacterMovement()->DisableMovement();
 }
 
 void ATTPlayer::ClientLuckyDrawLose_Implementation()
@@ -627,6 +706,7 @@ void ATTPlayer::ClientLuckyDrawLose_Implementation()
 	if (GameUI)
 	{
 		GameUI->HideWidget();
+		// 탈락하면 다른 방식으로..
 	}
 
 	GetMesh()->SetOwnerNoSee(true);
@@ -673,6 +753,10 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 			SequencePlayer->Play();
 		}
 
+		FTimerHandle LDWinnerFadeInTimerHandle;
+		GetWorldTimerManager().SetTimer(LDWinnerFadeInTimerHandle , this , &ATTPlayer::ClientLDWinnerFadeInAnim , 5.0f ,
+										false);
+		
 		FTimerHandle LDWinnerTimerHandle;
 		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 6.0f ,
 		                                false);
@@ -696,6 +780,14 @@ void ATTPlayer::MulticastLuckyDrawWin_Implementation()
 	if (Anim) Anim->PlayDancingMontage();
 }
 
+void ATTPlayer::ClientLDWinnerFadeInAnim_Implementation()
+{
+	if (GameUI)
+	{
+		GameUI->PlayAnimation(GameUI->FadeInAnim);
+	}
+}
+
 void ATTPlayer::ClientLDWinnerExitSession_Implementation()
 {
 	if (SequencePlayer)
@@ -711,15 +803,16 @@ void ATTPlayer::ClientLDWinnerExitSession_Implementation()
 	}
 }
 
-void ATTPlayer::MulticastSetVisibilityTextRender_Implementation(bool bIsVisible)
-{
-	TextRenderComp->SetVisibility(bIsVisible);
-}
-
-void ATTPlayer::MulticastSetColorTextRender_Implementation(const FLinearColor& NewColor)
-{
-	TextRenderComp->SetTextRenderColor(NewColor.ToFColor(true));
-}
+// TextRenderComp 사용 X
+// void ATTPlayer::MulticastSetVisibilityTextRender_Implementation(bool bIsVisible)
+// {
+// 	TextRenderComp->SetVisibility(bIsVisible);
+// }
+//
+// void ATTPlayer::MulticastSetColorTextRender_Implementation(const FLinearColor& NewColor)
+// {
+// 	TextRenderComp->SetTextRenderColor(NewColor.ToFColor(true));
+// }
 
 void ATTPlayer::ServerChangeWalkSpeed_Implementation(bool bIsRunning)
 {
@@ -1088,7 +1181,7 @@ void ATTPlayer::ServerRPCLaunchPiece_Implementation()
 	if (bHasPiece && TargetPieceComp && PickupPieceActor)
 	{
 		// 피스의 마지막 소유자를 현재 소유자로 설정
-		PickupPieceActor->LastOwners.Add(TargetPieceComp , this);
+		PickupPieceActor->LastOwners.Add(TargetPieceComp , GetNickname());
 
 		bHasPiece = false;
 		PickupPieceActor->ClearComponentOwner(TargetPieceComp);
@@ -1521,6 +1614,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 	case EPlaceState::StyleLounge:
+	case EPlaceState::CommunityHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTHallMap"));
 		if (GetbIsHost() || HasAuthority())
 		{
@@ -1579,6 +1673,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 	case EPlaceState::StyleLounge:
+	case EPlaceState::CommunityHall:
 		if (!HttpActor2) return;
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 2: Enable Cheat2 in TTHallMap"));
 		if (GetbIsHost() || HasAuthority())
@@ -1612,6 +1707,7 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 	case EPlaceState::Plaza:
 	case EPlaceState::ConcertHall:
 	case EPlaceState::StyleLounge:
+	case EPlaceState::CommunityHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 3: Enable Cheat3 in TTHallMap"));
 		bIsHost = !bIsHost;
 		if (GI) GI->SetbIsHost(bIsHost);
@@ -1686,10 +1782,14 @@ void ATTPlayer::OnMyActionZoomOutPiece(const FInputActionValue& Value)
 
 void ATTPlayer::InitMainUI()
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+
 	MainUI = Cast<UMainWidget>(CreateWidget(GetWorld() , MainUIFactory));
 	if (MainUI)
 	{
 		MainUI->AddToViewport();
+		MainUI->PlayAnimation(MainUI->FadeOutAnim);
+		if (GI->GetbIsNewPlayer() == true) MainUI->SetWidgetSwitcher(10);
 	}
 
 	TicketingUI = Cast<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
@@ -1747,6 +1847,11 @@ void ATTPlayer::InitGameUI()
 {
 	SetTextMyNum();
 
+	LDTutorialUI = Cast<ULDTutorialWidget>(CreateWidget(GetWorld() , LDTutorialUIFactory));
+	if (LDTutorialUI)
+	{
+		LDTutorialUI->AddToViewport(1);
+	}
 	/*FTimerHandle SetTextMyNumTimerHandle;
 	GetWorldTimerManager().SetTimer(SetTextMyNumTimerHandle , this , &ATTPlayer::SetTextMyNum , 4.0f , false);*/
 }
@@ -1775,6 +1880,7 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , RandomSeatNumber);
 	DOREPLIFETIME(ATTPlayer , AvatarData);
 	DOREPLIFETIME(ATTPlayer , bIsHost);
+	DOREPLIFETIME(ATTPlayer, AccessToken);
 
 	// 퍼즐
 	DOREPLIFETIME(ATTPlayer , bHasPiece);

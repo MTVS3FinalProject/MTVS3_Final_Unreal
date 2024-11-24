@@ -43,15 +43,14 @@ struct FUsedImage
 	UImage* Delete;
     class UOverlay* ImageGroupOverlay; // 그룹화된 이미지 컨테이너
     UImage* OriginImage; // 원본 이미지 참조 추가
-
-	//FVector2D CurrentScale = FVector2D(1.0f, 1.0f); // 초기 스케일 값
+	FVector2D CurrentScale; // 현재 Scale 값을 저장
 
 	// 기본 생성자
-	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr), ImageGroupOverlay(nullptr), OriginImage(nullptr) {}
+	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr), ImageGroupOverlay(nullptr), OriginImage(nullptr), CurrentScale(1) {}
 	
 	// 파라미터가 있는 생성자
-	FUsedImage(UImage* InCopiedImage, UImage* InOutline, UImage* InRenderAngle, UImage* InRenderScale, UImage* InDelete, UOverlay* InOverlay, UImage* InOriginImage)
-		: CopiedImage(InCopiedImage), Outline(InOutline), RenderAngle(InRenderAngle), RenderScale(InRenderScale), Delete(InDelete), ImageGroupOverlay(InOverlay), OriginImage(InOriginImage) {}
+	FUsedImage(UImage* InCopiedImage, UImage* InOutline, UImage* InRenderAngle, UImage* InRenderScale, UImage* InDelete, UOverlay* InOverlay, UImage* InOriginImage, FVector2D InCurrentScale)
+		: CopiedImage(InCopiedImage), Outline(InOutline), RenderAngle(InRenderAngle), RenderScale(InRenderScale), Delete(InDelete), ImageGroupOverlay(InOverlay), OriginImage(InOriginImage), CurrentScale(InCurrentScale) {}
 };
 #pragma endregion
 
@@ -67,21 +66,11 @@ public:
 	FOnClickedTicketCustomBack OnClickedTicketCustomBack;
 	FOnClickedTicketCustomSave OnClickedTicketCustomSave;
 
-	// 닫기 버튼 클릭 이벤트 설정
+	// 닫기, 저장 버튼 클릭 이벤트 설정
 	UFUNCTION()
-	void OnClickedExitButton()
-	{
-		// 델리게이트 호출
-		OnClickedTicketCustomBack.Broadcast();
-	}
-	
-	// 저장 버튼 클릭 이벤트 설정
+	void OnClickedExitButton();
 	UFUNCTION()
-	void OnClickedSaveButton()
-	{
-		// 델리게이트 호출
-		OnClickedTicketCustomSave.Broadcast();
-	}
+	void OnClickedSaveButton();
 	
 	virtual void NativeConstruct() override;
 
@@ -112,6 +101,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
+
+	UPROPERTY()
+	TArray<UTexture2D*> CopiedTextures;
 	
 	// 드래그 앤 드롭, 회전, 크기조정, 삭제
 	UPROPERTY()

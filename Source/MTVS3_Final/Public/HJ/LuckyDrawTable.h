@@ -58,6 +58,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent , BlueprintCallable)
 	void SetColorBlack();
 
+	UFUNCTION(BlueprintImplementableEvent , BlueprintCallable)
+	void PlaySpark();
+
 	UFUNCTION(NetMulticast , Reliable)
 	void MulticastSetPhysicsState(bool bSimulate);
 

@@ -16,6 +16,7 @@
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_PuzzleWidget.h"
 #include "LHM/HM_TicketCustom.h"
+#include "LHM/PuzzleManager.h"
 
 // Sets default values
 AHM_HttpActor3::AHM_HttpActor3()
@@ -197,9 +198,9 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 	
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-
-	if(HttpActor2)
+	if(HttpActor2) 
 	{
+		UE_LOG(LogTemp , Log , TEXT("HttpActor2 캐스팅"));
 		// HTTP 모듈 가져오기
 		FHttpModule* Http = &FHttpModule::Get();
 		if ( !Http ) return;
@@ -228,7 +229,6 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 
 		// Rank를 추적
 		RequestRankMap.Add(Request, Rank);
-		//RequestUIMap.Add(Request, PuzzleUI);
 		
 		// 응답받을 함수를 연결
 		Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker);
@@ -359,11 +359,13 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 									default:
 										break;
 									}
-
-									PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-									PuzzleUI->SetWidgetSwitcher(1);
+									if(PuzzleUI)
+									{
+										PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+										PuzzleUI->SetWidgetSwitcher(1);
+										UE_LOG(LogTemp , Log , TEXT("UI 업데이트 완료: Rank %d") , Rank);
+									}
 									
-									UE_LOG(LogTemp , Log , TEXT("UI 업데이트 완료: Rank %d") , Rank);
 								}
 								else
 								{
@@ -451,7 +453,7 @@ void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& Image
 
     // HTTP 요청 생성
     TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-    FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom"), *_url); // 임의의 티켓아이디
+    FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/2/custom"), *_url); // 임의의 티켓아이디
     Request->SetURL(FormattedUrl);
     Request->SetVerb(TEXT("POST"));
 
@@ -559,7 +561,9 @@ void AHM_HttpActor3::ReqPostBackground(FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url);
+
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 

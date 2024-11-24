@@ -191,8 +191,8 @@ public:
 	UPROPERTY()
 	TArray<UCanvasPanel*> ConcertInfoCanvas;
 
-	UFUNCTION()
-	void SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas);
+	//UFUNCTION()
+	//void SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas);
 	
 	//입장하기 버튼
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -253,6 +253,51 @@ public:
 	UPROPERTY()
 	AMH_TTHUD* TTHUD;
 
+	//콘서트 정보 애니메이션
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim01;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim02;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim03;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim04;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ConcertInfoAnim05;
+	
+	UFUNCTION()
+	void SelectConcertInfoAnim(int32 InfoAnimNum);
+
+	//이전 애니메이션이 있다면 없어지고 -> 새로운건 생기게
+	UPROPERTY()
+	UCanvasPanel* PreviousCanvas; // 이전 캔버스를 기억하는 변수
+    //이전 캔버스가 있었는지 없었는지 기억하는 불변수. 초기화는 콘서트셀렉창 닫을 때.
+	UPROPERTY()
+	bool bHasPreviousCanvas = false; // 이전 캔버스가 있었는지 여부를 저장
+	
+	//Info canvas
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo01;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo02;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo03;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo04;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ConcertInfo05;
+
+	UPROPERTY()
+	class UCanvasPanel* infoCanvas;
+	UPROPERTY()
+	TArray<UCanvasPanel*> InfoCanvasPanels;
+	
+	UFUNCTION()
+	void SetInfoCanvas(int32 InfoAnimNum);
+
+	UFUNCTION()
+	void SetInfoCanvasVisibility(UCanvasPanel* TargetCanvas,int32 InfoAnimNum);
+
 	//티켓예매 알람
 	//티켓팅 시간대
 	//상호작용 버튼
@@ -274,4 +319,84 @@ public:
 	void SetVisibleInteractionCan(bool visible);
 	UFUNCTION()
 	void HandlePaymentPostpone();
+
+	// 10: 튜토리얼
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UWidgetSwitcher* WS_Tutorial;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_TutorialStart;
+	UFUNCTION()
+	void OnClickedTutorialStart();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_TutorialSkip;
+	UFUNCTION()
+	void OnClickedTutorialSkip();
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Right1;
+	UFUNCTION()
+	void OnClickedRight1();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left2;
+	UFUNCTION()
+	void OnClickedLeft2();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Right2;
+	UFUNCTION()
+	void OnClickedRight2();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left3;
+	UFUNCTION()
+	void OnClickedLeft3();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Right3;
+	UFUNCTION()
+	void OnClickedRight3();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left4;
+	UFUNCTION()
+	void OnClickedLeft4();
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
+	class UButton* Btn_Right4;
+	UFUNCTION()
+	void OnClickedRight4();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left5;
+	UFUNCTION()
+	void OnClickedLeft5();
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_TutorialEnd;
+	UFUNCTION()
+	void OnClickedTutorialEnd();
+
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* FadeOutAnim;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_TitlePlaza;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_TitleConcertHall;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_TitleCommunityHall;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_TitleStyleLounge;
+
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* TitlePlazaAnim;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* TitleConcertHallAnim;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* TitleCommunityHallAnim;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* TitleStyleLoungeAnim;
+
+	void HideAllTitle();
+
+	UFUNCTION(BlueprintCallable)
+	void PlayTitleAnim(int32 TitleNum);
 };

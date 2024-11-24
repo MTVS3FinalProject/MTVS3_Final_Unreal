@@ -76,13 +76,17 @@ public:
 	void MulticastLuckyDrawWin();
 
 	UFUNCTION(Client , Reliable)
+	void ClientLDWinnerFadeInAnim();
+	
+	UFUNCTION(Client , Reliable)
 	void ClientLDWinnerExitSession();
 
-	UFUNCTION(NetMulticast , Reliable)
-	void MulticastSetVisibilityTextRender(bool bIsVisible);
-
-	UFUNCTION(NetMulticast , Reliable)
-	void MulticastSetColorTextRender(const FLinearColor& NewColor);
+	// TextRenderComp 사용 X
+	// UFUNCTION(NetMulticast , Reliable)
+	// void MulticastSetVisibilityTextRender(bool bIsVisible);
+	//
+	// UFUNCTION(NetMulticast , Reliable)
+	// void MulticastSetColorTextRender(const FLinearColor& NewColor);
 
 	UFUNCTION(Server , Reliable)
 	void ServerChangeWalkSpeed(bool bIsRunning);
@@ -230,11 +234,10 @@ public:
 	void SetbIsHost(const bool& _bIsHost);
 	UFUNCTION(Server , Reliable)
 	void ServerSetbIsHost(bool _bIsHost);
-	UFUNCTION(NetMulticast , Reliable)
-	void MulticastSetbIsHost(bool _bIsHost);
 	bool GetbIsHost() const { return bIsHost; };
 	UFUNCTION()
 	void OnRep_bIsHost();
+	void UpdateHostVisibility();
 
 	UPROPERTY(Replicated , BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	int32 AvatarData = 1;
@@ -243,6 +246,14 @@ public:
 	UFUNCTION(Server , Reliable)
 	void ServerSetAvatarData(const int32& _AvatarData);
 	int32 GetAvatarData() const { return AvatarData; }
+
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "TTSettings|UserInfo")
+	FString AccessToken;
+	UFUNCTION(BlueprintCallable, Category = "TTSettings|UserInfo")
+	void SetAccessToken(const FString& _AccessToken);
+	UFUNCTION(Server, Reliable)
+	void ServerSetAccessToken(const FString& _AccessToken);
+	FString GetAccessToken() const { return AccessToken; }
 
 	// 랜덤으로 배치된 좌석 번호
 	UPROPERTY(ReplicatedUsing=OnRep_RandomSeatNumber , BlueprintReadWrite , VisibleAnywhere ,
@@ -396,7 +407,7 @@ public:
 #pragma region UI
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UMainWidget> MainUIFactory;
-	UPROPERTY()
+	UPROPERTY(BlueprintReadWrite, Category = "TTSettings|UI")
 	class UMainWidget* MainUI;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
@@ -426,8 +437,9 @@ public:
 	TSubclassOf<class UPlayerTitleWidget> TitleUIFactory;
 	class UPlayerTitleWidget* TitleUI;
 
-	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
-	class UTextRenderComponent* TextRenderComp;
+	// TextRenderComp 사용 X
+	// UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	// class UTextRenderComponent* TextRenderComp;
 
 	void InitMainUI();
 
@@ -435,6 +447,12 @@ public:
 	TSubclassOf<class UMH_GameWidget> GameUIFactory;
 	UPROPERTY()
 	class UMH_GameWidget* GameUI;
+
+	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	TSubclassOf<class ULDTutorialWidget> LDTutorialUIFactory;
+	UPROPERTY()
+	class ULDTutorialWidget* LDTutorialUI;
+
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UHM_AimingWidget> AimingUIFactory;

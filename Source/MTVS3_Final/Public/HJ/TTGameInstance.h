@@ -21,6 +21,7 @@ enum class EPlaceState : uint8
 	ConcertHall = 1 ,  // 콘서트홀
 	LuckyDrawRoom = 2 ,      // 추첨방
 	StyleLounge = 3,	// 스타일 라운지
+	CommunityHall = 4,	// 커뮤니티 홀
 };
 
 UENUM(BlueprintType)
@@ -65,11 +66,14 @@ struct FPlayerData
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	int32 ReceivedSeatId;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	bool bIsNewPlayer;
 	
 	// 기본 생성자
 	FPlayerData()
 		: bIsHost(false) , nickname(TEXT("Ticketaka")), titleName(TEXT("")), titleRarity(TEXT("Common")), accessToken(TEXT("-1")) ,
-		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), IsReceived(false), ReceivedSeatId(0)
+		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), IsReceived(false), ReceivedSeatId(1), bIsNewPlayer(true)
 	{}
 };
 
@@ -184,5 +188,10 @@ public:
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetReceivedSeatId(const int32& _ReceivedSeatId);
 	int32 GetReceivedSeatId() const { return PlayerData.ReceivedSeatId; };
+
+	// 신규 플레이어 여부
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetbIsNewPlayer(const bool _bIsNewPlayer);
+	bool GetbIsNewPlayer() const { return PlayerData.bIsNewPlayer; };
 #pragma endregion
 };
