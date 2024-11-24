@@ -191,8 +191,8 @@ public:
 	UPROPERTY()
 	TArray<UCanvasPanel*> ConcertInfoCanvas;
 
-	UFUNCTION()
-	void SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas);
+	//UFUNCTION()
+	//void SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas);
 	
 	//입장하기 버튼
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -269,9 +269,11 @@ public:
 	void SelectConcertInfoAnim(int32 InfoAnimNum);
 
 	//이전 애니메이션이 있다면 없어지고 -> 새로운건 생기게
-	//UPROPERTY()
-	//bool 
+	UPROPERTY()
+	UCanvasPanel* PreviousCanvas; // 이전 캔버스를 기억하는 변수
 //이전 캔버스가 있었는지 없었는지 기억하는 불변수. 초기화는 콘서트셀렉창 닫을 때.
+	UPROPERTY()
+	bool bHasPreviousCanvas = false; // 이전 캔버스가 있었는지 여부를 저장
 	
 	//Info canvas
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -286,10 +288,15 @@ public:
 	class UCanvasPanel* Can_ConcertInfo05;
 
 	UPROPERTY()
+	class UCanvasPanel* infoCanvas;
+	UPROPERTY()
 	TArray<UCanvasPanel*> InfoCanvasPanels;
 	
 	UFUNCTION()
-	void SetInfoCanvasVisibility(UCanvasPanel* TargetCanvas);
+	void SetInfoCanvas(int32 InfoAnimNum);
+
+	UFUNCTION()
+	void SetInfoCanvasVisibility(UCanvasPanel* TargetCanvas,int32 InfoAnimNum);
 
 	//티켓예매 알람
 	//티켓팅 시간대

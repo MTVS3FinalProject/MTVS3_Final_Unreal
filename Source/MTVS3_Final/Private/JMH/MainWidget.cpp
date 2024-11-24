@@ -34,6 +34,10 @@ void UMainWidget::NativeConstruct()
 	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
 	Btn_SelectConcertBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_Concert01->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert01);
+	Btn_Concert02->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert02);
+	Btn_Concert03->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert03);
+	Btn_Concert04->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert04);
+	Btn_Concert05->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert05);
 	Btn_ExitMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExitMainWin);
 	Btn_ExitMain->OnClicked.AddDynamic(this , &UMainWidget::OnClickedExit);
 	Btn_BackMainWin->OnClicked.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
@@ -85,7 +89,9 @@ void UMainWidget::NativeConstruct()
 	}
 
 	//info Canvas TArray
-	InfoCanvasPanels = {Can_ConcertInfo01,Can_ConcertInfo02,Can_ConcertInfo03,Can_ConcertInfo04,Can_ConcertInfo05};
+	InfoCanvasPanels = {
+		Can_ConcertInfo01 , Can_ConcertInfo02 , Can_ConcertInfo03 , Can_ConcertInfo04 , Can_ConcertInfo05
+	};
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -278,10 +284,6 @@ void UMainWidget::OnClickedConcert05()
 	GoToConcertHall();
 }
 
-void UMainWidget::SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas)
-{
-}
-
 void UMainWidget::OnClickedConfirm_Concert()
 {
 	//일단 그냥 뉴진스 공연장으로 간닷
@@ -310,8 +312,6 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 		{
 		case 1:
 			PlayAnimation(ConcertAnim1);
-			SelectConcertInfoAnim(AnimNum);
-			SetInfoCanvasVisibility(Can_ConcertInfo01);
 			break;
 		case 2:
 			PlayAnimation(ConcertAnim2);
@@ -357,7 +357,6 @@ void UMainWidget::SelectConcertAnim(bool bIsRightBtn , int32 AnimNum)
 
 void UMainWidget::SelectConcertInfoAnim(int32 InfoAnimNum)
 {
-	//이전 애니메이션이 있다면 없어지고 -> 새로운건 생기게
 	switch (InfoAnimNum)
 	{
 	case 1:
@@ -380,7 +379,32 @@ void UMainWidget::SelectConcertInfoAnim(int32 InfoAnimNum)
 	}
 }
 
-void UMainWidget::SetInfoCanvasVisibility(UCanvasPanel* TargetCanvas)
+void UMainWidget::SetInfoCanvas(int32 InfoAnimNum)
+{
+	switch (InfoAnimNum)
+	{
+	case 1:
+		infoCanvas = Can_ConcertInfo01;
+		break;
+	case 2:
+		infoCanvas = Can_ConcertInfo02;
+		break;
+	case 3:
+		infoCanvas = Can_ConcertInfo03;
+		break;
+	case 4:
+		infoCanvas = Can_ConcertInfo04;
+		break;
+	case 5:
+		infoCanvas = Can_ConcertInfo05;
+		break;
+
+	default:
+		break;
+	}
+}
+
+void UMainWidget::SetInfoCanvasVisibility(UCanvasPanel* TargetCanvas , int32 InfoAnimNum)
 {
 	// TargetCanvas Visible, 나머지는 Hidden
 	for (UCanvasPanel* Canvas : InfoCanvasPanels)
@@ -415,10 +439,22 @@ void UMainWidget::OnClickedConcertL()
 	{
 		ConcertNum = 1;
 		SelectConcertAnim(true , ConcertNum);
+		SetInfoCanvas(ConcertNum);
+		SelectConcertInfoAnim(ConcertNum);
+		if (infoCanvas)
+		{
+			SetInfoCanvasVisibility(infoCanvas , ConcertNum);
+		}
 	}
 	else
 	{
+		SetInfoCanvas(ConcertNum);
+		SelectConcertInfoAnim(ConcertNum);
 		SelectConcertAnim(true , ConcertNum);
+		if (infoCanvas)
+		{
+			SetInfoCanvasVisibility(infoCanvas ,ConcertNum);
+		}
 	}
 }
 
@@ -430,11 +466,22 @@ void UMainWidget::OnClickedConcertR()
 	{
 		ConcertNum = 5;
 		SelectConcertAnim(false , ConcertNum);
-		
+		SetInfoCanvas(ConcertNum);
+		SelectConcertInfoAnim(ConcertNum);
+		if (infoCanvas)
+		{
+			SetInfoCanvasVisibility(infoCanvas ,ConcertNum);
+		}
 	}
 	else
 	{
 		SelectConcertAnim(false , ConcertNum);
+		SetInfoCanvas(ConcertNum);
+		SelectConcertInfoAnim(ConcertNum);
+		if (infoCanvas)
+		{
+			SetInfoCanvasVisibility(infoCanvas ,ConcertNum);
+		}
 	}
 }
 
