@@ -191,8 +191,8 @@ public:
 	UPROPERTY()
 	TArray<UCanvasPanel*> ConcertInfoCanvas;
 
-	UFUNCTION()
-	void SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas);
+	//UFUNCTION()
+	//void SetCan_ConcertInfoVisibility(UCanvasPanel* TargetCanvas);
 	
 	//입장하기 버튼
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
