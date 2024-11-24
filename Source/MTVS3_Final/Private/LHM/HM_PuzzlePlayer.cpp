@@ -558,7 +558,7 @@ void AHM_PuzzlePlayer::ServerRPCLaunchPiece_Implementation()
 	if (bHasPiece && TargetPieceComp && PickupPieceActor)
 	{
 		// 피스의 마지막 소유자를 현재 소유자로 설정
-		PickupPieceActor->LastOwners.Add(TargetPieceComp, this);
+		//PickupPieceActor->LastOwners.Add(TargetPieceComp, this);
 		
 		bHasPiece = false;
 		PickupPieceActor->ClearComponentOwner(TargetPieceComp);

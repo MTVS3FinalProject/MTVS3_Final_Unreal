@@ -39,7 +39,7 @@ public:
 	
 	// 피스의 마지막 소유자 저장
 	UPROPERTY()
-	TMap<UStaticMeshComponent*, AActor*> LastOwners;
+	TMap<UStaticMeshComponent*, FString> LastOwners;
 	
 	// 특정 컴포넌트의 소유자를 설정하는 함수
 	void SetComponentOwner(UStaticMeshComponent* Component, class ATTPlayer* NewOwner);
