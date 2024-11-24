@@ -61,44 +61,68 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 			}
 		}
 	}
-
-	FTimerHandle HideLDInvitationTimerHandle;
-	GetWorldTimerManager().SetTimer(HideLDInvitationTimerHandle , [this, NicknameList, CompetitionRate]()
-	{
-		HideLuckyDrawInvitation(NicknameList , CompetitionRate);
-	} , 90.0f , false);
+	
+	// // 기존 타이머가 있다면 제거
+	// if (GetWorldTimerManager().IsTimerActive(HideLDInvitationTimerHandle))
+	// {
+	// 	GetWorldTimerManager().ClearTimer(HideLDInvitationTimerHandle);
+	// }
+ //    
+	// // NicknameList를 복사하여 캡처
+	// TArray<FString> CapturedList = NicknameList;
+    
+	// GetWorldTimerManager().SetTimer(HideLDInvitationTimerHandle, 
+	// 	[this, CapturedList, CompetitionRate]()
+	// 	{
+	// 		if (IsValid(this))
+	// 		{
+	// 			HideLuckyDrawInvitation(CapturedList, CompetitionRate);
+	// 		}
+	// 	}, 90.0f, false);
 }
 
-void ATTHallGameState::HideLuckyDrawInvitation(const TArray<FString>& NicknameList , int32 CompetitionRate)
-{
-	if (!GetWorld() || !IsValid(this) || NicknameList.Num() == 0)
-	{
-		UE_LOG(LogTemp , Warning , TEXT("GetWorld() is invalid or NicknameList is empty."));
-		return;
-	}
-
-	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-	{
-		ATTPlayer* TTPlayer = *It;
-
-		if (!TTPlayer)
-		{
-			UE_LOG(LogTemp , Warning , TEXT("Found null TTPlayer"));
-			continue;
-		}
-
-		if (!IsValid(TTPlayer))
-		{
-			UE_LOG(LogTemp , Warning , TEXT("Found invalid TTPlayer"));
-			continue;
-		}
-
-		if (!TTPlayer->bIsHost)
-		{
-			if (NicknameList.Contains(TTPlayer->GetNickname()))
-			{
-				TTPlayer->ClientShowLuckyDrawInvitation(false , CompetitionRate);
-			}
-		}
-	}
-}
+// void ATTHallGameState::HideLuckyDrawInvitation(const TArray<FString>& NicknameList , int32 CompetitionRate)
+// {
+// 	if (!IsValid(this))
+// 	{
+// 		return;
+// 	}
+//
+// 	UWorld* World = GetWorld();
+// 	if (!World || NicknameList.Num() == 0)
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("World is invalid or NicknameList is empty."));
+// 		return;
+// 	}
+//
+// 	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+// 	{
+// 		if (!*It)
+// 		{
+// 			continue;
+// 		}
+//     
+// 		ATTPlayer* TTPlayer = *It;
+// 		if (!IsValid(TTPlayer))
+// 		{
+// 			continue;
+// 		}
+//     
+// 		// 추가 안전장치
+// 		if (!TTPlayer->GetNickname().IsEmpty())
+// 		{
+// 			if (!TTPlayer->bIsHost && NicknameList.Contains(TTPlayer->GetNickname()))
+// 			{
+// 				TTPlayer->ClientShowLuckyDrawInvitation(false, CompetitionRate);
+// 			}
+// 		}
+//
+// 		if (!TTPlayer->bIsHost)
+// 		{
+// 			if (NicknameList.Contains(TTPlayer->GetNickname()))
+// 			{
+// 				TTPlayer->ClientShowLuckyDrawInvitation(false , CompetitionRate);
+// 			}
+// 		}
+// 	}
+// }
