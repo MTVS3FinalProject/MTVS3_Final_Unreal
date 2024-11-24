@@ -374,5 +374,6 @@ public:
 	UFUNCTION()
 	void OnClickedTutorialEnd();
 
-	
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* FadeOutAnim;
 };

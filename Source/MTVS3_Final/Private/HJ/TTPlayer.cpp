@@ -1775,6 +1775,7 @@ void ATTPlayer::InitMainUI()
 	if (MainUI)
 	{
 		MainUI->AddToViewport();
+		MainUI->PlayAnimation(MainUI->FadeOutAnim);
 		if (GI->GetbIsNewPlayer() == true) MainUI->SetWidgetSwitcher(10);
 	}
 
