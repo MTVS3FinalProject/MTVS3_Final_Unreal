@@ -214,41 +214,54 @@ void APuzzleManager::UpdatePlayerRankInfo()
 void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const FString& Nickname)
 {
 	if (Rank == EPlayerRank::None || static_cast<int32>(Rank) > 3) return;
-	// 월드에 있는 모든 ATTPlayer 순회
-	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+	// 현재 클라이언트가 로컬 컨트롤러인지 확인
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PC && PC->IsLocalController())
 	{
-		ATTPlayer* TTPlayer = *It;
-		if (TTPlayer && TTPlayer->GetNickname() == Nickname)
+		// 월드에 있는 모든 ATTPlayer 순회
+		for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 		{
-			FString AccessToken = TTPlayer->GetAccessToken();
-			FString NickName = TTPlayer->GetNickname();
+			ATTPlayer* TTPlayer = *It;
+			if (TTPlayer && TTPlayer->GetNickname() == Nickname)
+			{
+				FString AccessToken = TTPlayer->GetAccessToken();
+				FString NickName = TTPlayer->GetNickname();
 
-			UE_LOG(LogTemp , Log , TEXT("Client AccessToken: %s, Nickname: %s") , *AccessToken , *NickName);
+				UE_LOG(LogTemp , Log , TEXT("Client AccessToken: %s, Nickname: %s") , *AccessToken , *NickName);
 
-			// 자신의 순위와 AccessToken으로 HTTP 요청 처리
-			AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-			if (!HttpActor3) return;
+				// 자신의 순위와 AccessToken으로 HTTP 요청 처리
+				AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+				if (!HttpActor3) return;
 
-			HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) , AccessToken);
-			
-			// 멀티캐스트로 UI 업데이트
-			Multicast_UpdateUIVisibility();
-			break;
+				HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) , AccessToken);
+
+				// UI를 보이게 설정 (로컬에서만 처리)
+				if (PuzzleUI)
+				{
+					PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+					PuzzleUI->SetWidgetSwitcher(1);
+					UE_LOG(LogTemp, Log, TEXT("UI Visible for Rank %d: %s"), static_cast<int32>(Rank), *Nickname);
+					//Client_UpdateUIVisibility();
+				}
+				break;
+			}
 		}
 	}
 }
 
-void APuzzleManager::Multicast_UpdateUIVisibility_Implementation()
-{
-	if (PuzzleUI)
-	{
-		PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-		PuzzleUI->SetWidgetSwitcher(1);
-
-		UE_LOG(LogTemp, Log, TEXT("Multicast: UI updated on client"));
-	}
-}
+// void APuzzleManager::Client_UpdateUIVisibility_Implementation()
+// {
+// 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+// 	if (PC && PC->IsLocalController())
+// 	{
+// 		if (PuzzleUI)
+// 		{
+// 			PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+// 			PuzzleUI->SetWidgetSwitcher(1);
+// 		}
+// 	}
+// }
 
 void APuzzleManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
