@@ -92,6 +92,8 @@ void UMainWidget::NativeConstruct()
 	InfoCanvasPanels = {
 		Can_ConcertInfo01 , Can_ConcertInfo02 , Can_ConcertInfo03 , Can_ConcertInfo04 , Can_ConcertInfo05
 	};
+
+	HideAllTitle();
 }
 
 void UMainWidget::SetWidgetSwitcher(int32 num)
@@ -174,6 +176,8 @@ void UMainWidget::OnClickedBackMain()
 			}
 		}
 	}
+
+	PlayTitleAnim(1);
 }
 
 void UMainWidget::OnClickedExitMainWin()
@@ -453,7 +457,7 @@ void UMainWidget::OnClickedConcertL()
 		SelectConcertAnim(true , ConcertNum);
 		if (infoCanvas)
 		{
-			SetInfoCanvasVisibility(infoCanvas ,ConcertNum);
+			SetInfoCanvasVisibility(infoCanvas , ConcertNum);
 		}
 	}
 }
@@ -470,7 +474,7 @@ void UMainWidget::OnClickedConcertR()
 		SelectConcertInfoAnim(ConcertNum);
 		if (infoCanvas)
 		{
-			SetInfoCanvasVisibility(infoCanvas ,ConcertNum);
+			SetInfoCanvasVisibility(infoCanvas , ConcertNum);
 		}
 	}
 	else
@@ -480,7 +484,7 @@ void UMainWidget::OnClickedConcertR()
 		SelectConcertInfoAnim(ConcertNum);
 		if (infoCanvas)
 		{
-			SetInfoCanvasVisibility(infoCanvas ,ConcertNum);
+			SetInfoCanvasVisibility(infoCanvas , ConcertNum);
 		}
 	}
 }
@@ -519,7 +523,26 @@ void UMainWidget::OnClickedTutorialSkip()
 {
 	SetWidgetSwitcher(0);
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (GI) GI->SetbIsNewPlayer(false);
+	if (!GI) return;
+	GI->SetbIsNewPlayer(false);
+
+	switch (GI->GetPlaceState())
+	{
+	case EPlaceState::Plaza:
+		PlayTitleAnim(1);
+		break;
+	case EPlaceState::ConcertHall:
+		PlayTitleAnim(2);
+		break;
+	case EPlaceState::CommunityHall:
+		PlayTitleAnim(3);
+		break;
+	case EPlaceState::StyleLounge:
+		PlayTitleAnim(4);
+		break;
+	default:
+		break;
+	}
 }
 
 void UMainWidget::OnClickedRight1()
@@ -566,5 +589,60 @@ void UMainWidget::OnClickedTutorialEnd()
 {
 	SetWidgetSwitcher(0);
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (GI) GI->SetbIsNewPlayer(false);
+	if (!GI) return;
+	GI->SetbIsNewPlayer(false);
+
+	switch (GI->GetPlaceState())
+	{
+	case EPlaceState::Plaza:
+		PlayTitleAnim(1);
+		break;
+	case EPlaceState::ConcertHall:
+		PlayTitleAnim(2);
+		break;
+	case EPlaceState::CommunityHall:
+		PlayTitleAnim(3);
+		break;
+	case EPlaceState::StyleLounge:
+		PlayTitleAnim(4);
+		break;
+	default:
+		break;
+	}
+}
+
+void UMainWidget::HideAllTitle()
+{
+	Img_TitlePlaza->SetVisibility(ESlateVisibility::Hidden);
+	Img_TitleConcertHall->SetVisibility(ESlateVisibility::Hidden);
+	Img_TitleCommunityHall->SetVisibility(ESlateVisibility::Hidden);
+	Img_TitleStyleLounge->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UMainWidget::PlayTitleAnim(int32 TitleNum)
+{
+	HideAllTitle();
+
+	StopAnimation(TitlePlazaAnim);
+	StopAnimation(TitleConcertHallAnim);
+	StopAnimation(TitleCommunityHallAnim);
+	StopAnimation(TitleStyleLoungeAnim);
+	
+	switch (TitleNum)
+	{
+	case 1:
+		PlayAnimation(TitlePlazaAnim);
+		break;
+	case 2:
+		PlayAnimation(TitleConcertHallAnim);
+		break;
+	case 3:
+		PlayAnimation(TitleCommunityHallAnim);
+		break;
+	case 4:
+		PlayAnimation(TitleStyleLoungeAnim);
+		break;
+	default:
+		break;
+	}
 }
