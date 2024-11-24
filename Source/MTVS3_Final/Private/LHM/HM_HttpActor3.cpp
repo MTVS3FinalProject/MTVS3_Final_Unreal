@@ -558,7 +558,9 @@ void AHM_HttpActor3::ReqPostBackground(FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url);
+
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
