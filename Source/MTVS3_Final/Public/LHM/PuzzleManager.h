@@ -126,8 +126,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_UpdateUI(const TArray<FPlayerScoreInfo>& SortedScores);
 
-	UFUNCTION(Client, Reliable)
-	void Client_UpdateUIVisibility();
+	//UFUNCTION(Client, Reliable)
+	//void Client_UpdateUIVisibility();
 	
 	// 복제될 배열
 	UPROPERTY(Replicated)
