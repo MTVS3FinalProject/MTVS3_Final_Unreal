@@ -228,7 +228,6 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 
 		// Rank를 추적
 		RequestRankMap.Add(Request, Rank);
-		//RequestUIMap.Add(Request, PuzzleUI);
 		
 		// 응답받을 함수를 연결
 		Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker);
@@ -654,7 +653,7 @@ void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/2/custom") , *_url); // 테스트용
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url); // 테스트용
 	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));

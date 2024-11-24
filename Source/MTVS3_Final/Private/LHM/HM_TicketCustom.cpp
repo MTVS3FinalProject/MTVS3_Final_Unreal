@@ -140,13 +140,13 @@ FUsedImage UHM_TicketCustom::CreateCompleteImageSet(UImage* SourceImage)
 		// if (DeleteTextureObj.Succeeded()) RenderDeleteImage->SetBrushFromTexture(DeleteTextureObj.Object);
 		
 		UTexture2D* OutlineTexture  = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
-		                                                                 TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerOutline.T_StickerOutline'")));
+		                                                                 TEXT("/Game/LHM/Texture/T_StickerOutline.T_StickerOutline")));
 		UTexture2D* AngleTexture  = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
-		                                                                 TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerAngle.T_StickerAngle'")));
+		                                                                 TEXT("/Game/LHM/Texture/T_StickerAngle.T_StickerAngle")));
 		UTexture2D* ScaleTexture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
-		                                                                 TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerScale.T_StickerScale'")));
+		                                                                 TEXT("/Game/LHM/Texture/T_StickerScale.T_StickerScale")));
 		UTexture2D* DeleteTexture = Cast<UTexture2D>(StaticLoadObject(UTexture2D::StaticClass() , nullptr ,
-		                                                                 TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerDelete.T_StickerDelete'")));
+		                                                                 TEXT("/Game/LHM/Texture/T_StickerDelete.T_StickerDelete")));
 		if (OutlineTexture && AngleTexture && ScaleTexture && DeleteTexture)
 		{
 			OutlineImage->SetBrushFromTexture(OutlineTexture);
@@ -618,16 +618,16 @@ FReply UHM_TicketCustom::NativeOnMouseButtonUp(const FGeometry& MyGeometry, cons
 				};
 
 				// 각 텍스처 로드 및 적용
-				UTexture2D* OutlineTexture = LoadTexture(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerOutline.T_StickerOutline'"));
+				UTexture2D* OutlineTexture = LoadTexture(TEXT("/Game/LHM/Texture/T_StickerOutline.T_StickerOutline"));
 				if (OutlineTexture) ImageSet.Outline->SetBrushFromTexture(OutlineTexture);
 
-				UTexture2D* AngleTexture = LoadTexture(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerAngle.T_StickerAngle'"));
+				UTexture2D* AngleTexture = LoadTexture(TEXT("/Game/LHM/Texture/T_StickerAngle.T_StickerAngle"));
 				if (AngleTexture) ImageSet.RenderAngle->SetBrushFromTexture(AngleTexture);
 
-				UTexture2D* ScaleTexture = LoadTexture(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerScale.T_StickerScale'"));
+				UTexture2D* ScaleTexture = LoadTexture(TEXT("/Game/LHM/Texture/T_StickerScale.T_StickerScale"));
 				if (ScaleTexture) ImageSet.RenderScale->SetBrushFromTexture(ScaleTexture);
 
-				UTexture2D* DeleteTexture = LoadTexture(TEXT("/Script/Engine.Texture2D'/Game/LHM/Texture/T_StickerDelete.T_StickerDelete'"));
+				UTexture2D* DeleteTexture = LoadTexture(TEXT("/Game/LHM/Texture/T_StickerDelete.T_StickerDelete"));
 				if (DeleteTexture) ImageSet.Delete->SetBrushFromTexture(DeleteTexture);
 			}
 		}
