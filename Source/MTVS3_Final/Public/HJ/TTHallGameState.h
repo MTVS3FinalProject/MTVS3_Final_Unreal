@@ -20,5 +20,7 @@ protected:
 public:
 	void SendLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate);
 
-	void HideLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate);
+	UPROPERTY()
+	FTimerHandle HideLDInvitationTimerHandle;
+	// void HideLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate);
 };

@@ -127,29 +127,46 @@ FString ATTPlayerController::GetSystemTime()
 
 void ATTPlayerController::SetDrawStartTime()
 {
-	UE_LOG(LogTemp , Log , TEXT("ServerSetDrawStartTime"));
-	// 현재 시스템 시간 가져오기
-	FDateTime Now = FDateTime::Now();
-
-	// 현재 시간으로부터 10분 후로 설정
-	DrawStartTime = Now + FTimespan(0 , 1 , 31); // 1분 30초 후
-
-	// 현재 날짜, 임의로 설정한 추첨 시작 시간
-	// DrawStartTime = FDateTime(Now.GetYear() , Now.GetMonth() , Now.GetDay() , 20 , 0 , 0);
-
-	// DrawStartTime을 원하는 형식으로 변환
-	int32 Hours = DrawStartTime.GetHour();
-	int32 Minutes = DrawStartTime.GetMinute();
-
-	// 포맷된 시간 문자열 생성
-	FString FormattedTime = FString::Printf(TEXT("%02d:%02d") , Hours , Minutes);
-
-	// UI에 텍스트 설정
-	if (TicketingUI)
+	if (HasAuthority())  // 서버에서 실행될 때
 	{
-		TicketingUI->SetTextTicketingDeadline(FormattedTime);
-		TicketingUI->SetTextGameStartTime(FormattedTime);
+		UE_LOG(LogTemp, Log, TEXT("ServerSetDrawStartTime"));
+		// 현재 시스템 시간 가져오기
+		FDateTime Now = FDateTime::Now();
+
+		// 현재 시간으로부터 설정
+		DrawStartTime = Now + FTimespan(0, 1, 31); // 1분 30초 후
+
+		// DrawStartTime을 원하는 형식으로 변환
+		int32 Hours = DrawStartTime.GetHour();
+		int32 Minutes = DrawStartTime.GetMinute();
+
+		// 포맷된 시간 문자열 생성
+		FormattedTime = FString::Printf(TEXT("%02d:%02d"), Hours, Minutes);
+
+		// 서버에서 클라이언트로 전파
+		ClientUpdateDrawStartTime(FormattedTime);
 	}
+	else  // 클라이언트에서 실행될 때
+	{
+		ServerSetDrawStartTime();
+	}
+}
+
+void ATTPlayerController::ServerSetDrawStartTime_Implementation()
+{
+	SetDrawStartTime();
+}
+
+void ATTPlayerController::ClientUpdateDrawStartTime_Implementation(const FString& FormattedTime)
+{
+	if (!TicketingUI)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TicketingUI is null in ClientUpdateDrawStartTime"));
+		return;
+	}
+
+	TicketingUI->SetTextTicketingDeadline(FormattedTime);
+	TicketingUI->SetTextGameStartTime(FormattedTime);
 }
 
 void ATTPlayerController::UpdateCountdown(float DeltaTime)
