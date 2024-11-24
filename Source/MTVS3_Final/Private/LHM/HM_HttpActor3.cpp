@@ -16,6 +16,7 @@
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_PuzzleWidget.h"
 #include "LHM/HM_TicketCustom.h"
+#include "LHM/PuzzleManager.h"
 
 // Sets default values
 AHM_HttpActor3::AHM_HttpActor3()
@@ -358,11 +359,13 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 									default:
 										break;
 									}
-
-									PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-									PuzzleUI->SetWidgetSwitcher(1);
+									if(PuzzleUI)
+									{
+										PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+										PuzzleUI->SetWidgetSwitcher(1);
+										UE_LOG(LogTemp , Log , TEXT("UI 업데이트 완료: Rank %d") , Rank);
+									}
 									
-									UE_LOG(LogTemp , Log , TEXT("UI 업데이트 완료: Rank %d") , Rank);
 								}
 								else
 								{
