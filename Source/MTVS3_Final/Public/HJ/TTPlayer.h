@@ -168,6 +168,12 @@ public:
 	UFUNCTION(Server , Reliable) // FPS카메라 회전값 RPC
 	void ServerRPCUpdateFPSCameraRotation(const FRotator& FPSCameraNewRotation);
 
+	// 퍼즐 결과 UI
+
+	UFUNCTION(Client, Reliable)
+	void Client_UpdatePuzzleUI();
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdatePuzzleRankAndVisibility(const TArray<FPlayerScoreInfo>& TopPlayers, int32 TotalPlayers);
 #pragma endregion
 
 #pragma region 사운드
