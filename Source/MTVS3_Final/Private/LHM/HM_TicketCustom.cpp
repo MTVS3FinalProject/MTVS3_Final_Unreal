@@ -327,6 +327,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 				FGeometry CopiedImageGeometry = Image->GetCachedGeometry();
 				if (CopiedImageGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 				{
+					CurrentImage = nullptr;
 					//OriginImage = Image;
 					Image->SetVisibility(ESlateVisibility::Hidden);
 					
@@ -358,6 +359,8 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 		// 복사본 이미지 클릭 처리
 		for(const FUsedImage& ImageSet : Img_CopiedImgs)
 		{
+			CurrentImage = nullptr;
+			
 			UImage* CopiedImg = ImageSet.CopiedImage;
 			//UImage* Outline = ImageSet.Outline;
 			UImage* Angle = ImageSet.RenderAngle;
@@ -446,6 +449,8 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 		// 백그라운드 클릭 시
 		if (Img_TicketBackground && Img_TicketBackground->IsVisible() && Img_TicketBackground->GetIsEnabled() == true)
 		{
+			CurrentImage = nullptr;
+			
 			FGeometry BGGeometry = Img_TicketBackground->GetCachedGeometry();
 			if (BGGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 			{
@@ -466,6 +471,8 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
 		// 백그라운드(인포) 클릭 시
 		if (Img_TicketInfo && Img_TicketInfo->IsVisible() && Img_TicketInfo->GetIsEnabled() == true)
 		{
+			CurrentImage = nullptr;
+			
 			FGeometry BGGeometry = Img_TicketInfo->GetCachedGeometry();
 			if (BGGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition()))
 			{
