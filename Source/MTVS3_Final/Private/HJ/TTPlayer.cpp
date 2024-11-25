@@ -23,6 +23,8 @@
 #include "HJ/TTGameInstance.h"
 #include <HJ/TTPlayerState.h>
 #include <HJ/HJ_Actor.h>
+
+#include "ImageUtils.h"
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
 #include "Components/CapsuleComponent.h"
@@ -911,30 +913,65 @@ void ATTPlayer::Multicast_UpdatePuzzleRankAndVisibility_Implementation(const TAr
 	}
 }
 
-void ATTPlayer::Multicast_UpdatePuzzleRankUI_Implementation(int32 _Rank, UTexture2D* _StickerTexture,
-	const FString& _StickerRarity, const FString& _StickerName, const FString& _StickerScript, const FString& _TitleRarity,
-	const FString& _TitleName, const FString& _TitleScript)
+void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlayerRankInfo>& PlayerRankInfos)
 {
 	if (!PuzzleUI) return;
 
-	// UI 업데이트
-	switch (_Rank)
+	// 모든 랭크 정보를 순회하며 UI 업데이트
+	for (const FPlayerRankInfo& RankInfo : PlayerRankInfos)
 	{
-	case 1:
-		PuzzleUI->SetTextPuzzleRank1(_StickerTexture, _StickerRarity, _StickerName, _StickerScript, _TitleRarity, _TitleName, _TitleScript);
-		break;
-	case 2:
-		PuzzleUI->SetTextPuzzleRank2(_StickerTexture, _StickerRarity, _StickerName, _StickerScript, _TitleRarity, _TitleName, _TitleScript);
-		break;
-	case 3:
-		PuzzleUI->SetTextPuzzleRank3(_StickerTexture, _StickerRarity, _StickerName, _StickerScript, _TitleRarity, _TitleName, _TitleScript);
-		break;
-	default:
-		UE_LOG(LogTemp, Warning, TEXT("Invalid rank for UI update: %d"), _Rank);
-		break;
+		// 바이트 배열에서 텍스처 생성
+		UTexture2D* StickerTexture = nullptr;
+		if (RankInfo.StickerImageData.Num() > 0)
+		{
+			StickerTexture = FImageUtils::ImportBufferAsTexture2D(RankInfo.StickerImageData);
+		}
+		
+		switch (RankInfo.Rank)
+		{
+		case 1:
+			PuzzleUI->SetTextPuzzleRank1(
+				//RankInfo.StickerTexture,
+				StickerTexture,
+				RankInfo.StickerRarity,
+				RankInfo.StickerName,
+				RankInfo.StickerScript,
+				RankInfo.TitleRarity,
+				RankInfo.TitleName,
+				RankInfo.TitleScript
+			);
+			break;
+		case 2:
+			PuzzleUI->SetTextPuzzleRank2(
+				//RankInfo.StickerTexture,
+				StickerTexture,
+				RankInfo.StickerRarity,
+				RankInfo.StickerName,
+				RankInfo.StickerScript,
+				RankInfo.TitleRarity,
+				RankInfo.TitleName,
+				RankInfo.TitleScript
+			);
+			break;
+		case 3:
+			PuzzleUI->SetTextPuzzleRank3(
+				//RankInfo.StickerTexture,
+				StickerTexture,
+				RankInfo.StickerRarity,
+				RankInfo.StickerName,
+				RankInfo.StickerScript,
+				RankInfo.TitleRarity,
+				RankInfo.TitleName,
+				RankInfo.TitleScript
+			);
+			break;
+		default:
+			UE_LOG(LogTemp, Warning, TEXT("Invalid rank received: %d"), RankInfo.Rank);
+			break;
+		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("UI updated for Rank: %d, Name: %s, Sticker: %s"), _Rank, *TitleName, *_StickerName);
+	UE_LOG(LogTemp, Log, TEXT("Updated all ranks for player: %s"), *GetNickname());
 }
 
 void ATTPlayer::PlayConcertBGM()

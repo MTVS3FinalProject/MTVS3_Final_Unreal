@@ -330,61 +330,44 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 								// 이미지 데이터 가져오기
 								TArray<uint8> ImageData = ImageResponse->GetContent();
 
-								// 데이터로부터 텍스처 생성
-								UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-								if (Texture)
-								{
-									// // UI 업데이트
-									// switch (Rank)
-									// {
-									// case 1:
-									// 	PuzzleUI->SetTextPuzzleRank1(Texture ,
-									// 	                             NewStickers.stickerRarity ,
-									// 	                             NewStickers.stickerName ,
-									// 	                             NewStickers.stickerScript ,
-									// 	                             NewTitles.titleRarity , NewTitles.titleName ,
-									// 	                             NewTitles.titleScript);
-									// 	break;
-									// case 2:
-									// 	PuzzleUI->SetTextPuzzleRank2(Texture ,
-									// 	                             NewStickers.stickerRarity ,
-									// 	                             NewStickers.stickerName ,
-									// 	                             NewStickers.stickerScript ,
-									// 	                             NewTitles.titleRarity , NewTitles.titleName ,
-									// 	                             NewTitles.titleScript);
-									// 	break;
-									// case 3:
-									// 	PuzzleUI->SetTextPuzzleRank3(Texture ,
-									// 	                             NewStickers.stickerRarity ,
-									// 	                             NewStickers.stickerName ,
-									// 	                             NewStickers.stickerScript ,
-									// 	                             NewTitles.titleRarity , NewTitles.titleName ,
-									// 	                             NewTitles.titleScript);
-									// 	break;
-									// default:
-									// 	break;
-									// }
-
+								//// 데이터로부터 텍스처 생성
+								//UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+								//if (Texture)
+								//{
+									// 상위 3명 데이터를 수집
+									TArray<FPlayerRankInfo> RankInfos;
 									for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 									{
 										ATTPlayer* TTPlayer = *It;
-										if (TTPlayer && TTPlayer->GetNickname() == PlayerNickname) // PlayerNickname은 해당 플레이어의 닉네임
+										if (TTPlayer && TTPlayer->GetNickname() == PlayerNickname)
 										{
-											TTPlayer->Multicast_UpdatePuzzleRankUI(
-												Rank,
-												Texture,
-												NewStickers.stickerRarity,
-												NewStickers.stickerName,
-												NewStickers.stickerScript,
-												NewTitles.titleRarity,
-												NewTitles.titleName,
-												NewTitles.titleScript
-											);
-											break;
+											FPlayerRankInfo RankInfo;
+											RankInfo.NickName = PlayerNickname;
+											RankInfo.Rank = Rank;
+											RankInfo.StickerImageData = ImageData; // 바이트 배열로 저장
+											//RankInfo.StickerTexture = Texture;
+											RankInfo.StickerRarity = NewStickers.stickerRarity;
+											RankInfo.StickerName = NewStickers.stickerName;
+											RankInfo.StickerScript = NewStickers.stickerScript;
+											RankInfo.TitleRarity = NewTitles.titleRarity;
+											RankInfo.TitleName = NewTitles.titleName;
+											RankInfo.TitleScript = NewTitles.titleScript;
+
+											RankInfos.Add(RankInfo);
+										}
+									}
+
+									// 스티커, 타이틀 정보 퍼즐 UI Update
+									for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+									{
+										ATTPlayer* TTPlayer = *It;
+										if (TTPlayer)
+										{
+											TTPlayer->Multicast_UpdateAllPuzzleRanks(RankInfos);
 										}
 									}
 									
-									// 퍼즐 결과 UI 업데이트
+									// 퍼즐 결과 UI Update
 									APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
 										UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
 									if (PuzzleManager)
@@ -392,11 +375,11 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 										UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 Server_HandlePuzzleResult 호출"));
 										PuzzleManager->Server_HandlePuzzleResult();
 									}
-								}
-								else
-								{
-									UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
-								}
+								//}
+								//else
+								//{
+								//	UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
+								//}
 							}
 							else
 							{
