@@ -56,7 +56,7 @@ void AHM_TicketSceneCapture2D::Tick(float DeltaTime)
 }
 void AHM_TicketSceneCapture2D::CaptureUsingSceneCapture()
 {
-	if (!SceneCaptureComponent2D || !FinalTicketUI->Img_FinalTicket) return;
+	if (!SceneCaptureComponent2D) return;
 
 	// 렌더 타겟 생성 및 설정
 	UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>();
@@ -82,7 +82,7 @@ void AHM_TicketSceneCapture2D::CaptureUsingSceneCapture()
 		FSlateBrush Brush;
 		Brush.SetResourceObject(CapturedTexture);
 		Brush.ImageSize = FVector2D(1920, 1080);
-		FinalTicketUI->Img_FinalTicket->SetBrush(Brush);
+		//FinalTicketUI->Img_FinalTicket->SetBrush(Brush);
 
 		// // 브러시 적용 후 딜레이를 사용하여 이미지 갱신
 		// FTimerHandle TimerHandle;
@@ -107,7 +107,7 @@ void AHM_TicketSceneCapture2D::CaptureUsingSceneCapture()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to convert RenderTarget to Texture2D"));
 	}
-
+/*
 	if (FinalTicketUI->Img_FinalTicket->GetBrush().GetResourceObject() == CapturedTexture)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Captured texture successfully applied to Img_FinalTicket brush."));
@@ -115,7 +115,7 @@ void AHM_TicketSceneCapture2D::CaptureUsingSceneCapture()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to apply captured texture to Img_FinalTicket brush."));
-	}
+	}*/
 }
 
 UTexture2D* AHM_TicketSceneCapture2D::ConvertRenderTargetToTexture(UObject* WorldContextObject,

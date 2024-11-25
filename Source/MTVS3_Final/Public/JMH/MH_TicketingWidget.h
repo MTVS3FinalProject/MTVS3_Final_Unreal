@@ -75,11 +75,11 @@ public:
 
 	// 현재 선택석 설정 함수
 	UFUNCTION()
-	void SetCurrentSelectedSeatUI(int32 SeatIndex);
+	void SetCurrentSelectedSeatUI(FString ChairTag);
 
 	// 접수 가능석 업데이트 함수
 	UFUNCTION()
-	void UpdateAvailableSeatsUI(const TArray<int32>& AvailableSeatIndices);
+	void UpdateReservedSeatsUI(TArray<int32> ReservedSeats);
 
 	//좌석 추첨시간
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))

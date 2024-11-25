@@ -1463,7 +1463,8 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
 			HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
-
+			//MH
+			TicketingUI->SetCurrentSelectedSeatUI(ChairTag);
 			ServerSetSitting(true);
 
 			// 의자의 회전값 가져오기
