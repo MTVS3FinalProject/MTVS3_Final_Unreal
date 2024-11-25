@@ -16,8 +16,4 @@ class MTVS3_FINAL_API ALobbyGameModeBase : public AGameModeBase
 
 protected:
 	virtual void BeginPlay() override;
-	
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
-	bool bEnableScreenDebug;
 };

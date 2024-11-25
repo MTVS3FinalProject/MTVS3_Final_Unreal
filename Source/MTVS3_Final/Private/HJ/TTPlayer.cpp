@@ -970,7 +970,7 @@ void ATTPlayer::MyTakePiece()
 							FString TagName = FString::Printf(TEXT("Piece%d") , i);
 							if (HitComponent->ComponentHasTag(FName(*TagName)))
 							{
-								GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Orange ,
+								if (bShowDebug) GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Orange ,
 								                                 FString::Printf(
 									                                 TEXT("Found piece with tag: %s") , *TagName));
 								TargetPieceComp = HitComponent;

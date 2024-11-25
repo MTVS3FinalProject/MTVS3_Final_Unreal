@@ -82,9 +82,6 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
     bool bIsRouletteTestMode;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
-    bool bEnableScreenDebug;
-    
     UPROPERTY(VisibleInstanceOnly)
     int32 RouletteTestNumPlayers = 30;  // 기본값 30명
 
