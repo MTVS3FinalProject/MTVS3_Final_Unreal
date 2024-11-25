@@ -706,7 +706,8 @@ void ATTPlayer::ClientLuckyDrawLose_Implementation()
 	PlayChairGoingUpCameraShake();
 	if (GameUI)
 	{
-		GameUI->SetWidgetSwitcher(3); // 탈락자 UI 업데이트
+		GameUI->HideWidget();
+		// 탈락하면 다른 방식으로..
 	}
 
 	GetMesh()->SetOwnerNoSee(true);
@@ -869,14 +870,16 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 	}
 }
 
-void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _AccessToken)
+void ATTPlayer::ServerNoticeLucyDrawStart_Implementation()
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI) return;
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if (HttpActor2)
 	{
 		HttpActor2->ReqPostNoticeGameStart(TEXT("1") ,
-		                                   _AccessToken);
+		                                   GI->GetAccessToken());
 	}
 }
 
@@ -1459,10 +1462,9 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		if (!Chair->bIsOccupied)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
-			HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
+			HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 			//MH
 			TicketingUI->SetCurrentSelectedSeatUI(ChairTag);
-
 			ServerSetSitting(true);
 
 			// 의자의 회전값 가져오기
@@ -1498,7 +1500,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("SelectConcert")))
 	{
-		if (HttpActor2) HttpActor2->ReqGetConcertInfo(GetAccessToken() , this);
+		if (HttpActor2) HttpActor2->ReqGetConcertInfo(GI->GetAccessToken() , this);
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Customizing")))
 	{
@@ -1508,7 +1510,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 		if (HttpActor3)
 		{
-			HttpActor3->ReqGetEnterTicketCustomization(GetAccessToken());
+			HttpActor3->ReqGetEnterTicketCustomization(GI->GetAccessToken());
 		}
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("PlazaTeleport")))
@@ -1557,7 +1559,7 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 	{
 		// Chair의 태그를 가져와서 매개변수로 넘김
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
-		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
+		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GI->GetAccessToken());
 	}
 	else
 	{
@@ -1622,7 +1624,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 			if (bIsCheat1Active)
 			{
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1"));
-				ServerNoticeLuckyDrawStart(GetAccessToken());
+				ServerNoticeLucyDrawStart();
 
 				// MainUI 숨기기
 				if (MainUI) MainUI->SetVisibleCanvas(false);
@@ -1687,7 +1689,7 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 			// HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
 
 			// 치트아님 추후 추첨 종료 로직에서 호출하기
-			HttpActor2->ReqPostGameResult(GetLuckyDrawSeatID() , GetAccessToken());
+			HttpActor2->ReqPostGameResult(GetLuckyDrawSeatID() , GI->GetAccessToken());
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:
