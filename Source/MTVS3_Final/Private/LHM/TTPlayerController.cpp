@@ -165,14 +165,19 @@ void ATTPlayerController::SetDrawStartTime()
     
 	// 카운트다운 타이머 시작
 	GetWorld()->GetTimerManager().SetTimer(
-		CountdownTimerHandle,
-		[this]()
+	CountdownTimerHandle,
+	[this]()
+	{
+		if (!TicketingUI) // 람다 내부에서도 null 체크
 		{
-			UpdateCountdown(GetWorld()->GetDeltaSeconds());
-		},
-		0.1f,  // 더 부드러운 업데이트를 위해 0.1초 간격으로 설정
-		true   // 반복 실행
-	);
+			GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
+			return;
+		}
+		UpdateCountdown(GetWorld()->GetDeltaSeconds());
+	},
+	0.1f,
+	true
+);
 }
 
 void ATTPlayerController::UpdateCountdown(float DeltaTime)
