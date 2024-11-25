@@ -98,6 +98,10 @@ public:
 	class UTextBlock* Text_TicketPrice02;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_TicketPrice03;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_TicketPrice04;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_ServiceCharge;
 
 	//서버_예매자 이름
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
