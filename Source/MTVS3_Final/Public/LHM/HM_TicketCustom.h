@@ -170,6 +170,9 @@ public:
 
 	// 이미지 생성 헬퍼 함수
 	class UImage* CreateImageWidget(int32 Index);
+	
+	// 이미지배경 생성 헬퍼 함수
+	class UImage* CreateImageBGWidget(int32 Index);
 
 	// 스페이서 생성 헬퍼 함수
 	class USpacer* CreateSpacerWidget();
@@ -201,6 +204,9 @@ public:
 
 #pragma endregion
 
+	UPROPERTY(EditDefaultsOnly, Category = "Textures")
+	UTexture2D* NewImageBGTexture;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Textures")
 	UTexture2D* OutlineTexture;
 
