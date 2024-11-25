@@ -75,4 +75,6 @@ public:
 	void OnChatMessageReceived(const FString& Message);
 
 	FTimerHandle CountdownTimerHandle;
+
+	void EndPlay(const EEndPlayReason::Type EndPlayReason);
 };
