@@ -45,6 +45,28 @@ struct FPlayerRankInfo
 	UPROPERTY()
 	int32 Score;
 
+	UPROPERTY(BlueprintReadWrite)
+	FString StickerImageUrl;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString StickerRarity;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString StickerName;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString StickerScript;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString TitleRarity;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString TitleName;
+
+	UPROPERTY(BlueprintReadWrite)
+	FString TitleScript;
+	
+
 	FPlayerRankInfo() : NickName(TEXT("")), Rank(0), Score(0) {}
 };
 

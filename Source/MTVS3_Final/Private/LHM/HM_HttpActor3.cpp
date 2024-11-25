@@ -312,99 +312,50 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 							StickerItems.Add(NewStickers);
 						}
 					}
-					
+
 					// stickerImage URL 가져오기
 					FString StickerImageUrl = StickerObject->GetStringField(TEXT("stickerImage"));
 
-					// URL에서 이미지 다운로드
-					TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
-					ImageRequest->SetURL(StickerImageUrl);
-					ImageRequest->SetVerb(TEXT("GET"));
-
-					// 다운로드 완료 시 콜백 설정
-					ImageRequest->OnProcessRequestComplete().BindLambda(
-						[this, Rank, PlayerNickname, NewStickers, NewTitles](FHttpRequestPtr ImageRequest , FHttpResponsePtr ImageResponse , bool bImageSuccessful)
+					// 상위 3명 데이터를 수집
+					TArray<FPlayerRankInfo> RankInfos;
+					for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+					{
+						ATTPlayer* TTPlayer = *It;
+						if (TTPlayer && TTPlayer->GetNickname() == PlayerNickname)
 						{
-							if (bImageSuccessful && ImageResponse.IsValid())
-							{
-								// 이미지 데이터 가져오기
-								TArray<uint8> ImageData = ImageResponse->GetContent();
+							FPlayerRankInfo RankInfo;
+							RankInfo.NickName = PlayerNickname;
+							RankInfo.Rank = Rank;
+							RankInfo.StickerImageUrl = StickerImageUrl; // URL 저장
+							RankInfo.StickerRarity = NewStickers.stickerRarity;
+							RankInfo.StickerName = NewStickers.stickerName;
+							RankInfo.StickerScript = NewStickers.stickerScript;
+							RankInfo.TitleRarity = NewTitles.titleRarity;
+							RankInfo.TitleName = NewTitles.titleName;
+							RankInfo.TitleScript = NewTitles.titleScript;
 
-								// 데이터로부터 텍스처 생성
-								UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-								if (Texture)
-								{
-									// // UI 업데이트
-									// switch (Rank)
-									// {
-									// case 1:
-									// 	PuzzleUI->SetTextPuzzleRank1(Texture ,
-									// 	                             NewStickers.stickerRarity ,
-									// 	                             NewStickers.stickerName ,
-									// 	                             NewStickers.stickerScript ,
-									// 	                             NewTitles.titleRarity , NewTitles.titleName ,
-									// 	                             NewTitles.titleScript);
-									// 	break;
-									// case 2:
-									// 	PuzzleUI->SetTextPuzzleRank2(Texture ,
-									// 	                             NewStickers.stickerRarity ,
-									// 	                             NewStickers.stickerName ,
-									// 	                             NewStickers.stickerScript ,
-									// 	                             NewTitles.titleRarity , NewTitles.titleName ,
-									// 	                             NewTitles.titleScript);
-									// 	break;
-									// case 3:
-									// 	PuzzleUI->SetTextPuzzleRank3(Texture ,
-									// 	                             NewStickers.stickerRarity ,
-									// 	                             NewStickers.stickerName ,
-									// 	                             NewStickers.stickerScript ,
-									// 	                             NewTitles.titleRarity , NewTitles.titleName ,
-									// 	                             NewTitles.titleScript);
-									// 	break;
-									// default:
-									// 	break;
-									// }
+							RankInfos.Add(RankInfo);
+						}
+					}
 
-									for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-									{
-										ATTPlayer* TTPlayer = *It;
-										if (TTPlayer && TTPlayer->GetNickname() == PlayerNickname) // PlayerNickname은 해당 플레이어의 닉네임
-										{
-											TTPlayer->Multicast_UpdatePuzzleRankUI(
-												Rank,
-												Texture,
-												NewStickers.stickerRarity,
-												NewStickers.stickerName,
-												NewStickers.stickerScript,
-												NewTitles.titleRarity,
-												NewTitles.titleName,
-												NewTitles.titleScript
-											);
-											break;
-										}
-									}
-									
-									// 퍼즐 결과 UI 업데이트
-									APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
-										UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
-									if (PuzzleManager)
-									{
-										UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 Server_HandlePuzzleResult 호출"));
-										PuzzleManager->Server_HandlePuzzleResult();
-									}
-								}
-								else
-								{
-									UE_LOG(LogTemp , Warning , TEXT("Failed to create texture from image data."));
-								}
-							}
-							else
-							{
-								UE_LOG(LogTemp , Warning , TEXT("Failed to download sticker image."));
-							}
-						});
+					// 스티커, 타이틀 정보 퍼즐 UI Update
+					for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+					{
+						ATTPlayer* TTPlayer = *It;
+						if (TTPlayer)
+						{
+							TTPlayer->Multicast_UpdateAllPuzzleRanks(RankInfos);
+						}
+					}
 
-					ImageRequest->ProcessRequest();
+					// 퍼즐 결과 UI Update
+					APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+						UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+					if (PuzzleManager)
+					{
+						UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 Server_HandlePuzzleResult 호출"));
+						PuzzleManager->Server_HandlePuzzleResult();
+					}
 				}
 			}
 		}
