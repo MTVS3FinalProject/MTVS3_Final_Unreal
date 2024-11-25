@@ -2,6 +2,8 @@
 
 
 #include "LHM/HM_HttpActor3.h"
+
+#include "EngineUtils.h"
 #include "HttpModule.h"
 #include "ImageUtils.h"
 #include "Async/Async.h"
@@ -365,8 +367,8 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 										UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
 									if (PuzzleManager)
 									{
-										PuzzleManager->Client_UpdateUIVisibility();
-										UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 UI Cliend_RPC 호출"));
+										UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 Server_HandlePuzzleResult 호출"));
+										PuzzleManager->Server_HandlePuzzleResult();
 									}
 								}
 								else
