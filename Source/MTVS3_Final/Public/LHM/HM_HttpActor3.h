@@ -232,7 +232,7 @@ public:
 	void OnResGetInventoryData(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// Puzzle 결과, Sticker 획득 요청
-	void ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken);
+	void ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Nickname, FString AccessToken);
 	void OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 커스텀 티켓 저장 요청

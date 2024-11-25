@@ -911,6 +911,32 @@ void ATTPlayer::Multicast_UpdatePuzzleRankAndVisibility_Implementation(const TAr
 	}
 }
 
+void ATTPlayer::Multicast_UpdatePuzzleRankUI_Implementation(int32 _Rank, UTexture2D* _StickerTexture,
+	const FString& _StickerRarity, const FString& _StickerName, const FString& _StickerScript, const FString& _TitleRarity,
+	const FString& _TitleName, const FString& _TitleScript)
+{
+	if (!PuzzleUI) return;
+
+	// UI 업데이트
+	switch (_Rank)
+	{
+	case 1:
+		PuzzleUI->SetTextPuzzleRank1(_StickerTexture, _StickerRarity, _StickerName, _StickerScript, _TitleRarity, _TitleName, _TitleScript);
+		break;
+	case 2:
+		PuzzleUI->SetTextPuzzleRank2(_StickerTexture, _StickerRarity, _StickerName, _StickerScript, _TitleRarity, _TitleName, _TitleScript);
+		break;
+	case 3:
+		PuzzleUI->SetTextPuzzleRank3(_StickerTexture, _StickerRarity, _StickerName, _StickerScript, _TitleRarity, _TitleName, _TitleScript);
+		break;
+	default:
+		UE_LOG(LogTemp, Warning, TEXT("Invalid rank for UI update: %d"), _Rank);
+		break;
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("UI updated for Rank: %d, Name: %s, Sticker: %s"), _Rank, *TitleName, *_StickerName);
+}
+
 void ATTPlayer::PlayConcertBGM()
 {
 	FTimerHandle TimerHandle;

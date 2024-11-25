@@ -194,7 +194,8 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 
 // Puzzle 결과, Sticker 획득 요청
 TMap<TSharedPtr<IHttpRequest>, int32> RequestRankMap;
-void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString AccessToken)
+TMap<TSharedPtr<IHttpRequest>, FString> RequestPlayerNicknameMap;
+void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Nickname, FString AccessToken)
 {
 	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
 	
@@ -231,6 +232,7 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 
 		// Rank를 추적
 		RequestRankMap.Add(Request, Rank);
+		RequestPlayerNicknameMap.Add(Request, Nickname);
 		
 		// 응답받을 함수를 연결
 		Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker);
@@ -244,10 +246,11 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Access
 void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
 	int32 Rank = RequestRankMap.Contains(Request) ? RequestRankMap[Request] : -1;
-
+	FString PlayerNickname = RequestPlayerNicknameMap.Contains(Request) ? RequestPlayerNicknameMap[Request] : TEXT("");
 	// Rank 맵에서 제거
 	RequestRankMap.Remove(Request);
-
+	RequestPlayerNicknameMap.Remove(Request);
+	
 	if (!PuzzleUI || Rank < 1 || Rank > 3)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Invalid rank or PuzzleUI is null"));
@@ -320,7 +323,7 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 
 					// 다운로드 완료 시 콜백 설정
 					ImageRequest->OnProcessRequestComplete().BindLambda(
-						[this, Rank, NewStickers, NewTitles](FHttpRequestPtr ImageRequest , FHttpResponsePtr ImageResponse , bool bImageSuccessful)
+						[this, Rank, PlayerNickname, NewStickers, NewTitles](FHttpRequestPtr ImageRequest , FHttpResponsePtr ImageResponse , bool bImageSuccessful)
 						{
 							if (bImageSuccessful && ImageResponse.IsValid())
 							{
@@ -331,35 +334,54 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 								UTexture2D* Texture = FImageUtils::ImportBufferAsTexture2D(ImageData);
 								if (Texture)
 								{
-									// UI 업데이트
-									switch (Rank)
+									// // UI 업데이트
+									// switch (Rank)
+									// {
+									// case 1:
+									// 	PuzzleUI->SetTextPuzzleRank1(Texture ,
+									// 	                             NewStickers.stickerRarity ,
+									// 	                             NewStickers.stickerName ,
+									// 	                             NewStickers.stickerScript ,
+									// 	                             NewTitles.titleRarity , NewTitles.titleName ,
+									// 	                             NewTitles.titleScript);
+									// 	break;
+									// case 2:
+									// 	PuzzleUI->SetTextPuzzleRank2(Texture ,
+									// 	                             NewStickers.stickerRarity ,
+									// 	                             NewStickers.stickerName ,
+									// 	                             NewStickers.stickerScript ,
+									// 	                             NewTitles.titleRarity , NewTitles.titleName ,
+									// 	                             NewTitles.titleScript);
+									// 	break;
+									// case 3:
+									// 	PuzzleUI->SetTextPuzzleRank3(Texture ,
+									// 	                             NewStickers.stickerRarity ,
+									// 	                             NewStickers.stickerName ,
+									// 	                             NewStickers.stickerScript ,
+									// 	                             NewTitles.titleRarity , NewTitles.titleName ,
+									// 	                             NewTitles.titleScript);
+									// 	break;
+									// default:
+									// 	break;
+									// }
+
+									for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 									{
-									case 1:
-										PuzzleUI->SetTextPuzzleRank1(Texture ,
-										                             NewStickers.stickerRarity ,
-										                             NewStickers.stickerName ,
-										                             NewStickers.stickerScript ,
-										                             NewTitles.titleRarity , NewTitles.titleName ,
-										                             NewTitles.titleScript);
-										break;
-									case 2:
-										PuzzleUI->SetTextPuzzleRank2(Texture ,
-										                             NewStickers.stickerRarity ,
-										                             NewStickers.stickerName ,
-										                             NewStickers.stickerScript ,
-										                             NewTitles.titleRarity , NewTitles.titleName ,
-										                             NewTitles.titleScript);
-										break;
-									case 3:
-										PuzzleUI->SetTextPuzzleRank3(Texture ,
-										                             NewStickers.stickerRarity ,
-										                             NewStickers.stickerName ,
-										                             NewStickers.stickerScript ,
-										                             NewTitles.titleRarity , NewTitles.titleName ,
-										                             NewTitles.titleScript);
-										break;
-									default:
-										break;
+										ATTPlayer* TTPlayer = *It;
+										if (TTPlayer && TTPlayer->GetNickname() == PlayerNickname) // PlayerNickname은 해당 플레이어의 닉네임
+										{
+											TTPlayer->Multicast_UpdatePuzzleRankUI(
+												Rank,
+												Texture,
+												NewStickers.stickerRarity,
+												NewStickers.stickerName,
+												NewStickers.stickerScript,
+												NewTitles.titleRarity,
+												NewTitles.titleName,
+												NewTitles.titleScript
+											);
+											break;
+										}
 									}
 									
 									// 퍼즐 결과 UI 업데이트

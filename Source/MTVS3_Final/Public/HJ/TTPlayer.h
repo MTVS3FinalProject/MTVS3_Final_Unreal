@@ -174,6 +174,11 @@ public:
 	void Client_UpdatePuzzleUI();
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_UpdatePuzzleRankAndVisibility(const TArray<FPlayerScoreInfo>& TopPlayers, int32 TotalPlayers);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_UpdatePuzzleRankUI(int32 _Rank, UTexture2D* _StickerTexture,
+	const FString& _StickerRarity, const FString& _StickerName, const FString& _StickerScript, const FString& _TitleRarity,
+	const FString& _TitleName, const FString& _TitleScript);
+	
 #pragma endregion
 
 #pragma region 사운드
