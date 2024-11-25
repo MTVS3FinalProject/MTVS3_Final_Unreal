@@ -706,8 +706,7 @@ void ATTPlayer::ClientLuckyDrawLose_Implementation()
 	PlayChairGoingUpCameraShake();
 	if (GameUI)
 	{
-		GameUI->HideWidget();
-		// 탈락하면 다른 방식으로..
+		GameUI->SetWidgetSwitcher(3); // 탈락자 UI 업데이트
 	}
 
 	GetMesh()->SetOwnerNoSee(true);

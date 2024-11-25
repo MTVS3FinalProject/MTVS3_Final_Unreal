@@ -10,8 +10,6 @@
 void UMH_GameWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	
 }
 
 void UMH_GameWidget::SetWidgetSwitcher(int32 num)
@@ -19,6 +17,15 @@ void UMH_GameWidget::SetWidgetSwitcher(int32 num)
 	//서버에서 불러와서 입력
 	WS_GameWidgetSwitcher->SetActiveWidgetIndex(num);
 	ShowWidget();
+
+	if (num == 2)
+	{
+		PlayAnimation(WinnerAnim);
+	}
+	else if (num == 3)
+	{
+		PlayAnimation(LoserAnim);
+	}
 }
 
 void UMH_GameWidget::HideWidget()
@@ -55,37 +62,36 @@ void UMH_GameWidget::SetTextroulette2(int32 roulette2)
 	//룰렛2
 	switch (roulette2)
 	{
-	case 0 :
+	case 0:
 		Text_roulette2->SetText(FText::FromString(TEXT("과 같은 열")));
 		break;
-		
-	case 1 :
+
+	case 1:
 		Text_roulette2->SetText(FText::FromString(TEXT("과 같은 행")));
 		break;
-		
-	case 2 :
+
+	case 2:
 		Text_roulette2->SetText(FText::FromString(TEXT("과 다른 열")));
 		break;
-		
-	case 3 :
+
+	case 3:
 		Text_roulette2->SetText(FText::FromString(TEXT("과 다른 행")));
 		break;
 
-	case 4 :
+	case 4:
 		Text_roulette2->SetText(FText::FromString(TEXT("만")));
 		break;
 	}
-	
 }
 
 void UMH_GameWidget::SetTextroulette3(int32 roulette3)
 {
 	//룰렛3
-	if(roulette3 == 0)
+	if (roulette3 == 0)
 	{
 		Text_roulette3->SetText(FText::FromString(TEXT("통과")));
 	}
-	else if(roulette3 == 1)
+	else if (roulette3 == 1)
 	{
 		Text_roulette3->SetText(FText::FromString(TEXT("탈락")));
 	}
@@ -113,7 +119,7 @@ void UMH_GameWidget::SetTextMyNum(int32 MyNum)
 
 void UMH_GameWidget::SetOnlyVisibleMyNum(bool bIsVisible)
 {
-	if(bIsVisible)
+	if (bIsVisible)
 	{
 		Can_03->SetVisibility(ESlateVisibility::Visible);
 		Can_04->SetVisibility(ESlateVisibility::Visible);
@@ -125,9 +131,8 @@ void UMH_GameWidget::SetOnlyVisibleMyNum(bool bIsVisible)
 		Can_04->SetVisibility(ESlateVisibility::Hidden);
 		Can_02->SetVisibility(ESlateVisibility::Visible);
 	}
-
-	
 }
+
 //CurrentUser만 보여지게 
 void UMH_GameWidget::SetCurrentPlayerVisible()
 {
@@ -135,4 +140,3 @@ void UMH_GameWidget::SetCurrentPlayerVisible()
 	Can_02->SetVisibility(ESlateVisibility::Hidden);
 	Can_04->SetVisibility(ESlateVisibility::Visible);
 }
-
