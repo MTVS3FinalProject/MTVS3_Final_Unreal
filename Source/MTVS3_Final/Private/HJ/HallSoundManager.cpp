@@ -44,7 +44,7 @@ void AHallSoundManager::BeginPlay()
 	Super::BeginPlay();
 
 	PlayPlazaBGM();
-	PlayConcertBGM();
+	// PlayConcertBGM();
 }
 
 // Called every frame
@@ -61,17 +61,25 @@ void AHallSoundManager::SetbPlayConcertBGM(bool _bPlayConcertBGM)
 
 void AHallSoundManager::PlayConcertBGM()
 {
-	if (ConcertBGMCue && bPlayConcertBGM)
+	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
+	if (PC && PC->IsLocalController())
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, ConcertBGMCue, ConcertBGMLocation, 0.75f, 1.0f, 0.0f, ConcertAttenuation);
+		if (ConcertBGMCue && bPlayConcertBGM)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, ConcertBGMCue, ConcertBGMLocation, 0.75f, 1.0f, 0.0f, ConcertAttenuation);
+		}
 	}
 }
 
 void AHallSoundManager::PlayPlazaBGM()
 {
-	if (PlazaBGMCue)
+	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
+	if (PC && PC->IsLocalController())
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, PlazaBGMCue, PlazaBGMLocation, 0.75f, 1.0f, 0.0f, PlazaAttenuation);
+		if (PlazaBGMCue)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, PlazaBGMCue, PlazaBGMLocation, 0.75f, 1.0f, 0.0f, PlazaAttenuation);
+		}
 	}
 }
 
