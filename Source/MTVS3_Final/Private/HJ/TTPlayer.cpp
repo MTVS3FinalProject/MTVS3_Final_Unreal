@@ -38,6 +38,7 @@
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
+#include "LHM/PuzzleManager.h"
 // #include "Components/TextRenderComponent.h"
 
 class ALuckyDrawManager;
@@ -1840,6 +1841,13 @@ void ATTPlayer::InitMainUI()
 		HttpActor3->SetMainUI(MainUI);
 		HttpActor3->SetTicketingUI(TicketingUI);
 		HttpActor3->SetPuzzleUI(PuzzleUI);
+	}
+
+	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
+	if(PuzzleManager)
+	{
+		PuzzleManager->SetPuzzleUI(PuzzleUI);
 	}
 }
 
