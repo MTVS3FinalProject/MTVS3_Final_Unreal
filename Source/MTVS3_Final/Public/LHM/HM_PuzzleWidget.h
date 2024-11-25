@@ -41,31 +41,7 @@ public:
 	class UTextBlock* Text_Piece9;
 	UFUNCTION()
 	void SetTextPieceInfo(FString PieceName, int32 Score, int32 Index);
-	
-	// // TextPlayerScore 포인터 배열
-	// class UTextBlock* TextPlayerScores[9];
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UTextBlock* Text_Player1Score;
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UTextBlock* Text_Player2Score;
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UTextBlock* Text_Player3Score;
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UTextBlock* Text_Player4Score;
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UTextBlock* Text_Player5Score;
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UTextBlock* Text_Player6Score;
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UTextBlock* Text_Player7Score;
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UTextBlock* Text_Player8Score;
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UTextBlock* Text_Player9Score;
-	//UFUNCTION()
-	//void UpdatePlayerScores(const TArray<FPlayerScoreInfo>& PlayerScoresInfo);
 
-	
 	// 1#
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Txt_Nickname_1;
@@ -83,8 +59,6 @@ public:
 	class UTextBlock* Txt_TitleName_1;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Txt_TitleScript_1;
-	UFUNCTION()
-    void SetTextPuzzleRank1Nickname(FString Nickname);
 	UFUNCTION()
 	void SetTextPuzzleRank1(UTexture2D* StickerImg, FString StickerRarity , FString StickerName, FString StickerScript, FString TitleRarity, FString TitleName, FString TitleScript);
 	
@@ -106,8 +80,6 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Txt_TitleScript_2;
 	UFUNCTION()
-    void SetTextPuzzleRank2Nickname(FString Nickname);
-	UFUNCTION()
 	void SetTextPuzzleRank2(UTexture2D* StickerImg, FString StickerRarity , FString StickerName, FString StickerScript, FString TitleRarity, FString TitleName, FString TitleScript);
 
 	// 3#
@@ -127,11 +99,12 @@ public:
 	class UTextBlock* Txt_TitleName_3;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Txt_TitleScript_3;
-	UFUNCTION()
-    void SetTextPuzzleRank3Nickname(FString Nickname);
     UFUNCTION()
 	void SetTextPuzzleRank3(UTexture2D* StickerImg, FString StickerRarity , FString StickerName, FString StickerScript, FString TitleRarity, FString TitleName, FString TitleScript);
 
+	UFUNCTION()
+	void SetTextPuzzleRankNickname(int32 Rank , const FString& Nickname);
+	
 	// 0: 피스 스코어, 1: 퍼즐 결과
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UWidgetSwitcher* WS_PuzzleSwitcher;

@@ -111,25 +111,15 @@ public:
 	// 퍼즐종료 & 랭킹업데이트
 	UFUNCTION(BlueprintCallable, Category = "Puzzle")
 	void SortAndUpdateRanking();
-	
-	UFUNCTION(BlueprintCallable, Category = "Puzzle")
-	void UpdateUINickname(EPlayerRank Rank, const FString& NickName);
 
 	UFUNCTION(BlueprintCallable, Category = "Puzzle")
-	
 	void UpdatePlayerRankInfo();
 	
 	UFUNCTION(Client, Reliable)
 	void Client_ReceiveRank(EPlayerRank Rank, const FString& Nickname);
-	
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_UpdateUI(const TArray<FPlayerScoreInfo>& SortedScores);
 
 	UFUNCTION(Server, Reliable)
 	void Server_HandlePuzzleResult();
-	
-	UFUNCTION(Client, Reliable)
-	void Client_UpdateUIVisibility();
 	
 	// 복제될 배열
 	UPROPERTY(Replicated)

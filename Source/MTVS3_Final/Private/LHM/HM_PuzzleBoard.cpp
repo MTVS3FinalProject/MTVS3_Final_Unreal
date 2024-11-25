@@ -207,9 +207,6 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 				{
 					UE_LOG(LogTemp, Log, TEXT("Correct piece! Board[%d] matched with %s"), i+1, *ActualTag);
 					
-					// 서버를 통해 동기화된 가시성 설정
-					ServerSetBoardAreaVisibility(i, true);
-
 					APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
 					if(Manager)
 					{
@@ -233,6 +230,8 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 							}
 						}
 					}
+					// 서버를 통해 동기화된 가시성 설정
+					ServerSetBoardAreaVisibility(i, true);
 
 					// 맞춘 피스는 제거
 					if(HasAuthority())
