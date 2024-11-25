@@ -31,32 +31,33 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 {
 	if (!GetWorld() || NicknameList.Num() == 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GetWorld() is invalid or NicknameList is empty."));
+		UE_LOG(LogTemp , Warning , TEXT("GetWorld() is invalid or NicknameList is empty."));
 		return;
 	}
 
 	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 	{
 		ATTPlayer* TTPlayer = *It;
-		if (!TTPlayer) continue;
-
-		if (NicknameList.Contains(TTPlayer->GetNickname()))
+		if (TTPlayer && NicknameList.Contains(TTPlayer->GetNickname()))
 		{
-			if (TTPlayer->bIsHost) 
+			if (TTPlayer->bIsHost) // 호스트에게는 추첨 시작 시간을 알림
 			{
-				AController* Controller = TTPlayer->GetController();
-				if (!Controller) continue;
-                
-				ATTPlayerController* TTPC = Cast<ATTPlayerController>(Controller);
+				ATTPlayerController* TTPC = Cast<ATTPlayerController>(TTPlayer->GetController());
 				if (TTPC)
 				{
 					TTPC->SetDrawStartTime();
 				}
 			}
-			else 
+			else // 호스트가 아닐 때는 클라이언트 RPC로 초청
 			{
-				TTPlayer->ClientShowLuckyDrawInvitation(true, CompetitionRate);
-				TTPlayer->SetLuckyDrawSeatID("1");
+				if (TTPlayer && !TTPlayer->bIsHost)
+				{
+					if (NicknameList.Contains(TTPlayer->GetNickname()))
+					{
+						TTPlayer->ClientShowLuckyDrawInvitation(true , CompetitionRate);
+						TTPlayer->SetLuckyDrawSeatID("1");
+					}
+				}
 			}
 		}
 	}
