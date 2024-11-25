@@ -11,6 +11,14 @@ void UTTGameInstance::Init()
 {
 	Super::Init();
 
+#if UE_BUILD_DEVELOPMENT
+	GEngine->bEnableOnScreenDebugMessages = bEnableScreenDebug;
+	if(!bEnableScreenDebug)
+	{
+		GEngine->ClearOnScreenDebugMessages();
+	}
+#endif
+
 	if ( auto* subSystem = Online::GetSubsystem(GetWorld()) )
 	{
 		SessionInterface = subSystem->GetSessionInterface();
@@ -287,7 +295,7 @@ void UTTGameInstance::SwitchSession(EPlaceState Destination)
 	case EPlaceState::ConcertHall:
 	case EPlaceState::StyleLounge:
 		bSwitchToHallSession = true;
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
+		// GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("SwitchSessionToHall"));
 		break;
 	}
 

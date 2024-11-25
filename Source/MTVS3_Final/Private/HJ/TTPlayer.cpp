@@ -880,6 +880,37 @@ void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _Access
 	}
 }
 
+void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
+{
+	if(PuzzleUI)
+	{
+		PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+		PuzzleUI->SetWidgetSwitcher(1);
+	}
+}
+
+void ATTPlayer::Multicast_UpdatePuzzleRankAndVisibility_Implementation(const TArray<FPlayerScoreInfo>& TopPlayers,
+	int32 TotalPlayers)
+{
+	if (!PuzzleUI) return;
+
+	// 상위 3명의 닉네임을 UI에 업데이트
+	for (int32 i = 0; i < TopPlayers.Num(); i++)
+	{
+		const FPlayerScoreInfo& PlayerInfo = TopPlayers[i];
+		PuzzleUI->SetTextPuzzleRankNickname(i + 1, PlayerInfo.Player);
+
+		UE_LOG(LogTemp, Log, TEXT("Updated rank %d for nickname %s, total players: %d"),
+			   i + 1, *PlayerInfo.Player, TotalPlayers);
+	}
+
+	// 가시성 설정 (4위 이하 숨김)
+	for (int32 HiddenRank = TopPlayers.Num() + 1; HiddenRank <= 3; HiddenRank++)
+	{
+		PuzzleUI->SetTextVisibility(HiddenRank, ESlateVisibility::Hidden);
+	}
+}
+
 void ATTPlayer::PlayConcertBGM()
 {
 	FTimerHandle TimerHandle;
@@ -970,7 +1001,7 @@ void ATTPlayer::MyTakePiece()
 							FString TagName = FString::Printf(TEXT("Piece%d") , i);
 							if (HitComponent->ComponentHasTag(FName(*TagName)))
 							{
-								GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Orange ,
+								if (bShowDebug) GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Orange ,
 								                                 FString::Printf(
 									                                 TEXT("Found piece with tag: %s") , *TagName));
 								TargetPieceComp = HitComponent;
