@@ -73,4 +73,6 @@ public:
 
 	UFUNCTION()
 	void OnChatMessageReceived(const FString& Message);
+
+	FTimerHandle CountdownTimerHandle;
 };
