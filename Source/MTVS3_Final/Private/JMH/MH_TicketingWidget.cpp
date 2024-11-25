@@ -5,6 +5,7 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/Image.h"
+#include "Components/Overlay.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
@@ -167,6 +168,7 @@ void UMH_TicketingWidget::SetTextSeatID(int32 SeatFloor , FString SeatID)
 	Text_SeatInfo->SetText(FText::FromString(SeatID));
 }
 
+
 void UMH_TicketingWidget::SetTickettingDate(int32 TickettingDateY , int32 TickettingDateM , int32 TickettingDateD)
 {
 	//좌석 추첨 날짜 정보
@@ -313,13 +315,12 @@ void UMH_TicketingWidget::SetTextTicketPrice(int32 TicketPrice)
 	//Text_TicketPrice2->SetText(FText::AsNumber(TicketPrice));
 }
 
-void UMH_TicketingWidget::SetSeatInfoMap(FString SeatID)
-{
+
 	//좌석별 불켜진 이미지 어떻게 만들지 이것도 이미지가 아니라
 	//Widget으로 리스트 불러와서 가능한지 켜주고
 	//해당 좌석에 접근햇을 때 그 좌석만 불켜주기?
 	//아님 걍 이미지로 넣어두고 좌석정보에 맞춰 띄우기
-}
+
 
 
 void UMH_TicketingWidget::SetTextTicketingDeadline(FString TicketingDeadline)
@@ -392,6 +393,37 @@ void UMH_TicketingWidget::SetBattleEntryVisible(bool bVisible)
 		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
+
+//좌석 상태표시 UI 기능
+void UMH_TicketingWidget::InitializeSeatsUI()
+{
+	//좌석정보 초기화
+	// SeatOverlays 배열 초기화 (오버레이를 수동으로 추가해야 함)
+	for (int32 i = 1; i < 66; i++)
+	{
+		// SeatOverlays에 오버레이 위젯 추가 (디자이너에서 이름으로 바인딩)
+		FString OverlayName = FString::Printf(TEXT("Over_ASeat%d"), i);
+		UOverlay* Overlay = Cast<UOverlay>(GetWidgetFromName(FName(*OverlayName)));
+		if (Overlay)
+		{
+			SeatOverlays.Add(Overlay);
+		}
+	}
+
+	// SeatStates 초기화
+	SeatStates.Init(false, 65); // 기본값: 접수 가능석 비활성화
+}
+
+void UMH_TicketingWidget::SetCurrentSelectedSeatUI(int32 SeatIndex)
+{
+	//현재 선택석 설정 함수
+}
+
+void UMH_TicketingWidget::UpdateAvailableSeatsUI(const TArray<int32>& AvailableSeatIndices)
+{
+	//접수 가능석 업데이트
+}
+
 
 /*
 void UMH_TicketingWidget::OnClickedCancelRegisteredSeat()
