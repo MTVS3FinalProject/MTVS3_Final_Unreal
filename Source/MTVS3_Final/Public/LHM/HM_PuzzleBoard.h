@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "HM_PuzzleBoard.generated.h"
 
+class UNiagaraComponent;
+class UNiagaraSystem;
+
 UCLASS()
 class MTVS3_FINAL_API AHM_PuzzleBoard : public AActor
 {
@@ -28,6 +31,12 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TArray<UStaticMeshComponent*> BoardAreas;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	TArray<UNiagaraComponent*> NiagaraEffects;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effects")
+	UNiagaraSystem* NiagaraEffectTemplate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float CellSize = 500.0f;
