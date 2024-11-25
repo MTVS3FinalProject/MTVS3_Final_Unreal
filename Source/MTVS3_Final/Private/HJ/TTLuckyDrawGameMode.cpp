@@ -29,6 +29,13 @@ void ATTLuckyDrawGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (!bEnableScreenDebug)
+	{
+#if UE_BUILD_DEVELOPMENT
+		GEngine->bEnableOnScreenDebugMessages = false; // 화면 디버그 메시지 비활성화
+#endif
+	}
+
 	ATTLuckyDrawGameState* GS = GetGameState<ATTLuckyDrawGameState>();
 	if (GS)
 	{
@@ -83,7 +90,8 @@ const TArray<TArray<FSeat>>& ATTLuckyDrawGameMode::GetShuffledSeats() const
 
 const FRouletteInfo& ATTLuckyDrawGameMode::GetRouletteInfoForRound(int32 RoundIndex) const
 {
-	static const FRouletteInfo DefaultInfo = []() {
+	static const FRouletteInfo DefaultInfo = []()
+	{
 		FRouletteInfo Info;
 		Info.Player = -1;
 		Info.Rule = ERouletteRule::OnlySelected;
@@ -94,23 +102,23 @@ const FRouletteInfo& ATTLuckyDrawGameMode::GetRouletteInfoForRound(int32 RoundIn
 	// 배열이 비어있는 경우 체크
 	if (RouletteInfosPerRound.Num() == 0)
 	{
-		UE_LOG(LogLuckyDraw, Warning, TEXT("RouletteInfosPerRound is empty. Round: %d"), Round);
+		UE_LOG(LogLuckyDraw , Warning , TEXT("RouletteInfosPerRound is empty. Round: %d") , Round);
 		return DefaultInfo;
 	}
 
 	// 유효한 인덱스 범위 체크
 	if (!RouletteInfosPerRound.IsValidIndex(RoundIndex))
 	{
-		UE_LOG(LogLuckyDraw, Warning, TEXT("Invalid round index: %d, Available rounds: %d"), 
-			   RoundIndex, RouletteInfosPerRound.Num());
+		UE_LOG(LogLuckyDraw , Warning , TEXT("Invalid round index: %d, Available rounds: %d") ,
+		       RoundIndex , RouletteInfosPerRound.Num());
 		return DefaultInfo;
 	}
 
 	const FRouletteInfo& Info = RouletteInfosPerRound[RoundIndex];
-	UE_LOG(LogLuckyDraw, Log, TEXT("Round: %d/%d, Player: %d, Rule: %d, Result: %d"),
-		   RoundIndex + 1, RouletteInfosPerRound.Num(), Info.Player, 
-		   static_cast<int32>(Info.Rule), static_cast<int32>(Info.Result));
-    
+	UE_LOG(LogLuckyDraw , Log , TEXT("Round: %d/%d, Player: %d, Rule: %d, Result: %d") ,
+	       RoundIndex + 1 , RouletteInfosPerRound.Num() , Info.Player ,
+	       static_cast<int32>(Info.Rule) , static_cast<int32>(Info.Result));
+
 	return Info;
 }
 
@@ -341,11 +349,12 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 			{
 				if (bWillEliminateAllLowNumberPlayers)
 				{
-					UE_LOG(LogLuckyDraw, Log, TEXT("MaxPlayerNumber %d 이하 플레이어의 전멸이 예상됩니다. 다른 조합을 시도합니다."), MaxPlayerNumber);
+					UE_LOG(LogLuckyDraw , Log , TEXT("MaxPlayerNumber %d 이하 플레이어의 전멸이 예상됩니다. 다른 조합을 시도합니다.") ,
+					       MaxPlayerNumber);
 				}
 				else
 				{
-					UE_LOG(LogLuckyDraw, Log, TEXT("전멸이 확인되었습니다. 다른 조합을 시도합니다."));
+					UE_LOG(LogLuckyDraw , Log , TEXT("전멸이 확인되었습니다. 다른 조합을 시도합니다."));
 				}
 			}
 			StartRound();
@@ -388,7 +397,7 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 				RouletteInfo.Player = SelectedPlayer;
 				RouletteInfo.Rule = SelectedRule;
 				RouletteInfo.Result = RouletteOutcome;
-        
+
 				// 현재 라운드에 해당하는 인덱스에 정보 저장
 				if (RouletteInfosPerRound.IsValidIndex(Round - 1))
 				{
@@ -398,9 +407,9 @@ void ATTLuckyDrawGameMode::SelectRouletteOptions()
 				{
 					RouletteInfosPerRound.Add(RouletteInfo);
 				}
-        
-				UE_LOG(LogLuckyDraw, Log, TEXT("라운드 %d 룰렛 정보 저장: Player(%d), Rule(%d), Result(%d)"),
-					   Round, SelectedPlayer, static_cast<int32>(SelectedRule), static_cast<int32>(RouletteOutcome));
+
+				UE_LOG(LogLuckyDraw , Log , TEXT("라운드 %d 룰렛 정보 저장: Player(%d), Rule(%d), Result(%d)") ,
+				       Round , SelectedPlayer , static_cast<int32>(SelectedRule) , static_cast<int32>(RouletteOutcome));
 			}
 		}
 	}

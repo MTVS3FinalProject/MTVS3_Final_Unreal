@@ -5,6 +5,7 @@
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/Image.h"
+#include "Components/Overlay.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
@@ -35,7 +36,7 @@ void UMH_TicketingWidget::NativeConstruct()
 
 	// KHJ
 	Img_Loading->SetVisibility(ESlateVisibility::Hidden);
-	
+
 	//콘서트정보 담아오기
 	//SetConcertInfo();
 
@@ -44,6 +45,8 @@ void UMH_TicketingWidget::NativeConstruct()
 	//Btn_MyRegisterSeat->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedMyRegisterSeat);
 	//Btn_NoticeGameStart->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedNoticeGameStart);
 	//Btn_GameResult->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedGameResult);
+
+	InitializeSeatsUI();
 }
 
 void UMH_TicketingWidget::SetWidgetSwitcher(int32 num)
@@ -94,7 +97,7 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
 			//추첨장 입장 비지블온
 			SetBattleEntryVisible(true);
-			
+
 			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 			if (Local)
 			{
@@ -102,21 +105,21 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 				if (PC)
 				{
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn());
-					if (TTPlayer && TTPlayer->GetbIsHost()==false)
+					if (TTPlayer && TTPlayer->GetbIsHost() == false)
 					{
 						PC->SetInputMode(FInputModeUIOnly());
 					}
 				}
-			} 
+			}
 		}
-		
+
 		else if (!bVisible)
 		{
 			bIsVisible = false;
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
 			//추첨장 입장 비지블오프
 			SetBattleEntryVisible(false);
-			
+
 			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
 			if (Local)
 			{
@@ -124,7 +127,7 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 				if (PC)
 				{
 					ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn());
-					if (TTPlayer && TTPlayer->GetbIsHost()==false)
+					if (TTPlayer && TTPlayer->GetbIsHost() == false)
 					{
 						PC->SetInputMode(FInputModeGameAndUI());
 					}
@@ -133,7 +136,7 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 		}
 
 		break;
-		
+
 	default:
 		break;
 	}
@@ -166,6 +169,7 @@ void UMH_TicketingWidget::SetTextSeatID(int32 SeatFloor , FString SeatID)
 	Text_SeatID->SetText(FText::FromString(SeatID));
 	Text_SeatInfo->SetText(FText::FromString(SeatID));
 }
+
 
 void UMH_TicketingWidget::SetTickettingDate(int32 TickettingDateY , int32 TickettingDateM , int32 TickettingDateD)
 {
@@ -222,7 +226,7 @@ void UMH_TicketingWidget::OnClickedConfirmButton()
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		// 플레이어 캐릭터를 가져옵니다.
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld() , 0);
 		if (PlayerController)
 		{
 			ATTPlayer* Player = Cast<ATTPlayer>(PlayerController->GetPawn());
@@ -257,7 +261,7 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		// 플레이어 캐릭터를 가져옵니다.
-		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld() , 0);
 		if (PlayerController)
 		{
 			ATTPlayer* Player = Cast<ATTPlayer>(PlayerController->GetPawn());
@@ -289,7 +293,7 @@ void UMH_TicketingWidget::OnClickedCancelButton2()
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if(HttpActor2)
+		if (HttpActor2)
 		{
 			HttpActor2->ReqDeleteCancelRegisteredSeat2(gi->GetReceivedSeatId() , gi->GetAccessToken());
 		}
@@ -311,14 +315,6 @@ void UMH_TicketingWidget::SetTextTicketPrice(int32 TicketPrice)
 	//int 가격 Ftext로 변환해서 티켓가격 입력하기
 	Text_TicketPrice->SetText(FText::AsNumber(TicketPrice));
 	//Text_TicketPrice2->SetText(FText::AsNumber(TicketPrice));
-}
-
-void UMH_TicketingWidget::SetSeatInfoMap(FString SeatID)
-{
-	//좌석별 불켜진 이미지 어떻게 만들지 이것도 이미지가 아니라
-	//Widget으로 리스트 불러와서 가능한지 켜주고
-	//해당 좌석에 접근햇을 때 그 좌석만 불켜주기?
-	//아님 걍 이미지로 넣어두고 좌석정보에 맞춰 띄우기
 }
 
 
@@ -382,16 +378,116 @@ void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 //추첨장 입장 UI띄우기 비지블로 변경
 void UMH_TicketingWidget::SetBattleEntryVisible(bool bVisible)
 {
-	if(bVisible)
+	if (bVisible)
 	{
 		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Visible);
 	}
 
-	else if(!bVisible)
+	else if (!bVisible)
 	{
 		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
+
+//좌석별 불켜진 이미지 어떻게 만들지 이것도 이미지가 아니라
+//Widget으로 리스트 불러와서 가능한지 켜주고
+//해당 좌석에 접근햇을 때 그 좌석만 불켜주기?
+//아님 걍 이미지로 넣어두고 좌석정보에 맞춰 띄우기
+
+//좌석 상태표시 UI 기능
+void UMH_TicketingWidget::InitializeSeatsUI()
+{
+	//좌석정보 초기화
+	// SeatOverlays 배열 초기화 (오버레이를 수동으로 추가해야 함)
+	for (int32 i = 1; i < 66; i++)
+	{
+		// SeatOverlays에 오버레이 위젯 추가 (디자이너에서 이름으로 바인딩)
+		FString OverlayName = FString::Printf(TEXT("Over_ASeat%d") , i);
+		UOverlay* Overlay = Cast<UOverlay>(GetWidgetFromName(FName(*OverlayName)));
+		if (Overlay)
+		{
+			SeatOverlays.Add(Overlay);
+		}
+	}
+
+	// SeatStates 초기화
+	SeatStates.Init(false , 65); // 기본값: 접수 가능석 비활성화
+}
+
+void UMH_TicketingWidget::SetCurrentSelectedSeatUI(FString ChairTag)
+{
+	for (UOverlay* Overlay : SeatOverlays)
+	{
+		if (Overlay && Overlay->GetChildrenCount() > 1) // 두 번째 이미지가 선택석
+		{
+			UImage* SelectedImage = Cast<UImage>(Overlay->GetChildAt(1));
+			if (SelectedImage)
+			{
+				SelectedImage->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+	}
+	
+	int32 SeatIndex = FCString::Atoi(*ChairTag) - 1;
+
+	if (SeatIndex >= 0 && SeatIndex < SeatStates.Num())
+	{
+		//현재 선택석 설정 함수
+		if (SeatOverlays.IsValidIndex(SeatIndex))
+		{
+			// 오버레이의 첫 번째 이미지를 활성화 (현재 선택석)
+			UOverlay* Overlay = SeatOverlays[SeatIndex];
+			if (Overlay && Overlay->GetChildrenCount() > 0)
+			{
+				// 자식 이미지 위젯 가져오기
+				UImage* SelectedImage = Cast<UImage>(Overlay->GetChildAt(1));
+				if (SelectedImage)
+				{
+					SelectedImage->SetVisibility(ESlateVisibility::Visible);
+				}
+			}
+		}
+	}
+}
+
+void UMH_TicketingWidget::UpdateReservedSeatsUI(const TArray<int32> ReservedSeats)
+{
+	//접수 완료 업데이트
+	// 모든 좌석 초기화
+	for (int32 i = 0; i < SeatOverlays.Num(); i++)
+	{
+		if (SeatOverlays[i])
+		{
+			// 모든 이미지를 비활성화
+			for (int32 j = 0; j < SeatOverlays[i]->GetChildrenCount(); j++)
+			{
+				UImage* Image = Cast<UImage>(SeatOverlays[i]->GetChildAt(j));
+				if (Image)
+				{
+					Image->SetVisibility(ESlateVisibility::Hidden);
+				}
+			}
+		}
+	}
+
+	// 접수 완료석 업데이트
+	for (int32 SeatIndex : ReservedSeats)
+	{
+		if (SeatOverlays.IsValidIndex(SeatIndex))
+		{
+			UOverlay* Overlay = SeatOverlays[SeatIndex];
+			if (Overlay && Overlay->GetChildrenCount() > 1) // 첫 번째 이미지: 접수 완료석
+			{
+				UImage* ReservedImage = Cast<UImage>(Overlay->GetChildAt(0));
+				if (ReservedImage)
+				{
+					ReservedImage->SetVisibility(ESlateVisibility::Visible);
+				}
+			}
+		}
+	}
+}
+
 
 /*
 void UMH_TicketingWidget::OnClickedCancelRegisteredSeat()

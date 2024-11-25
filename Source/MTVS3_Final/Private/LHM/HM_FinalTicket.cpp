@@ -67,10 +67,10 @@ void UHM_FinalTicket::CaptureAndDisplayTicketBackground(UHM_TicketCustom* _Ticke
 			CapturedTexture->UpdateResource(); // 리소스 업데이트
 
 			// Img_FinalTicket에 캡처된 텍스처 표시
-			if (TicketCutomUI && Img_FinalTicket)
+			if (TicketCutomUI)
 			{
 				// 최종 티켓 이미지에 반영
-				Img_FinalTicket->SetBrushFromTexture(CapturedTexture);
+				//Img_FinalTicket->SetBrushFromTexture(CapturedTexture);
 			
 				// 서버에 커스텀 티켓 저장 요청
 				 AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(

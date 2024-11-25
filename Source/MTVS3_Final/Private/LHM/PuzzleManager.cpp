@@ -114,8 +114,12 @@ void APuzzleManager::SortAndUpdateRanking()
 			ATTPlayer* TTPlayer = *It;
 			if (TTPlayer && TTPlayer->GetNickname() == RankedPlayerNickname)
 			{
-				// 자신의 순위를 전달
-				Client_ReceiveRank(static_cast<EPlayerRank>(i + 1), TTPlayer->GetNickname());
+				APlayerController* PC = Cast<APlayerController>(TTPlayer->GetOwner());
+				if (PC)
+				{
+					// 자신의 순위를 전달
+					Client_ReceiveRank(static_cast<EPlayerRank>(i + 1), TTPlayer->GetNickname());
+				}
 				break; // 해당 플레이어를 찾으면 더 이상 순회할 필요 없음
 			}
 		}
@@ -217,7 +221,8 @@ void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const F
 {
 	if (Rank == EPlayerRank::None || static_cast<int32>(Rank) > 3) return;
 	// 현재 클라이언트가 로컬 컨트롤러인지 확인
-	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	//APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	if (PC && PC->IsLocalController())
 	{
 		// 월드에 있는 모든 ATTPlayer 순회
@@ -237,33 +242,40 @@ void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const F
 				if (!HttpActor3) return;
 
 				HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) , AccessToken);
-
-				// // UI를 보이게 설정 (로컬에서만 처리)
-				// if (PuzzleUI)
-				// {
-				// 	PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-				// 	PuzzleUI->SetWidgetSwitcher(1);
-				// 	UE_LOG(LogTemp, Log, TEXT("UI Visible for Rank %d: %s"), static_cast<int32>(Rank), *Nickname);
-				// 	//Client_UpdateUIVisibility();
-				// }
+				
 				break;
 			}
 		}
 	}
 }
 
+void APuzzleManager::Server_HandlePuzzleResult_Implementation()
+{
+	// 서버에서 각 클라이언트로 UI 업데이트 전파
+	for (APlayerController* PC : TActorRange<APlayerController>(GetWorld()))
+	{
+		if (PC)
+		{
+			Client_UpdateUIVisibility();
+		}
+	}
+}
+
 void APuzzleManager::Client_UpdateUIVisibility_Implementation()
 {
-	//APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	//if (PC && PC->IsLocalController())
-	//{
+	// 현재 클라이언트의 로컬 컨트롤러 가져오기
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (PC && PC->IsLocalController()) // 로컬 컨트롤러 확인
+	{
+		UE_LOG(LogTemp , Log , TEXT("PC && PC->IsLocalController()"));
+		
 		if (PuzzleUI)
 		{
+			UE_LOG(LogTemp , Log , TEXT("APuzzleManager::Client_UpdateUIVisibility"));
 			PuzzleUI->SetVisibility(ESlateVisibility::Visible);
 			PuzzleUI->SetWidgetSwitcher(1);
-			UE_LOG(LogTemp , Log , TEXT("APuzzleManager::Client_UpdateUIVisibility"));
 		}
-	//}
+	}
 }
 
 void APuzzleManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
