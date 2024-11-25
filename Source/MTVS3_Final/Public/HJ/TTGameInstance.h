@@ -129,6 +129,9 @@ public:
 	void OnMyDestroySessionComplete(FName SessionName , bool bWasSuccessful);
 #pragma endregion
 
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Debug")
+	bool bEnableScreenDebug;
+	
 	UPROPERTY(EditAnywhere , Category = "TTSettings|State")
 	EPlaceState PlaceState = EPlaceState::Plaza;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")

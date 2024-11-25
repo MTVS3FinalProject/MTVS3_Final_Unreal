@@ -60,6 +60,9 @@ public:
 	UPROPERTY()
 	class UMH_GameWidget* GameUI;
 #pragma endregion
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Debug")
+	bool bShowDebug = false;
+	
 	UPROPERTY(BlueprintAssignable , Category = "Events")
 	FOnRequestMovePlayersToChairs OnRequestMovePlayersToChairs;
 
