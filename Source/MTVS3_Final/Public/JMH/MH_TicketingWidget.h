@@ -60,6 +60,27 @@ public:
 	UFUNCTION()
 	void SetTextSeatID(int32 SeatFloor,FString SeatID);
 
+	///////좌석 상태 표시 UI///////////
+	// 오버레이 배열
+	UPROPERTY(meta = (BindWidget))
+	TArray<class UOverlay*> SeatOverlays;
+	
+	// 접수 가능석 상태를 저장 (True: 활성화, False: 비활성화)
+	UPROPERTY()
+	TArray<bool> SeatStates;
+
+	// 초기화 함수
+	UFUNCTION()
+	void InitializeSeatsUI();
+
+	// 현재 선택석 설정 함수
+	UFUNCTION()
+	void SetCurrentSelectedSeatUI(FString ChairTag);
+
+	// 접수 가능석 업데이트 함수
+	UFUNCTION()
+	void UpdateReservedSeatsUI(TArray<int32> ReservedSeats);
+
 	//좌석 추첨시간
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_TickettingDateY;
@@ -96,11 +117,7 @@ public:
 	class UTextBlock* Text_TicketPrice;
 	UFUNCTION()
 	void SetTextTicketPrice(int32 TicketPrice);
-
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UImage* Img_SeatInfoMap;
-	UFUNCTION()
-	void SetSeatInfoMap(FString SeatID);
+	
 
 	
 	//닫기 
@@ -125,6 +142,8 @@ public:
 	//접수한 좌석
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_SeatInfo;
+
+	
 	
 	//접수한 좌석 구매 가격
 	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))

@@ -36,10 +36,10 @@ public:
 
 	UPROPERTY()
 	class UCanvasPanel* RootCanvas;
-	UPROPERTY(meta = (BindWidget))
-	class UImage* Img_FinalTicket; // 캡처 결과를 표시할 이미지
-	UPROPERTY(meta = (BindWidget))
-	class UImage* Img_FinalTicketInfo; // 캡처 결과를 표시할 이미지
+	//UPROPERTY(meta = (BindWidget))
+	//class UImage* Img_FinalTicket; // 캡처 결과를 표시할 이미지
+	//UPROPERTY(meta = (BindWidget))
+	//class UImage* Img_FinalTicketInfo; // 캡처 결과를 표시할 이미지
 	
 	FVector2d CaptureSize;
 	
