@@ -28,4 +28,8 @@ protected:
     
 	// PlayerStart 선택 로직 오버라이드
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "TTSettings|Custom")
+	bool bEnableScreenDebug;
 };

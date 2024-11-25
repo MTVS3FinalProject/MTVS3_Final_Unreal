@@ -127,6 +127,19 @@ FString ATTPlayerController::GetSystemTime()
 
 void ATTPlayerController::SetDrawStartTime()
 {
+	// 로컬 컨트롤러가 아닌 경우 리턴
+	if (!IsLocalController())
+		return;
+	
+	if (!TicketingUI)
+	{
+		FString PCName = GetName();
+		FString NetMode = HasAuthority() ? TEXT("Server") : TEXT("Client");
+		UE_LOG(LogTemp, Warning, TEXT("[SetDrawStartTime] TicketingUI is NULL for PlayerController: %s (NetMode: %s)"), 
+			*PCName, *NetMode);
+		return;  // null일 때 early return
+	}
+	
 	UE_LOG(LogTemp , Log , TEXT("ServerSetDrawStartTime"));
 	// 현재 시스템 시간 가져오기
 	FDateTime Now = FDateTime::Now();
@@ -143,17 +156,40 @@ void ATTPlayerController::SetDrawStartTime()
 
 	// 포맷된 시간 문자열 생성
 	FString FormattedTime = FString::Printf(TEXT("%02d:%02d") , Hours , Minutes);
-
-	// UI에 텍스트 설정
-	if (TicketingUI)
-	{
-		TicketingUI->SetTextTicketingDeadline(FormattedTime);
-		TicketingUI->SetTextGameStartTime(FormattedTime);
-	}
+	
+	TicketingUI->SetTextTicketingDeadline(FormattedTime);
+	TicketingUI->SetTextGameStartTime(FormattedTime);
+	
+	// 타이머가 이미 실행 중이라면 초기화
+	GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
+    
+	// 카운트다운 타이머 시작
+	GetWorld()->GetTimerManager().SetTimer(
+		CountdownTimerHandle,
+		[this]()
+		{
+			UpdateCountdown(GetWorld()->GetDeltaSeconds());
+		},
+		0.1f,  // 더 부드러운 업데이트를 위해 0.1초 간격으로 설정
+		true   // 반복 실행
+	);
 }
 
 void ATTPlayerController::UpdateCountdown(float DeltaTime)
 {
+	// 로컬 컨트롤러가 아닌 경우 리턴
+	if (!IsLocalController())
+		return;
+	
+	if (!TicketingUI)
+	{
+		FString PCName = GetName();
+		FString NetMode = HasAuthority() ? TEXT("Server") : TEXT("Client");
+		UE_LOG(LogTemp, Warning, TEXT("[SetDrawStartTime] TicketingUI is NULL for UpdateCountdown: %s (NetMode: %s)"), 
+			*PCName, *NetMode);
+		return;  // null일 때 early return
+	}
+	
 	// 현재 시스템 시간 가져오기
 	FDateTime Now = FDateTime::Now();
 
@@ -165,13 +201,13 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 		int32 Minutes = RemainingTime.GetMinutes();
 		int32 Seconds = RemainingTime.GetSeconds() % 60;
 
-		FString CountdownText = FString::Printf(TEXT("%02d:%02d") , Minutes , Seconds);
-
-		if (TicketingUI)
-		{
-			TicketingUI->SetTextGameCountDown(CountdownText);
-		}
-		//UE_LOG(LogTemp , Log , TEXT("%s") , *CountdownText);  // 로그로 출력
+		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+		TicketingUI->SetTextGameCountDown(CountdownText);
+	}
+	else
+	{
+		// 타이머 정지
+		GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
 	}
 }
 
