@@ -24,6 +24,7 @@
 #include <HJ/TTPlayerState.h>
 #include <HJ/HJ_Actor.h>
 
+#include "HttpModule.h"
 #include "ImageUtils.h"
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
@@ -32,6 +33,7 @@
 #include "HJ/LDTutorialWidget.h"
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
+#include "Interfaces/IHttpResponse.h"
 #include "JMH/MH_EmojiImg.h"
 #include "JMH/MH_GameWidget.h"
 #include "JMH/MH_MinimapActor.h"
@@ -920,57 +922,76 @@ void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlay
 	// 모든 랭크 정보를 순회하며 UI 업데이트
 	for (const FPlayerRankInfo& RankInfo : PlayerRankInfos)
 	{
-		// 바이트 배열에서 텍스처 생성
-		UTexture2D* StickerTexture = nullptr;
-		if (RankInfo.StickerImageData.Num() > 0)
-		{
-			StickerTexture = FImageUtils::ImportBufferAsTexture2D(RankInfo.StickerImageData);
-		}
-		
-		switch (RankInfo.Rank)
-		{
-		case 1:
-			PuzzleUI->SetTextPuzzleRank1(
-				//RankInfo.StickerTexture,
-				StickerTexture,
-				RankInfo.StickerRarity,
-				RankInfo.StickerName,
-				RankInfo.StickerScript,
-				RankInfo.TitleRarity,
-				RankInfo.TitleName,
-				RankInfo.TitleScript
-			);
-			break;
-		case 2:
-			PuzzleUI->SetTextPuzzleRank2(
-				//RankInfo.StickerTexture,
-				StickerTexture,
-				RankInfo.StickerRarity,
-				RankInfo.StickerName,
-				RankInfo.StickerScript,
-				RankInfo.TitleRarity,
-				RankInfo.TitleName,
-				RankInfo.TitleScript
-			);
-			break;
-		case 3:
-			PuzzleUI->SetTextPuzzleRank3(
-				//RankInfo.StickerTexture,
-				StickerTexture,
-				RankInfo.StickerRarity,
-				RankInfo.StickerName,
-				RankInfo.StickerScript,
-				RankInfo.TitleRarity,
-				RankInfo.TitleName,
-				RankInfo.TitleScript
-			);
-			break;
-		default:
-			UE_LOG(LogTemp, Warning, TEXT("Invalid rank received: %d"), RankInfo.Rank);
-			break;
-		}
-	}
+		if (RankInfo.StickerImageUrl.IsEmpty())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("StickerImageUrl is empty for rank %d"), RankInfo.Rank);
+            continue;
+        }
 
+        // HTTP 요청 생성
+        TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
+        ImageRequest->SetURL(RankInfo.StickerImageUrl);
+        ImageRequest->SetVerb(TEXT("GET"));
+
+        ImageRequest->OnProcessRequestComplete().BindLambda(
+            [this, RankInfo](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+            {
+                if (bWasSuccessful && Response.IsValid())
+                {
+                    TArray<uint8> ImageData = Response->GetContent();
+                    UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+
+                    if (StickerTexture)
+                    {
+                        switch (RankInfo.Rank)
+                        {
+                        case 1:
+                            PuzzleUI->SetTextPuzzleRank1(
+                                StickerTexture,
+                                RankInfo.StickerRarity,
+                                RankInfo.StickerName,
+                                RankInfo.StickerScript,
+                                RankInfo.TitleRarity,
+                                RankInfo.TitleName,
+                                RankInfo.TitleScript
+                            );
+                            break;
+                        case 2:
+                            PuzzleUI->SetTextPuzzleRank2(
+                                StickerTexture,
+                                RankInfo.StickerRarity,
+                                RankInfo.StickerName,
+                                RankInfo.StickerScript,
+                                RankInfo.TitleRarity,
+                                RankInfo.TitleName,
+                                RankInfo.TitleScript
+                            );
+                            break;
+                        case 3:
+                            PuzzleUI->SetTextPuzzleRank3(
+                                StickerTexture,
+                                RankInfo.StickerRarity,
+                                RankInfo.StickerName,
+                                RankInfo.StickerScript,
+                                RankInfo.TitleRarity,
+                                RankInfo.TitleName,
+                                RankInfo.TitleScript
+                            );
+                            break;
+                        default:
+                            UE_LOG(LogTemp, Warning, TEXT("Invalid rank %d"), RankInfo.Rank);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("Failed to load image from URL: %s"), *RankInfo.StickerImageUrl);
+                }
+            });
+        // HTTP 요청 시작
+        ImageRequest->ProcessRequest();
+	}
 	UE_LOG(LogTemp, Log, TEXT("Updated all ranks for player: %s"), *GetNickname());
 }
 

@@ -45,11 +45,8 @@ struct FPlayerRankInfo
 	UPROPERTY()
 	int32 Score;
 
-	UPROPERTY()
-	TArray<uint8> StickerImageData;
-	
-	//UPROPERTY(BlueprintReadWrite)
-	//UTexture2D* StickerTexture;
+	UPROPERTY(BlueprintReadWrite)
+	FString StickerImageUrl;
 
 	UPROPERTY(BlueprintReadWrite)
 	FString StickerRarity;
