@@ -102,90 +102,36 @@ void APuzzleManager::SortAndUpdateRanking()
 
 	// 각 클라이언트에게 랭킹 정보를 전파
 	UpdatePlayerRankInfo();
-	Multicast_UpdateUI(PlayerScoresInfo);
 
-	// 각 클라이언트에 자신의 순위 전달
-	for (int32 i = 0; i < FMath::Min(3, PlayerScoresInfo.Num()); i++)
+	TArray<FPlayerScoreInfo> TopPlayers;
+	for (int32 i = 0; i < FMath::Min(3 , PlayerScoresInfo.Num()); i++)
 	{
-		FString RankedPlayerNickname  = PlayerScoresInfo[i].Player;
-		// 월드에 있는 모든 ATTPlayer 순회
-		for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+		TopPlayers.Add(PlayerScoresInfo[i]);
+	}
+
+	int32 TotalPlayers = TopPlayers.Num();
+
+	// 각 클라이언트에 UI 정보 전파
+	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+	{
+		ATTPlayer* TTPlayer = *It;
+		if (TTPlayer)
 		{
-			ATTPlayer* TTPlayer = *It;
-			if (TTPlayer && TTPlayer->GetNickname() == RankedPlayerNickname)
+			// 자신의 순위를 전달
+			for (int32 idx = 0; idx < TotalPlayers; idx++)
 			{
-				APlayerController* PC = Cast<APlayerController>(TTPlayer->GetOwner());
-				if (PC)
+				if (TTPlayer->GetNickname() == TopPlayers[idx].Player)
 				{
-					// 자신의 순위를 전달
-					Client_ReceiveRank(static_cast<EPlayerRank>(i + 1), TTPlayer->GetNickname());
+					Client_ReceiveRank(static_cast<EPlayerRank>(idx + 1) , TTPlayer->GetNickname());
+					//break;
 				}
-				break; // 해당 플레이어를 찾으면 더 이상 순회할 필요 없음
 			}
+
+			// UI 업데이트
+			TTPlayer->Multicast_UpdatePuzzleRankAndVisibility(TopPlayers , TotalPlayers);
 		}
 	}
-}
-
-// 클라이언트에서 UI를 업데이트하기 위한 멀티캐스트 함수
-void APuzzleManager::Multicast_UpdateUI_Implementation(const TArray<FPlayerScoreInfo>& SortedScores)
-{
-	for (int32 i = 0; i < FMath::Min(3, SortedScores.Num()); i++) // 3위까지만 처리
-	{
-		// 플레이어의 컨트롤러를 가져와 자신의 닉네임을 가져오기
-		FString Player = PlayerScoresInfo[i].Player;
-		if(!Player.IsEmpty())
-		{
-			// 월드에 있는 모든 ATTPlayer 순회
-			for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-			{
-				ATTPlayer* TTPlayer = *It;
-				if (TTPlayer && TTPlayer->GetNickname() == Player)
-				{
-					// UI 업데이트
-					UpdateUINickname(static_cast<EPlayerRank>(i), TTPlayer->GetNickname());
-				}
-			}	
-		}
-	}
-
-	if (!PuzzleUI) return;
-
-	// 플레이어 수에 따른 UI 조정
-	int32 PlayerCount = SortedScores.Num();
-	if (PlayerCount == 1)
-	{
-		UE_LOG(LogTemp , Log , TEXT("PlayerCount == 1 UI 2,3 Hidden"));
-		PuzzleUI->SetTextVisibility(2, ESlateVisibility::Hidden);
-		PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
-	}
-	else if (PlayerCount == 2)
-	{
-		UE_LOG(LogTemp , Log , TEXT("PlayerCount == 2 UI 3 Hidden"));
-		PuzzleUI->SetTextVisibility(3, ESlateVisibility::Hidden);
-	}
-}
-
-void APuzzleManager::UpdateUINickname(EPlayerRank Rank, const FString& NickName)
-{
-	// UI 업데이트
 	
-	switch (Rank)
-	{
-	case EPlayerRank::First:
-		PuzzleUI->SetTextPuzzleRank1Nickname(NickName);
-		UE_LOG(LogTemp , Log , TEXT("1# NickName: %s"), *NickName);
-		break;
-	case EPlayerRank::Second:
-		PuzzleUI->SetTextPuzzleRank2Nickname(NickName);
-		UE_LOG(LogTemp , Log , TEXT("2# NickName: %s"), *NickName);
-		break;
-	case EPlayerRank::Third:
-		PuzzleUI->SetTextPuzzleRank3Nickname(NickName);
-		UE_LOG(LogTemp , Log , TEXT("3# NickName: %s"), *NickName);
-		break;
-	default:
-		return;
-	}
 }
 
 void APuzzleManager::UpdatePlayerRankInfo()
@@ -251,29 +197,29 @@ void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const F
 
 void APuzzleManager::Server_HandlePuzzleResult_Implementation()
 {
-	// 서버에서 각 클라이언트로 UI 업데이트 전파
 	for (APlayerController* PC : TActorRange<APlayerController>(GetWorld()))
 	{
-		if (PC)
+		if (ATTPlayer* Player = Cast<ATTPlayer>(PC->GetPawn()))
 		{
-			Client_UpdateUIVisibility();
-		}
-	}
-}
-
-void APuzzleManager::Client_UpdateUIVisibility_Implementation()
-{
-	// 현재 클라이언트의 로컬 컨트롤러 가져오기
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (PC && PC->IsLocalController()) // 로컬 컨트롤러 확인
-	{
-		UE_LOG(LogTemp , Log , TEXT("PC && PC->IsLocalController()"));
-		
-		if (PuzzleUI)
-		{
-			UE_LOG(LogTemp , Log , TEXT("APuzzleManager::Client_UpdateUIVisibility"));
-			PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-			PuzzleUI->SetWidgetSwitcher(1);
+			FString PlayerNickname = Player->GetNickname();
+			
+			// ReplicatedRankInfo에서 해당 플레이어가 상위 3위 안에 있는지 확인
+			for (const FPlayerRankInfo& RankInfo : ReplicatedRankInfo)
+			{
+				if (RankInfo.NickName == PlayerNickname)
+				{
+					// Rank가 1, 2, 3 중 하나인지 확인
+					if (RankInfo.Rank >= 1 && RankInfo.Rank <= 3)
+					{
+						UE_LOG(LogTemp, Log, TEXT("Updating UI for player: %s with rank: %d"), 
+							   *PlayerNickname, RankInfo.Rank);
+                    
+						// UI 업데이트 호출
+						Player->Client_UpdatePuzzleUI();
+					}
+					break;
+				}
+			}
 		}
 	}
 }
