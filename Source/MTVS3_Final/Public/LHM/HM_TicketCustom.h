@@ -24,9 +24,14 @@ struct FStickerData
 	UTexture2D* StickerImage;
 
 	// 기본 생성자
-	FStickerData() : StickerId(-1), StickerImage(nullptr) {}
-	FStickerData(int32 InStickerId, UTexture2D* InStickerImage)
-		: StickerId(InStickerId), StickerImage(InStickerImage) {}
+	FStickerData() : StickerId(-1), StickerImage(nullptr)
+	{
+	}
+
+	FStickerData(int32 InStickerId , UTexture2D* InStickerImage)
+		: StickerId(InStickerId), StickerImage(InStickerImage)
+	{
+	}
 };
 #pragma endregion
 
@@ -41,27 +46,35 @@ struct FUsedImage
 	UImage* RenderAngle;
 	UImage* RenderScale;
 	UImage* Delete;
-    class UOverlay* ImageGroupOverlay; // 그룹화된 이미지 컨테이너
-    UImage* OriginImage; // 원본 이미지 참조 추가
+	class UOverlay* ImageGroupOverlay; // 그룹화된 이미지 컨테이너
+	UImage* OriginImage; // 원본 이미지 참조 추가
 	FVector2D CurrentScale; // 현재 Scale 값을 저장
 
 	// 기본 생성자
-	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr), ImageGroupOverlay(nullptr), OriginImage(nullptr), CurrentScale(1) {}
-	
+	FUsedImage() : CopiedImage(nullptr), Outline(nullptr), RenderAngle(nullptr), RenderScale(nullptr), Delete(nullptr),
+	               ImageGroupOverlay(nullptr), OriginImage(nullptr), CurrentScale(1)
+	{
+	}
+
 	// 파라미터가 있는 생성자
-	FUsedImage(UImage* InCopiedImage, UImage* InOutline, UImage* InRenderAngle, UImage* InRenderScale, UImage* InDelete, UOverlay* InOverlay, UImage* InOriginImage, FVector2D InCurrentScale)
-		: CopiedImage(InCopiedImage), Outline(InOutline), RenderAngle(InRenderAngle), RenderScale(InRenderScale), Delete(InDelete), ImageGroupOverlay(InOverlay), OriginImage(InOriginImage), CurrentScale(InCurrentScale) {}
+	FUsedImage(UImage* InCopiedImage , UImage* InOutline , UImage* InRenderAngle , UImage* InRenderScale ,
+	           UImage* InDelete , UOverlay* InOverlay , UImage* InOriginImage , FVector2D InCurrentScale)
+		: CopiedImage(InCopiedImage), Outline(InOutline), RenderAngle(InRenderAngle), RenderScale(InRenderScale),
+		  Delete(InDelete), ImageGroupOverlay(InOverlay), OriginImage(InOriginImage), CurrentScale(InCurrentScale)
+	{
+	}
 };
 #pragma endregion
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedTicketCustomBack);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedTicketCustomSave);
 
 UCLASS()
 class MTVS3_FINAL_API UHM_TicketCustom : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 public:
 	FOnClickedTicketCustomBack OnClickedTicketCustomBack;
 	FOnClickedTicketCustomSave OnClickedTicketCustomSave;
@@ -71,11 +84,11 @@ public:
 	void OnClickedExitButton();
 	UFUNCTION()
 	void OnClickedSaveButton();
-	
+
 	virtual void NativeConstruct() override;
 
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
+	virtual void NativeTick(const FGeometry& MyGeometry , float InDeltaTime) override;
+
 #pragma region Origin Variable & Custom Properties
 	UPROPERTY()
 	class UCanvasPanel* RootCanvas;
@@ -97,14 +110,15 @@ public:
 	class UTextBlock* Txt_SeatInfo;
 
 	UFUNCTION()
-	void SetTextTicketInfo(FString _ConcertName, int32 _Year, int32 _Monthm, int32 _Day, FString _Time, FString _SeatInfo);
-	
-	UPROPERTY(VisibleAnywhere, meta = (BindWidget))
+	void SetTextTicketInfo(FString _ConcertName , int32 _Year , int32 _Monthm , int32 _Day , FString _Time ,
+	                       FString _SeatInfo);
+
+	UPROPERTY(VisibleAnywhere , meta = (BindWidget))
 	TArray<FUsedImage> Img_CopiedImgs;
 
 	UPROPERTY()
 	TArray<UTexture2D*> CopiedTextures;
-	
+
 	// 드래그 앤 드롭, 회전, 크기조정, 삭제
 	UPROPERTY()
 	class UImage* CurrentImage;
@@ -118,22 +132,22 @@ public:
 	bool bIsBackground;
 	FVector2D PreviousMousePosition;
 	FVector2D CurrentImageScale;
-	
+
 	//void SetupDraggableImage(UImage* Image);
 	FUsedImage CreateCompleteImageSet(UImage* SourceImage);
-	void SetRenderScale(FUsedImage& ImageSet, const FVector2D& MouseDelta);
-	void SetRenderAngle(FUsedImage& ImageSet, const FVector2D& MouseDelta);
+	void SetRenderScale(FUsedImage& ImageSet , const FVector2D& MouseDelta);
+	void SetRenderAngle(FUsedImage& ImageSet , const FVector2D& MouseDelta);
 	//void DeleteImage(FUsedImage& ImageSet);
-	void DeleteImage(FUsedImage& ImageSet, int32 Index);
-	
-	virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	virtual FReply NativeOnMouseMove(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	virtual FReply NativeOnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override;
-	
+	void DeleteImage(FUsedImage& ImageSet , int32 Index);
+
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& MyGeometry , const FPointerEvent& MouseEvent) override;
+	virtual FReply NativeOnMouseMove(const FGeometry& MyGeometry , const FPointerEvent& MouseEvent) override;
+	virtual FReply NativeOnMouseButtonUp(const FGeometry& MyGeometry , const FPointerEvent& MouseEvent) override;
+
 	UFUNCTION()
 	void SetBackgroundImg(UTexture2D* newTexture);
-	
-// ================================== 통신에서 받아온 스티커 동적 생성 및 저장 ==================================
+
+	// ================================== 통신에서 받아온 스티커 동적 생성 및 저장 ==================================
 
 	// 동적으로 스티커 이미지를 설정하는 함수
 	UFUNCTION()
@@ -156,7 +170,7 @@ public:
 
 	// 이미지 생성 헬퍼 함수
 	class UImage* CreateImageWidget(int32 Index);
-    
+
 	// 스페이서 생성 헬퍼 함수
 	class USpacer* CreateSpacerWidget();
 
@@ -166,24 +180,47 @@ public:
 	TArray<FStickerData> StickerDataArray;
 
 	UFUNCTION()
-	void AddSticker(int32 StickerId, UTexture2D* StickerImage);
-	
+	void AddSticker(int32 StickerId , UTexture2D* StickerImage);
+
 #pragma endregion
-	
+
 public:
 #pragma region Button Functions
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , meta = (BindWidget))
 	class UButton* Btn_ResetBackground;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , meta = (BindWidget))
 	class UButton* Btn_ResetTicketImage;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , meta = (BindWidget))
 	class UButton* Btn_Save;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , meta = (BindWidget))
 	class UButton* Btn_Exit;
 	UFUNCTION()
 	void OnClickedResetBackgroundButton();
 	UFUNCTION()
 	void OnClickedResetTicketImageButton();
-	
+
 #pragma endregion
+
+	UPROPERTY(EditDefaultsOnly, Category = "Textures")
+	UTexture2D* OutlineTexture;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Textures")
+	UTexture2D* AngleTexture;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Textures")
+	UTexture2D* ScaleTexture;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Textures")
+	UTexture2D* DeleteTexture;
+
+private:
+	bool CheckImageClick(UImage* Image , const FPointerEvent& MouseEvent , const FGeometry& MyGeometry);
+	void SetImagePosition(const FVector2D& LocalMousePosition);
+	bool CheckRotationButtonClick(const FUsedImage& ImageSet , const FPointerEvent& MouseEvent ,
+	                              const FGeometry& MyGeometry);
+	bool CheckScaleButtonClick(const FUsedImage& ImageSet , const FPointerEvent& MouseEvent ,
+	                           const FGeometry& MyGeometry);
+	bool CheckDeleteButtonClick(const FUsedImage& ImageSet , const FPointerEvent& MouseEvent ,
+	                            const FGeometry& MyGeometry);
+	bool CheckBackgroundClick(const FPointerEvent& MouseEvent);
 };
