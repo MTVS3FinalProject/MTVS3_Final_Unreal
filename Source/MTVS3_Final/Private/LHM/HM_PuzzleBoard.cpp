@@ -2,12 +2,12 @@
 
 
 #include "LHM/HM_PuzzleBoard.h"
-
-#include "HJ/TTPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/PuzzleManager.h"
 #include "Net/UnrealNetwork.h"
+#include "NiagaraComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 // Sets default values
 AHM_PuzzleBoard::AHM_PuzzleBoard()
@@ -64,6 +64,7 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 	if(!MeshAsset.Succeeded()) return;
 	
 	BoardAreas.SetNum(9);
+	NiagaraEffects.SetNum(9);
 	for (int i = 0; i < 9; i++)
 	{
 		FString ComponentName = FString::Printf(TEXT("BoardArea%d"), i+1);
@@ -82,6 +83,20 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			BoardAreas[i]->SetGenerateOverlapEvents(true);
 			
 			BoardAreas[i]->SetVisibility(false);
+
+			// 나이아가라 이펙트 추가
+			FString NiagaraName = FString::Printf(TEXT("NiagaraEffect%d"), i + 1);
+			UNiagaraComponent* NiagaraEffect = CreateDefaultSubobject<UNiagaraComponent>(*NiagaraName);
+			if(NiagaraEffectTemplate && NiagaraEffect)
+			{
+				NiagaraEffect->SetupAttachment(BoardAreas[i]);
+				NiagaraEffect->SetAsset(NiagaraEffectTemplate);
+				NiagaraEffect->SetRelativeScale3D(FVector3d(5));
+				NiagaraEffect->SetRelativeRotation(FRotator(-90,90,0));
+				//NiagaraEffect->SetWorldLocation(BoardAreas[i]->GetComponentLocation());
+				NiagaraEffect->SetAutoActivate(false); // 초기에는 비활성화
+				NiagaraEffects[i] = NiagaraEffect;
+			}
 		}
 	}
 
@@ -120,6 +135,7 @@ void AHM_PuzzleBoard::InitializeBoardAreasLocation()
 				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
 				FVector NewLocation = BoardLocation + OffsetLocation;
 				BoardAreas[Idx]->SetWorldLocation(NewLocation);
+				NiagaraEffects[Idx]->SetWorldLocation(NewLocation - FVector3d(0,-100,0));
 			}
 		}
 	}
@@ -154,6 +170,7 @@ void AHM_PuzzleBoard::ServerSetBoardAreaVisibility_Implementation(int32 BoardInd
 		if (HasAuthority())
 		{
 			BoardAreaVisibility[BoardIndex] = bVisible;
+			NiagaraEffects[BoardIndex]->Activate(true);
 			UE_LOG(LogTemp, Log, TEXT("Updated BoardAreaVisibility[%d] to %s"), BoardIndex, bVisible ? TEXT("true") : TEXT("false"));
 
 			// 모든 보드 영역이 가시화되었는지 확인
@@ -180,8 +197,17 @@ void AHM_PuzzleBoard::MulticastSetBoardAreaVisibility_Implementation(int32 Board
 	if (BoardIndex >= 0 && BoardIndex < BoardAreas.Num())
 	{
 		// 가시성 직접 설정
-		BoardAreas[BoardIndex]->SetVisibility(bVisible);
-        
+
+		if (NiagaraEffects.IsValidIndex(BoardIndex) && NiagaraEffects[BoardIndex])
+		{   
+			if (bVisible)
+			{
+				BoardAreas[BoardIndex]->SetVisibility(bVisible);
+				NiagaraEffects[BoardIndex]->Activate(true);
+				UE_LOG(LogTemp, Log, TEXT("Niagara Effect for BoardArea[%d] %s"), BoardIndex, bVisible ? TEXT("Activated") : TEXT("Deactivated"));
+			}
+		}
+		
 		// 서버에서만 BoardAreaVisibility 업데이트
 		if (HasAuthority())
 		{
