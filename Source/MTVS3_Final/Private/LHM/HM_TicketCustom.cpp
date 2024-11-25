@@ -395,7 +395,7 @@ FReply UHM_TicketCustom::NativeOnMouseButtonDown(const FGeometry& MyGeometry, co
                     		GroupSlot->SetPosition(LocalMousePosition);  // 오프셋 제거
                     		GroupSlot->SetSize(FVector2D(230));
                     		GroupSlot->SetAlignment(FVector2d(0.5f, 0.5f));  // 중앙 정렬 설정
-                    		GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 1);
+                    		GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 2);
                         }
                         return FReply::Handled().CaptureMouse(this->TakeWidget());
                     }
@@ -431,7 +431,7 @@ FReply UHM_TicketCustom::NativeOnMouseMove(const FGeometry& MyGeometry, const FP
 					GroupSlot->SetPosition(LocalMousePosition);  // 오프셋 제거
 					GroupSlot->SetSize(FVector2D(230));
 					GroupSlot->SetAlignment(FVector2d(0.5f, 0.5f));  // 중앙 정렬 설정
-					GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 1);
+					GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 2);
 				}
 			}
 		}
@@ -620,25 +620,38 @@ void UHM_TicketCustom::InitializeStickerImages(int32 Count)
 		VerticalBox_Stickers->ClearChildren();
 		StickerImages.Empty();
 	}
-	
+
 	// 새로운 이미지 위젯 생성
 	for (int32 i = 0; i < Count; i++)
 	{
-		UImage* NewImage = CreateImageWidget(i);
-		if (NewImage)
+		// Overlay 생성
+		UOverlay* OverlayWidget = NewObject<UOverlay>(this);
+		if (OverlayWidget)
 		{
-			// 이미지를 버티컬박스에 추가
-			UVerticalBoxSlot* ImageSlot = VerticalBox_Stickers->AddChildToVerticalBox(NewImage);
-			if (ImageSlot)
+			// NewImageBG 생성
+			UImage* NewImageBG = CreateImageBGWidget(i);
+			if (NewImageBG)
 			{
-				// 이미지 슬롯 설정
-				//ImageSlot->SetHorizontalAlignment(HAlign_Center);
-				ImageSlot->SetVerticalAlignment(VAlign_Center);
+				OverlayWidget->AddChildToOverlay(NewImageBG);
 			}
-            
-			StickerImages.Add(NewImage);
-			
-			// 마지막 이미지가 아닌 경우에만 스페이서 추가
+
+			// NewImage 생성
+			UImage* NewImage = CreateImageWidget(i);
+			if (NewImage)
+			{
+				OverlayWidget->AddChildToOverlay(NewImage);
+				StickerImages.Add(NewImage);
+			}
+
+			// Overlay를 VerticalBox에 추가
+			UVerticalBoxSlot* OverlaySlot = VerticalBox_Stickers->AddChildToVerticalBox(OverlayWidget);
+			if (OverlaySlot)
+			{
+				OverlaySlot->SetVerticalAlignment(VAlign_Center);
+				OverlaySlot->SetHorizontalAlignment(HAlign_Center);
+			}
+
+			// 마지막 이미지가 아닌 경우 스페이서 추가
 			if (i < Count - 1)
 			{
 				USpacer* Spacer = CreateSpacerWidget();
@@ -653,6 +666,39 @@ void UHM_TicketCustom::InitializeStickerImages(int32 Count)
 			}
 		}
 	}
+	
+	// // 새로운 이미지 위젯 생성
+	// for (int32 i = 0; i < Count; i++)
+	// {
+	// 	UImage* NewImage = CreateImageWidget(i);
+	// 	if (NewImage)
+	// 	{
+	// 		// 이미지를 버티컬박스에 추가
+	// 		UVerticalBoxSlot* ImageSlot = VerticalBox_Stickers->AddChildToVerticalBox(NewImage);
+	// 		if (ImageSlot)
+	// 		{
+	// 			// 이미지 슬롯 설정
+	// 			//ImageSlot->SetHorizontalAlignment(HAlign_Center);
+	// 			ImageSlot->SetVerticalAlignment(VAlign_Center);
+	// 		}
+ //            
+	// 		StickerImages.Add(NewImage);
+	// 		
+	// 		// 마지막 이미지가 아닌 경우에만 스페이서 추가
+	// 		if (i < Count - 1)
+	// 		{
+	// 			USpacer* Spacer = CreateSpacerWidget();
+	// 			if (Spacer)
+	// 			{
+	// 				UVerticalBoxSlot* SpacerSlot = VerticalBox_Stickers->AddChildToVerticalBox(Spacer);
+	// 				if (SpacerSlot)
+	// 				{
+	// 					SpacerSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic)); // 크기 규칙 설정
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 	SetVisibility(ESlateVisibility::Visible);
 }
 
@@ -666,9 +712,27 @@ UImage* UHM_TicketCustom::CreateImageWidget(int32 Index)
         Brush.DrawAs = ESlateBrushDrawType::Image;
     	Brush.ImageSize = FVector2D(200.0f, 200.0f);
         NewImage->SetBrush(Brush);
-
     }
     return NewImage;
+}
+
+class UImage* UHM_TicketCustom::CreateImageBGWidget(int32 Index)
+{
+	
+	UImage* NewImageBG = NewObject<UImage>(this, FName(*FString::Printf(TEXT("StickerImage_BG_%d"), Index)));
+	if (NewImageBG)
+	{
+		NewImageBGTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/JMH/SC/UI/UI_1124_Custom/Ticat_Sticker_back_2x"));
+		if(NewImageBGTexture)
+		{
+			FSlateBrush Brush;
+			Brush.DrawAs = ESlateBrushDrawType::Image;
+			Brush.ImageSize = FVector2D(200.0f, 200.0f);
+			NewImageBG->SetBrush(Brush);
+			NewImageBG->SetBrushFromTexture(NewImageBGTexture);
+		}
+	}
+	return NewImageBG;
 }
 
 USpacer* UHM_TicketCustom::CreateSpacerWidget()
@@ -773,7 +837,7 @@ void UHM_TicketCustom::SetImagePosition(const FVector2D& LocalMousePosition)
 				GroupSlot->SetPosition(LocalMousePosition);  // 오프셋 제거
 				GroupSlot->SetSize(FVector2D(230));
 				GroupSlot->SetAlignment(FVector2d(0.5f, 0.5f));  // 중앙 정렬 설정
-				GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 1);
+				GroupSlot->SetZOrder(Img_CopiedImgs.Num() + 2);
 			}
 			break;
 		}

@@ -164,20 +164,22 @@ void ATTPlayerController::SetDrawStartTime()
 	GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
     
 	// 카운트다운 타이머 시작
+	TWeakObjectPtr<ATTPlayerController> WeakThis(this);
 	GetWorld()->GetTimerManager().SetTimer(
-	CountdownTimerHandle,
-	[this]()
-	{
-		if (!TicketingUI) // 람다 내부에서도 null 체크
+		CountdownTimerHandle,
+		[WeakThis]()
 		{
-			GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
-			return;
-		}
-		UpdateCountdown(GetWorld()->GetDeltaSeconds());
-	},
-	0.1f,
-	true
-);
+			if (ATTPlayerController* StrongThis = WeakThis.Get())
+			{
+				if (StrongThis->TicketingUI)
+				{
+					StrongThis->UpdateCountdown(StrongThis->GetWorld()->GetDeltaSeconds());
+				}
+			}
+		},
+		0.1f,
+		true
+	);
 }
 
 void ATTPlayerController::UpdateCountdown(float DeltaTime)
@@ -253,5 +255,15 @@ void ATTPlayerController::OnChatMessageReceived(const FString& Message)
 		{
 			player->MainUI->WBP_Chatting->AddChatMessage(Message);
 		}
+	}
+}
+
+void ATTPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
 	}
 }
