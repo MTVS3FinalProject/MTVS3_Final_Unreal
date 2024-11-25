@@ -57,9 +57,6 @@ void UMainWidget::NativeConstruct()
 	Btn_Left5->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft5);
 	Btn_TutorialEnd->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialEnd);
 
-	// 현민 HTTP TEST: 퍼즐 결과, 타이틀과 스티커 획득 요청
-	Btn_HttpTest_Puzzle->OnClicked.AddDynamic(this , &UMainWidget::OnClickedHttpTest_Puzzle);
-
 	//닫기 버튼 다른 위젯 클래스와 연결 
 	if (BuyTicketWidget)
 	{
@@ -422,17 +419,6 @@ void UMainWidget::SetInfoCanvasVisibility(UCanvasPanel* TargetCanvas , int32 Inf
 			Canvas->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
-}
-
-void UMainWidget::OnClickedHttpTest_Puzzle()
-{
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	if (!GI && !HttpActor3) return;
-	// Puzzle 결과, Sticker 획득 요청
-	UE_LOG(LogTemp , Log , TEXT("Puzzle 결과, Sticker 획득 요청"));
-	HttpActor3->ReqPostPuzzleResultAndGetSticker(1 , GI->GetAccessToken());
 }
 
 void UMainWidget::OnClickedConcertL()

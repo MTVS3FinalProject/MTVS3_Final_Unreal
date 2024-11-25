@@ -187,7 +187,7 @@ void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const F
 					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 				if (!HttpActor3) return;
 
-				HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) , AccessToken);
+				HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) ,static_cast<FString>(Nickname), AccessToken);
 				
 				break;
 			}

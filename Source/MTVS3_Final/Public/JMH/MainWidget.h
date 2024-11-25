@@ -302,14 +302,6 @@ public:
 	//티켓팅 시간대
 	//상호작용 버튼
 
-
-	// 현민 HTTP TEST: 퍼즐 결과, 타이틀과 스티커 획득 요청
-	UPROPERTY(VisibleAnywhere , BlueprintReadOnly , meta = (BindWidget))
-	class UButton* Btn_HttpTest_Puzzle;
-	UFUNCTION()
-	void OnClickedHttpTest_Puzzle();
-
-
 	//희진이
 	//WBP_InteractionUI 여기서 스위쳐함수 찾아서 바꿔주기
 	UPROPERTY(meta = (BindWidget))
