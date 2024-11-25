@@ -13,7 +13,6 @@ void ATTHallGameMode::BeginPlay()
 	{
 #if UE_BUILD_DEVELOPMENT
 		GEngine->bEnableOnScreenDebugMessages = false; // 화면 디버그 메시지 비활성화
-		LogTemp.SetVerbosity(ELogVerbosity::NoLogging); // LogTemp 카테고리 로깅 비활성화
 #endif
 	}
     
