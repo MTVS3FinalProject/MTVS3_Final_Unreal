@@ -125,6 +125,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_UpdateUI(const TArray<FPlayerScoreInfo>& SortedScores);
 
+	UFUNCTION(Server, Reliable)
+	void Server_HandlePuzzleResult();
+	
 	UFUNCTION(Client, Reliable)
 	void Client_UpdateUIVisibility();
 	
