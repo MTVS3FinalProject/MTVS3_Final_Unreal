@@ -359,13 +359,15 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 									default:
 										break;
 									}
-									if(PuzzleUI)
-									{
-										PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-										PuzzleUI->SetWidgetSwitcher(1);
-										UE_LOG(LogTemp , Log , TEXT("UI 업데이트 완료: Rank %d") , Rank);
-									}
 									
+									// 퍼즐 결과 UI 업데이트
+									APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+										UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+									if (PuzzleManager)
+									{
+										PuzzleManager->Client_UpdateUIVisibility();
+										UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 UI Cliend_RPC 호출"));
+									}
 								}
 								else
 								{

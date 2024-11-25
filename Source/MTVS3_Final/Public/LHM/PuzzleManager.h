@@ -80,10 +80,9 @@ public:
 	
 
 #pragma region UI
-	UPROPERTY(EditAnywhere, Category = "Defalut|UI")
-	TSubclassOf<class UHM_PuzzleWidget> PuzzleUIFactory;
 	UPROPERTY()
 	class UHM_PuzzleWidget* PuzzleUI;
+	void SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI);
 #pragma endregion
 	
 	// 점수 관리
@@ -126,8 +125,8 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_UpdateUI(const TArray<FPlayerScoreInfo>& SortedScores);
 
-	//UFUNCTION(Client, Reliable)
-	//void Client_UpdateUIVisibility();
+	UFUNCTION(Client, Reliable)
+	void Client_UpdateUIVisibility();
 	
 	// 복제될 배열
 	UPROPERTY(Replicated)

@@ -22,15 +22,17 @@ APuzzleManager::APuzzleManager()
 void APuzzleManager::BeginPlay()
 {
 	Super::BeginPlay();
-
-	PuzzleUI = CastChecked<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
-
 }
 
 // Called every frame
 void APuzzleManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void APuzzleManager::SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI)
+{
+	PuzzleUI = InPuzzleUI;
 }
 
 void APuzzleManager::AddPiece(UStaticMeshComponent* Piece, int32 InitialScore)
@@ -236,32 +238,33 @@ void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const F
 
 				HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) , AccessToken);
 
-				// UI를 보이게 설정 (로컬에서만 처리)
-				if (PuzzleUI)
-				{
-					PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-					PuzzleUI->SetWidgetSwitcher(1);
-					UE_LOG(LogTemp, Log, TEXT("UI Visible for Rank %d: %s"), static_cast<int32>(Rank), *Nickname);
-					//Client_UpdateUIVisibility();
-				}
+				// // UI를 보이게 설정 (로컬에서만 처리)
+				// if (PuzzleUI)
+				// {
+				// 	PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+				// 	PuzzleUI->SetWidgetSwitcher(1);
+				// 	UE_LOG(LogTemp, Log, TEXT("UI Visible for Rank %d: %s"), static_cast<int32>(Rank), *Nickname);
+				// 	//Client_UpdateUIVisibility();
+				// }
 				break;
 			}
 		}
 	}
 }
 
-// void APuzzleManager::Client_UpdateUIVisibility_Implementation()
-// {
-// 	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-// 	if (PC && PC->IsLocalController())
-// 	{
-// 		if (PuzzleUI)
-// 		{
-// 			PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-// 			PuzzleUI->SetWidgetSwitcher(1);
-// 		}
-// 	}
-// }
+void APuzzleManager::Client_UpdateUIVisibility_Implementation()
+{
+	//APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	//if (PC && PC->IsLocalController())
+	//{
+		if (PuzzleUI)
+		{
+			PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+			PuzzleUI->SetWidgetSwitcher(1);
+			UE_LOG(LogTemp , Log , TEXT("APuzzleManager::Client_UpdateUIVisibility"));
+		}
+	//}
+}
 
 void APuzzleManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
