@@ -40,6 +40,8 @@ void AStyleLoungeActor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, A
 	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
 	if (!TTPlayer) return;
 	
+	if (!TTPlayer->MainUI) return;
+	
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI) return;
 	if (ActorHasTag("StyleLoungeDoor"))
