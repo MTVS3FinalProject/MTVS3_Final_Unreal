@@ -73,11 +73,9 @@ ATTPlayer::ATTPlayer()
 	FPSCameraComp->bUsePawnControlRotation = true;
 
 	NicknameUIComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("NicknameUI"));
-	// 머리 본(Bone)에 부착
-	NicknameUIComp->SetupAttachment(GetMesh() , TEXT("head")); // "head" 본에 부착
+	NicknameUIComp->SetupAttachment(GetMesh() , TEXT("head"));
 
 	TitleUIComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("TitleUI"));
-	// 머리 본(Bone)에 부착
 	TitleUIComp->SetupAttachment(GetMesh() , TEXT("head"));
 
 	// TextRenderComp 사용 X
@@ -103,10 +101,19 @@ ATTPlayer::ATTPlayer()
 	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->NetworkSmoothingMode = ENetworkSmoothingMode::Exponential;
-		GetCharacterMovement()->NetworkMaxSmoothUpdateDistance = 92.f;
-		GetCharacterMovement()->NetworkNoSmoothUpdateDistance = 140.f;
-		GetCharacterMovement()->NetworkSimulatedSmoothLocationTime = 0.1f;
-		GetCharacterMovement()->NetworkSimulatedSmoothRotationTime = 0.03f;
+		GetCharacterMovement()->NetworkMaxSmoothUpdateDistance = 150.f;      // 더 긴 거리에서도 부드럽게
+		GetCharacterMovement()->NetworkNoSmoothUpdateDistance = 300.f;       // 급격한 위치 변경 임계값 증가
+		GetCharacterMovement()->NetworkSimulatedSmoothLocationTime = 0.15f;  // 위치 보간 시간 증가
+		GetCharacterMovement()->NetworkSimulatedSmoothRotationTime = 0.1f;   // 회전 보간 시간 증가
+
+		// 이동 관련 추가 설정
+		GetCharacterMovement()->bNetworkSkipProxyPredictionOnNetUpdate = false; // 더 정확한 예측
+		GetCharacterMovement()->bUseSeparateBrakingFriction = true; // 정밀한 제동
+		GetCharacterMovement()->BrakingDecelerationWalking = 200.0f;  // 더 부드러운 정지
+		GetCharacterMovement()->GroundFriction = 3.0f;                // 지면 마찰 조정
+		GetCharacterMovement()->MaxAcceleration = 1500.0f;            // 가속도 증가
+		GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f;          // 최소 이동 속도
+		GetCharacterMovement()->bUseSeparateBrakingFriction = true;  // 정밀한 제동
 	}
 }
 
