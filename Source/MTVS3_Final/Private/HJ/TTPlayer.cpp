@@ -31,6 +31,7 @@
 #include "Components/CapsuleComponent.h"
 #include "HJ/HallSoundManager.h"
 #include "HJ/LDTutorialWidget.h"
+#include "HJ/LuckyDrawSoundManager.h"
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "Interfaces/IHttpResponse.h"
@@ -732,6 +733,14 @@ void ATTPlayer::ClientLuckyDrawLose_Implementation()
 
 void ATTPlayer::ClientLuckyDrawWin_Implementation()
 {
+	ALuckyDrawSoundManager* LDSoundManager = Cast<ALuckyDrawSoundManager>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , ALuckyDrawSoundManager::StaticClass()));
+
+	if (LDSoundManager)
+	{
+		LDSoundManager->StopLuckyDrawBGM();
+	}
+	
 	if (GameUI)
 	{
 		GameUI->SetWidgetSwitcher(2); // 우승자 UI 업데이트
