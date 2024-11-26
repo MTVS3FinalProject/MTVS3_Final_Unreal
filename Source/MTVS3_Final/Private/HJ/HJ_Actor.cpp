@@ -66,7 +66,7 @@ void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 		if (!GI || !MainUI) return;
 		if (GI->GetbIsNewPlayer() == false) MainUI->SetWidgetSwitcher(0);
-		else MainUI->SetWidgetSwitcher(10);
+		else MainUI->SetWidgetSwitcher(9);
 	}
 }
 
