@@ -205,6 +205,10 @@ public:
 	void OnClickedPlayerVisibleButton();
 	UFUNCTION()
 	void SetPlayerVisible(bool bVisible);
+
+	UPROPERTY()
+	bool bIsOtherPlayerVisible = true;
+	
     //Sound
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Sound;
@@ -213,6 +217,10 @@ public:
 	UFUNCTION()
 	void SetSound(bool bIsSoundOn);
 
+	UPROPERTY()
+	bool bIsSetSound = true;
+	
+	
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* Can_RegisterAnim_Off;
 
