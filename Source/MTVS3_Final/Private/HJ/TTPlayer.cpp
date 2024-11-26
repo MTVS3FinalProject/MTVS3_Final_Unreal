@@ -1604,10 +1604,6 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = false"));
 
-			AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
-				UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
-			if (HallSoundManager) HallSoundManager->SetbPlayConcertBGM(true);
-
 			// MainUI 표시
 			if (MainUI) MainUI->SetVisibleCanvas(true);
 			// 좌석 접수 UI 숨기기
@@ -2061,15 +2057,23 @@ void ATTPlayer::MulticastSitDown_Implementation()
 		Anim->PlaySitDownMontage();
 	}
 
-	// 의자에 앉은 플레이어에게만 다른 플레이어들을 감추기
-	if (bHideOtherPlayersWhileSitting && IsLocallyControlled()) // 로컬 플레이어인지 확인
+	// 로컬 플레이어의 컨트롤러를 얻어옴
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC)
+	{
+		return;
+	}
+
+	// 의자에 앉은 플레이어가 로컬 플레이어일 때만 다른 플레이어들을 감추기
+	if (bHideOtherPlayersWhileSitting && PC->GetPawn() == this)
 	{
 		for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 		{
 			ATTPlayer* OtherPlayer = *It;
-			if (OtherPlayer && OtherPlayer != this) // 자신 이외의 모든 플레이어 감추기
+			// 자신이 아닌 다른 플레이어들만 감추기
+			if (OtherPlayer && OtherPlayer != this)
 			{
-				OtherPlayer->GetMesh()->SetVisibility(false , true); // 로컬 플레이어 시점에서만 감추기
+				OtherPlayer->GetMesh()->SetVisibility(false, true);
 			}
 		}
 	}
@@ -2089,16 +2093,23 @@ void ATTPlayer::MulticastStandUp_Implementation()
 		Anim->PlayStandUpMontage();
 	}
 
+	if (IsLocallyControlled())
+	{
+		AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+			UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+		if (HallSoundManager) 
+		{
+			HallSoundManager->SetbPlayConcertBGM(true);
+		}
+	}
+
 	// 의자에서 일어난 플레이어에게 다시 다른 플레이어들이 보이도록 설정
-	if (bHideOtherPlayersWhileSitting && IsLocallyControlled()) // 로컬 플레이어인지 확인
+	if (IsLocallyControlled()) // 로컬 플레이어인지 확인
 	{
 		for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 		{
 			ATTPlayer* OtherPlayer = *It;
-			if (OtherPlayer && OtherPlayer != this) // 자신 이외의 모든 플레이어 다시 보이기
-			{
-				OtherPlayer->GetMesh()->SetVisibility(true , true); // 로컬 플레이어 시점에서 다시 보이게
-			}
+			OtherPlayer->GetMesh()->SetVisibility(true , true); // 로컬 플레이어 시점에서 다시 보이게
 		}
 	}
 }

@@ -51,6 +51,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TTSettings|Sound")
 	void PlayConcertBGM();
 
+	UPROPERTY()
+	class UAudioComponent* ConcertBGMAudioComponent;
+	
+	void UpdateConcertBGMVolume(bool bPlay);
+
 	UFUNCTION(BlueprintCallable, Category = "TTSettings|Sound")
 	void PlayPlazaBGM();
 };

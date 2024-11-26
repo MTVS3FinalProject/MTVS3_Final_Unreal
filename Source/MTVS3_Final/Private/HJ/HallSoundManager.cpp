@@ -3,6 +3,7 @@
 
 #include "HJ/HallSoundManager.h"
 
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundAttenuation.h"
 #include "Sound/SoundCue.h"
@@ -57,6 +58,7 @@ void AHallSoundManager::Tick(float DeltaTime)
 void AHallSoundManager::SetbPlayConcertBGM(bool _bPlayConcertBGM)
 {
 	bPlayConcertBGM = _bPlayConcertBGM;
+	UpdateConcertBGMVolume(bPlayConcertBGM);
 }
 
 void AHallSoundManager::PlayConcertBGM()
@@ -64,10 +66,53 @@ void AHallSoundManager::PlayConcertBGM()
 	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
 	if (PC && PC->IsLocalController())
 	{
-		if (ConcertBGMCue && bPlayConcertBGM)
+		if (ConcertBGMCue)
 		{
-			UGameplayStatics::PlaySoundAtLocation(this, ConcertBGMCue, ConcertBGMLocation, 0.75f, 1.0f, 0.0f, ConcertAttenuation);
+			// AudioComponent를 저장해둡니다
+			ConcertBGMAudioComponent = UGameplayStatics::SpawnSoundAtLocation(
+				this, 
+				ConcertBGMCue, 
+				ConcertBGMLocation, 
+				FRotator::ZeroRotator,
+				bPlayConcertBGM ? 0.75f : 0.0f, // 초기 볼륨 설정
+				1.0f,
+				0.0f,
+				ConcertAttenuation
+			);
+
+			// AudioComponent가 생성되었다면 루프 설정
+			if (ConcertBGMAudioComponent)
+			{
+				ConcertBGMAudioComponent->bAutoDestroy = false;  // 자동 파괴 방지
+			}
 		}
+	}
+}
+
+void AHallSoundManager::UpdateConcertBGMVolume(bool _bPlayConcertBGM)
+{
+	if (ConcertBGMAudioComponent)
+	{
+		float targetVolume = _bPlayConcertBGM ? 0.75f : 0.0f;
+		ConcertBGMAudioComponent->SetVolumeMultiplier(targetVolume);
+        
+		// 재생이 멈췄다면 다시 재생
+		if (!ConcertBGMAudioComponent->IsPlaying())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Restarting Concert BGM"));
+			ConcertBGMAudioComponent->Play();
+		}
+        
+		UE_LOG(LogTemp, Warning, TEXT("Concert BGM Status - Volume: %f, IsPlaying: %d, IsValid: %d"), 
+			ConcertBGMAudioComponent->VolumeMultiplier,
+			ConcertBGMAudioComponent->IsPlaying(),
+			IsValid(ConcertBGMAudioComponent));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("ConcertBGMAudioComponent is null!"));
+		// AudioComponent가 없다면 새로 생성
+		PlayConcertBGM();
 	}
 }
 
