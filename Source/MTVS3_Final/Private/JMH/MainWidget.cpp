@@ -295,7 +295,7 @@ void UMainWidget::OnTicketWidgetClose()
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI->GetbIsNewPlayer() == false) SetWidgetSwitcher(0);
-	else SetWidgetSwitcher(10);
+	else SetWidgetSwitcher(9);
 }
 
 void UMainWidget::OnClickedCustomTicketSaveButton()
