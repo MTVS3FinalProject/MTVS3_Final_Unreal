@@ -133,6 +133,8 @@ public:
 	class UButton* Btn_BuyTicket;
 	UFUNCTION()
 	void OnClickedBuyTicket();
+	UFUNCTION()
+	void OnClickedBuyTicketBack();
 	//좌석번호
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Tex_SeatNum1;
