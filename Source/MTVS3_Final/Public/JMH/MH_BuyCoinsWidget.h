@@ -41,8 +41,8 @@ public:
 	
 	virtual void NativeConstruct() override;
 	//충전 결정 변수
-	UPROPERTY()
-	int32 AddCoinAmount = 0;
+	//UPROPERTY()
+	//int32 AddCoinAmount = 0;
 
 	//현재 코인
 	UPROPERTY()
@@ -51,12 +51,14 @@ public:
 	UPROPERTY()
 	int32 TotalCoin;
 	UFUNCTION()
-	void SetCoin(int32 AddCoin);
+	void SetCoin(int32 AfterCoin, int32 ToTalPayment, int32 AddCoin);
 	//현재코인 텍스트
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_CurCoin;
 	UFUNCTION()
 	void GetTextCurCoin();
+	UFUNCTION()
+	void GetCurCoin();
 	UFUNCTION()
 	void SetgiCoin(int32 AddCoin);
 	//충전 후 코인 = AddCoinAmount+추가 코인
@@ -64,10 +66,10 @@ public:
 	class UTextBlock* Text_AfterCoin;
 	//총 결제 금액 AddCoinAmount
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_TotalPayment1;
+	class UTextBlock* Text_TotalPayment;
 	//충전 금액
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_TotalPayment2;
+	class UTextBlock* Text_AddCoin;
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_Main;
@@ -120,11 +122,13 @@ public:
 	int32 CustomCoinAmount;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_CustomCoinAmount;
-
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UEditableText* EText_CustomCoinAmount;
 	UFUNCTION()
 	void SetCustomCoinAmount();
+	UFUNCTION()
+	void SetEditableTextHintTextColor(UEditableText* EditableText, FLinearColor NewHintTextColor);
+	
 	//충전하기
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_BuyCoin;
