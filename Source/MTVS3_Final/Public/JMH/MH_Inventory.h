@@ -10,6 +10,7 @@
  */
 
 
+struct FStickers;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedBack_Inven);
 
 UCLASS()
@@ -118,6 +119,14 @@ public:
 	class UButton* Btn_02_Sticker;
 	UFUNCTION()
 	void OnClicked_Sticker();
+
+	// 버튼 배열
+	UPROPERTY(meta = (BindWidget))
+	TArray<class UButton*> Buttons;
+
+	// 알파값 업데이트 함수
+	UFUNCTION()
+	void UpdateButtonAlphas(int32 ClickedButtonIndex);
 
 	//칭호,티켓,스티커 정보 받아오기
 	/*

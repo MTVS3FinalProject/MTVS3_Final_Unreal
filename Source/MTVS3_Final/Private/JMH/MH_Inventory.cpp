@@ -47,6 +47,10 @@ void UMH_Inventory::NativeConstruct()
 	//Btn_Title_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Title_Test);
 	//Btn_Ticket_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Ticket_Test);
 	//Btn_Sticker_Test->OnClicked.AddDynamic(this , &UMH_Inventory::OnClicked_Sticker_Test);
+	Buttons.Add(Btn_01_Ticket);
+	Buttons.Add(Btn_02_Sticker);
+	Buttons.Add(Btn_00_PlayerTitle);
+	
 }
 
 void UMH_Inventory::SetWidgetSwitcher(int32 num)
@@ -269,6 +273,7 @@ void UMH_Inventory::OnClicked_PlayerTitle()
 {
 	//타이틀
 	SetWidgetSwitcher(0);
+	UpdateButtonAlphas(2); // 세 번째 버튼 클릭 처리
 	//플레이어 정보 타이틀 셋 되어있으면 해당 타이틀 프레임 생성 해주기. 
 }
 
@@ -276,12 +281,37 @@ void UMH_Inventory::OnClicked_Ticket()
 {
 	//티켓
 	SetWidgetSwitcher(1);
+	UpdateButtonAlphas(0); // 첫 번째 버튼 클릭 처리
 }
 
 void UMH_Inventory::OnClicked_Sticker()
 {
 	//스티커
 	SetWidgetSwitcher(2);
+	UpdateButtonAlphas(1); // 두 번째 버튼 클릭 처리
+}
+
+void UMH_Inventory::UpdateButtonAlphas(int32 ClickedButtonIndex)
+{
+	for (int32 i = 0; i < Buttons.Num(); i++)
+	{
+		if (UButton* Button = Buttons[i])
+		{
+			// 클릭된 버튼이면 알파값 1, 그렇지 않으면 0
+			float AlphaValue = (i == ClickedButtonIndex) ? 1.0f : 0.0f;
+
+			// 버튼의 노멀 이미지 스타일 변경
+			FButtonStyle ButtonStyle = Button->WidgetStyle;
+			FSlateBrush NormalBrush = ButtonStyle.Normal;
+
+			// 노멀 이미지 알파값 업데이트
+			NormalBrush.TintColor = FSlateColor(FLinearColor(1.0f, 1.0f, 1.0f, AlphaValue));
+			ButtonStyle.SetNormal(NormalBrush);
+
+			// 스타일 업데이트
+			Button->SetStyle(ButtonStyle);
+		}
+	}
 }
 
 void UMH_Inventory::SetPlayerTitle(int32 TitleID)
