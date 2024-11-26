@@ -41,15 +41,16 @@ void UMH_BuyCoinsWidget::NativeConstruct()
 	ButtonTextGroups.Add({Btn_Coin_50000 , {Text_50000_01 , Text_50000_02}});
 	ButtonTextGroups.Add({Btn_Coin_100000 , {Text_100000_01 , Text_100000_02}});
 	ButtonTextGroups.Add({Btn_CustomCoin , {Text_Custom_01 , Text_Custom_02}});
+	
 }
 
-void UMH_BuyCoinsWidget::SetCoin(int32 AddCoin)
+void UMH_BuyCoinsWidget::SetCoin(int32 AfterCoin, int32 ToTalPayment, int32 AddCoin)
 {
 	GetTextCurCoin();
 	//충전 후 코인
-	Text_AfterCoin->SetText(FText::FromString(FString::FromInt(AddCoinAmount + AddCoin)));
-	Text_TotalPayment1->SetText(FText::FromString(FString::FromInt(AddCoinAmount)));
-	Text_TotalPayment2->SetText(FText::FromString(FString::FromInt(AddCoinAmount)));
+	Text_AfterCoin->SetText(FText::FromString(FString::FromInt(AfterCoin)));
+	Text_TotalPayment->SetText(FText::FromString(FString::FromInt(ToTalPayment)));
+	Text_AddCoin->SetText(FText::FromString(FString::FromInt(AddCoin)));
 	//SetgiCoin(AddCoin);
 }
 
@@ -60,6 +61,15 @@ void UMH_BuyCoinsWidget::GetTextCurCoin()
 	if (gi)
 	{
 		Text_CurCoin->SetText(FText::FromString(FString::FromInt(gi->GetCoin())));
+	}
+}
+
+void UMH_BuyCoinsWidget::GetCurCoin()
+{
+	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	if (gi)
+	{
+		CurCoin = gi->GetCoin();
 	}
 }
 
@@ -87,9 +97,10 @@ void UMH_BuyCoinsWidget::SetVisibleCanvas(bool bVisible)
 
 void UMH_BuyCoinsWidget::OnClickedCoin_5000()
 {
-	AddCoinAmount = 5000;
-	TotalCoin=5000;
-	SetCoin(5000);
+	TotalCoin = 0;
+	GetCurCoin();
+	TotalCoin = CurCoin + 5000;
+	SetCoin(TotalCoin, 5000, 5000);
 	OnButtonClicked(Btn_Coin_5000);
 }
 
@@ -105,9 +116,10 @@ void UMH_BuyCoinsWidget::OnUnhoveredCoin_5000()
 
 void UMH_BuyCoinsWidget::OnClickedCoin_10000()
 {
-	AddCoinAmount = 10100;
-	TotalCoin=10000;
-	SetCoin(10100);
+	TotalCoin = 0;
+	GetCurCoin();
+	TotalCoin = CurCoin + 10100;
+	SetCoin(TotalCoin, 10000, 10100);
 	OnButtonClicked(Btn_Coin_10000);
 }
 
@@ -123,9 +135,10 @@ void UMH_BuyCoinsWidget::OnUnhoveredCoin_10000()
 
 void UMH_BuyCoinsWidget::OnClickedCoin_50000()
 {
-	AddCoinAmount = 51000;
-	TotalCoin=50000;
-	SetCoin(51000);
+	TotalCoin = 0;
+	GetCurCoin();
+	TotalCoin = CurCoin + 51000;
+	SetCoin(TotalCoin, 50000, 51000);
 	OnButtonClicked(Btn_Coin_50000);
 }
 
@@ -141,9 +154,10 @@ void UMH_BuyCoinsWidget::OnUnhoveredCoin_50000()
 
 void UMH_BuyCoinsWidget::OnClickedCoin_100000()
 {
-	AddCoinAmount = 102500;
-	TotalCoin=100000;
-	SetCoin(102500);
+	TotalCoin = 0;
+	GetCurCoin();
+	TotalCoin = CurCoin + 102500;
+	SetCoin(TotalCoin, 100000, 102500);
 	OnButtonClicked(Btn_Coin_100000);
 }
 
@@ -161,6 +175,13 @@ void UMH_BuyCoinsWidget::OnHoveredCoin_Custom()
 {
 	OnButtonOnHovered(true,Btn_CustomCoin);
 	Text_CustomCoinAmount->SetColorAndOpacity(FSlateColor(FLinearColor::White));
+	SetEditableTextHintTextColor(EText_CustomCoinAmount, FLinearColor::White);
+}
+
+void UMH_BuyCoinsWidget::SetEditableTextHintTextColor(UEditableText* EditableText, FLinearColor NewHintTextColor)
+{
+	if (!EditableText) return;
+	EditableText->WidgetStyle.SetColorAndOpacity(FSlateColor(NewHintTextColor));
 }
 
 void UMH_BuyCoinsWidget::OnUnhoveredCoin_Custom()
@@ -172,12 +193,34 @@ void UMH_BuyCoinsWidget::OnUnhoveredCoin_Custom()
 //여기 작업 해야함.
 void UMH_BuyCoinsWidget::SetCustomCoinAmount()
 {
-	Text_CustomCoinAmount->SetText(EText_CustomCoinAmount->GetText());
+	Text_CustomCoinAmount->SetText(EText_CustomCoinAmount->GetText().IsEmpty() ? FText::FromString(TEXT("0")) : EText_CustomCoinAmount->GetText());
 }
 
 void UMH_BuyCoinsWidget::OnClickedCoin_Custom()
 {
-	AddCoinAmount = FCString::Atoi(*Text_CustomCoinAmount->GetText().ToString());
+	TotalCoin = 0;
+	SetCustomCoinAmount();
+	GetCurCoin();
+	int32 CustomCoin = FCString::Atoi(*Text_CustomCoinAmount->GetText().ToString());
+	TotalCoin = CurCoin + CustomCoin;
+
+	// 추가 비율 초기화
+	double r = 0.0;
+	// 추가 비율 결정
+	if (CustomCoin < 10000) {
+		r = 0.0;
+	} else if (CustomCoin < 50000) {
+		r = 1.0;
+	} else if (CustomCoin < 100000) {
+		r = 2.0;
+	} else {
+		r = 2.5;
+	}
+	// 최종 충전 코인 계산
+	int AddCoin = CustomCoin + static_cast<int>(CustomCoin * r / 100);
+	
+	SetCoin(TotalCoin, CustomCoin, AddCoin);
+	
 	OnButtonClicked(Btn_CustomCoin);
 }
 
@@ -188,7 +231,8 @@ void UMH_BuyCoinsWidget::OnClickedBuyCoinButton()
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
-		//gi->AddCoin(AddCoinAmount); //코인 충전
+		gi->SetCoin(TotalCoin); //코인 충전
+		
 	}
 }
 

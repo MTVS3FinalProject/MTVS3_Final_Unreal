@@ -367,38 +367,33 @@ void UMH_TicketingWidget::OnClickedPlayerVisibleButton()
 
 void UMH_TicketingWidget::SetPlayerVisible(bool bVisible)
 {
-	//좌석 카메라에서 플레이어 보이게, 안보이게
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld() , 0);
-	if (!PlayerController)
+	// 클라이언트가 아니면 리턴
+	if (!GetWorld()->IsNetMode(NM_Client))
 	{
 		return;
 	}
-	if (bVisible)
+
+	// 로컬 플레이어 컨트롤러 및 폰 가져오기
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	if (!PC)
 	{
-		if (PlayerController->IsLocalController()) // 로컬 플레이어인지 확인
-		{
-			for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-			{
-				ATTPlayer* OtherPlayer = *It;
-				if (OtherPlayer && OtherPlayer != PlayerController->GetOwner()) // 자신 이외의 모든 플레이어 감추기
-				{
-					OtherPlayer->GetMesh()->SetVisibility(false , true); // 로컬 플레이어 시점에서만 감추기
-				}
-			}
-		}
+		return;
 	}
-	else
+   
+	APawn* LocalPawn = PC->GetPawn();
+	if (!LocalPawn)
 	{
-		if (PlayerController->IsLocalController()) // 로컬 플레이어인지 확인
+		return;
+	}
+
+	// 모든 플레이어 순회하면서 가시성 설정
+	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+	{
+		ATTPlayer* OtherPlayer = *It;
+		// 자신이 아닌 다른 플레이어들만 가시성 변경
+		if (OtherPlayer && OtherPlayer != LocalPawn)
 		{
-			for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-			{
-				ATTPlayer* OtherPlayer = *It;
-				if (OtherPlayer && OtherPlayer != PlayerController->GetOwner()) // 자신 이외의 모든 플레이어 감추기
-				{
-					OtherPlayer->GetMesh()->SetVisibility(true , true); // 로컬 플레이어 시점에서만 감추기
-				}
-			}
+			OtherPlayer->GetMesh()->SetVisibility(bVisible, true);
 		}
 	}
 }
