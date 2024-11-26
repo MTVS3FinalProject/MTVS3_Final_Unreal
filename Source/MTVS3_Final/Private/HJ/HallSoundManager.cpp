@@ -120,9 +120,32 @@ void AHallSoundManager::PlayPlazaBGM()
 	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
 	if (PC && PC->IsLocalController())
 	{
+		// 이미 존재하는 AudioComponent가 있다면 중지
+		if (PlazaBGMAudioComponent)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Stopping existing Plaza BGM"));
+			PlazaBGMAudioComponent->Stop();
+			PlazaBGMAudioComponent = nullptr;
+		}
+
 		if (PlazaBGMCue)
 		{
-			UGameplayStatics::PlaySoundAtLocation(this, PlazaBGMCue, PlazaBGMLocation, 0.75f, 1.0f, 0.0f, PlazaAttenuation);
+			UE_LOG(LogTemp, Warning, TEXT("Creating new Plaza BGM"));
+			PlazaBGMAudioComponent = UGameplayStatics::SpawnSoundAtLocation(
+				this,
+				PlazaBGMCue,
+				PlazaBGMLocation,
+				FRotator::ZeroRotator,
+				0.75f,
+				1.0f,
+				0.0f,
+				PlazaAttenuation
+			);
+            
+			if (PlazaBGMAudioComponent)
+			{
+				PlazaBGMAudioComponent->bAutoDestroy = false;
+			}
 		}
 	}
 }
