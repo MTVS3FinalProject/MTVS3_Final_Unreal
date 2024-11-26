@@ -2,6 +2,8 @@
 
 
 #include "JMH/MH_TicketingWidget.h"
+
+#include "EngineUtils.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/Image.h"
@@ -9,6 +11,7 @@
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
+#include "HJ/HallSoundManager.h"
 #include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
@@ -357,22 +360,68 @@ void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 
 void UMH_TicketingWidget::OnClickedPlayerVisibleButton()
 {
-	//SetPlayerVisible()
+	// 플레이어 비지블
+	bIsOtherPlayerVisible = !bIsOtherPlayerVisible;
+	SetPlayerVisible(bIsOtherPlayerVisible);
 }
 
 void UMH_TicketingWidget::SetPlayerVisible(bool bVisible)
 {
 	//좌석 카메라에서 플레이어 보이게, 안보이게
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld() , 0);
+	if (!PlayerController)
+	{
+		return;
+	}
+	if (bVisible)
+	{
+		if (PlayerController->IsLocalController()) // 로컬 플레이어인지 확인
+		{
+			for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+			{
+				ATTPlayer* OtherPlayer = *It;
+				if (OtherPlayer && OtherPlayer != PlayerController->GetOwner()) // 자신 이외의 모든 플레이어 감추기
+				{
+					OtherPlayer->GetMesh()->SetVisibility(false , true); // 로컬 플레이어 시점에서만 감추기
+				}
+			}
+		}
+	}
+	else
+	{
+		if (PlayerController->IsLocalController()) // 로컬 플레이어인지 확인
+		{
+			for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+			{
+				ATTPlayer* OtherPlayer = *It;
+				if (OtherPlayer && OtherPlayer != PlayerController->GetOwner()) // 자신 이외의 모든 플레이어 감추기
+				{
+					OtherPlayer->GetMesh()->SetVisibility(true , true); // 로컬 플레이어 시점에서만 감추기
+				}
+			}
+		}
+	}
 }
 
 void UMH_TicketingWidget::OnClickedSoundButton()
 {
 	//SetSound
+	bIsSetSound = !bIsSetSound;
+	SetSound(bIsSetSound);
 }
 
 void UMH_TicketingWidget::SetSound(bool bIsSoundOn)
 {
-	//소리 들리게, 안들리게.
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld() , 0);
+	if (PlayerController)
+	{
+		//소리 들리게, 안들리게.
+		AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
+		if (HallSoundManager) HallSoundManager->SetbPlayConcertBGM(bIsSoundOn);
+		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Sound!"));
+		UE_LOG(LogTemp , Warning , TEXT("11111"))
+	}
 }
 
 //추첨장 입장 UI띄우기 비지블로 변경
@@ -381,6 +430,7 @@ void UMH_TicketingWidget::SetBattleEntryVisible(bool bVisible)
 	if (bVisible)
 	{
 		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Visible);
+		//MH
 	}
 
 	else if (!bVisible)
@@ -427,7 +477,7 @@ void UMH_TicketingWidget::SetCurrentSelectedSeatUI(FString ChairTag)
 			}
 		}
 	}
-	
+
 	int32 SeatIndex = FCString::Atoi(*ChairTag) - 1;
 
 	if (SeatIndex >= 0 && SeatIndex < SeatStates.Num())
