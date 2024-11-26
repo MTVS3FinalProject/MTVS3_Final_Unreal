@@ -504,9 +504,9 @@ void ATTPlayer::UpdateHostVisibility()
 		NicknameUIComp->SetOnlyOwnerSee(true);
 		TitleUIComp->SetOnlyOwnerSee(true);
 
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-		CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		// GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		// CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		// GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	}
 	else
 	{
@@ -514,9 +514,9 @@ void ATTPlayer::UpdateHostVisibility()
 		NicknameUIComp->SetOnlyOwnerSee(false);
 		TitleUIComp->SetOnlyOwnerSee(false);
 		
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-		CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		// GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		// CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		// GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
 }
 
