@@ -119,6 +119,7 @@ void UMH_NoticeWidget::OnMailDetailReceived(FString Subject , FString Content)
 		Text_Subject->SetText(FText::FromString(Subject));
 		Text_Content->SetText(FText::FromString(Content));
 		Canvas_content->SetVisibility(ESlateVisibility::Visible);
+		Vertical_MessageBox->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -126,4 +127,5 @@ void UMH_NoticeWidget::CloseBtn_Content()
 {
 	Canvas_content->SetVisibility(ESlateVisibility::Hidden);
 	Btn_Payment->SetVisibility(ESlateVisibility::Hidden);
+	Vertical_MessageBox->SetVisibility(ESlateVisibility::Visible);
 }
