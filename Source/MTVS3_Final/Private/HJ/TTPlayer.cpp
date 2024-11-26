@@ -1916,7 +1916,7 @@ void ATTPlayer::InitMainUI()
 	{
 		MainUI->AddToViewport();
 		MainUI->PlayAnimation(MainUI->FadeOutAnim);
-		if (GI->GetbIsNewPlayer() == true) MainUI->SetWidgetSwitcher(10);
+		if (GI->GetbIsNewPlayer() == true) MainUI->SetWidgetSwitcher(9);
 	}
 
 	TicketingUI = Cast<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
