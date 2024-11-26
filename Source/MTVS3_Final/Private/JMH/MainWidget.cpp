@@ -65,7 +65,7 @@ void UMainWidget::NativeConstruct()
 
 	if (BuyCoinsWidget)
 	{
-		BuyCoinsWidget->OnClickedBuyCoinBack.AddDynamic(this , &UMainWidget::OnTicketWidgetClose);
+		BuyCoinsWidget->OnClickedBuyCoinBack.AddDynamic(this , &UMainWidget::OnClickedBuyTicketBack);
 	}
 
 	if (WBP_MH_MainBar && WBP_MH_MainBar->WBP_NoticeUI)
@@ -224,6 +224,11 @@ void UMainWidget::OnClickedBuyTicket()
 		HttpActor2->ReqGetMemberAuthQR(GI->GetAccessToken());
 	}
 	//SetWidgetSwitcher(3); 통신 성공시 호출
+}
+
+void UMainWidget::OnClickedBuyTicketBack()
+{
+	SetWidgetSwitcher(3);
 }
 
 void UMainWidget::SetTextSeatNum1(FString SeatNum1)
