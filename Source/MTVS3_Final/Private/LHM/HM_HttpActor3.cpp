@@ -813,11 +813,14 @@ void AHM_HttpActor3::OnResGetEquipTheTitle(FHttpRequestPtr Request, FHttpRespons
 				{
 					FString TitleName = ResponseObject->GetStringField(TEXT("titleName"));
 					FString TitleRarity = ResponseObject->GetStringField(TEXT("titleRarity"));
-					
+
+					UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 					ATTPlayer* Player = Cast<ATTPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-					if (Player)
+					if (Player && GI)
 					{
 						Player->SetTitleNameAndRarity(TitleName, TitleRarity);
+						GI->SetTitleName(TitleName);
+						GI->SetTitleRarity(TitleRarity);
 					}
 					UE_LOG(LogTemp , Log , TEXT("타이틀 장착 성공"));
 				}

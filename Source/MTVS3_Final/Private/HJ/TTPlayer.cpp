@@ -504,9 +504,9 @@ void ATTPlayer::UpdateHostVisibility()
 		NicknameUIComp->SetOnlyOwnerSee(true);
 		TitleUIComp->SetOnlyOwnerSee(true);
 
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-		CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
-		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		// GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		// CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+		// GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
 	}
 	else
 	{
@@ -514,9 +514,9 @@ void ATTPlayer::UpdateHostVisibility()
 		NicknameUIComp->SetOnlyOwnerSee(false);
 		TitleUIComp->SetOnlyOwnerSee(false);
 		
-		GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-		CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
-		GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		// GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		// CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+		// GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 	}
 }
 
@@ -1596,11 +1596,13 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 
 			ServerSetSitting(true);
 
-			// 의자의 회전값 가져오기
-			FRotator ChairRotation = Chair->GetActorRotation();
-
-			// 카메라의 회전을 의자에 맞게 설정
-			FPSCameraComp->SetWorldRotation(ChairRotation); // 의자 방향으로 카메라 회전 설정
+			FRotator TargetRotation = FRotator(0.0f, 90.0f, 0.0f);
+        
+			// 카메라 회전만 설정
+			if (FPSCameraComp)
+			{
+				FPSCameraComp->SetWorldRotation(TargetRotation);
+			}
 			SwitchCamera(!bIsThirdPerson);
 
 			// 15초 후에 자동으로 일어나도록 타이머 시작
