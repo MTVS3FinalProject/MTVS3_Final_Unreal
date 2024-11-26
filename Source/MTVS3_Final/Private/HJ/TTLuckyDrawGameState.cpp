@@ -477,6 +477,7 @@ void ATTLuckyDrawGameState::EliminatePlayers()
 							if (Chair)
 							{
 								Chair->MulticastSetPhysicsState(true);
+								// Chair->ThrowChair();
 							}
 						});
                 
