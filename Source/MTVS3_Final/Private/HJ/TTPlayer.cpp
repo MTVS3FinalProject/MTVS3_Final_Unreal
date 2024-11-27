@@ -115,6 +115,11 @@ ATTPlayer::ATTPlayer()
 		GetCharacterMovement()->MaxAcceleration = 1500.0f;            // 가속도 증가
 		GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f;          // 최소 이동 속도
 		GetCharacterMovement()->bUseSeparateBrakingFriction = true;  // 정밀한 제동
+
+		// 공중 이동 관련 설정 추가
+		GetCharacterMovement()->AirControl = 0.5f;  // 공중에서의 조작성
+		GetCharacterMovement()->FallingLateralFriction = 0.5f;  // 공중에서의 마찰
+		GetCharacterMovement()->BrakingDecelerationFalling = 0.0f;  // 공중에서의 감속
 	}
 }
 
@@ -652,6 +657,12 @@ void ATTPlayer::ClientAdjustCamera_Implementation(FRotator NewRotation)
 	if (ATTPlayerController* PC = Cast<ATTPlayerController>(Controller))
 	{
 		PC->SetControlRotation(NewRotation);
+        
+		if (FPSCameraComp)
+		{
+			FPSCameraComp->SetWorldRotation(NewRotation);
+		}
+        
 		PC->SetViewTargetWithBlend(this);
 	}
 }
@@ -853,6 +864,9 @@ void ATTPlayer::MulticastChangeWalkSpeed_Implementation(bool bIsRunning)
 
 void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , int32 CompetitionRate)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI || GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
 	if (TTPC)
 	{
@@ -1596,14 +1610,14 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 
 			ServerSetSitting(true);
 
-			FRotator TargetRotation = FRotator(0.0f, 90.0f, 0.0f);
-        
-			// 카메라 회전만 설정
-			if (FPSCameraComp)
-			{
-				FPSCameraComp->SetWorldRotation(TargetRotation);
-			}
 			SwitchCamera(!bIsThirdPerson);
+			
+			// 서버에서 클라이언트로 카메라 회전을 전파
+			FRotator TargetRotation = FRotator(0.0f, 90.0f, 0.0f);
+			if (Controller)
+			{
+				ClientAdjustCamera(TargetRotation);
+			}
 
 			// 15초 후에 자동으로 일어나도록 타이머 시작
 			GetWorld()->GetTimerManager().SetTimer(
@@ -1775,6 +1789,12 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 			ATTLuckyDrawGameState* GameState = GetWorld()->GetGameState<ATTLuckyDrawGameState>();
 			if (GI && GameState && GameState->bIsStartRound != true)
 			{
+				if (GameUI)
+				{
+					GameUI->SetWidgetSwitcher(2);
+					GameUI->PlayAnimation(GameUI->HostFadeInAnim);
+				}
+				
 				GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 				GI->SwitchSession(EPlaceState::Plaza);
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap(Switch Session)"));

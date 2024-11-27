@@ -4,6 +4,7 @@
 #include "LHM/TTPlayerController.h"
 #include "Engine/World.h"
 #include "chrono"
+#include "HJ/TTGameInstance.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_TicketingWidget.h"
 #include "JMH/MainWidget.h"
@@ -184,6 +185,9 @@ void ATTPlayerController::SetDrawStartTime()
 
 void ATTPlayerController::UpdateCountdown(float DeltaTime)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI || GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	
 	// 로컬 컨트롤러가 아닌 경우 리턴
 	if (!IsLocalController())
 		return;

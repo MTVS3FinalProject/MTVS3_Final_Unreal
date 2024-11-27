@@ -43,6 +43,10 @@ void ATTLuckyDrawGameState::BeginPlay()
 		{
 			TTPlayer->InitGameUI();
 		}
+		else if (TTPlayer && TTPlayer->GetbIsHost() && TTPlayer->IsLocallyControlled())
+		{
+			TTPlayer->SetTextMyNum();
+		}
 	}
 
 	// 타이머 핸들 초기화
