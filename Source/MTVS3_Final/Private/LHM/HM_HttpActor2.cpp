@@ -731,16 +731,28 @@ void AHM_HttpActor2::OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , F
 					{
 						// 접수 취소 성공했을 때
 						TicketingUI->SetTextRemainingTicket(RemainingTicket);
+						TicketingUI->SetVisibleSwitcher(true , 0);
 						TicketingUI->SetCompletedVisible(false);
-						TicketingUI->SetWidgetSwitcher(0);
 					}
 				}
+			}
+		}
+		else 
+		{
+			if (Response.IsValid())
+			{
+				UE_LOG(LogTemp, Error, TEXT("Failed to get seat registration. Response code: %d, Content: %s"), 
+					   Response->GetResponseCode(), *Response->GetContentAsString());
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Failed to get seat registration: Response code error"));
 			}
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp , Error , TEXT("Failed to cancel seat: %s") , *Response->GetContentAsString());
+		UE_LOG(LogTemp, Error, TEXT("Failed to get seat registration: Request failed or invalid response"));
 	}
 }
 
