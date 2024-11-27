@@ -354,7 +354,9 @@ public:
 	class UMH_TicketingWidget* TicketingUI;
     void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
 
-	const FString _url = "https://ticketaka.shop/api";
+	//const FString _url = "https://ticketaka.shop/api";
+	const FString _url = "http://125.132.216.190:7878/api"; // 테스트용
+	
 #pragma endregion
 
 #pragma region HTTP : Entry Concert

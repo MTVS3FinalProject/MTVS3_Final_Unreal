@@ -58,4 +58,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "TTSettings|Sound")
 	void PlayPlazaBGM();
+
+	UPROPERTY()
+	UAudioComponent* PlazaBGMAudioComponent;
 };
