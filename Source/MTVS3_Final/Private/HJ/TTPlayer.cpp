@@ -975,7 +975,7 @@ void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlay
                     {
                         switch (RankInfo.Rank)
                         {
-                        case 1:
+                        case 0:
                             PuzzleUI->SetTextPuzzleRank1(
                                 StickerTexture,
                                 RankInfo.StickerRarity,
@@ -986,7 +986,7 @@ void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlay
                                 RankInfo.TitleScript
                             );
                             break;
-                        case 2:
+                        case 1:
                             PuzzleUI->SetTextPuzzleRank2(
                                 StickerTexture,
                                 RankInfo.StickerRarity,
@@ -997,7 +997,7 @@ void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlay
                                 RankInfo.TitleScript
                             );
                             break;
-                        case 3:
+                        case 2:
                             PuzzleUI->SetTextPuzzleRank3(
                                 StickerTexture,
                                 RankInfo.StickerRarity,
