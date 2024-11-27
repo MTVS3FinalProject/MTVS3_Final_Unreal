@@ -8,6 +8,7 @@
 #include "Net/UnrealNetwork.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/AudioComponent.h"
 
 // Sets default values
 AHM_PuzzleBoard::AHM_PuzzleBoard()
@@ -75,8 +76,6 @@ AHM_PuzzleBoard::AHM_PuzzleBoard()
 			BoardAreasGrid[i]->SetVisibility(true);
 		}
 	}
-	
-	//InitializeBoardAreas();
 
 	for(int i = 0; i < 9; i++)
 	{
@@ -302,6 +301,8 @@ void AHM_PuzzleBoard::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, A
 					APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
 					if(Manager)
 					{
+						Manager->PlayHit();
+						
 						// OtherComp를 UStaticMeshComponent로 캐스팅
 						UStaticMeshComponent* MeshComp = Cast<UStaticMeshComponent>(OtherComp);
 						if (MeshComp && PuzzlePiece->LastOwners.Contains(MeshComp))
