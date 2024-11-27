@@ -916,10 +916,13 @@ void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _Access
 
 void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
 {
-	if(PuzzleUI)
+	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
+	if(PuzzleUI && PuzzleManager)
 	{
 		PuzzleUI->SetVisibility(ESlateVisibility::Visible);
 		PuzzleUI->SetWidgetSwitcher(1);
+		PuzzleManager->PlayPuzzleEnding();
 	}
 }
 
