@@ -122,7 +122,8 @@ void APuzzleManager::SortAndUpdateRanking()
 			{
 				if (TTPlayer->GetNickname() == TopPlayers[idx].Player)
 				{
-					Client_ReceiveRank(static_cast<EPlayerRank>(idx + 1) , TTPlayer->GetNickname());
+					//Client_ReceiveRank(static_cast<EPlayerRank>(idx + 1) , TTPlayer->GetNickname());
+					Client_ReceiveRank(static_cast<EPlayerRank>(idx) , TTPlayer->GetNickname());
 					//break;
 				}
 			}
@@ -175,21 +176,27 @@ void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const F
 		for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 		{
 			ATTPlayer* TTPlayer = *It;
-			if (TTPlayer && TTPlayer->GetNickname() == Nickname)
+			if (TTPlayer)
 			{
-				FString AccessToken = TTPlayer->GetAccessToken();
-				FString NickName = TTPlayer->GetNickname();
+				UE_LOG(LogTemp, Log, TEXT("Iterating Player: %s"), *TTPlayer->GetNickname());
 
-				UE_LOG(LogTemp , Log , TEXT("Client AccessToken: %s, Nickname: %s") , *AccessToken , *NickName);
+				if (TTPlayer && TTPlayer->GetNickname() == Nickname)
+				{
+					FString AccessToken = TTPlayer->GetAccessToken();
+					FString NickName = TTPlayer->GetNickname();
 
-				// 자신의 순위와 AccessToken으로 HTTP 요청 처리
-				AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-				if (!HttpActor3) return;
+					UE_LOG(LogTemp , Log , TEXT("Client AccessToken: %s, Nickname: %s") , *AccessToken , *NickName);
 
-				HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) ,static_cast<FString>(Nickname), AccessToken);
+					// 자신의 순위와 AccessToken으로 HTTP 요청 처리
+					AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+						UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+					if (!HttpActor3) return;
+
+					//HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) ,static_cast<FString>(Nickname), AccessToken);
+					HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) ,static_cast<FString>(Nickname), AccessToken);
 				
-				break;
+					break;
+				}
 			}
 		}
 	}
