@@ -1140,14 +1140,16 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 					int32 Floor = ResponseObject->GetIntegerField(TEXT("floor"));
 					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo"));
 					int32 SeatNum = ResponseObject->GetIntegerField(TEXT("seatNum"));
-					UE_LOG(LogTemp , Log , TEXT("Floor : %d / SeatInfo : %s / SeatNum : %d") , Floor , *SeatInfo ,
-					       SeatNum);
+					int32 SeatPrice = ResponseObject->GetIntegerField(TEXT("seatPrice"));
+					UE_LOG(LogTemp , Log , TEXT("Floor : %d / SeatInfo : %s / SeatNum : %d / SeatPrice : %d") , Floor , *SeatInfo ,
+					       SeatNum , SeatPrice);
 
 					if (MainUI->GetBuyTicketWidget())
 					{
 						MainUI->BuyTicketWidget->SetTextSeatID(Floor , SeatInfo);
 						MainUI->BuyTicketWidget->SetTextTicketNum(SeatNum);
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
+						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 						UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
 					}
 				}
