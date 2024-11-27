@@ -203,7 +203,6 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Nickna
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if(HttpActor2) 
 	{
-		UE_LOG(LogTemp , Log , TEXT("HttpActor2 캐스팅"));
 		// HTTP 모듈 가져오기
 		FHttpModule* Http = &FHttpModule::Get();
 		if ( !Http ) return;
@@ -219,11 +218,12 @@ void AHM_HttpActor3::ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Nickna
 		Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
 		Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
+		int32 NewRank = Rank + 1;
 		// 전달 데이터 (JSON)
 		FString ContentString;
 		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 		Writer->WriteObjectStart();
-		Writer->WriteValue(TEXT("rank") , Rank);
+		Writer->WriteValue(TEXT("rank") , NewRank);
 		Writer->WriteObjectEnd();
 		Writer->Close();
 
@@ -251,7 +251,7 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 	RequestRankMap.Remove(Request);
 	RequestPlayerNicknameMap.Remove(Request);
 	
-	if (!PuzzleUI || Rank < 1 || Rank > 3)
+	if (!PuzzleUI || Rank < 0 || Rank > 2)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Invalid rank or PuzzleUI is null"));
 		return;

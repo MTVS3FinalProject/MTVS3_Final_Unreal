@@ -366,4 +366,5 @@ void UMH_BuyTicketWidget::OnClickedSaveTicketButton()
 	// 저장되었다는알림
 	//9: 예매 완료 
 	//매희 : 메인에서 델리게이트 바인드, 메인 UI 위젯스위처 0번으로
+	SetWidgetSwitcher(0);
 }
