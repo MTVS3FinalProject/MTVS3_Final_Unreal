@@ -62,6 +62,15 @@ public:
 	UPROPERTY(Replicated, VisibleAnywhere, Category = "TTSettings|State")
 	bool bIsOccupied;
 
+	UPROPERTY(ReplicatedUsing=OnRep_bIsAvailable, VisibleAnywhere, Category = "TTSettings|State")
+	bool bIsAvailable;
+	void SetbIsAvailable(bool _bIsAvailable);
+	UFUNCTION(Server , Reliable)
+	void ServerSetbIsAvailable(bool _bIsAvailable);
+	bool GetbIsAvailable() const { return bIsAvailable; };
+	UFUNCTION()
+	void OnRep_bIsAvailable();
+	
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 	
 	UPROPERTY()

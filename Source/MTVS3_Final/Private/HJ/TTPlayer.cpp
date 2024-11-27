@@ -1394,6 +1394,7 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 		FPSCameraComp->SetActive(false);
 		TPSCameraComp->SetActive(true);
 		NicknameUIComp->SetOwnerNoSee(false);
+		TitleUIComp->SetOwnerNoSee(false);
 
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		// 플레이어의 회전 방향과 카메라 정렬
@@ -1407,6 +1408,7 @@ void ATTPlayer::SwitchCamera(bool _bIsThirdPerson)
 		FPSCameraComp->SetActive(true);
 		TPSCameraComp->SetActive(false);
 		NicknameUIComp->SetOwnerNoSee(true);
+		TitleUIComp->SetOwnerNoSee(true);
 		// GetMesh()->SetOwnerNoSee(true);
 
 		// 플레이어의 회전 방향과 카메라 정렬
@@ -1716,17 +1718,28 @@ void ATTPlayer::OnMyActionInventory(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 {
+	if (!MainUI) return;
+	UHM_MainBarWidget* MainBarUI = Cast<UHM_MainBarWidget>(MainUI->WBP_MH_MainBar);
+	if (!MainBarUI) return;
+	MainBarUI->bIsEmojiVisible = !MainBarUI->bIsEmojiVisible;
+	
 	bIsChatActive = !bIsChatActive;
 
-	if (bIsChatActive)
+	if (bIsChatActive && MainBarUI->bIsEmojiVisible)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Enable Chat"));
+
+		//스위처 0번 이모지 띄우기
+		MainBarUI->SetWidgetSwitcher(0);
+		MainBarUI->SetVisibleSwitcher(true);
 	}
 	else
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
+		MainBarUI->SetVisibleSwitcher(false);
 	}
-	if (MainUI) MainUI->ShowChatUI();
+	
+	MainUI->ShowChatUI();
 }
 
 void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
