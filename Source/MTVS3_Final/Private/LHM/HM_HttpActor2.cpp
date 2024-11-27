@@ -333,7 +333,11 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 								{
 									UE_LOG(LogTemp , Log , TEXT("Found matching chair! Name: %s, Tag: %s") ,
 									       *Chair->GetName() , *TagToFind);
-									Chair->ChangeLightColor(false);
+									
+									Chair->SetbIsAvailable(false);
+									// Chair->OnRep_bIsAvailable();
+									// Chair->ChangeLightColor(false);
+									
 									///MH
 									int32 SeatIndex = FCString::Atoi(*TagToFind) - 1; // 태그를 배열 인덱스와 맞추기 위해 1을 뺌
 									if (SeatIndex >= 0)
@@ -1400,8 +1404,11 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 							{
 								UE_LOG(LogTemp , Log , TEXT("Found matching chair for payment! Name: %s, Tag: %s") ,
 								       *Chair->GetName() , *TagToFind);
-								Chair->ChangeLightColor(false);
 
+								Chair->SetbIsAvailable(false);
+								// Chair->OnRep_bIsAvailable();
+								// Chair->ChangeLightColor(false);
+								
 								///MH
 								int32 SeatIndex = FCString::Atoi(*TagToFind) - 1; // 태그를 배열 인덱스와 맞추기 위해 1을 뺌
 								if (SeatIndex >= 0)
