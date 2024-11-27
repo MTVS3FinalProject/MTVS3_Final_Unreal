@@ -127,6 +127,15 @@ public:
 
 	// 플레이어 점수 정보를 저장할 배열
 	TArray<FPlayerScoreInfo> PlayerScoresInfo;
+	
+	UPROPERTY()
+	class UAudioComponent* HitAudioComp;
+	UPROPERTY()
+	class UAudioComponent* PuzzleEndingAudioComp;
+	UFUNCTION()
+	void PlayHit();
+	UFUNCTION()
+	void PlayPuzzleEnding();
 
 #pragma region 퍼즐 종료 동기화 method
 	

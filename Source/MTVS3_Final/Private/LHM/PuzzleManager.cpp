@@ -4,6 +4,7 @@
 #include "LHM/PuzzleManager.h"
 
 #include "EngineUtils.h"
+#include "Components/AudioComponent.h"
 #include "HJ/TTPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor3.h"
@@ -16,12 +17,38 @@ APuzzleManager::APuzzleManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	HitAudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("HitAudioComp"));
+	if (HitAudioComp)
+	{
+		HitAudioComp->bAutoActivate = false; // 자동 재생 비활성화
+
+		static ConstructorHelpers::FObjectFinder<USoundBase> SoundAsset(TEXT("/Game/LHM/Sound/PUZZLE_SUCCES"));
+		if (SoundAsset.Succeeded() && HitAudioComp)
+		{
+			HitAudioComp->SetupAttachment(RootComponent);
+			HitAudioComp->SetSound(SoundAsset.Object);
+		}
+	}
+
+	PuzzleEndingAudioComp = CreateDefaultSubobject<UAudioComponent>(TEXT("PuzzleEndingAudioComp"));
+	if (PuzzleEndingAudioComp)
+	{
+		PuzzleEndingAudioComp->bAutoActivate = false; // 자동 재생 비활성화
+
+		static ConstructorHelpers::FObjectFinder<USoundBase> SoundAsset(TEXT("/Game/LHM/Sound/PUZZLE_END"));
+		if (SoundAsset.Succeeded() && PuzzleEndingAudioComp)
+		{
+			PuzzleEndingAudioComp->SetupAttachment(RootComponent);
+			PuzzleEndingAudioComp->SetSound(SoundAsset.Object);
+		}
+	}
 }
 
 // Called when the game starts or when spawned
 void APuzzleManager::BeginPlay()
 {
 	Super::BeginPlay();
+	
 }
 
 // Called every frame
@@ -86,6 +113,24 @@ void APuzzleManager::AddScoreToPlayer(const FString& PlayerNickname, int32 Score
 	UE_LOG(LogTemp, Log, TEXT("Player %s new score: %d"), *PlayerNickname, PlayerScores[PlayerNickname]);
 	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, 
 				FString::Printf(TEXT("Player %s new score: %d"),*PlayerNickname, PlayerScores[PlayerNickname]));
+}
+
+void APuzzleManager::PlayHit()
+{
+	// 히트 사운드 재생
+	if (HitAudioComp && HitAudioComp->Sound)
+	{
+		HitAudioComp->Play();
+	}
+}
+
+void APuzzleManager::PlayPuzzleEnding()
+{
+	// 종료 사운드 재생
+	if (PuzzleEndingAudioComp && PuzzleEndingAudioComp->Sound)
+	{
+		PuzzleEndingAudioComp->Play();
+	}
 }
 
 // 퍼즐이 종료됐을 때 호출되는 함수
