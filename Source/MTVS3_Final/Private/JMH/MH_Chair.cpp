@@ -153,11 +153,39 @@ FTransform AMH_Chair::GetStandingTransform()
 	return FTransform(Rotation , FinalLocation);
 }
 
+void AMH_Chair::SetbIsAvailable(bool _bIsAvailable)
+{
+	if (HasAuthority())
+	{
+		bIsAvailable = _bIsAvailable;
+		OnRep_bIsAvailable();
+	}
+	else
+	{
+		ServerSetbIsAvailable(_bIsAvailable);
+	}
+}
+
+void AMH_Chair::ServerSetbIsAvailable_Implementation(bool _bIsAvailable)
+{
+	bIsAvailable = _bIsAvailable;
+	OnRep_bIsAvailable();
+}
+
+void AMH_Chair::OnRep_bIsAvailable()
+{
+	if (!bIsAvailable)
+	{
+		ChangeLightColor(false);
+	}
+}
+
 void AMH_Chair::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(AMH_Chair , bIsOccupied);
+	DOREPLIFETIME(AMH_Chair , bIsAvailable);
 }
 
 void AMH_Chair::SetMainUI(UMainWidget* InMainUI)
