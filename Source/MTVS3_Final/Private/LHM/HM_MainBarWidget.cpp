@@ -172,10 +172,10 @@ void UHM_MainBarWidget::OnClickedMenuBtn()
 	{
 		bIsNoticeVisible = !bIsNoticeVisible;
 	}
-	if (bIsEmojiVisible)
-	{
-		bIsEmojiVisible = !bIsEmojiVisible;
-	}
+	//if (bIsEmojiVisible)
+	//{
+	//	bIsEmojiVisible = !bIsEmojiVisible;
+	//}
 	if (bIsMenuVisible)
 	{
 		Can_0_Menu->SetVisibility(ESlateVisibility::Visible);
