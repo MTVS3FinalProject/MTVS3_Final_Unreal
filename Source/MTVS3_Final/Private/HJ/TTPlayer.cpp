@@ -1792,7 +1792,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 				if (GameUI)
 				{
 					GameUI->SetWidgetSwitcher(2);
-					GameUI->PlayAnimation(GameUI->FadeInAnim);
+					GameUI->PlayAnimation(GameUI->HostFadeInAnim);
 				}
 				
 				GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
