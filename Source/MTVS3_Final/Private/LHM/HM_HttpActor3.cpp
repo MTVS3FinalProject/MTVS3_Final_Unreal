@@ -251,7 +251,7 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 	RequestRankMap.Remove(Request);
 	RequestPlayerNicknameMap.Remove(Request);
 	
-	if (!PuzzleUI || Rank < 1 || Rank > 3) 
+	if (!PuzzleUI || Rank < 0 || Rank > 2)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Invalid rank or PuzzleUI is null"));
 		return;

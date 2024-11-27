@@ -180,8 +180,7 @@ public:
 	class UHM_PuzzleWidget* PuzzleUI;
 	void SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI);
 
-	//const FString _url = "https://ticketaka.shop/api";
-	const FString _url = "http://125.132.216.190:7878/api"; // 테스트용
+	const FString _url = "https://ticketaka.shop/api";
 	
 #pragma endregion
 
