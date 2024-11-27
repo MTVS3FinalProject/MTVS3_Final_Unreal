@@ -174,10 +174,7 @@ void AMH_Chair::ServerSetbIsAvailable_Implementation(bool _bIsAvailable)
 
 void AMH_Chair::OnRep_bIsAvailable()
 {
-	if (!bIsAvailable)
-	{
-		ChangeLightColor(false);
-	}
+	ChangeLightColor(bIsAvailable);
 }
 
 void AMH_Chair::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
