@@ -1076,6 +1076,8 @@ void AHM_HttpActor2::OnResGetMemberAuthQR(FHttpRequestPtr Request , FHttpRespons
 // 결제시 회원 인증 사진 업로드 확인 요청
 void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString AccessToken)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if (!Http) return;
@@ -1096,6 +1098,8 @@ void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString AccessToken)
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
 	Writer->WriteObjectStart();
 	Writer->WriteValue(TEXT("userCode") , UserCode);
+	Writer->WriteValue(TEXT("concertId") , GetConcertId());
+	Writer->WriteValue(TEXT("seatId") , GI->GetReceivedSeatId());
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
