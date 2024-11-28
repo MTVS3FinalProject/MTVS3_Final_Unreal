@@ -324,6 +324,8 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					// Reserved Seats 처리 (예약된 좌석은 false로 설정)
 					for (const FReservedSeats& ReservedSeat : NewSeatsList.reservedSeats)
 					{
+						ReservedSeatIndices.Add(ReservedSeat.seatId);
+						
 						FString TagToFind = FString::FromInt(ReservedSeat.seatId);
 						for (AActor* Actor : FoundChairs)
 						{
@@ -334,7 +336,7 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 									UE_LOG(LogTemp , Log , TEXT("Found matching chair! Name: %s, Tag: %s") ,
 									       *Chair->GetName() , *TagToFind);
 									
-									Chair->SetbIsAvailable(false);
+									// Chair->SetbIsAvailable(false);
 									// Chair->OnRep_bIsAvailable();
 									// Chair->ChangeLightColor(false);
 									
@@ -349,6 +351,13 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							}
 						}
 					}
+
+					// GameState를 통해 한 번에 모든 의자 상태 업데이트
+					if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
+					{
+						HallState->MulticastUpdateChairStates(ReservedSeatIndices);
+					}
+					
 					///MH
 					if (TicketingUI)
 					{
@@ -1388,13 +1397,14 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					}
 
 					// KHJ: 결제 완료된 좌석 처리
+					TArray<int32> ReservedSeatIndices;
+        
+					// 결제된 좌석 찾기
 					TArray<AActor*> FoundChairs;
-					UGameplayStatics::GetAllActorsOfClass(GetWorld() , AMH_Chair::StaticClass() , FoundChairs);
+					UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMH_Chair::StaticClass(), FoundChairs);
 
 					FString TagToFind = SeatId;
-					UE_LOG(LogTemp , Log , TEXT("Payment completed - Looking for Chair with ID: %s") , *TagToFind);
-					///MH
-					TArray<int32> ReservedSeatIndices;
+					UE_LOG(LogTemp, Log, TEXT("Payment completed - Looking for Chair with ID: %s"), *TagToFind);
 					
 					for (AActor* Actor : FoundChairs)
 					{
@@ -1402,23 +1412,24 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 						{
 							if (AMH_Chair* Chair = Cast<AMH_Chair>(Actor))
 							{
-								UE_LOG(LogTemp , Log , TEXT("Found matching chair for payment! Name: %s, Tag: %s") ,
-								       *Chair->GetName() , *TagToFind);
-
-								Chair->SetbIsAvailable(false);
-								// Chair->OnRep_bIsAvailable();
-								// Chair->ChangeLightColor(false);
-								
-								///MH
+								UE_LOG(LogTemp, Log, TEXT("Found matching chair for payment! Name: %s, Tag: %s"),
+									   *Chair->GetName(), *TagToFind);
+                    
 								int32 SeatIndex = FCString::Atoi(*TagToFind) - 1; // 태그를 배열 인덱스와 맞추기 위해 1을 뺌
 								if (SeatIndex >= 0)
 								{
 									ReservedSeatIndices.Add(SeatIndex);
-								}	
-								// break;
+								}
 							}
 						}
 					}
+					
+					// GameState를 통해 한 번에 모든 의자 상태 업데이트
+					if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
+					{
+						HallState->MulticastUpdateChairStates(ReservedSeatIndices);
+					}
+					
 					///MH
 					if (TicketingUI)
 					{
