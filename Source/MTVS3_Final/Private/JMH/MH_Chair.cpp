@@ -5,6 +5,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"
+#include "HJ/TTHallGameState.h"
 #include "Net/UnrealNetwork.h"
 #include "JMH/MainWidget.h"
 #include "HJ/TTPlayer.h"
@@ -32,6 +33,12 @@ void AMH_Chair::BeginPlay()
 {
 	Super::BeginPlay();
 	// Widgetcomp->SetVisibility(false);
+
+	// GameState의 이벤트에 바인딩
+	if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
+	{
+		HallState->OnChairStatesUpdated.AddDynamic(this, &AMH_Chair::UpdateChairState);
+	}
 }
 
 // Called every frame
@@ -174,10 +181,18 @@ void AMH_Chair::ServerSetbIsAvailable_Implementation(bool _bIsAvailable)
 
 void AMH_Chair::OnRep_bIsAvailable()
 {
-	if (!bIsAvailable)
+	if (HasAuthority())
 	{
-		ChangeLightColor(false);
+		UE_LOG(LogTemp, Warning, TEXT("OnRep_bIsAvailable called on Server - Chair %s, bIsAvailable: %s"), 
+			   *GetName(), bIsAvailable ? TEXT("true") : TEXT("false"));
 	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OnRep_bIsAvailable called on Client - Chair %s, bIsAvailable: %s"), 
+			   *GetName(), bIsAvailable ? TEXT("true") : TEXT("false"));
+	}
+	
+	ChangeLightColor(bIsAvailable);
 }
 
 void AMH_Chair::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -196,4 +211,25 @@ void AMH_Chair::SetMainUI(UMainWidget* InMainUI)
 void AMH_Chair::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 {
 	TicketingUI = InTicketingUI; // 전달받은 TicketingUI 참조 저장
+}
+
+void AMH_Chair::UpdateChairState()
+{
+	if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
+	{
+		// 태그에서 의자 ID 추출
+		FName FirstTag;
+		if (Tags.Num() > 0)
+		{
+			FirstTag = Tags[0];
+			int32 ChairId = FCString::Atoi(*FirstTag.ToString());
+            
+			bool bShouldBeAvailable = !HallState->GetReservedSeatIdsSet().Contains(ChairId);
+            
+			if (HasAuthority())
+			{
+				SetbIsAvailable(bShouldBeAvailable);
+			}
+		}
+	}
 }

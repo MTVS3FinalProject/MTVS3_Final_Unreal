@@ -87,5 +87,12 @@ public:
 	// bAvailable true면 초록색, false면 빨간색
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void ChangeLightColor(bool bAvailable);
+
+	// 의자 상태 업데이트 (GameState 이벤트에 반응)
+	UFUNCTION()
+	void UpdateChairState();
+
+	// 의자 ID 반환
+	int32 GetChairId() const;
 #pragma endregion
 };
