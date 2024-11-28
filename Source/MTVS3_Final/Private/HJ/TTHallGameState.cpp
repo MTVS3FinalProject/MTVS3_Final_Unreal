@@ -6,6 +6,7 @@
 #include "HJ/TTGameInstance.h"
 #include "HJ/TTPlayer.h"
 #include "LHM/TTPlayerController.h"
+#include "Net/UnrealNetwork.h"
 
 void ATTHallGameState::BeginPlay()
 {
@@ -25,6 +26,13 @@ void ATTHallGameState::BeginPlay()
 			TTPlayer->SwitchCamera(TTPlayer->bIsThirdPerson);
 		}
 	}
+}
+
+void ATTHallGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ATTHallGameState, ReservedSeatIds);
 }
 
 void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameList , int32 CompetitionRate)
@@ -93,6 +101,13 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 	// 			HideLuckyDrawInvitation(CapturedList, CompetitionRate);
 	// 		}
 	// 	}, 90.0f, false);
+}
+
+void ATTHallGameState::MulticastUpdateChairStates_Implementation(const TArray<int32>& ReservedSeats)
+{
+	ReservedSeatIds = ReservedSeats;  // 기존 TArray는 유지 
+	ReservedSeatIdsSet = TSet<int32>(ReservedSeats);  // TSet으로 변환
+	OnChairStatesUpdated.Broadcast();
 }
 
 // void ATTHallGameState::HideLuckyDrawInvitation(const TArray<FString>& NicknameList , int32 CompetitionRate)
