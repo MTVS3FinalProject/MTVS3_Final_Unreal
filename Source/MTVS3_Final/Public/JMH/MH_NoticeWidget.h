@@ -55,6 +55,8 @@ public:
 	void OnMessageSelected(int32 MailId);
 	UFUNCTION()
 	void OnPostponeMessageSelected(int32 MailId);
+	UFUNCTION()
+	void OnPuzzleMessageSelected(int32 MailId);
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Canvas_content;
@@ -64,9 +66,32 @@ public:
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Content;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Canvas_puzzle;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_Title;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleRarity;
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_TitleName;
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_Sticker;
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerRarity;
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Txt_StickerName;
 	
 	UFUNCTION()
 	void OnMailDetailReceived(FString Subject, FString Content);
+	UFUNCTION()
+	void OnPuzzleTitleStickerReceived(int32 Rank);
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Back_Content;
