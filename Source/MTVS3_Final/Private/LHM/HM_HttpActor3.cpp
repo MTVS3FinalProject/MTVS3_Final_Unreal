@@ -338,24 +338,24 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 						}
 					}
 
-					// 스티커, 타이틀 정보 퍼즐 UI Update
-					for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-					{
-						ATTPlayer* TTPlayer = *It;
-						if (TTPlayer)
-						{
-							TTPlayer->Multicast_UpdateAllPuzzleRanks(RankInfos);
-						}
-					}
-
-					// 퍼즐 결과 UI Update
-					APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
-						UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
-					if (PuzzleManager)
-					{
-						UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 Server_HandlePuzzleResult 호출"));
-						PuzzleManager->Server_HandlePuzzleResult();
-					}
+					// // 스티커, 타이틀 정보 퍼즐 UI Update
+					// for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+					// {
+					// 	ATTPlayer* TTPlayer = *It;
+					// 	if (TTPlayer)
+					// 	{
+					// 		TTPlayer->Multicast_UpdateAllPuzzleRanks(RankInfos);
+					// 	}
+					// }
+					//
+					// // 퍼즐 결과 UI Update
+					// APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+					// 	UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+					// if (PuzzleManager)
+					// {
+					// 	UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 Server_HandlePuzzleResult 호출"));
+					// 	PuzzleManager->Server_HandlePuzzleResult();
+					// }
 				}
 			}
 		}
@@ -538,8 +538,8 @@ void AHM_HttpActor3::ReqPostBackground(FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url);
 
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
@@ -635,8 +635,8 @@ void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url); // 테스트용
-	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url); // 테스트용
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -1131,6 +1131,185 @@ void AHM_HttpActor3::OnResGetPostponePaymentSeatMail(FHttpRequestPtr Request, FH
 		else
 		{
 			UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 우편 조회 실패"));
+		}
+	}
+}
+
+// 퍼즐 우편 조회 요청
+void AHM_HttpActor3::ReqGetPuzzleMail(int32 MailId, FString AccessToken)
+{
+	UE_LOG(LogTemp , Log , TEXT("퍼즐 우편 조회 요청"));
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/mails/%d/puzzle") , *_url, MailId); 
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetPuzzleMail);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+// 퍼즐 우편 조회 요청에 대한 응답
+void AHM_HttpActor3::OnResGetPuzzleMail(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (bWasSuccessful && Response.IsValid())
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if (Response->GetResponseCode() == 200)
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if (FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid())
+			{
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				if (ResponseObject.IsValid())
+				{
+					int32 MailId = ResponseObject->GetIntegerField(TEXT("mailId"));
+					FString Subject = ResponseObject->GetStringField(TEXT("subject"));
+					FString Content = ResponseObject->GetStringField(TEXT("content"));
+					FString MailCategory = ResponseObject->GetStringField(TEXT("mailCategory"));
+					int32 Rank = ResponseObject->GetIntegerField(TEXT("rank"));
+
+					UE_LOG(LogTemp , Log , TEXT("MailId: %d") , MailId);
+					UE_LOG(LogTemp , Log , TEXT("Subject: %s") , *Subject)
+					UE_LOG(LogTemp , Log , TEXT("Content: %s") , *Content);
+					UE_LOG(LogTemp , Log , TEXT("MailCategory: %s") , *MailCategory);
+					UE_LOG(LogTemp , Log , TEXT("Rank: %d") , Rank);
+					
+					FStickers NewStickers;
+					FTitles NewTitles;
+
+					// 타이틀 정보 처리
+					TSharedPtr<FJsonObject> TitleObject = ResponseObject->GetObjectField(TEXT("titleInfo"));
+					if (TitleObject.IsValid())
+					{
+						if (FJsonObjectConverter::JsonObjectToUStruct(TitleObject.ToSharedRef() , &NewTitles))
+						{
+							UE_LOG(LogTemp , Log , TEXT("Titles Info | Id: %d, Name: %s, Script: %s, Rarity: %s") ,
+								   NewTitles.titleId ,
+								   *NewTitles.titleName ,
+								   *NewTitles.titleScript ,
+								   *NewTitles.titleRarity);
+
+							// 기존 TitleItems 배열에 추가
+							TitleItems.Add(NewTitles);
+						}
+					}
+
+					// 스티커 정보 처리
+					TSharedPtr<FJsonObject> StickerObject = ResponseObject->GetObjectField(TEXT("stickerInfo"));
+					if (StickerObject.IsValid())
+					{
+						if (FJsonObjectConverter::JsonObjectToUStruct(StickerObject.ToSharedRef() , &NewStickers))
+						{
+							UE_LOG(LogTemp , Log ,
+								   TEXT("Stikers Info | Id: %d, Name: %s, Script: %s, Rarity: %s, StickerImg: %s") ,
+								   NewStickers.stickerId ,
+								   *NewStickers.stickerName ,
+								   *NewStickers.stickerScript ,
+								   *NewStickers.stickerRarity ,
+								   *NewStickers.stickerImage);
+
+							// 기존 StickerItems 배열에 추가
+							StickerItems.Add(NewStickers);
+						}
+					}
+					
+					MainUI->WBP_MH_MainBar->WBP_NoticeUI->OnMailDetailReceived(Subject, Content);
+					MainUI->WBP_MH_MainBar->WBP_NoticeUI->OnPuzzleTitleStickerReceived(Rank);
+					
+					UE_LOG(LogTemp , Log , TEXT("퍼즐 우편 조회 성공"));
+				}
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("퍼즐 우편 조회 실패"));
+		}
+	}
+}
+
+void AHM_HttpActor3::ReqGetCommunityTree(FString AccessToken)
+{
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/") , *_url); 
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetCommunityTree);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor3::OnResGetCommunityTree(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				if (ResponseObject.IsValid())
+				{
+					// 메일 목록
+					TArray<TSharedPtr<FJsonValue>> TreeList = ResponseObject->GetArrayField(TEXT("트리DTO"));
+					for ( const TSharedPtr<FJsonValue>& TreeValue : TreeList )
+					{
+						TSharedPtr<FJsonObject> TreeObject = TreeValue->AsObject();
+						if (TreeObject.IsValid())
+						{
+							// 받아올 정보 추출
+							int32 TicketId = TreeObject->GetIntegerField(TEXT("ticketId"));
+							FString TicketImg = TreeObject->GetStringField(TEXT("ticketImage"));
+							UE_LOG(LogTemp , Log , TEXT("TicketId : %d") , TicketId);
+							UE_LOG(LogTemp , Log , TEXT("TicketImg : %s") , *TicketImg);
+						}
+					}
+				}
+				UE_LOG(LogTemp , Log , TEXT("나무 조회 성공"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("나무 조회 실패"));
 		}
 	}
 }

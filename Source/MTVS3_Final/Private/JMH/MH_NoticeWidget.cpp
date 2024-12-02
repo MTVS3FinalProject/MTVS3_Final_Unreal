@@ -3,13 +3,17 @@
 
 #include "JMH/MH_NoticeWidget.h"
 
+#include "HttpModule.h"
+#include "ImageUtils.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Button.h"
 #include "Components/Spacer.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/CanvasPanel.h"
+#include "Components/Image.h"
 #include "HJ/TTGameInstance.h"
+#include "Interfaces/IHttpResponse.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_HttpActor3.h"
@@ -56,6 +60,7 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 					// OnMessageClicked 이벤트 바인딩
 					MessageBox->OnMessageClicked.AddDynamic(this , &UMH_NoticeWidget::OnMessageSelected);
 					MessageBox->OnMessageClicked.AddDynamic(this , &UMH_NoticeWidget::OnPostponeMessageSelected);
+					MessageBox->OnMessageClicked.AddDynamic(this , &UMH_NoticeWidget::OnPuzzleMessageSelected);
 					Vertical_MessageBox->AddChild(MessageBox);
 				}
 
@@ -112,6 +117,32 @@ void UMH_NoticeWidget::OnPostponeMessageSelected(int32 MailId)
 	}
 }
 
+void UMH_NoticeWidget::OnPuzzleMessageSelected(int32 MailId)
+{
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
+	if (GI && HttpActor3)
+	{
+		// MailCategory 값을 가져오는 추가 로직
+		FString MailCategory = TEXT(""); // 초기값 설정
+		const TArray<FMails>& Mails = HttpActor3->GetMails();
+		for (const FMails& Mail : Mails)
+		{
+			if (Mail.mailId == MailId)
+			{
+				MailCategory = Mail.mailCategory;
+				break;
+			}
+		}
+
+		if (MailCategory == TEXT("PUZZLE"))
+		{
+			HttpActor3->ReqGetPuzzleMail(MailId, GI->GetAccessToken());
+		}
+	}
+}
+
 void UMH_NoticeWidget::OnMailDetailReceived(FString Subject , FString Content)
 {
 	if (Text_Subject && Text_Content)
@@ -123,9 +154,71 @@ void UMH_NoticeWidget::OnMailDetailReceived(FString Subject , FString Content)
 	}
 }
 
+void UMH_NoticeWidget::OnPuzzleTitleStickerReceived(int32 Rank)
+{
+	if(Img_Title)
+	{
+		FLinearColor LinearColor1 = FLinearColor(1.0f, 0.5f, 0.0f, 1.0f);
+		FLinearColor LinearColor2 = FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		FLinearColor LinearColor3 = FLinearColor(0.6f, 0.2f, 0.1f, 1.0f);
+	
+		if(Rank == 1)
+		{
+			FSlateColor SlateColor = FSlateColor(LinearColor1);
+			Img_Title->SetBrushTintColor(SlateColor);
+		}
+		else if(Rank == 2)
+		{
+			FSlateColor SlateColor = FSlateColor(LinearColor2);
+			Img_Title->SetBrushTintColor(SlateColor);
+		}
+		else if(Rank == 3)
+		{
+			FSlateColor SlateColor = FSlateColor(LinearColor3);
+			Img_Title->SetBrushTintColor(SlateColor);
+		}
+	}
+
+	FTitles TitleInfo;
+	FStickers StickerInfo;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
+	ImageRequest->SetURL(StickerInfo.stickerImage);
+	ImageRequest->SetVerb(TEXT("GET"));
+
+	ImageRequest->OnProcessRequestComplete().BindLambda(
+		[this, StickerInfo](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+		{
+			if (bWasSuccessful && Response.IsValid())
+			{
+				TArray<uint8> ImageData = Response->GetContent();
+				UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+
+				if (Img_Sticker && StickerTexture)
+				{
+					Img_Sticker->SetBrushFromTexture(StickerTexture);
+				}
+			}
+		});
+	// HTTP 요청 시작
+	ImageRequest->ProcessRequest();
+
+	if (Txt_TitleRarity && Txt_TitleName && Txt_StickerRarity && Txt_StickerName)
+	{
+		Txt_TitleRarity->SetText(FText::FromString(TitleInfo.titleRarity));
+		Txt_TitleName->SetText(FText::FromString(TitleInfo.titleName));
+		Txt_StickerRarity->SetText(FText::FromString(StickerInfo.stickerRarity));
+		Txt_StickerName->SetText(FText::FromString(StickerInfo.stickerName));
+	}
+
+	Canvas_puzzle->SetVisibility(ESlateVisibility::Visible);
+}
+
 void UMH_NoticeWidget::CloseBtn_Content()
 {
 	Canvas_content->SetVisibility(ESlateVisibility::Hidden);
+	Canvas_puzzle->SetVisibility(ESlateVisibility::Hidden);
 	Btn_Payment->SetVisibility(ESlateVisibility::Hidden);
 	Vertical_MessageBox->SetVisibility(ESlateVisibility::Visible);
 }

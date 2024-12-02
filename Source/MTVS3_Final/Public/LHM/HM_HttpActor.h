@@ -35,25 +35,17 @@ public:
 	
 	// QR코드 요청을 서버에 보내는 함수
 	void ReqPostGetVerifyIdentityQR(FText Email, FText Password);
-
-	// QR코드 요청에 대한 응답을 처리하는 함수
 	void OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 신원 확인 요청을 서버에 보내는 함수
 	void ReqPostVerifyIdentity(FText Email);
-
-	// 신원 확인 요청에 대한 응답 처리하는 함수
 	void OnResPostVerifyIdentity(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 
 	// 회원가입 요청을 서버에 보내는 함수
 	void ReqPostSignup(FText Nickname, bool bIsHost , FText Email , FText Password , FString Birth , int32 AvataData);
-
-	// 회원가입 요청에 대한 응답을 처리하는 함수
 	void OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 로그인 요청을 서버에 보내는 함수
 	void ReqPostLogin(FText Email, FText Password);
-
-	// 로그인 요청에 대한 응답을 처리하는 함수
 	void OnResPostLogin(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 };

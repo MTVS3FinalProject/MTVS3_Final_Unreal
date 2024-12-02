@@ -274,5 +274,13 @@ public:
 	void ReqGetPostponePaymentSeatMail(int32 MailId, FString AccessToken);
 	void OnResGetPostponePaymentSeatMail(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
+	// 퍼즐 결과 우편 조회
+	void ReqGetPuzzleMail(int32 MailId, FString AccessToken);
+	void OnResGetPuzzleMail(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 커뮤니티홀 나무 조회
+	void ReqGetCommunityTree(FString AccessToken);
+	void OnResGetCommunityTree(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
 #pragma endregion
 };
