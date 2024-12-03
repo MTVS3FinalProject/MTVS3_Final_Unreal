@@ -86,6 +86,20 @@ void UMH_NoticeWidget::OnMessageSelected(int32 MailId)
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 	if (GI && HttpActor3)
 	{
+		// MailCategory 값을 가져오는 추가 로직
+		FString MailCategory = TEXT(""); // 초기값 설정
+		const TArray<FMails>& Mails = HttpActor3->GetMails();
+		for (const FMails& Mail : Mails)
+		{
+			if (Mail.mailId == MailId)
+			{
+				MailCategory = Mail.mailCategory;
+				break;
+			}
+			if (MailCategory == TEXT("POSTPONE")) return;
+			if (MailCategory == TEXT("PUZZLE")) return;
+		}
+		
 		HttpActor3->ReqGetSpecificMail(MailId , GI->GetAccessToken());
 	}
 }
@@ -154,7 +168,7 @@ void UMH_NoticeWidget::OnMailDetailReceived(FString Subject , FString Content)
 	}
 }
 
-void UMH_NoticeWidget::OnPuzzleTitleStickerReceived(int32 Rank)
+void UMH_NoticeWidget::OnPuzzleTitleStickerReceived(int32 Rank, const FTitles& TitleInfo, const FStickers& StickerInfo)
 {
 	if(Img_Title)
 	{
@@ -178,10 +192,7 @@ void UMH_NoticeWidget::OnPuzzleTitleStickerReceived(int32 Rank)
 			Img_Title->SetBrushTintColor(SlateColor);
 		}
 	}
-
-	FTitles TitleInfo;
-	FStickers StickerInfo;
-
+	
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
 	ImageRequest->SetURL(StickerInfo.stickerImage);
@@ -190,15 +201,23 @@ void UMH_NoticeWidget::OnPuzzleTitleStickerReceived(int32 Rank)
 	ImageRequest->OnProcessRequestComplete().BindLambda(
 		[this, StickerInfo](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 		{
-			if (bWasSuccessful && Response.IsValid())
+			if (!bWasSuccessful || !Response.IsValid())
 			{
-				TArray<uint8> ImageData = Response->GetContent();
-				UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-
-				if (Img_Sticker && StickerTexture)
-				{
-					Img_Sticker->SetBrushFromTexture(StickerTexture);
-				}
+				UE_LOG(LogTemp, Error, TEXT("ImageRequest failed!"));
+				return;
+			}
+        
+			TArray<uint8> ImageData = Response->GetContent();
+			if (ImageData.Num() == 0)
+			{
+				UE_LOG(LogTemp, Error, TEXT("Response returned no content."));
+				return;
+			}
+			
+			UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+			if (Img_Sticker && StickerTexture)
+			{
+				Img_Sticker->SetBrushFromTexture(StickerTexture);
 			}
 		});
 	// HTTP 요청 시작

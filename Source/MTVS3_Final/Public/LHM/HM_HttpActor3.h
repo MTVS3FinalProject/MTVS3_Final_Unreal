@@ -236,8 +236,6 @@ public:
 	void ReqPostPuzzleResultAndGetSticker(int32 Rank, FString Nickname, FString AccessToken);
 	void OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
-	// 커스텀 티켓 저장 요청
-	void ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken);
 	// 커스텀 티켓 저장 요청 - multipart
 	void ReqPostSaveCustomTicketMultipart(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken);
 	// 커스텀 티켓 저장 요청에 대한 응답

@@ -73,18 +73,20 @@ public:
 	UFUNCTION()
 	void OnClickedDarkModeBtn();
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_Menu;
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UCanvasPanel* Can_0_Menu;
-	UFUNCTION()
-	void OnClickedMenuBtn();
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UButton* Btn_Menu;
+	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	// class UCanvasPanel* Can_0_Menu;
+	// UFUNCTION()
+	// void OnClickedMenuBtn();
+
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UButton* Btn_Emoji;
+	//UFUNCTION()
+	//void OnClickedEmojiBtn();
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_Emoji;
-	UFUNCTION()
-	void OnClickedEmojiBtn();
-
+	class UImage* Image_Notice;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Notice;
 	UFUNCTION()

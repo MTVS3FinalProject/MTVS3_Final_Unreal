@@ -91,7 +91,7 @@ public:
 	UFUNCTION()
 	void OnMailDetailReceived(FString Subject, FString Content);
 	UFUNCTION()
-	void OnPuzzleTitleStickerReceived(int32 Rank);
+	void OnPuzzleTitleStickerReceived(int32 Rank, const FTitles& TitleInfo, const FStickers& StickerInfo);
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Back_Content;
