@@ -367,58 +367,6 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 	}
 }
 
-// 커스텀 티켓 저장 요청
-void AHM_HttpActor3::ReqPostSaveCustomTicket(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
-{
-	UE_LOG(LogTemp , Log , TEXT("커스텀 티켓 저장 요청"));
-	// HTTP 모듈 가져오기
-	FHttpModule* Http = &FHttpModule::Get();
-	if ( !Http ) return;
-
-	FTickets Tickets;
-	
-	// HTTP 요청 생성
-	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-	UE_LOG(LogTemp , Log , TEXT("GetTicketId(): %d"), GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
-	Request->SetURL(FormattedUrl);
-	Request->SetVerb(TEXT("POST"));
-
-	// 헤더 설정
-	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
-	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
-
-	// ImageData를 Base64로 인코딩
-	FString Base64Image = FBase64::Encode(ImageData);
-
-	// JSON 데이터 작성
-	FString ContentString;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&ContentString);
-	Writer->WriteObjectStart();
-	Writer->WriteValue(TEXT("customTicketImage"), Base64Image);  // Base64로 인코딩된 이미지
-	Writer->WriteValue(TEXT("backgroundId"), BackGroundId);      // 배경 ID
-
-	// StickerList를 JSON 배열로 작성
-	Writer->WriteArrayStart(TEXT("stickerIdList"));
-	for (int32 StickerId : StickerList)
-	{
-		Writer->WriteValue(StickerId);
-	}
-	Writer->WriteArrayEnd();
-
-	Writer->WriteObjectEnd();
-	Writer->Close();
-
-	// 요청 본문에 JSON 데이터를 설정
-	Request->SetContentAsString(ContentString);
-
-	// 응답받을 함수 연결
-	Request->OnProcessRequestComplete().BindUObject(this, &AHM_HttpActor3::OnResPostSaveCustomTicket);
-
-	// 요청 전송
-	Request->ProcessRequest();
-}
-
 // 커스텀 티켓 저장 요청 - Multipartfile
 void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
 {
@@ -1146,7 +1094,7 @@ void AHM_HttpActor3::ReqGetPuzzleMail(int32 MailId, FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/mails/%d/puzzle") , *_url, MailId); 
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/mails/%d/puzzle") , *_url, MailId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -1246,8 +1194,10 @@ void AHM_HttpActor3::OnResGetPuzzleMail(FHttpRequestPtr Request, FHttpResponsePt
 	}
 }
 
+// 커뮤니티홀 나무 조회 요청
 void AHM_HttpActor3::ReqGetCommunityTree(FString AccessToken)
 {
+	UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무 조회 요청"));
 	// HTTP 모듈 가져오기
 	FHttpModule* Http = &FHttpModule::Get();
 	if (!Http) return;
@@ -1255,7 +1205,7 @@ void AHM_HttpActor3::ReqGetCommunityTree(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/") , *_url); 
+	FString FormattedUrl = FString::Printf(TEXT("%s/hall/tree") , *_url);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -1270,6 +1220,7 @@ void AHM_HttpActor3::ReqGetCommunityTree(FString AccessToken)
 	Request->ProcessRequest();
 }
 
+// 커뮤니티홀 나무 조회 요청에 대한 응답
 void AHM_HttpActor3::OnResGetCommunityTree(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if ( bWasSuccessful && Response.IsValid() )
@@ -1290,7 +1241,7 @@ void AHM_HttpActor3::OnResGetCommunityTree(FHttpRequestPtr Request, FHttpRespons
 				if (ResponseObject.IsValid())
 				{
 					// 메일 목록
-					TArray<TSharedPtr<FJsonValue>> TreeList = ResponseObject->GetArrayField(TEXT("트리DTO"));
+					TArray<TSharedPtr<FJsonValue>> TreeList = ResponseObject->GetArrayField(TEXT("ticketImageDTOList"));
 					for ( const TSharedPtr<FJsonValue>& TreeValue : TreeList )
 					{
 						TSharedPtr<FJsonObject> TreeObject = TreeValue->AsObject();
@@ -1304,12 +1255,12 @@ void AHM_HttpActor3::OnResGetCommunityTree(FHttpRequestPtr Request, FHttpRespons
 						}
 					}
 				}
-				UE_LOG(LogTemp , Log , TEXT("나무 조회 성공"));
+				UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무 조회 성공"));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp , Log , TEXT("나무 조회 실패"));
+			UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무 조회 실패"));
 		}
 	}
 }
