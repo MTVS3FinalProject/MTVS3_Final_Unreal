@@ -338,6 +338,9 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 						}
 					}
 
+					// 알림창 알림표시 이미지 SetVisible
+					if (MainUI) MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
+					
 					// // 스티커, 타이틀 정보 퍼즐 UI Update
 					// for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
 					// {
@@ -932,6 +935,7 @@ void AHM_HttpActor3::OnResGetPostponePaymentSeat(FHttpRequestPtr Request, FHttpR
 					if (MainUI)
 					{
 						MainUI->WBP_MH_MainBar->WBP_NoticeUI->InitializeMessageTabs();
+						MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Hidden);
 					}
 				}
 
@@ -1141,8 +1145,8 @@ void AHM_HttpActor3::OnResGetPuzzleMail(FHttpRequestPtr Request, FHttpResponsePt
 					UE_LOG(LogTemp , Log , TEXT("MailCategory: %s") , *MailCategory);
 					UE_LOG(LogTemp , Log , TEXT("Rank: %d") , Rank);
 					
-					FStickers NewStickers;
 					FTitles NewTitles;
+					FStickers NewStickers;
 
 					// 타이틀 정보 처리
 					TSharedPtr<FJsonObject> TitleObject = ResponseObject->GetObjectField(TEXT("titleInfo"));
@@ -1179,10 +1183,8 @@ void AHM_HttpActor3::OnResGetPuzzleMail(FHttpRequestPtr Request, FHttpResponsePt
 							StickerItems.Add(NewStickers);
 						}
 					}
-					
 					MainUI->WBP_MH_MainBar->WBP_NoticeUI->OnMailDetailReceived(Subject, Content);
-					MainUI->WBP_MH_MainBar->WBP_NoticeUI->OnPuzzleTitleStickerReceived(Rank);
-					
+					MainUI->WBP_MH_MainBar->WBP_NoticeUI->OnPuzzleTitleStickerReceived(Rank, NewTitles, NewStickers);
 					UE_LOG(LogTemp , Log , TEXT("퍼즐 우편 조회 성공"));
 				}
 			}

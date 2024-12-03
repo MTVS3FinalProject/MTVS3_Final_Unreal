@@ -15,12 +15,12 @@ void UHM_MainBarWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Btn_Emoji->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedEmojiBtn);
+	//Btn_Emoji->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedEmojiBtn);
 	Btn_CollectionBook->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedCollectionBookBtn);
 	Btn_Notice->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
 	Btn_lightMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedlightModeBtn);
 	Btn_DarkMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedDarkModeBtn);
-	Btn_Menu->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedMenuBtn);
+	//Btn_Menu->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedMenuBtn);
 	Btn_Chat->OnClicked.AddDynamic(this , &UHM_MainBarWidget::CloseButtonPressed);
 	Btn_Setting->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBtn);
 	Btn_Back_Settings->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBackBtn);
@@ -61,7 +61,7 @@ void UHM_MainBarWidget::SetVisibilityState()
 	SetVisibleSwitcher(true);
 	if (bIsMenuVisible)
 	{
-		OnClickedMenuBtn();
+		//OnClickedMenuBtn();
 	}
 	if (bIsChatVisible)
 	{
@@ -69,32 +69,32 @@ void UHM_MainBarWidget::SetVisibilityState()
 	}
 }
 
-void UHM_MainBarWidget::OnClickedEmojiBtn()
-{
-	//이모티콘 버튼 누르면
-	bIsEmojiVisible = !bIsEmojiVisible;
-
-	if (bIsEmojiVisible)
-	{
-		//스위처 0번 이모지 띄우기
-		SetWidgetSwitcher(0);
-		SetVisibleSwitcher(true);
-		//메뉴바 켜져있으면 끄기
-		if (bIsMenuVisible)
-		{
-			OnClickedMenuBtn();
-		}
-		//채팅창 켜져있으면 끄기
-		if (bIsChatVisible)
-		{
-			CloseButtonPressed();
-		}
-	}
-	else
-	{
-		SetVisibleSwitcher(false);
-	}
-}
+// void UHM_MainBarWidget::OnClickedEmojiBtn()
+// {
+// 	//이모티콘 버튼 누르면
+// 	bIsEmojiVisible = !bIsEmojiVisible;
+//
+// 	if (bIsEmojiVisible)
+// 	{
+// 		//스위처 0번 이모지 띄우기
+// 		SetWidgetSwitcher(0);
+// 		SetVisibleSwitcher(true);
+// 		//메뉴바 켜져있으면 끄기
+// 		if (bIsMenuVisible)
+// 		{
+// 			//OnClickedMenuBtn();
+// 		}
+// 		//채팅창 켜져있으면 끄기
+// 		if (bIsChatVisible)
+// 		{
+// 			CloseButtonPressed();
+// 		}
+// 	}
+// 	else
+// 	{
+// 		SetVisibleSwitcher(false);
+// 	}
+// }
 
 void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 {
@@ -127,9 +127,9 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 	{
 		SetVisibleSwitcher(true);
 		SetWidgetSwitcher(1);
-		if (bIsMenuVisible)
-		{
-			OnClickedMenuBtn();
+		//if (bIsMenuVisible)
+		//{
+			//OnClickedMenuBtn();
 			// 우편함 열기
 			UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 			AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
@@ -139,7 +139,7 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 				// 우편함 조회 요청
 				HttpActor3->ReqGetMailbox(GI->GetAccessToken());
 			}
-		}
+		//}
 		if (bIsChatVisible)
 		{
 			CloseButtonPressed();
@@ -163,28 +163,28 @@ void UHM_MainBarWidget::OnClickedDarkModeBtn()
 	//UI 다크모드로 변환
 }
 
-void UHM_MainBarWidget::OnClickedMenuBtn()
-{
-	//이모티콘이랑 알림 버튼 on
-	bIsMenuVisible = !bIsMenuVisible;
-	//이모티콘, 알림 비지블 켜져있으면 같이 꺼주기
-	if (bIsNoticeVisible)
-	{
-		bIsNoticeVisible = !bIsNoticeVisible;
-	}
-	//if (bIsEmojiVisible)
-	//{
-	//	bIsEmojiVisible = !bIsEmojiVisible;
-	//}
-	if (bIsMenuVisible)
-	{
-		Can_0_Menu->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		Can_0_Menu->SetVisibility(ESlateVisibility::Hidden);
-	}
-}
+// void UHM_MainBarWidget::OnClickedMenuBtn()
+// {
+// 	//이모티콘이랑 알림 버튼 on
+// 	bIsMenuVisible = !bIsMenuVisible;
+// 	//이모티콘, 알림 비지블 켜져있으면 같이 꺼주기
+// 	if (bIsNoticeVisible)
+// 	{
+// 		bIsNoticeVisible = !bIsNoticeVisible;
+// 	}
+// 	//if (bIsEmojiVisible)
+// 	//{
+// 	//	bIsEmojiVisible = !bIsEmojiVisible;
+// 	//}
+// 	if (bIsMenuVisible)
+// 	{
+// 		Can_0_Menu->SetVisibility(ESlateVisibility::Visible);
+// 	}
+// 	else
+// 	{
+// 		Can_0_Menu->SetVisibility(ESlateVisibility::Hidden);
+// 	}
+// }
 
 void UHM_MainBarWidget::OnClickedChatBtn()
 {
@@ -201,7 +201,7 @@ void UHM_MainBarWidget::OnClickedSettingBtn()
 		SetVisibleSwitcher(true);
 		if (bIsMenuVisible)
 		{
-			OnClickedMenuBtn();
+			//OnClickedMenuBtn();
 		}
 		if (bIsChatVisible)
 		{
@@ -221,14 +221,14 @@ void UHM_MainBarWidget::OnClickedSettingBackBtn()
 
 void UHM_MainBarWidget::CloseAllCategory()
 {
-	if (bIsMenuVisible)
-	{
-		OnClickedMenuBtn();
-	}
-	if (bIsEmojiVisible)
-	{
-		OnClickedEmojiBtn();
-	}
+	// if (bIsMenuVisible)
+	// {
+	// 	OnClickedMenuBtn();
+	// }
+	// if (bIsEmojiVisible)
+	// {
+	// 	OnClickedEmojiBtn();
+	// }
 	if (bIsCollectionBookVisible)
 	{
 		OnClickedCollectionBookBtn();
