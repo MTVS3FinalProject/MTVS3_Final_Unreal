@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MH_ErrorMessage.h"
 #include "Blueprint/UserWidget.h"
 #include "MH_StartWidget.generated.h"
 
@@ -21,9 +22,18 @@ public:
 	//Start
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UWidgetSwitcher* WS_StartWidgetSwitcher;//0:로그인, 1:회원가입,2:아바타선택,3:QR1,4:QR2,5:종료
+
+   //Error Message
+	UPROPERTY(meta=(BindWidget))
+	UMH_ErrorMessage*  WBP_MH_ErrorMessage01;
 	
 	//Login
-
+	UFUNCTION()
+	void ShowLoginErrorMessage(FString ErrorMS);
+	
+	UFUNCTION()
+	void HideLoginErrorMessage();
+	
 	// KHJ
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UImage* Img_Loading;

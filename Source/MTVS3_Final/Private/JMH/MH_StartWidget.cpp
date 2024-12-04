@@ -43,11 +43,18 @@ void UMH_StartWidget::NativeConstruct()
 	//QR2
 	Btn_Confirm_QRUi2->OnClicked.AddDynamic(this , &UMH_StartWidget::OnClickedConfirm_QRUi2Button);
 
+	//LoginError 델리게이트에 바인딩
+	if (WBP_MH_ErrorMessage01)
+	{
+		WBP_MH_ErrorMessage01->Btn_ErrorExit->OnClicked.AddDynamic(this , &UMH_StartWidget::HideLoginErrorMessage);
+	}
+
 	// OnTextChanged 델리게이트에 함수 바인딩
 	EText_SignupBirth->OnTextChanged.AddDynamic(this , &UMH_StartWidget::OnTextChanged);
 
 	// KHJ
 	Img_Loading->SetVisibility(ESlateVisibility::Hidden);
+
 
 	// // 게임 인스턴스를 가져와서
 	// auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
@@ -55,7 +62,17 @@ void UMH_StartWidget::NativeConstruct()
 	// {
 	// 	gi->OnFindSignatureCompleteDelegate.AddDynamic(this , &UMH_StartWidget::SetLoadingActive); // 세션 탐색 또는 생성
 	// }
-	
+}
+
+void UMH_StartWidget::ShowLoginErrorMessage(FString ErrorMS)
+{
+	WBP_MH_ErrorMessage01->ShowErrorMessage(ErrorMS);
+	WBP_MH_ErrorMessage01->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UMH_StartWidget::HideLoginErrorMessage()
+{
+	WBP_MH_ErrorMessage01->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UMH_StartWidget::Test_CreateSesstion()
@@ -199,15 +216,15 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 		else
 		{
 			//에러창
-			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
+			//GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
 		}
 
 		//QR띄워주는 ui로 이동.->
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password!!!"));
 	}
 	else
 	{
 		//에러창
+		ShowLoginErrorMessage(TEXT("비밀번호가 일치하지 않습니다."));
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password Error"));
 	}
 }
@@ -221,13 +238,23 @@ void UMH_StartWidget::OnClickedBackButton()
 void UMH_StartWidget::OnClickedFANButton()
 {
 	//Fan으로 유저모드 설정. 관리자모드 off
-	//bIsHost_Signup = false;
+	bIsHost_Signup = false;
+	if (!bIsHost_Signup)
+	{
+		Btn_FAN->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
+		Btn_MANAGER->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
+	}
 }
 
 void UMH_StartWidget::OnClickedMANAGERButton()
 {
 	//MANAGER로 유저모드 설정. 관리자모드 on
-	//bIsHost_Signup = true;
+	bIsHost_Signup = true;
+	if (bIsHost_Signup)
+	{
+		Btn_MANAGER->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
+		Btn_FAN->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
+	}
 }
 
 //
@@ -306,7 +333,6 @@ void UMH_StartWidget::OnClickedSelectAvatarLButton()
 	PlayerImgOnAnim(CharacterModelNum);
 	// 이전 아바타는 Off 애니메이션 재생
 	PlayerImgOffAnim(PreviousCharacterModelNum);
-	
 }
 
 void UMH_StartWidget::OnClickedAvatarConfirmButton()

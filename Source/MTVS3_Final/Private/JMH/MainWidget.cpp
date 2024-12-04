@@ -56,6 +56,7 @@ void UMainWidget::NativeConstruct()
 	Btn_Right4->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight4);
 	Btn_Left5->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft5);
 	Btn_TutorialEnd->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialEnd);
+	Btn_Confirm_Concert->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConfirm_Concert);
 
 	//닫기 버튼 다른 위젯 클래스와 연결 
 	if (BuyTicketWidget)
@@ -89,6 +90,12 @@ void UMainWidget::NativeConstruct()
 	InfoCanvasPanels = {
 		Can_ConcertInfo01 , Can_ConcertInfo02 , Can_ConcertInfo03 , Can_ConcertInfo04 , Can_ConcertInfo05
 	};
+	
+	//Error 델리게이트에 바인딩
+	if (WBP_MH_ErrorMessage02)
+	{
+		WBP_MH_ErrorMessage02->Btn_ErrorExit->OnClicked.AddDynamic(this , &UMainWidget::HideMainErrorMessage);
+	}
 
 	HideAllTitle();
 }
@@ -101,6 +108,17 @@ void UMainWidget::SetWidgetSwitcher(int32 num)
 		//PlayAnimation(TicketImgAnim01,0,0,EUMGSequencePlayMode::Reverse;
 		PlayAnimation(TicketImgAnim01);
 	}
+}
+
+void UMainWidget::ShowMainErrorMessage(FString ErrorMS)
+{
+	WBP_MH_ErrorMessage02->ShowErrorMessage(ErrorMS);
+	WBP_MH_ErrorMessage02->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UMainWidget::HideMainErrorMessage()
+{
+	WBP_MH_ErrorMessage02->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UMainWidget::SetVisibleCanvas(bool bVisible)

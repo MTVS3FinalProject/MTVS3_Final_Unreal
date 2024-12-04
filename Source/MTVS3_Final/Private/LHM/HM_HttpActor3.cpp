@@ -710,6 +710,7 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 		else if( Response->GetResponseCode() == 400 )
 		{
 			// 티켓을 보유하고 있지 않을 때 커스텀 티켓 제작에 입장할 수 없는 문구 위젯스위쳐
+			MainUI->ShowMainErrorMessage(TEXT("커스텀 할 수 있는 티켓을 소유하고 있지 않습니다."));
 		}
 	}
 }
