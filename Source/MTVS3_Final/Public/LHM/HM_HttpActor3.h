@@ -179,6 +179,10 @@ public:
 	UPROPERTY()
 	class UHM_PuzzleWidget* PuzzleUI;
 	void SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI);
+	
+	UPROPERTY()
+	class UHM_TreeCustomTicketWidget* TreeTicketUI;
+	void SetTreeTicketUI(UHM_TreeCustomTicketWidget* InTreeTicketUI);
 
 	const FString _url = "https://ticketaka.shop/api";
 	
@@ -279,6 +283,14 @@ public:
 	// 커뮤니티홀 나무 조회
 	void ReqGetCommunityTree(FString AccessToken);
 	void OnResGetCommunityTree(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+
+	// 커뮤니티홀 나무에 달 커스텀 티켓 조회
+	void ReqGetCustomTicketHangOnTree(FString AccessToken);
+	void OnResGetCustomTicketHangOnTree(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
+	// 커뮤니티홀 나무에 티켓 달기
+	void ReqPostHangingTicketFromTree(int32 TicketId, FString AccessToken);
+	void OnResPostHangingTicketFromTree(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 #pragma endregion
 };

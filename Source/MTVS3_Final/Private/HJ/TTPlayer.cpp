@@ -43,6 +43,7 @@
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
+#include "LHM/HM_TreeCustomTicketWidget.h"
 #include "LHM/PuzzleManager.h"
 // #include "Components/TextRenderComponent.h"
 
@@ -1982,6 +1983,13 @@ void ATTPlayer::InitMainUI()
 		PuzzleUI->AddToViewport();
 		PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
+	
+	TreeTicketUI = Cast<UHM_TreeCustomTicketWidget>(CreateWidget(GetWorld() , TreeTicketUIFactory));
+	if (TreeTicketUI)
+	{
+		TreeTicketUI->AddToViewport();
+		TreeTicketUI->SetVisibility(ESlateVisibility::Hidden);
+	}
 
 	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
 	if (TTPC)
@@ -2005,6 +2013,7 @@ void ATTPlayer::InitMainUI()
 		HttpActor3->SetMainUI(MainUI);
 		HttpActor3->SetTicketingUI(TicketingUI);
 		HttpActor3->SetPuzzleUI(PuzzleUI);
+		HttpActor3->SetTreeTicketUI(TreeTicketUI);
 	}
 
 	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(

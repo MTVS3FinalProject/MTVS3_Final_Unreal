@@ -28,7 +28,7 @@ AHM_Tree::AHM_Tree()
 			{
 				TicatComp->SetupAttachment(Tree);
 				TicatComp->SetStaticMesh(TicatAsset.Object);
-				TicatComp->SetRelativeLocation(FVector(90, 0, 90));
+				TicatComp->SetRelativeRotation(FRotator(90, 0, 90));
 			}
 		}
 	}
