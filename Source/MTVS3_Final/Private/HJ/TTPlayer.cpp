@@ -1671,6 +1671,10 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		}
 		GI->SetPlaceState(EPlaceState::Plaza);
 	}
+	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Tree")))
+	{
+		// 나무 상호작용
+	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
 
