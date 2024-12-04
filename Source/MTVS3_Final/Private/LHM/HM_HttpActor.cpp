@@ -122,6 +122,7 @@ void AHM_HttpActor::OnResPostGetVerifyIdentityQR(FHttpRequestPtr Request , FHttp
 				FString ErrorMessage = ErrorObject->GetStringField(TEXT("message"));
 				int32 ErrorStatus = ErrorObject->GetIntegerField(TEXT("status"));
 
+				StartUI->ShowLoginErrorMessage(*ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
 			}
@@ -212,6 +213,7 @@ void AHM_HttpActor::OnResPostVerifyIdentity(FHttpRequestPtr Request , FHttpRespo
 				FString ErrorMessage = ErrorObject->GetStringField(TEXT("message"));
 				int32 ErrorStatus = ErrorObject->GetIntegerField(TEXT("status"));
 
+				StartUI->ShowLoginErrorMessage(*ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
 			}
@@ -299,6 +301,7 @@ void AHM_HttpActor::OnResPostSignup(FHttpRequestPtr Request , FHttpResponsePtr R
 				FString ErrorMessage = ErrorObject->GetStringField(TEXT("message"));
 				int32 ErrorStatus = ErrorObject->GetIntegerField(TEXT("status"));
 
+				StartUI->ShowLoginErrorMessage(*ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
 
@@ -444,6 +447,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
 				FString ErrorMessage = ErrorObject->GetStringField(TEXT("message"));
 				int32 ErrorStatus = ErrorObject->GetIntegerField(TEXT("status"));
 
+				StartUI->ShowLoginErrorMessage(*ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Message: %s"), *ErrorMessage);
 				UE_LOG(LogTemp, Warning, TEXT("Error Status: %d"), ErrorStatus);
 

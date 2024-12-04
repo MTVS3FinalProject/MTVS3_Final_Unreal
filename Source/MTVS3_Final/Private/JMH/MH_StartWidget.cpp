@@ -216,15 +216,15 @@ void UMH_StartWidget::OnClickedConfirmSignupButton()
 		else
 		{
 			//에러창
-			GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
+			//GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("ClickedSignUp Error"));
 		}
 
 		//QR띄워주는 ui로 이동.->
-		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password!!!"));
 	}
 	else
 	{
 		//에러창
+		ShowLoginErrorMessage(TEXT("비밀번호가 일치하지 않습니다."));
 		GEngine->AddOnScreenDebugMessage(-1 , 5.f , FColor::Red , TEXT("Password Error"));
 	}
 }

@@ -8,6 +8,7 @@
 #include "MH_TTHUD.h"
 #include "Blueprint/UserWidget.h"
 #include "LHM/HM_MainBarWidget.h"
+#include "MH_ErrorMessage.h"
 #include "MainWidget.generated.h"
 
 /**
@@ -36,6 +37,17 @@ public:
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Can_Interaction;
+	
+	//Error Message
+	UPROPERTY(meta=(BindWidget))
+	UMH_ErrorMessage*  WBP_MH_ErrorMessage02;
+
+	//Login
+	UFUNCTION()
+	void ShowMainErrorMessage(FString ErrorMS);
+	
+	UFUNCTION()
+	void HideMainErrorMessage();
 
 
 	UFUNCTION()
