@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CameraPawn.h"
 #include "GameFramework/Character.h"
 #include "../../../../Plugins/EnhancedInput/Source/EnhancedInput/Public/InputActionValue.h"
 #include "TTPlayer.generated.h"
@@ -479,7 +480,33 @@ public:
 	bool bIsDrawSessionInviteVisible = false;
 	void UpdateDrawSessionInviteVisibility(int32 CompetitionRate);
 #pragma endregion
+	
+	UPROPERTY(EditAnywhere , Category = "TTSettings|Camera")
+	TSubclassOf<class ACameraPawn> CameraPawnFactory;
+	UPROPERTY(BlueprintReadWrite, Replicated, Category = "TTSettings|Camera")
+	class ACameraPawn* CameraPawn;
+	
+	bool bIsInCameraMode;
 
+	UFUNCTION(Server, Reliable)
+	void ServerNotifyCameraModeChange(bool bNewCameraMode);
+
+	UFUNCTION(Server, Reliable)
+	void ServerSpawnCameraPawn();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastOnCameraModeChanged(bool bNewCameraMode);
+
+	// 카메라 모드에서 플레이어로 돌아오는 함수
+	UFUNCTION(Server, Reliable)
+	void ServerReturnFromCameraPawn();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastOnReturnFromCamera();
+
+	// 카메라 폰 참조를 지우는 함수
+	void ClearCameraPawnReference();
+	
 private:
 	FTimerHandle StandUpTimerHandle; // 타이머 핸들
 
