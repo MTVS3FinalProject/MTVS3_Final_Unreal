@@ -18,8 +18,8 @@ void UHM_MainBarWidget::NativeConstruct()
 	//Btn_Emoji->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedEmojiBtn);
 	Btn_CollectionBook->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedCollectionBookBtn);
 	Btn_Notice->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
-	Btn_lightMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedlightModeBtn);
-	Btn_DarkMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedDarkModeBtn);
+	//Btn_lightMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedlightModeBtn);
+	//Btn_DarkMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedDarkModeBtn);
 	//Btn_Menu->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedMenuBtn);
 	Btn_Chat->OnClicked.AddDynamic(this , &UHM_MainBarWidget::CloseButtonPressed);
 	Btn_Setting->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBtn);
@@ -150,7 +150,7 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 		SetVisibleSwitcher(false);
 	}
 }
-
+/*
 void UHM_MainBarWidget::OnClickedlightModeBtn()
 {
 	//나중
@@ -161,7 +161,7 @@ void UHM_MainBarWidget::OnClickedDarkModeBtn()
 {
 	//나중
 	//UI 다크모드로 변환
-}
+}*/
 
 // void UHM_MainBarWidget::OnClickedMenuBtn()
 // {

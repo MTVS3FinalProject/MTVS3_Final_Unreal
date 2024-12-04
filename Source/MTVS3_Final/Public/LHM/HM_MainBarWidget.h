@@ -63,7 +63,7 @@ public:
 	
 
 	//MH
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+/*	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_lightMode;
 	UFUNCTION()
 	void OnClickedlightModeBtn();
@@ -71,7 +71,7 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_DarkMode;
 	UFUNCTION()
-	void OnClickedDarkModeBtn();
+	void OnClickedDarkModeBtn();*/
 
 	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	// class UButton* Btn_Menu;
