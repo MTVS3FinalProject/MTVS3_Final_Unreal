@@ -54,6 +54,7 @@ void AMH_Chair::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent , AActor
 	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
 	if ( TTPlayer && TTPlayer->IsLocallyControlled())
 	{
+		if (TTPlayer->bHasPiece) return; // 퍼즐 들고 있으면 UI 표시 안 함
 		SetMainUI(TTPlayer->MainUI);
 		SetTicketingUI(TTPlayer->TicketingUI);
 
@@ -68,6 +69,7 @@ void AMH_Chair::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
 	if ( TTPlayer && TTPlayer->IsLocallyControlled())
 	{
+		if (TTPlayer->bHasPiece) return; // 퍼즐 들고 있으면 UI 표시 안 함
 		OverlappingPlayer = nullptr;  // 오버랩 해제 시 플레이어 초기화
 		HideText();
 		// MainUI 표시

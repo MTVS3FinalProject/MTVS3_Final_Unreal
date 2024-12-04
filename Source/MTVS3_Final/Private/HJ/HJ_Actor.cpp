@@ -48,6 +48,7 @@ void AHJ_Actor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent , AActor
 	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
 	if (TTPlayer && TTPlayer->IsLocallyControlled())
 	{
+		if (TTPlayer->bHasPiece) return; // 퍼즐 들고 있으면 UI 표시 안 함
 		SetMainUI(TTPlayer->MainUI);
 
 		OverlappingPlayer = TTPlayer; // 오버랩된 플레이어 추적
@@ -61,6 +62,7 @@ void AHJ_Actor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent , AActor* 
 	ATTPlayer* TTPlayer = Cast<ATTPlayer>(OtherActor);
 	if (TTPlayer && TTPlayer->IsLocallyControlled())
 	{
+		if (TTPlayer->bHasPiece) return; // 퍼즐 들고 있으면 UI 표시 안 함
 		OverlappingPlayer = nullptr; // 오버랩 해제 시 플레이어 초기화
 		HideText();
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -125,7 +127,16 @@ void AHJ_Actor::ShowText()
 				bIsInteractionUI = true;
 				// 애니메이션 적용
 				InteractionUI->TextOnAnimPlay();
-
+			}
+		}
+		else if (ActorHasTag("Tree"))
+		{
+			InteractionUI->SetActiveWidgetIndex(4);
+			if (!bIsInteractionUI)
+			{
+				bIsInteractionUI = true;
+				// 애니메이션 적용
+				InteractionUI->TextOnAnimPlay();
 			}
 		}
 	}
