@@ -7,6 +7,8 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "HJ/TTPlayer.h"
+#include "JMH/MainWidget.h"
+#include "JMH/MH_Interaction.h"
 #include "Net/UnrealNetwork.h"
 
 // Sets default values
@@ -92,16 +94,23 @@ void ACameraPawn::OnMyActionMove(const FInputActionValue& Value)
 	if (InputValue.Y != 0.0f)
 	{
 		FVector NewLocation = GetActorLocation();
-		NewLocation += FVector::UpVector * InputValue.Y * MoveSpeed * GetWorld()->GetDeltaSeconds();
-        
-		FTransform NewTransform = GetActorTransform();
-		NewTransform.SetLocation(NewLocation);
-        
-		// 로컬에서 즉시 적용
-		UpdateCameraTransform(NewTransform);
-        
-		// 서버에 업데이트 요청
-		ServerUpdateTransform(NewTransform);
+		float NewZ = NewLocation.Z + FVector::UpVector.Z * InputValue.Y * MoveSpeed * GetWorld()->GetDeltaSeconds();
+       
+		// 최소 높이 제한 검사
+		const float MinHeight = 3220.0f;
+		if (NewZ >= MinHeight)
+		{
+			NewLocation.Z = NewZ;
+           
+			FTransform NewTransform = GetActorTransform();
+			NewTransform.SetLocation(NewLocation);
+           
+			// 로컬에서 즉시 적용
+			UpdateCameraTransform(NewTransform);
+           
+			// 서버에 업데이트 요청
+			ServerUpdateTransform(NewTransform);
+		}
 	}
 }
 
@@ -149,6 +158,9 @@ void ACameraPawn::ServerReturnToOriginalPlayer_Implementation()
 
 	// 원래 플레이어의 ReturnFromCameraPawn 함수 호출
 	OriginalPlayer->ServerReturnFromCameraPawn();
+
+	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(OriginalPlayer->MainUI->WBP_InteractionUI);
+	if (InteractionUI) InteractionUI->SetActiveWidgetIndex(4);
 
 	// CameraPawn 제거
 	Destroy();

@@ -1696,6 +1696,8 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		if (!bIsInCameraMode)
 		{
 			ServerSpawnCameraPawn();
+			UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+			if (InteractionUI) InteractionUI->SetActiveWidgetIndex(5);
 		}
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
