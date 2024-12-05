@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interfaces/IHttpRequest.h"
 #include "HM_Tree.generated.h"
 
 UCLASS()
@@ -29,5 +30,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	TArray<UStaticMeshComponent*> Ticats;
 	
+	UFUNCTION()
+	void ApplyTicketImageFromUrl(const FString& TicketImgUrl);
 
+private:
+	void OnTicketImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 };

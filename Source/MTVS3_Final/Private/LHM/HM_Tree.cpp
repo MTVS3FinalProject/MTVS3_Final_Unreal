@@ -2,6 +2,9 @@
 
 
 #include "LHM/HM_Tree.h"
+#include "HttpModule.h"
+#include "ImageUtils.h"
+#include "Interfaces/IHttpResponse.h"
 
 // Sets default values
 AHM_Tree::AHM_Tree()
@@ -12,7 +15,7 @@ AHM_Tree::AHM_Tree()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	Tree = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tree"));
 	Tree->SetupAttachment(RootComponent);
-
+	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatAsset(
 		TEXT("/Game/Greek_island/Assets/Fish/Ticat1"));
 	if (TicatAsset.Succeeded())
@@ -50,5 +53,51 @@ void AHM_Tree::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AHM_Tree::ApplyTicketImageFromUrl(const FString& TicketImgUrl)
+{
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &AHM_Tree::OnTicketImageDownloaded);
+	HttpRequest->SetURL(TicketImgUrl);
+	HttpRequest->SetVerb("GET");
+	HttpRequest->ProcessRequest();
+}
+
+void AHM_Tree::OnTicketImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
+	{
+		UE_LOG(LogTemp , Log , TEXT("티켓 이미지 다운로드 RES 200"));
+		TArray<uint8> ImageData = Response->GetContent();
+		UTexture2D* DownloadedTexture = nullptr;
+
+		// 이미지 데이터에서 텍스처 생성
+		DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+		if (DownloadedTexture)
+		{
+			for (UStaticMeshComponent* Ticat : Ticats)
+			{
+				if (Ticat && !Ticat->IsVisible())
+				{
+					Ticat->SetVisibility(true);
+                    
+					UMaterialInstanceDynamic* DynamicMaterial = Ticat->CreateAndSetMaterialInstanceDynamic(0);
+					if (DynamicMaterial)
+					{
+						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
+					}
+					break; // 한 번만 적용
+				}
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to download image or invalid response."));
+	}
 }
 
