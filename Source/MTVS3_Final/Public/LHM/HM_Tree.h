@@ -27,8 +27,11 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Tree;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<UStaticMeshComponent*> Ticats;
+	
+	UFUNCTION()
+	void InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg);
 	
 	UFUNCTION()
 	void ApplyTicketImageFromUrl(const FString& TicketImgUrl);

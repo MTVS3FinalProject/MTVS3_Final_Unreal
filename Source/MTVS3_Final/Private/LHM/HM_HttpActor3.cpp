@@ -1261,6 +1261,12 @@ void AHM_HttpActor3::OnResGetCommunityTree(FHttpRequestPtr Request, FHttpRespons
 							FString TicketImg = TreeObject->GetStringField(TEXT("ticketImage"));
 							UE_LOG(LogTemp , Log , TEXT("ticketTreeId : %d") , TicketTreeId);
 							UE_LOG(LogTemp , Log , TEXT("TicketImg : %s") , *TicketImg);
+							
+							auto* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
+							if (Tree)
+							{
+								Tree->InitializeTicketTabs(TicketTreeId, TicketImg);
+							}
 						}
 					}
 				}

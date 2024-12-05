@@ -20,18 +20,19 @@ AHM_Tree::AHM_Tree()
 		TEXT("/Game/Greek_island/Assets/Fish/Ticat1"));
 	if (TicatAsset.Succeeded())
 	{
-		Ticats.SetNum(10);
-		for (int32 i = 0; i < 10; i++)
+		Ticats.SetNum(15);
+		for (int32 i = 0; i < 15; i++)
 		{
 			FName TicatName = *FString::Printf(TEXT("Ticat_%d"), i + 1);
 			UStaticMeshComponent* TicatComp = CreateDefaultSubobject<UStaticMeshComponent>(TicatName);
 			Ticats[i] = TicatComp;
-            
+			Ticats[i]->SetVisibility(false);
+			
 			if (TicatComp)
 			{
 				TicatComp->SetupAttachment(Tree);
 				TicatComp->SetStaticMesh(TicatAsset.Object);
-				TicatComp->SetRelativeRotation(FRotator(90, 0, 90));
+				TicatComp->SetRelativeRotation(FRotator(90, 180, 90));
 			}
 		}
 	}
@@ -42,10 +43,10 @@ void AHM_Tree::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (int32 i = 0; i < 10; i++)
-	{
-		Ticats[i]->SetVisibility(false);
-	}
+	// for (int32 i = 0; i < 15; i++)
+	// {
+	// 	Ticats[i]->SetVisibility(false);
+	// }
 }
 
 // Called every frame
@@ -53,6 +54,52 @@ void AHM_Tree::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg)
+{
+	// 유효성 검사 및 텍스처 다운로드 처리
+	if (TicketTreeId < 0 || TicketTreeId >= Ticats.Num())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid TicketTreeId: %d"), TicketTreeId);
+		return;
+	}
+
+	UStaticMeshComponent* Ticat = Ticats[TicketTreeId-1];
+	if (Ticat)
+	{
+		Ticat->SetVisibility(true);
+
+		// URL에서 텍스처를 다운로드
+		FHttpModule* Http = &FHttpModule::Get();
+		if (!Http) return;
+
+		TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
+		HttpRequest->OnProcessRequestComplete().BindLambda([Ticat](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+		{
+			if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
+			{
+				TArray<uint8> ImageData = Response->GetContent();
+				UTexture2D* DownloadedTexture = nullptr;
+
+				// 이미지 데이터에서 텍스처 생성
+				DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+
+				if (DownloadedTexture)
+				{
+					UMaterialInstanceDynamic* DynamicMaterial = Ticat->CreateAndSetMaterialInstanceDynamic(0);
+					if (DynamicMaterial)
+					{
+						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
+					}
+				}
+			}
+		});
+
+		HttpRequest->SetURL(TicketImg);
+		HttpRequest->SetVerb("GET");
+		HttpRequest->ProcessRequest();
+	}
 }
 
 void AHM_Tree::ApplyTicketImageFromUrl(const FString& TicketImgUrl)
@@ -87,7 +134,7 @@ void AHM_Tree::OnTicketImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr
 					UMaterialInstanceDynamic* DynamicMaterial = Ticat->CreateAndSetMaterialInstanceDynamic(0);
 					if (DynamicMaterial)
 					{
-						DynamicMaterial->SetTextureParameterValue(FName(TEXT("Param")), DownloadedTexture);
+						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
 					}
 					break; // 한 번만 적용
 				}
