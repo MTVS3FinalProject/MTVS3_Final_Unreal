@@ -241,8 +241,8 @@ void UMH_StartWidget::OnClickedFANButton()
 	bIsHost_Signup = false;
 	if (!bIsHost_Signup)
 	{
-		Btn_FAN->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
-		Btn_MANAGER->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
+		Btn_FAN->SetColorAndOpacity(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
+		Btn_MANAGER->SetColorAndOpacity(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
 	}
 }
 
@@ -252,8 +252,8 @@ void UMH_StartWidget::OnClickedMANAGERButton()
 	bIsHost_Signup = true;
 	if (bIsHost_Signup)
 	{
-		Btn_MANAGER->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
-		Btn_FAN->WidgetStyle.Normal.TintColor = FSlateColor(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
+		Btn_MANAGER->SetColorAndOpacity(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
+		Btn_FAN->SetColorAndOpacity(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
 	}
 }
 
