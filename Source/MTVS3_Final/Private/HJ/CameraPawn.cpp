@@ -23,6 +23,9 @@ ACameraPawn::ACameraPawn()
 	SpringArmComp->SetupAttachment(RootComponent);
 	SpringArmComp->TargetArmLength = OrbitRadius;  // 피봇에서 카메라까지의 거리
 	SpringArmComp->bUsePawnControlRotation = true;
+	SpringArmComp->bInheritPitch = false;
+	SpringArmComp->bInheritRoll = false;
+	SpringArmComp->bInheritYaw = false;
     
 	// Camera 설정
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -73,43 +76,47 @@ void ACameraPawn::OnMyActionMove(const FInputActionValue& Value)
 {
 	if (!IsLocallyControlled()) return;
 
-	const FVector2D InputValue = Value.Get<FVector2D>();
-	const FRotator Rotation = GetControlRotation();
-	FVector NewLocation = GetActorLocation();
-
-	// X 입력값(좌/우 키)을 사용해 좌우 이동
+	const FVector2D RawInputValue = Value.Get<FVector2D>();
+	// 입력값을 바꿔서 저장
+	const FVector2D InputValue(RawInputValue.Y, RawInputValue.X);
+    
+	// X 입력값(좌/우 키)을 사용해 SpringArm Yaw 회전
 	if (InputValue.X != 0.0f)
 	{
-		const FVector RightDirection = FRotationMatrix(Rotation).GetScaledAxis(EAxis::X);
-		NewLocation += RightDirection * InputValue.X * MoveSpeed * GetWorld()->GetDeltaSeconds();
+		float NewYaw = SpringArmComp->GetRelativeRotation().Yaw - 
+		  InputValue.X * RotationSpeed * GetWorld()->GetDeltaSeconds();
+		SpringArmComp->SetRelativeRotation(FRotator(0.0f, NewYaw, 0.0f));
 	}
 
-	// Y 입력값(위/아래 키)을 사용해 상하 이동
+	// Y 입력값(위/아래 키)을 사용해 수직 이동
 	if (InputValue.Y != 0.0f)
 	{
+		FVector NewLocation = GetActorLocation();
 		NewLocation += FVector::UpVector * InputValue.Y * MoveSpeed * GetWorld()->GetDeltaSeconds();
+        
+		FTransform NewTransform = GetActorTransform();
+		NewTransform.SetLocation(NewLocation);
+        
+		// 로컬에서 즉시 적용
+		UpdateCameraTransform(NewTransform);
+        
+		// 서버에 업데이트 요청
+		ServerUpdateTransform(NewTransform);
 	}
-
-	FTransform NewTransform = GetActorTransform();
-	NewTransform.SetLocation(NewLocation);
-
-	// 로컬에서 즉시 적용
-	UpdateCameraTransform(NewTransform);
-    
-	// 서버에 업데이트 요청
-	ServerUpdateTransform(NewTransform);
 }
 
 void ACameraPawn::OnMyActionInteract(const FInputActionValue& Value)
 {
 	if (!IsLocallyControlled()) return;
     
-	// GetOwner를 TTPlayer로 캐스팅
-	ATTPlayer* Player = Cast<ATTPlayer>(GetOwner());
-	if (Player)
+	if (OriginalPlayer)
 	{
-		Player->bIsInCameraMode = false;
+		UE_LOG(LogTemp, Warning, TEXT("Setting bIsInCameraMode to false"));
 		ServerReturnToOriginalPlayer();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OriginalPlayer is null!"));
 	}
 }
 
@@ -133,12 +140,15 @@ void ACameraPawn::SetOriginalPlayer(ATTPlayer* Player)
 
 void ACameraPawn::ServerReturnToOriginalPlayer_Implementation()
 {
-	// GetOwner를 TTPlayer로 캐스팅
-	ATTPlayer* Player = Cast<ATTPlayer>(GetOwner());
-	if (!Player) return;
+	if (!OriginalPlayer)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OriginalPlayer is not set!"));
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("ServerReturnToOriginalPlayer_Implementation"));
 
-	// 플레이어의 ReturnFromCameraPawn 함수 호출
-	Player->ServerReturnFromCameraPawn();
+	// 원래 플레이어의 ReturnFromCameraPawn 함수 호출
+	OriginalPlayer->ServerReturnFromCameraPawn();
 
 	// CameraPawn 제거
 	Destroy();
