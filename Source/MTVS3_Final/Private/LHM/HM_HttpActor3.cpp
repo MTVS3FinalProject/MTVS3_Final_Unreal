@@ -379,15 +379,17 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 // 커스텀 티켓 저장 요청 - Multipartfile
 void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
 {
-	 UE_LOG(LogTemp, Log, TEXT("커스텀 티켓 저장 요청 - ImageData Multipart"));
-
+	UE_LOG(LogTemp, Log, TEXT("커스텀 티켓 저장 요청 - ImageData Multipart"));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	
     // HTTP 모듈 가져오기
     FHttpModule* Http = &FHttpModule::Get();
     if (!Http) return;
 
     // HTTP 요청 생성
     TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-    FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/2/custom"), *_url); // 임의의 티켓아이디
+    FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom"), *_url, GetTicketId());
+    //FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom"), *_url); // 임의의 티켓아이디
     Request->SetURL(FormattedUrl);
     Request->SetVerb(TEXT("POST"));
 
@@ -1294,7 +1296,7 @@ void AHM_HttpActor3::ReqGetCustomTicketHangOnTree(FString AccessToken)
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetCommunityTree);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetCustomTicketHangOnTree);
 
 	// 요청 전송
 	Request->ProcessRequest();
@@ -1322,6 +1324,7 @@ void AHM_HttpActor3::OnResGetCustomTicketHangOnTree(FHttpRequestPtr Request, FHt
 				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
 				if (ResponseObject.IsValid())
 				{
+					
 					// 커스텀 티켓 목록
 					TArray<TSharedPtr<FJsonValue>> TreeList = ResponseObject->GetArrayField(TEXT("customTicketDTOList"));
 					for ( const TSharedPtr<FJsonValue>& TreeValue : TreeList )
@@ -1342,6 +1345,7 @@ void AHM_HttpActor3::OnResGetCustomTicketHangOnTree(FHttpRequestPtr Request, FHt
 				if (TreeTicketUI)
 				{
 					TreeTicketUI->InitializeTicketTabs(TicketMap);
+					TreeTicketUI->SetVisibility(ESlateVisibility::Visible);
 				}
 				UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무에 달 커스텀 티켓 조회 성공"));
 			}
@@ -1373,7 +1377,7 @@ void AHM_HttpActor3::ReqPostHangingTicketFromTree(int32 TicketId, FString Access
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetCommunityTree);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostHangingTicketFromTree);
 
 	// 요청 전송
 	Request->ProcessRequest();

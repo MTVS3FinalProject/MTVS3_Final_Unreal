@@ -20,7 +20,7 @@ void UHM_TreeCustomTicketWidget::NativeConstruct()
 	Super::NativeConstruct();
 	Btn_Yes->OnClicked.AddDynamic(this , &UHM_TreeCustomTicketWidget::OnClickedYesBtn);
 	Btn_No->OnClicked.AddDynamic(this , &UHM_TreeCustomTicketWidget::OnClickedNoBtn);
-	
+	Btn_Back->OnClicked.AddDynamic(this , &UHM_TreeCustomTicketWidget::OnClickedBackBtn);
 }
 
 void UHM_TreeCustomTicketWidget::InitializeTicketTabs(const TMap<int32, FString>& TicketMap)
@@ -69,9 +69,16 @@ void UHM_TreeCustomTicketWidget::InitializeTicketTabs(const TMap<int32, FString>
 				});
 			ImageRequest->ProcessRequest();
 			ItemBox_Ticket->TicketId = TicketPair.Key; // 티켓 ID 저장
+			// OnTicketClicked 이벤트 바인딩
+			ItemBox_Ticket->OnTicketClicked.AddDynamic(this , &UHM_TreeCustomTicketWidget::OnTicketSelected);
 			Hori_Box_Tickets->AddChild(ItemBox_Ticket);
 		}
 	}
+}
+
+void UHM_TreeCustomTicketWidget::OnClickedBackBtn()
+{
+	this->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UHM_TreeCustomTicketWidget::OnClickedYesBtn()
@@ -92,11 +99,8 @@ void UHM_TreeCustomTicketWidget::OnClickedNoBtn()
 	Can_Choose->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void UHM_TreeCustomTicketWidget::SetCanChooseVisibility(bool bVisible, int32 SelectedTicketId)
+void UHM_TreeCustomTicketWidget::OnTicketSelected(int32 ClickedTicketId)
 {
-	if (Can_Choose)
-	{
-		Can_Choose->SetVisibility(bVisible ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
-		CurrentSelectedTicketId = SelectedTicketId; // 선택된 티켓 ID 저장
-	}
+	Can_Choose->SetVisibility(ESlateVisibility::Visible);
+	CurrentSelectedTicketId = ClickedTicketId;
 }
