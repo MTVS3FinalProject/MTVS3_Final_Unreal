@@ -48,7 +48,7 @@ public:
 	float MoveSpeed = 500.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
-	float OrbitRadius = 300.0f;  // 회전 반경
+	float OrbitRadius = 500.0f;  // 회전 반경
 
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_NetworkedTransform)
@@ -70,6 +70,10 @@ protected:
 	UFUNCTION(Server, Reliable)
 	void ServerReturnToOriginalPlayer();
 
+	UPROPERTY(EditAnywhere, Category = "Camera")
+	float RotationSpeed = 90.0f; // 초당 90도 회전
+
+public:
 	// 초기 설정 함수
 	UFUNCTION()
 	void SetOriginalPlayer(ATTPlayer* Player);
