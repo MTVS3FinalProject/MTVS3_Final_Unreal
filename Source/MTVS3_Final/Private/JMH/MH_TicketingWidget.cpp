@@ -6,6 +6,7 @@
 #include "EngineUtils.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
+#include "Components/EditableText.h"
 #include "Components/Image.h"
 #include "Components/Overlay.h"
 #include "Components/TextBlock.h"
@@ -30,6 +31,7 @@ void UMH_TicketingWidget::NativeConstruct()
 	Btn_PlayerVisible->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedPlayerVisibleButton);
 	Btn_Sound->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedSoundButton);
 	Btn_GotoGameRoom->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedGotoGameRoomButton);
+	Btn_HostBattleStart->OnClicked.AddDynamic(this , &UMH_TicketingWidget::OnClickedHostBattleStartButton);
 
 	//위젯 꺼져있는게 기본값
 	//SetVisibleSwitcher(false);
@@ -91,7 +93,6 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 			}
 		}
 		break;
-
 	case 1:
 		if (bVisible)
 		{
@@ -115,7 +116,6 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 				}
 			}
 		}
-
 		else if (!bVisible)
 		{
 			bIsVisible = false;
@@ -137,9 +137,52 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 				}
 			}
 		}
-
 		break;
+	case 2: // KHJ: 매니저가 추첨 초대
+		if (bVisible)
+		{
+			bIsVisible = true;
+			WS_RegisterSwitcher->SetActiveWidgetIndex(1);
+			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
+			//추첨장 입장 비지블온
+			SetHostBattleEntryVisible(true);
 
+			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
+			if (Local)
+			{
+				APlayerController* PC = Local->GetPlayerController(GetWorld());
+				if (PC)
+				{
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn());
+					if (TTPlayer && TTPlayer->GetbIsHost() == false)
+					{
+						PC->SetInputMode(FInputModeUIOnly());
+					}
+				}
+			}
+		}
+		else if (!bVisible)
+		{
+			bIsVisible = false;
+			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
+			//추첨장 입장 비지블오프
+			SetHostBattleEntryVisible(false);
+
+			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
+			if (Local)
+			{
+				APlayerController* PC = Local->GetPlayerController(GetWorld());
+				if (PC)
+				{
+					ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn());
+					if (TTPlayer && TTPlayer->GetbIsHost() == false)
+					{
+						PC->SetInputMode(FInputModeGameAndUI());
+					}
+				}
+			}
+		}
+		break;
 	default:
 		break;
 	}
@@ -431,6 +474,68 @@ void UMH_TicketingWidget::SetBattleEntryVisible(bool bVisible)
 	else if (!bVisible)
 	{
 		Can_TicketBattleEntry->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+// KHJ: 매니저 추첨 초대 UI
+void UMH_TicketingWidget::SetHostBattleEntryVisible(bool bVisible)
+{
+	if (bVisible)
+	{
+		Can_HostBattleEntry->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	else if (!bVisible)
+	{
+		Can_HostBattleEntry->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UMH_TicketingWidget::OnClickedHostBattleStartButton()
+{
+	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
+	if (Local)
+	{
+		APlayerController* PC = Local->GetPlayerController(GetWorld());
+		if (PC)
+		{
+			ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn());
+			if (TTPlayer)
+			{
+				// EditableText에서 텍스트 가져오기
+				FString SeatId = T_SeatId->GetText().ToString();
+				
+				// 공백 제거
+				SeatId = SeatId.TrimStartAndEnd();
+				
+				// 공백으로만 이루어져 있거나 빈 문자열인 경우
+				if (SeatId.IsEmpty())
+				{
+					SeatId = TEXT("1");
+				}
+				else 
+				{
+					// 숫자인지 확인
+					bool bIsNumber = true;
+					for (TCHAR Character : SeatId)
+					{
+						if (!FChar::IsDigit(Character))
+						{
+							bIsNumber = false;
+							break;
+						}
+					}
+					
+					// 숫자가 아니면 1로 설정
+					if (!bIsNumber)
+					{
+						SeatId = TEXT("1");
+					}
+				}
+				
+				TTPlayer->ServerNoticeLuckyDrawStart(TTPlayer->GetAccessToken(), SeatId);
+			}
+		}
 	}
 }
 

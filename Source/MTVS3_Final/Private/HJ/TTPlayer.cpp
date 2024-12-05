@@ -29,10 +29,12 @@
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/Image.h"
 #include "HJ/HallSoundManager.h"
 #include "HJ/LDTutorialWidget.h"
 #include "HJ/LuckyDrawSoundManager.h"
 #include "HJ/PlayerTitleWidget.h"
+#include "HJ/TTHallGameState.h"
 #include "HJ/TTLuckyDrawGameState.h"
 #include "Interfaces/IHttpResponse.h"
 #include "JMH/MH_EmojiImg.h"
@@ -920,14 +922,23 @@ void ATTPlayer::ServerNotifyCameraModeChange_Implementation(bool bNewCameraMode)
 	}
 }
 
-void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _AccessToken)
+void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _AccessToken, const FString& _SeatId)
 {
+	
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if (HttpActor2)
 	{
-		HttpActor2->ReqPostNoticeGameStart(TEXT("1") ,
-		                                   _AccessToken);
+		// HttpActor2->ReqPostNoticeGameStart(TEXT("1") ,
+		//                                    _AccessToken);
+		HttpActor2->ReqPostNoticeGameStart(_SeatId ,
+										   _AccessToken);
+	}
+	
+	ATTHallGameState* HallGameState = Cast<ATTHallGameState>(GetWorld()->GetGameState());
+	if (HallGameState)
+	{
+		HallGameState->SetLuckyDrawSeatId(_SeatId);
 	}
 }
 
@@ -935,10 +946,12 @@ void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
 {
 	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
-	if (PuzzleUI && PuzzleManager)
+	//if (PuzzleUI && PuzzleManager)
+	if (PuzzleManager && MainUI && MainUI->WBP_MH_MainBar && MainUI->WBP_MH_MainBar->Image_Notice)
 	{
-		PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-		PuzzleUI->SetWidgetSwitcher(1);
+		//PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+		//PuzzleUI->SetWidgetSwitcher(1);
+		MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
 		PuzzleManager->PlayPuzzleEnding();
 	}
 }
@@ -1826,12 +1839,12 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 			if (bIsCheat1Active)
 			{
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1"));
-				ServerNoticeLuckyDrawStart(GetAccessToken());
+				// ServerNoticeLuckyDrawStart(GetAccessToken());
 
 				// MainUI 숨기기
 				if (MainUI) MainUI->SetVisibleCanvas(false);
 				// 좌석 경쟁 UI 표시
-				if (TicketingUI) TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
+				if (TicketingUI) TicketingUI->SetVisibleSwitcher(true , 2);
 			}
 			else
 			{
@@ -1840,7 +1853,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 				// MainUI 표시
 				if (MainUI) MainUI->SetVisibleCanvas(true);
 				// 좌석 경쟁 UI 숨기기
-				if (TicketingUI) TicketingUI->SetVisibleSwitcher(false , 1);
+				if (TicketingUI) TicketingUI->SetVisibleSwitcher(false , 2);
 			}
 		}
 		break;

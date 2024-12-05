@@ -45,4 +45,15 @@ public:
 
 	// TSet을 반환하는 getter
 	const TSet<int32>& GetReservedSeatIdsSet() const { return ReservedSeatIdsSet; }
+
+	// 추첨장 좌석 ID 설정 함수
+	UFUNCTION()
+	void SetLuckyDrawSeatId(const FString& NewSeatId);
+
+	// 추첨장 좌석 ID 반환 함수
+	UFUNCTION()
+	const FString& GetLuckyDrawSeatId() const { return LuckyDrawSeatId; }
+	
+private:
+	FString LuckyDrawSeatId;
 };
