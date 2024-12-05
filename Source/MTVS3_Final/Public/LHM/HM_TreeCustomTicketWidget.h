@@ -21,7 +21,7 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UHorizontalBox* Hori_Box_Tickets;
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<class UHM_TreeTicketBoxWidget> TicketItemBoxFac;
 
 	UFUNCTION()

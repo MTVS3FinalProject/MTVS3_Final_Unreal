@@ -904,6 +904,22 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 	}
 }
 
+void ATTPlayer::ServerNotifyCameraModeChange_Implementation(bool bNewCameraMode)
+{
+	// 서버에서 상태 업데이트 및 필요한 로직 처리
+	bIsInCameraMode = bNewCameraMode;
+    
+	// 캐릭터의 물리/이동 상태 업데이트
+	if (bIsInCameraMode)
+	{
+		GetCharacterMovement()->DisableMovement();
+	}
+	else
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
+}
+
 void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _AccessToken)
 {
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
@@ -1673,7 +1689,13 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Tree")))
 	{
-		// 나무 상호작용
+		if (!IsLocallyControlled()) return;
+
+		// 카메라 폰으로 전환
+		if (!bIsInCameraMode)
+		{
+			ServerSpawnCameraPawn();
+		}
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
@@ -1706,15 +1728,23 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	AHJ_Actor* InteractiveActor = Cast<AHJ_Actor>(GetOverlappingActor());
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	
 	if (Chair && HttpActor2)
 	{
 		// Chair의 태그를 가져와서 매개변수로 넘김
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
 	}
+	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Tree")))
+	{
+		if (HttpActor3) HttpActor3->ReqGetCustomTicketHangOnTree(GetAccessToken());
+	}
 	else
 	{
-		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자가 없습니다."));
+		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자 또는 나무가 없습니다."));
 		return;
 	}
 }
@@ -2073,6 +2103,94 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , PickupPieceActor);
 	DOREPLIFETIME(ATTPlayer , TargetPieceComp);
 	DOREPLIFETIME(ATTPlayer , TargetPieceTransform);
+}
+
+void ATTPlayer::ServerSpawnCameraPawn_Implementation()
+{
+	// 기존 카메라 폰이 있다면 제거
+	if (CameraPawn)
+	{
+		CameraPawn->Destroy();
+	}
+
+	// Blueprint 클래스가 설정되어 있는지 확인
+	if (!CameraPawnFactory)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("CameraPawnFactory is not set!"));
+		return;
+	}
+
+	// Blueprint 클래스를 사용하여 카메라 폰 생성
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
+    
+	ACameraPawn* NewCameraPawn = GetWorld()->SpawnActor<ACameraPawn>(
+		CameraPawnFactory,
+		GetActorLocation() + FVector(0, 0, 50),
+		GetActorRotation(),
+		SpawnParams
+	);
+
+	if (NewCameraPawn)
+	{
+		CameraPawn = NewCameraPawn;
+		AController* PC = GetController();
+		if (PC)
+		{
+			PC->Possess(CameraPawn);
+		}
+
+		bIsInCameraMode = true;
+		MulticastOnCameraModeChanged(true);
+	}
+}
+
+void ATTPlayer::MulticastOnCameraModeChanged_Implementation(bool bNewCameraMode)
+{
+	// 모든 클라이언트에서 캐릭터의 상태 업데이트
+	if (bNewCameraMode)
+	{
+		GetCharacterMovement()->DisableMovement();
+	}
+	else
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
+}
+
+void ATTPlayer::ServerReturnFromCameraPawn_Implementation()
+{
+	if (!bIsInCameraMode)
+		return;
+
+	AController* PC = CameraPawn ? CameraPawn->GetController() : nullptr;
+	if (PC)
+	{
+		// 컨트롤러를 다시 플레이어에게 이전
+		PC->Possess(this);
+        
+		// 카메라 폰 제거
+		if (CameraPawn)
+		{
+			CameraPawn->Destroy();
+			CameraPawn = nullptr;
+		}
+
+		bIsInCameraMode = false;
+		MulticastOnReturnFromCamera();
+	}
+}
+
+void ATTPlayer::MulticastOnReturnFromCamera_Implementation()
+{
+	// 모든 클라이언트에서 이동을 다시 활성화
+	GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+}
+
+void ATTPlayer::ClearCameraPawnReference()
+{
+	CameraPawn = nullptr;
 }
 
 void ATTPlayer::ForceStandUp()
