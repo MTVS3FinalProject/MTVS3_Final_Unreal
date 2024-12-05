@@ -30,14 +30,20 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Can_Choose;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Back;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Yes;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_No;
 	UFUNCTION()
+	void OnClickedBackBtn();
+	UFUNCTION()
 	void OnClickedYesBtn();
 	UFUNCTION()
 	void OnClickedNoBtn();
-	void SetCanChooseVisibility(bool bVisible , int32 SelectedTicketId);
+
+	UFUNCTION()
+	void OnTicketSelected(int32 ClickedTicketId);
 	
 private:
 	int32 CurrentSelectedTicketId;

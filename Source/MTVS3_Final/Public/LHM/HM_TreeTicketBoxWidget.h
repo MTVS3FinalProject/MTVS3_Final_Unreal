@@ -9,6 +9,9 @@
 /**
  * 
  */
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTicketClicked, int32, ClickedTicketId);
+
 UCLASS()
 class MTVS3_FINAL_API UHM_TreeTicketBoxWidget : public UUserWidget
 {
@@ -20,12 +23,21 @@ public:
 	
 	UPROPERTY(meta=(BindWidget))
 	class UButton* Button_Ticket;
-	UFUNCTION()
-	void OnImgTicketClicked();
 	
 	UPROPERTY(EditAnywhere)
 	int32 TicketId;
 	
 	UPROPERTY(meta=(BindWidget))
 	class UImage* Img_Ticket;
+
+	// 클릭 이벤트 처리
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnTicketClicked OnTicketClicked;
+	
+	UFUNCTION()
+	void HandleTicketClicked()
+	{
+		UE_LOG(LogTemp, Log, TEXT("Button clicked! TicketId: %d"), TicketId);
+		OnTicketClicked.Broadcast(TicketId);
+	}
 };

@@ -407,6 +407,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
                             // 로그 출력
                             UE_LOG(LogTemp, Log, TEXT("Nickname: %s"), *PlayerData.nickname);
                             UE_LOG(LogTemp, Log, TEXT("Coin: %d"), PlayerData.coin);
+                            UE_LOG(LogTemp, Log, TEXT("bIsHost: %s"), PlayerData.bIsHost ? TEXT("true") : TEXT("false"));
                             UE_LOG(LogTemp, Log, TEXT("AvatarData: %d"), PlayerData.avatarData);
                             UE_LOG(LogTemp, Log, TEXT("TitleName: %s"), *PlayerData.titleName);
                             UE_LOG(LogTemp, Log, TEXT("TitleRarity: %s"), *PlayerData.titleRarity);

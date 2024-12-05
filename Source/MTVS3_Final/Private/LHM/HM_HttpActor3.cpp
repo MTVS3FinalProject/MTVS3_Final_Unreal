@@ -388,8 +388,8 @@ void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& Image
 
     // HTTP 요청 생성
     TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-    //FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom"), *_url, GetTicketId());
-    FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom"), *_url); // 임의의 티켓아이디
+    FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom"), *_url, GetTicketId());
+    //FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom"), *_url); // 임의의 티켓아이디
     Request->SetURL(FormattedUrl);
     Request->SetVerb(TEXT("POST"));
 
@@ -497,8 +497,8 @@ void AHM_HttpActor3::ReqPostBackground(FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url);
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/background") , *_url, GetTicketId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/background") , *_url);
 
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
@@ -594,8 +594,8 @@ void AHM_HttpActor3::ReqGetEnterTicketCustomization(FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), GetTicketId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url); // 테스트용
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom") , *_url, GetTicketId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom") , *_url); // 테스트용
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -1345,6 +1345,7 @@ void AHM_HttpActor3::OnResGetCustomTicketHangOnTree(FHttpRequestPtr Request, FHt
 				if (TreeTicketUI)
 				{
 					TreeTicketUI->InitializeTicketTabs(TicketMap);
+					TreeTicketUI->SetVisibility(ESlateVisibility::Visible);
 				}
 				UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무에 달 커스텀 티켓 조회 성공"));
 			}
@@ -1376,7 +1377,7 @@ void AHM_HttpActor3::ReqPostHangingTicketFromTree(int32 TicketId, FString Access
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
 	// 응답받을 함수를 연결
-	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetCommunityTree);
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostHangingTicketFromTree);
 
 	// 요청 전송
 	Request->ProcessRequest();
