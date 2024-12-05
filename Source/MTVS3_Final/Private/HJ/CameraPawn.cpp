@@ -159,8 +159,16 @@ void ACameraPawn::ServerReturnToOriginalPlayer_Implementation()
 	// 원래 플레이어의 ReturnFromCameraPawn 함수 호출
 	OriginalPlayer->ServerReturnFromCameraPawn();
 
-	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(OriginalPlayer->MainUI->WBP_InteractionUI);
-	if (InteractionUI) InteractionUI->SetActiveWidgetIndex(4);
+	if (OriginalPlayer && 
+	OriginalPlayer->MainUI && 
+	OriginalPlayer->MainUI->WBP_InteractionUI)
+	{
+		UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(OriginalPlayer->MainUI->WBP_InteractionUI);
+		if (InteractionUI)
+		{
+			InteractionUI->SetActiveWidgetIndex(4);
+		}
+	}
 
 	// CameraPawn 제거
 	Destroy();
