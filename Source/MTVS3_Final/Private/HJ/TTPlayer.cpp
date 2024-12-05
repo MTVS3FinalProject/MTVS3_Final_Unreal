@@ -43,6 +43,7 @@
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
+#include "LHM/HM_TreeCustomTicketWidget.h"
 #include "LHM/PuzzleManager.h"
 // #include "Components/TextRenderComponent.h"
 
@@ -102,24 +103,24 @@ ATTPlayer::ATTPlayer()
 	if (GetCharacterMovement())
 	{
 		GetCharacterMovement()->NetworkSmoothingMode = ENetworkSmoothingMode::Exponential;
-		GetCharacterMovement()->NetworkMaxSmoothUpdateDistance = 150.f;      // 더 긴 거리에서도 부드럽게
-		GetCharacterMovement()->NetworkNoSmoothUpdateDistance = 300.f;       // 급격한 위치 변경 임계값 증가
-		GetCharacterMovement()->NetworkSimulatedSmoothLocationTime = 0.15f;  // 위치 보간 시간 증가
-		GetCharacterMovement()->NetworkSimulatedSmoothRotationTime = 0.1f;   // 회전 보간 시간 증가
+		GetCharacterMovement()->NetworkMaxSmoothUpdateDistance = 150.f; // 더 긴 거리에서도 부드럽게
+		GetCharacterMovement()->NetworkNoSmoothUpdateDistance = 300.f; // 급격한 위치 변경 임계값 증가
+		GetCharacterMovement()->NetworkSimulatedSmoothLocationTime = 0.15f; // 위치 보간 시간 증가
+		GetCharacterMovement()->NetworkSimulatedSmoothRotationTime = 0.1f; // 회전 보간 시간 증가
 
 		// 이동 관련 추가 설정
 		GetCharacterMovement()->bNetworkSkipProxyPredictionOnNetUpdate = false; // 더 정확한 예측
 		GetCharacterMovement()->bUseSeparateBrakingFriction = true; // 정밀한 제동
-		GetCharacterMovement()->BrakingDecelerationWalking = 200.0f;  // 더 부드러운 정지
-		GetCharacterMovement()->GroundFriction = 3.0f;                // 지면 마찰 조정
-		GetCharacterMovement()->MaxAcceleration = 1500.0f;            // 가속도 증가
-		GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f;          // 최소 이동 속도
-		GetCharacterMovement()->bUseSeparateBrakingFriction = true;  // 정밀한 제동
+		GetCharacterMovement()->BrakingDecelerationWalking = 200.0f; // 더 부드러운 정지
+		GetCharacterMovement()->GroundFriction = 3.0f; // 지면 마찰 조정
+		GetCharacterMovement()->MaxAcceleration = 1500.0f; // 가속도 증가
+		GetCharacterMovement()->MinAnalogWalkSpeed = 20.0f; // 최소 이동 속도
+		GetCharacterMovement()->bUseSeparateBrakingFriction = true; // 정밀한 제동
 
 		// 공중 이동 관련 설정 추가
-		GetCharacterMovement()->AirControl = 0.5f;  // 공중에서의 조작성
-		GetCharacterMovement()->FallingLateralFriction = 0.5f;  // 공중에서의 마찰
-		GetCharacterMovement()->BrakingDecelerationFalling = 0.0f;  // 공중에서의 감속
+		GetCharacterMovement()->AirControl = 0.5f; // 공중에서의 조작성
+		GetCharacterMovement()->FallingLateralFriction = 0.5f; // 공중에서의 마찰
+		GetCharacterMovement()->BrakingDecelerationFalling = 0.0f; // 공중에서의 감속
 	}
 }
 
@@ -492,7 +493,7 @@ void ATTPlayer::OnRep_bIsHost()
 	{
 		SetNewSkeletalMesh(0); // Manager mesh
 	}
-	else 
+	else
 	{
 		SetNewSkeletalMesh(GetAvatarData()); // Avatar mesh
 	}
@@ -502,7 +503,7 @@ void ATTPlayer::OnRep_bIsHost()
 }
 
 void ATTPlayer::UpdateHostVisibility()
-{	
+{
 	if (GetbIsHost())
 	{
 		GetMesh()->SetOnlyOwnerSee(true);
@@ -518,7 +519,7 @@ void ATTPlayer::UpdateHostVisibility()
 		GetMesh()->SetOnlyOwnerSee(false);
 		NicknameUIComp->SetOnlyOwnerSee(false);
 		TitleUIComp->SetOnlyOwnerSee(false);
-		
+
 		// GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 		// CenterCapsuleComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 		// GetMesh()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
@@ -657,12 +658,12 @@ void ATTPlayer::ClientAdjustCamera_Implementation(FRotator NewRotation)
 	if (ATTPlayerController* PC = Cast<ATTPlayerController>(Controller))
 	{
 		PC->SetControlRotation(NewRotation);
-        
+
 		if (FPSCameraComp)
 		{
 			FPSCameraComp->SetWorldRotation(NewRotation);
 		}
-        
+
 		PC->SetViewTargetWithBlend(this);
 	}
 }
@@ -745,13 +746,13 @@ void ATTPlayer::ClientLuckyDrawLose_Implementation()
 void ATTPlayer::ClientLuckyDrawWin_Implementation()
 {
 	ALuckyDrawSoundManager* LDSoundManager = Cast<ALuckyDrawSoundManager>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , ALuckyDrawSoundManager::StaticClass()));
+		UGameplayStatics::GetActorOfClass(GetWorld() , ALuckyDrawSoundManager::StaticClass()));
 
 	if (LDSoundManager)
 	{
 		LDSoundManager->StopLuckyDrawBGM();
 	}
-	
+
 	if (GameUI)
 	{
 		GameUI->SetWidgetSwitcher(2); // 우승자 UI 업데이트
@@ -786,8 +787,8 @@ void ATTPlayer::ClientLuckyDrawWin_Implementation()
 
 		FTimerHandle LDWinnerFadeInTimerHandle;
 		GetWorldTimerManager().SetTimer(LDWinnerFadeInTimerHandle , this , &ATTPlayer::ClientLDWinnerFadeInAnim , 5.0f ,
-										false);
-		
+		                                false);
+
 		FTimerHandle LDWinnerTimerHandle;
 		GetWorldTimerManager().SetTimer(LDWinnerTimerHandle , this , &ATTPlayer::ClientLDWinnerExitSession , 6.0f ,
 		                                false);
@@ -866,7 +867,7 @@ void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , i
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI || GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
-	
+
 	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
 	if (TTPC)
 	{
@@ -903,6 +904,22 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 	}
 }
 
+void ATTPlayer::ServerNotifyCameraModeChange_Implementation(bool bNewCameraMode)
+{
+	// 서버에서 상태 업데이트 및 필요한 로직 처리
+	bIsInCameraMode = bNewCameraMode;
+
+	// 캐릭터의 물리/이동 상태 업데이트
+	if (bIsInCameraMode)
+	{
+		GetCharacterMovement()->DisableMovement();
+	}
+	else
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
+}
+
 void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _AccessToken)
 {
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
@@ -917,8 +934,8 @@ void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _Access
 void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
 {
 	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
-	if(PuzzleUI && PuzzleManager)
+		UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+	if (PuzzleUI && PuzzleManager)
 	{
 		PuzzleUI->SetVisibility(ESlateVisibility::Visible);
 		PuzzleUI->SetWidgetSwitcher(1);
@@ -926,8 +943,8 @@ void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
 	}
 }
 
-void ATTPlayer::Multicast_UpdatePuzzleRankAndVisibility_Implementation(const TArray<FPlayerScoreInfo>& TopPlayers,
-	int32 TotalPlayers)
+void ATTPlayer::Multicast_UpdatePuzzleRankAndVisibility_Implementation(const TArray<FPlayerScoreInfo>& TopPlayers ,
+                                                                       int32 TotalPlayers)
 {
 	if (!PuzzleUI) return;
 
@@ -935,16 +952,16 @@ void ATTPlayer::Multicast_UpdatePuzzleRankAndVisibility_Implementation(const TAr
 	for (int32 i = 0; i < TopPlayers.Num(); i++)
 	{
 		const FPlayerScoreInfo& PlayerInfo = TopPlayers[i];
-		PuzzleUI->SetTextPuzzleRankNickname(i + 1, PlayerInfo.Player);
+		PuzzleUI->SetTextPuzzleRankNickname(i + 1 , PlayerInfo.Player);
 
-		UE_LOG(LogTemp, Log, TEXT("Updated rank %d for nickname %s, total players: %d"),
-			   i + 1, *PlayerInfo.Player, TotalPlayers);
+		UE_LOG(LogTemp , Log , TEXT("Updated rank %d for nickname %s, total players: %d") ,
+		       i + 1 , *PlayerInfo.Player , TotalPlayers);
 	}
 
 	// 가시성 설정 (4위 이하 숨김)
 	for (int32 HiddenRank = TopPlayers.Num() + 1; HiddenRank <= 3; HiddenRank++)
 	{
-		PuzzleUI->SetTextVisibility(HiddenRank, ESlateVisibility::Hidden);
+		PuzzleUI->SetTextVisibility(HiddenRank , ESlateVisibility::Hidden);
 	}
 }
 
@@ -956,76 +973,76 @@ void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlay
 	for (const FPlayerRankInfo& RankInfo : PlayerRankInfos)
 	{
 		if (RankInfo.StickerImageUrl.IsEmpty())
-        {
-            UE_LOG(LogTemp, Warning, TEXT("StickerImageUrl is empty for rank %d"), RankInfo.Rank);
-            continue;
-        }
+		{
+			UE_LOG(LogTemp , Warning , TEXT("StickerImageUrl is empty for rank %d") , RankInfo.Rank);
+			continue;
+		}
 
-        // HTTP 요청 생성
-        TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
-        ImageRequest->SetURL(RankInfo.StickerImageUrl);
-        ImageRequest->SetVerb(TEXT("GET"));
+		// HTTP 요청 생성
+		TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
+		ImageRequest->SetURL(RankInfo.StickerImageUrl);
+		ImageRequest->SetVerb(TEXT("GET"));
 
-        ImageRequest->OnProcessRequestComplete().BindLambda(
-            [this, RankInfo](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
-            {
-                if (bWasSuccessful && Response.IsValid())
-                {
-                    TArray<uint8> ImageData = Response->GetContent();
-                    UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+		ImageRequest->OnProcessRequestComplete().BindLambda(
+			[this, RankInfo](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+			{
+				if (bWasSuccessful && Response.IsValid())
+				{
+					TArray<uint8> ImageData = Response->GetContent();
+					UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
 
-                    if (StickerTexture)
-                    {
-                        switch (RankInfo.Rank)
-                        {
-                        case 0:
-                            PuzzleUI->SetTextPuzzleRank1(
-                                StickerTexture,
-                                RankInfo.StickerRarity,
-                                RankInfo.StickerName,
-                                RankInfo.StickerScript,
-                                RankInfo.TitleRarity,
-                                RankInfo.TitleName,
-                                RankInfo.TitleScript
-                            );
-                            break;
-                        case 1:
-                            PuzzleUI->SetTextPuzzleRank2(
-                                StickerTexture,
-                                RankInfo.StickerRarity,
-                                RankInfo.StickerName,
-                                RankInfo.StickerScript,
-                                RankInfo.TitleRarity,
-                                RankInfo.TitleName,
-                                RankInfo.TitleScript
-                            );
-                            break;
-                        case 2:
-                            PuzzleUI->SetTextPuzzleRank3(
-                                StickerTexture,
-                                RankInfo.StickerRarity,
-                                RankInfo.StickerName,
-                                RankInfo.StickerScript,
-                                RankInfo.TitleRarity,
-                                RankInfo.TitleName,
-                                RankInfo.TitleScript
-                            );
-                            break;
-                        default:
-                            UE_LOG(LogTemp, Warning, TEXT("Invalid rank %d"), RankInfo.Rank);
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    UE_LOG(LogTemp, Warning, TEXT("Failed to load image from URL: %s"), *RankInfo.StickerImageUrl);
-                }
-            });
-        // HTTP 요청 시작
-        ImageRequest->ProcessRequest();
+					if (StickerTexture)
+					{
+						switch (RankInfo.Rank)
+						{
+						case 0:
+							PuzzleUI->SetTextPuzzleRank1(
+								StickerTexture ,
+								RankInfo.StickerRarity ,
+								RankInfo.StickerName ,
+								RankInfo.StickerScript ,
+								RankInfo.TitleRarity ,
+								RankInfo.TitleName ,
+								RankInfo.TitleScript
+							);
+							break;
+						case 1:
+							PuzzleUI->SetTextPuzzleRank2(
+								StickerTexture ,
+								RankInfo.StickerRarity ,
+								RankInfo.StickerName ,
+								RankInfo.StickerScript ,
+								RankInfo.TitleRarity ,
+								RankInfo.TitleName ,
+								RankInfo.TitleScript
+							);
+							break;
+						case 2:
+							PuzzleUI->SetTextPuzzleRank3(
+								StickerTexture ,
+								RankInfo.StickerRarity ,
+								RankInfo.StickerName ,
+								RankInfo.StickerScript ,
+								RankInfo.TitleRarity ,
+								RankInfo.TitleName ,
+								RankInfo.TitleScript
+							);
+							break;
+						default:
+							UE_LOG(LogTemp , Warning , TEXT("Invalid rank %d") , RankInfo.Rank);
+							break;
+						}
+					}
+				}
+				else
+				{
+					UE_LOG(LogTemp , Warning , TEXT("Failed to load image from URL: %s") , *RankInfo.StickerImageUrl);
+				}
+			});
+		// HTTP 요청 시작
+		ImageRequest->ProcessRequest();
 	}
-	UE_LOG(LogTemp, Log, TEXT("Updated all ranks for player: %s"), *GetNickname());
+	UE_LOG(LogTemp , Log , TEXT("Updated all ranks for player: %s") , *GetNickname());
 }
 
 void ATTPlayer::PlayConcertBGM()
@@ -1118,9 +1135,10 @@ void ATTPlayer::MyTakePiece()
 							FString TagName = FString::Printf(TEXT("Piece%d") , i);
 							if (HitComponent->ComponentHasTag(FName(*TagName)))
 							{
-								if (bShowDebug) GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Orange ,
-								                                 FString::Printf(
-									                                 TEXT("Found piece with tag: %s") , *TagName));
+								if (bShowDebug)
+									GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Orange ,
+									                                 FString::Printf(
+										                                 TEXT("Found piece with tag: %s") , *TagName));
 								TargetPieceComp = HitComponent;
 
 								// 서버로 소유 요청을 보냄
@@ -1616,9 +1634,9 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			ServerSetSitting(true);
 
 			SwitchCamera(!bIsThirdPerson);
-			
+
 			// 서버에서 클라이언트로 카메라 회전을 전파
-			FRotator TargetRotation = FRotator(0.0f, 90.0f, 0.0f);
+			FRotator TargetRotation = FRotator(0.0f , 90.0f , 0.0f);
 			if (Controller)
 			{
 				ClientAdjustCamera(TargetRotation);
@@ -1672,7 +1690,22 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Tree")))
 	{
-		// 나무 상호작용
+		if (!IsLocallyControlled()) return;
+
+		// 카메라 폰으로 전환
+		if (!bIsInCameraMode)
+		{
+			ServerSpawnCameraPawn();
+
+			if (MainUI && MainUI->WBP_InteractionUI)
+			{
+				UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+				if (InteractionUI)
+				{
+					InteractionUI->SetActiveWidgetIndex(5);
+				}
+			}
+		}
 	}
 	else UE_LOG(LogTemp , Warning , TEXT("Pressed E: fail Interact"));
 }
@@ -1705,15 +1738,23 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	AHJ_Actor* InteractiveActor = Cast<AHJ_Actor>(GetOverlappingActor());
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+
 	if (Chair && HttpActor2)
 	{
 		// Chair의 태그를 가져와서 매개변수로 넘김
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
 	}
+	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Tree")))
+	{
+		if (HttpActor3) HttpActor3->ReqGetCustomTicketHangOnTree(GetAccessToken());
+	}
 	else
 	{
-		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자가 없습니다."));
+		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자 또는 나무가 없습니다."));
 		return;
 	}
 }
@@ -1729,7 +1770,7 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 	UHM_MainBarWidget* MainBarUI = Cast<UHM_MainBarWidget>(MainUI->WBP_MH_MainBar);
 	if (!MainBarUI) return;
 	MainBarUI->bIsEmojiVisible = !MainBarUI->bIsEmojiVisible;
-	
+
 	bIsChatActive = !bIsChatActive;
 
 	if (bIsChatActive && MainBarUI->bIsEmojiVisible)
@@ -1745,7 +1786,7 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
 		MainBarUI->SetVisibleSwitcher(false);
 	}
-	
+
 	MainUI->ShowChatUI();
 }
 
@@ -1814,7 +1855,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 					GameUI->SetWidgetSwitcher(2);
 					GameUI->PlayAnimation(GameUI->HostFadeInAnim);
 				}
-				
+
 				GI->SetLuckyDrawState(ELuckyDrawState::Neutral);
 				GI->SwitchSession(EPlaceState::Plaza);
 				UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTLuckyDrawMap(Switch Session)"));
@@ -1987,6 +2028,13 @@ void ATTPlayer::InitMainUI()
 		PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 
+	TreeTicketUI = Cast<UHM_TreeCustomTicketWidget>(CreateWidget(GetWorld() , TreeTicketUIFactory));
+	if (TreeTicketUI)
+	{
+		TreeTicketUI->AddToViewport();
+		TreeTicketUI->SetVisibility(ESlateVisibility::Hidden);
+	}
+
 	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
 	if (TTPC)
 	{
@@ -2009,11 +2057,12 @@ void ATTPlayer::InitMainUI()
 		HttpActor3->SetMainUI(MainUI);
 		HttpActor3->SetTicketingUI(TicketingUI);
 		HttpActor3->SetPuzzleUI(PuzzleUI);
+		HttpActor3->SetTreeTicketUI(TreeTicketUI);
 	}
 
 	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
-	if(PuzzleManager)
+		UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+	if (PuzzleManager)
 	{
 		PuzzleManager->SetPuzzleUI(PuzzleUI);
 	}
@@ -2056,7 +2105,7 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , RandomSeatNumber);
 	DOREPLIFETIME(ATTPlayer , AvatarData);
 	DOREPLIFETIME(ATTPlayer , bIsHost);
-	DOREPLIFETIME(ATTPlayer, AccessToken);
+	DOREPLIFETIME(ATTPlayer , AccessToken);
 
 	// 퍼즐
 	DOREPLIFETIME(ATTPlayer , bHasPiece);
@@ -2064,6 +2113,128 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , PickupPieceActor);
 	DOREPLIFETIME(ATTPlayer , TargetPieceComp);
 	DOREPLIFETIME(ATTPlayer , TargetPieceTransform);
+}
+
+void ATTPlayer::ServerSpawnCameraPawn_Implementation()
+{
+	// 기존 카메라 폰이 있다면 제거
+	if (CameraPawn)
+	{
+		CameraPawn->Destroy();
+	}
+
+	// Blueprint 클래스가 설정되어 있는지 확인
+	if (!CameraPawnFactory)
+	{
+		UE_LOG(LogTemp , Warning , TEXT("CameraPawnFactory is not set!"));
+		return;
+	}
+
+	// Blueprint 클래스를 사용하여 카메라 폰 생성
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
+
+	// 원하는 위치에 스폰
+	FVector SpawnLocation = FVector(22369.0f, 1954.0f, 3220.0f);
+	
+	ACameraPawn* NewCameraPawn = GetWorld()->SpawnActor<ACameraPawn>(
+		CameraPawnFactory ,
+		SpawnLocation,
+		GetActorRotation() ,
+		SpawnParams
+	);
+
+	if (NewCameraPawn)
+	{
+		// OriginalPlayer 설정 추가
+		NewCameraPawn->SetOriginalPlayer(this);
+
+		CameraPawn = NewCameraPawn;
+		AController* PC = GetController();
+		if (PC)
+		{
+			PC->Possess(CameraPawn);
+		}
+
+		bIsInCameraMode = true;
+		MulticastOnCameraModeChanged(true);
+	}
+}
+
+void ATTPlayer::MulticastOnCameraModeChanged_Implementation(bool bNewCameraMode)
+{
+	// 모든 클라이언트에서 캐릭터의 상태 업데이트
+	if (bNewCameraMode)
+	{
+		GetCharacterMovement()->DisableMovement();
+	}
+	else
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	}
+}
+
+void ATTPlayer::ServerReturnFromCameraPawn_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ServerReturnFromCameraPawn started"));
+    
+	if (!bIsInCameraMode)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not in camera mode, returning"));
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Checking for controller"));
+	AController* PC = CameraPawn ? CameraPawn->GetController() : nullptr;
+    
+	if (PC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Attempting to possess original player"));
+        
+		// 컨트롤러를 다시 플레이어에게 이전
+		PC->Possess(this);
+        
+		if (CameraPawn)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Destroying camera pawn"));
+			CameraPawn->Destroy();
+			CameraPawn = nullptr;
+		}
+
+		// Possess 이후에 카메라 모드 해제
+		bIsInCameraMode = false;
+        
+		MulticastOnReturnFromCamera();
+        
+		UE_LOG(LogTemp, Warning, TEXT("Return to player complete"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to get controller from camera pawn"));
+	}
+}
+
+void ATTPlayer::MulticastOnReturnFromCamera_Implementation()
+{
+	// 로그 추가
+	UE_LOG(LogTemp , Warning , TEXT("Multicast: Enabling movement"));
+
+	// 모든 클라이언트에서 이동을 다시 활성화
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		UE_LOG(LogTemp , Warning , TEXT("Movement mode set to Walking"));
+	}
+	else
+	{
+		UE_LOG(LogTemp , Error , TEXT("CharacterMovement component not found"));
+	}
+}
+
+void ATTPlayer::ClearCameraPawnReference()
+{
+	CameraPawn = nullptr;
 }
 
 void ATTPlayer::ForceStandUp()
@@ -2124,7 +2295,7 @@ void ATTPlayer::MulticastSitDown_Implementation()
 			// 자신이 아닌 다른 플레이어들만 감추기
 			if (OtherPlayer && OtherPlayer != this)
 			{
-				OtherPlayer->GetMesh()->SetVisibility(false, true);
+				OtherPlayer->GetMesh()->SetVisibility(false , true);
 			}
 		}
 	}
@@ -2147,8 +2318,8 @@ void ATTPlayer::MulticastStandUp_Implementation()
 	if (IsLocallyControlled())
 	{
 		AHallSoundManager* HallSoundManager = Cast<AHallSoundManager>(
-			UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
-		if (HallSoundManager) 
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
+		if (HallSoundManager)
 		{
 			HallSoundManager->SetbPlayConcertBGM(true);
 		}

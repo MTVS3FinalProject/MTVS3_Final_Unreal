@@ -18,6 +18,7 @@
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_PuzzleWidget.h"
 #include "LHM/HM_TicketCustom.h"
+#include "LHM/HM_TreeCustomTicketWidget.h"
 #include "LHM/PuzzleManager.h"
 
 // Sets default values
@@ -56,6 +57,11 @@ void AHM_HttpActor3::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 void AHM_HttpActor3::SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI)
 {
 	PuzzleUI = InPuzzleUI;
+}
+
+void AHM_HttpActor3::SetTreeTicketUI(UHM_TreeCustomTicketWidget* InTreeTicketUI)
+{
+	TreeTicketUI = InTreeTicketUI;
 }
 
 // 인벤토리 정보 요청
@@ -373,15 +379,17 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 // 커스텀 티켓 저장 요청 - Multipartfile
 void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& ImageData, TArray<int32> StickerList, int32 BackGroundId, FString AccessToken)
 {
-	 UE_LOG(LogTemp, Log, TEXT("커스텀 티켓 저장 요청 - ImageData Multipart"));
-
+	UE_LOG(LogTemp, Log, TEXT("커스텀 티켓 저장 요청 - ImageData Multipart"));
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	
     // HTTP 모듈 가져오기
     FHttpModule* Http = &FHttpModule::Get();
     if (!Http) return;
 
     // HTTP 요청 생성
     TSharedRef<IHttpRequest> Request = Http->CreateRequest();
-    FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/2/custom"), *_url); // 임의의 티켓아이디
+    FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom"), *_url, GetTicketId());
+    //FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom"), *_url); // 임의의 티켓아이디
     Request->SetURL(FormattedUrl);
     Request->SetVerb(TEXT("POST"));
 
@@ -1264,6 +1272,153 @@ void AHM_HttpActor3::OnResGetCommunityTree(FHttpRequestPtr Request, FHttpRespons
 		else
 		{
 			UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무 조회 실패"));
+		}
+	}
+}
+
+// 커뮤니티홀 나무에 달 커스텀 티켓 조회
+void AHM_HttpActor3::ReqGetCustomTicketHangOnTree(FString AccessToken)
+{
+	UE_LOG(LogTemp , Log , TEXT("나무에 달 커스텀 티켓 조회"));
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/type/custom") , *_url);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("GET"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetCustomTicketHangOnTree);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+// 커뮤니티홀 나무에 달 커스텀 티켓 조회에 대한 응답
+void AHM_HttpActor3::OnResGetCustomTicketHangOnTree(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				TMap<int32, FString> TicketMap; // 데이터를 저장할 TMap
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				if (ResponseObject.IsValid())
+				{
+					
+					// 커스텀 티켓 목록
+					TArray<TSharedPtr<FJsonValue>> TreeList = ResponseObject->GetArrayField(TEXT("customTicketDTOList"));
+					for ( const TSharedPtr<FJsonValue>& TreeValue : TreeList )
+					{
+						TSharedPtr<FJsonObject> TreeObject = TreeValue->AsObject();
+						if (TreeObject.IsValid())
+						{
+							// 받아올 정보 추출
+							int32 TicketId = TreeObject->GetIntegerField(TEXT("ticketId"));
+							FString CustomTicketImg = TreeObject->GetStringField(TEXT("customTicketImage"));
+							UE_LOG(LogTemp , Log , TEXT("TicketId : %d") , TicketId);
+							UE_LOG(LogTemp , Log , TEXT("CustomTicketImg : %s") , *CustomTicketImg);
+							TicketMap.Add(TicketId, CustomTicketImg);
+						}
+					}
+				}
+				// 위젯에 데이터 전달
+				if (TreeTicketUI)
+				{
+					TreeTicketUI->InitializeTicketTabs(TicketMap);
+					TreeTicketUI->SetVisibility(ESlateVisibility::Visible);
+				}
+				UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무에 달 커스텀 티켓 조회 성공"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무에 달 커스텀 티켓 조회 실패"));
+		}
+	}
+}
+
+// 커뮤니티홀 나무에 티켓 달기 요청
+void AHM_HttpActor3::ReqPostHangingTicketFromTree(int32 TicketId, FString AccessToken)
+{
+	UE_LOG(LogTemp , Log , TEXT("나무에 티켓 달기 요청"));
+	// HTTP 모듈 가져오기
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	// HTTP 요청 생성
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/hall/tree/ticket/%d") , *_url, TicketId);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("POST"));
+
+	// 헤더 설정
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostHangingTicketFromTree);
+
+	// 요청 전송
+	Request->ProcessRequest();
+}
+
+// 커뮤니티홀 나무에 티켓 달기 요청에 대한 응답
+void AHM_HttpActor3::OnResPostHangingTicketFromTree(FHttpRequestPtr Request, FHttpResponsePtr Response,
+	bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			// JSON 응답 파싱
+			FString ResponseBody = Response->GetContentAsString();
+			TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(ResponseBody);
+
+			if ( FJsonSerializer::Deserialize(Reader , JsonObject) && JsonObject.IsValid() )
+			{
+				TSharedPtr<FJsonObject> ResponseObject = JsonObject->GetObjectField(TEXT("response"));
+				if (ResponseObject.IsValid())
+				{
+					// 받아올 정보 추출
+					int32 TicketTreeId = ResponseObject->GetIntegerField(TEXT("ticketTreeId"));
+					FString TicketImg = ResponseObject->GetStringField(TEXT("ticketImage"));
+					UE_LOG(LogTemp , Log , TEXT("TicketTreeId : %d") , TicketTreeId);
+					UE_LOG(LogTemp , Log , TEXT("TicketImg : %s") , *TicketImg);
+					
+					// TicketImg를 Tree의 Ticat[idx] Visible 해주고 머티리얼 텍스쳐 변경해주기
+				}
+				TreeTicketUI->SetVisibility(ESlateVisibility::Hidden);
+				UE_LOG(LogTemp , Log , TEXT("나무에 티켓 달기 성공"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("나무에 티켓 달기 실패"));
 		}
 	}
 }
