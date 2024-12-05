@@ -71,7 +71,6 @@ void AHM_Tree::OnTicketImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr
 {
 	if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
 	{
-		UE_LOG(LogTemp , Log , TEXT("티켓 이미지 다운로드 RES 200"));
 		TArray<uint8> ImageData = Response->GetContent();
 		UTexture2D* DownloadedTexture = nullptr;
 
@@ -88,7 +87,7 @@ void AHM_Tree::OnTicketImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr
 					UMaterialInstanceDynamic* DynamicMaterial = Ticat->CreateAndSetMaterialInstanceDynamic(0);
 					if (DynamicMaterial)
 					{
-						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
+						DynamicMaterial->SetTextureParameterValue(FName(TEXT("Param")), DownloadedTexture);
 					}
 					break; // 한 번만 적용
 				}

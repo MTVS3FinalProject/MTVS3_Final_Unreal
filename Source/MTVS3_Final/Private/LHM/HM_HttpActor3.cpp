@@ -1250,16 +1250,16 @@ void AHM_HttpActor3::OnResGetCommunityTree(FHttpRequestPtr Request, FHttpRespons
 				if (ResponseObject.IsValid())
 				{
 					// 메일 목록
-					TArray<TSharedPtr<FJsonValue>> TreeList = ResponseObject->GetArrayField(TEXT("ticketImageDTOList"));
+					TArray<TSharedPtr<FJsonValue>> TreeList = ResponseObject->GetArrayField(TEXT("ticketTreeDTOList"));
 					for ( const TSharedPtr<FJsonValue>& TreeValue : TreeList )
 					{
 						TSharedPtr<FJsonObject> TreeObject = TreeValue->AsObject();
 						if (TreeObject.IsValid())
 						{
 							// 받아올 정보 추출
-							int32 TicketId = TreeObject->GetIntegerField(TEXT("ticketId"));
+							int32 TicketTreeId = TreeObject->GetIntegerField(TEXT("ticketTreeId"));
 							FString TicketImg = TreeObject->GetStringField(TEXT("ticketImage"));
-							UE_LOG(LogTemp , Log , TEXT("TicketId : %d") , TicketId);
+							UE_LOG(LogTemp , Log , TEXT("ticketTreeId : %d") , TicketTreeId);
 							UE_LOG(LogTemp , Log , TEXT("TicketImg : %s") , *TicketImg);
 						}
 					}

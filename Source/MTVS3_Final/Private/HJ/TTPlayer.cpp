@@ -1710,6 +1710,13 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		{
 			ServerSpawnCameraPawn();
 
+			AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+			if(HttpActor3)
+			{
+				HttpActor3->ReqGetCommunityTree(GI->GetAccessToken());
+			}
+			
 			if (MainUI && MainUI->WBP_InteractionUI)
 			{
 				UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);

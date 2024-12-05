@@ -862,11 +862,9 @@ void AHM_HttpActor2::ReqPostNoticeGameStart(FString SeatId , FString AccessToken
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	UE_LOG(LogTemp , Log , TEXT("GI->GetReceivedSeatId(): %d") , GI->GetReceivedSeatId());
-
-	FString FormattedUrl = FString::Printf(
-		TEXT("%s/concerts/%d/seats/%d/drawing") , *_url , GetConcertId() , GI->GetReceivedSeatId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/drawing") , *_url, GetConcertId(), *SeatId);
+	//UE_LOG(LogTemp , Log , TEXT("GI->GetReceivedSeatId(): %d") , GI->GetReceivedSeatId());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/drawing") , *_url , GetConcertId() , GI->GetReceivedSeatId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/drawing") , *_url, GetConcertId(), *SeatId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
