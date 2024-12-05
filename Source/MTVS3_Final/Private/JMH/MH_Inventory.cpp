@@ -297,17 +297,6 @@ void UMH_Inventory::UpdateButtonAlphas(int32 ClickedButtonIndex)
 	{
 		if (UButton* Button = Buttons[i])
 		{
-			/*
-			// 버튼에서 자식 이미지를 찾습니다
-			UImage* ButtonImage = Cast<UImage>(Button->GetChildAt(0));
-			if (ButtonImage)
-			{
-				// 알파 값을 업데이트합니다
-				float AlphaValue = (i == ClickedButtonIndex) ? 1.0f : 0.0f;
-				FLinearColor NewColor = FLinearColor(1.0f, 1.0f, 1.0f, AlphaValue);
-				ButtonImage->SetColorAndOpacity(NewColor);
-			}*/
-			
 			// 클릭된 버튼이면 알파값 1, 그렇지 않으면 0
 			float AlphaValue = (i == ClickedButtonIndex) ? 1.0f : 0.0f;
 
