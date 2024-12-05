@@ -243,6 +243,18 @@ public:
 	UFUNCTION()
 	void SetBattleEntryVisible(bool bVisible);
 
+	// KHJ
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_HostBattleEntry;
+	UFUNCTION()
+	void SetHostBattleEntryVisible(bool bVisible);
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton* Btn_HostBattleStart;
+	UFUNCTION()
+	void OnClickedHostBattleStartButton();
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UEditableText* T_SeatId;
+
 
 	//좌석 접수 ui 이미지
 	
