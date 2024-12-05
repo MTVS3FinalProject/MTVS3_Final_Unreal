@@ -1728,15 +1728,23 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	AMH_Chair* Chair = Cast<AMH_Chair>(GetOverlappingActor());
+	AHJ_Actor* InteractiveActor = Cast<AHJ_Actor>(GetOverlappingActor());
+	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	
 	if (Chair && HttpActor2)
 	{
 		// Chair의 태그를 가져와서 매개변수로 넘김
 		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
 		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
 	}
+	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Tree")))
+	{
+		if (HttpActor3) HttpActor3->ReqGetCustomTicketHangOnTree(GetAccessToken());
+	}
 	else
 	{
-		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자가 없습니다."));
+		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자 또는 나무가 없습니다."));
 		return;
 	}
 }

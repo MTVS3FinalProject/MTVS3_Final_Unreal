@@ -475,7 +475,7 @@ public:
 	class UHM_PuzzleWidget* PuzzleUI;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
-	TSubclassOf<class UHM_PuzzleWidget> TreeTicketUIFactory;
+	TSubclassOf<class UHM_TreeCustomTicketWidget> TreeTicketUIFactory;
 	UPROPERTY()
 	class UHM_TreeCustomTicketWidget* TreeTicketUI;
 
