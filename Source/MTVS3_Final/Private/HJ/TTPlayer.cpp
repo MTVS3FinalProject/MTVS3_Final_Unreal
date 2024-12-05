@@ -45,6 +45,7 @@
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
+#include "LHM/HM_Tree.h"
 #include "LHM/HM_TreeCustomTicketWidget.h"
 #include "LHM/PuzzleManager.h"
 // #include "Components/TextRenderComponent.h"
@@ -1056,6 +1057,103 @@ void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlay
 		ImageRequest->ProcessRequest();
 	}
 	UE_LOG(LogTemp , Log , TEXT("Updated all ranks for player: %s") , *GetNickname());
+}
+
+void ATTPlayer::Multicast_ApplyTicketImage_Implementation(const FString& TicketImgUrl)
+{
+	AHM_Tree* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
+	if (Tree)
+	{
+		for (int32 i = 0; i < Tree->TicatVisibilities.Num(); i++)
+		{
+			if (!Tree->TicatVisibilities[i]) // 비활성화된 상태
+			{
+				// 서버에서 가시성 상태를 업데이트
+				if (HasAuthority()) // 서버에서만 Replicated 배열 변경
+				{
+					Tree->TicatVisibilities[i] = true;
+					Tree->OnRep_TicatVisibility(); // 서버에서도 즉시 적용
+				}
+				// 클라이언트에서 URL 기반으로 텍스처 다운로드
+				FHttpModule* Http = &FHttpModule::Get();
+				if (!Http) return;
+
+				TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
+				HttpRequest->OnProcessRequestComplete().BindLambda([Tree, i](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+				{
+					if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
+					{
+						TArray<uint8> ImageData = Response->GetContent();
+						UTexture2D* DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+
+						if (DownloadedTexture)
+						{
+							UMaterialInstanceDynamic* DynamicMaterial = Tree->Ticats[i]->CreateAndSetMaterialInstanceDynamic(0);
+							if (DynamicMaterial)
+							{
+								DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
+							}
+						}
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Failed to download image from URL: %s"), *Request->GetURL());
+					}
+				});
+
+				HttpRequest->SetURL(TicketImgUrl);
+				HttpRequest->SetVerb("GET");
+				HttpRequest->ProcessRequest();
+				break; // 한 번만 적용
+			}
+		}
+	}
+}
+
+void ATTPlayer::Multicast_InitializeTicketTabs_Implementation(int32 TicketTreeId, const FString& TicketImg)
+{
+	AHM_Tree* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
+	if (Tree)
+	{
+		if (TicketTreeId < 0 || TicketTreeId >= Tree->Ticats.Num())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Invalid TicketTreeId: %d"), TicketTreeId);
+			return;
+		}
+
+		UStaticMeshComponent* Ticat = Tree->Ticats[TicketTreeId-1];
+		if (Ticat)
+		{
+			Ticat->SetVisibility(true);
+
+			// 클라이언트에서 텍스처 다운로드
+			FHttpModule* Http = &FHttpModule::Get();
+			if (!Http) return;
+
+			TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
+			HttpRequest->OnProcessRequestComplete().BindLambda([Ticat](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+			{
+				if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
+				{
+					TArray<uint8> ImageData = Response->GetContent();
+					UTexture2D* DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+
+					if (DownloadedTexture)
+					{
+						UMaterialInstanceDynamic* DynamicMaterial = Ticat->CreateAndSetMaterialInstanceDynamic(0);
+						if (DynamicMaterial)
+						{
+							DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
+						}
+					}
+				}
+			});
+
+			HttpRequest->SetURL(TicketImg);
+			HttpRequest->SetVerb("GET");
+			HttpRequest->ProcessRequest();
+		}
+	}
 }
 
 void ATTPlayer::PlayConcertBGM()

@@ -1266,6 +1266,22 @@ void AHM_HttpActor3::OnResGetCommunityTree(FHttpRequestPtr Request, FHttpRespons
 							if (Tree)
 							{
 								Tree->InitializeTicketTabs(TicketTreeId, TicketImg);
+								// if (HasAuthority())
+								// {
+								// 	Tree->Server_RequestInitializeTicketTabs(TicketTreeId, TicketImg);
+								// 	UE_LOG(LogTemp , Log , TEXT("트리 조회 : Tree->Server_RequestInitializeTicketTabs 호출"));
+								// }
+								// else
+								// {
+								// 	for (APlayerController* PC : TActorRange<APlayerController>(GetWorld()))
+								// 	{
+								// 		if (ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn()))
+								// 		{
+								// 			TTPlayer->Multicast_InitializeTicketTabs(TicketTreeId, TicketImg);
+								// 			UE_LOG(LogTemp , Log , TEXT("트리 조회 : TTPlayer->Multicast_InitializeTicketTabs 호출"));
+								// 		}
+								// 	}
+								// }
 							}
 						}
 					}
@@ -1419,7 +1435,24 @@ void AHM_HttpActor3::OnResPostHangingTicketFromTree(FHttpRequestPtr Request, FHt
 					auto* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
 					if (Tree)
                     {
-                        Tree->ApplyTicketImageFromUrl(TicketImg);
+						if (HasAuthority()) // 서버에서 호출
+						{
+							Tree->Server_ApplyTicketImage(TicketImg);
+							UE_LOG(LogTemp , Log , TEXT("서버->트리에 티켓 달기 : Tree->Server_ApplyTicketImage 호출"));
+						}
+						else // 클라이언트에서 호출
+						{
+							Tree->Server_ApplyTicketImage(TicketImg);
+							UE_LOG(LogTemp , Log , TEXT("클라이언트->트리에 티켓 달기 : Tree->Server_ApplyTicketImage 호출"));
+							// for (APlayerController* PC : TActorRange<APlayerController>(GetWorld()))
+							// {
+							// 	if (ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn()))
+							// 	{
+							// 		TTPlayer->Multicast_ApplyTicketImage(TicketImg);
+							// 		UE_LOG(LogTemp , Log , TEXT("트리에 티켓 달기 : TTPlayer->Multicast_ApplyTicketImage 호출"));
+							// 	}
+							// }
+						}
                     }
 				}
 				TreeTicketUI->Can_Choose->SetVisibility(ESlateVisibility::Hidden);

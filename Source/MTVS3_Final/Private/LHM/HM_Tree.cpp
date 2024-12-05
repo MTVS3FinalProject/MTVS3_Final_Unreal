@@ -2,9 +2,14 @@
 
 
 #include "LHM/HM_Tree.h"
+
+#include "EngineUtils.h"
 #include "HttpModule.h"
 #include "ImageUtils.h"
+#include "HJ/TTPlayer.h"
 #include "Interfaces/IHttpResponse.h"
+#include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AHM_Tree::AHM_Tree()
@@ -36,6 +41,9 @@ AHM_Tree::AHM_Tree()
 			}
 		}
 	}
+	
+	// Ticats 배열 초기화
+	TicatVisibilities.SetNum(15, false);
 }
 
 // Called when the game starts or when spawned
@@ -43,10 +51,6 @@ void AHM_Tree::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// for (int32 i = 0; i < 15; i++)
-	// {
-	// 	Ticats[i]->SetVisibility(false);
-	// }
 }
 
 // Called every frame
@@ -56,9 +60,19 @@ void AHM_Tree::Tick(float DeltaTime)
 
 }
 
+void AHM_Tree::OnRep_TicatVisibility()
+{
+	for (int32 i = 0; i < Ticats.Num(); i++)
+	{
+		if (Ticats[i])
+		{
+			Ticats[i]->SetVisibility(TicatVisibilities[i]); // Replicated 상태로 동기화
+		}
+	}
+}
+
 void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg)
 {
-	// 유효성 검사 및 텍스처 다운로드 처리
 	if (TicketTreeId < 0 || TicketTreeId >= Ticats.Num())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid TicketTreeId: %d"), TicketTreeId);
@@ -70,7 +84,6 @@ void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg
 	{
 		Ticat->SetVisibility(true);
 
-		// URL에서 텍스처를 다운로드
 		FHttpModule* Http = &FHttpModule::Get();
 		if (!Http) return;
 
@@ -80,10 +93,7 @@ void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg
 			if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
 			{
 				TArray<uint8> ImageData = Response->GetContent();
-				UTexture2D* DownloadedTexture = nullptr;
-
-				// 이미지 데이터에서 텍스처 생성
-				DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+				UTexture2D* DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
 
 				if (DownloadedTexture)
 				{
@@ -102,48 +112,96 @@ void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg
 	}
 }
 
-void AHM_Tree::ApplyTicketImageFromUrl(const FString& TicketImgUrl)
+void AHM_Tree::Server_ApplyTicketImage_Implementation(const FString& TicketImgUrl)
 {
-	FHttpModule* Http = &FHttpModule::Get();
-	if (!Http) return;
-
-	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
-	HttpRequest->OnProcessRequestComplete().BindUObject(this, &AHM_Tree::OnTicketImageDownloaded);
-	HttpRequest->SetURL(TicketImgUrl);
-	HttpRequest->SetVerb("GET");
-	HttpRequest->ProcessRequest();
-}
-
-void AHM_Tree::OnTicketImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
-{
-	if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
+	for (int32 i = 0; i < Ticats.Num(); i++)
 	{
-		TArray<uint8> ImageData = Response->GetContent();
-		UTexture2D* DownloadedTexture = nullptr;
-
-		// 이미지 데이터에서 텍스처 생성
-		DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-		if (DownloadedTexture)
+		if (Ticats[i] && !TicatVisibilities[i]) // 비활성화된 Ticat만 처리
 		{
-			for (UStaticMeshComponent* Ticat : Ticats)
+			TicatVisibilities[i] = true; // Replicated 변수 업데이트
+			OnRep_TicatVisibility(); // 서버에서도 즉시 처리
+			
+			for (APlayerController* PC : TActorRange<APlayerController>(GetWorld()))
 			{
-				if (Ticat && !Ticat->IsVisible())
+				if (ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn()))
 				{
-					Ticat->SetVisibility(true);
-                    
-					UMaterialInstanceDynamic* DynamicMaterial = Ticat->CreateAndSetMaterialInstanceDynamic(0);
-					if (DynamicMaterial)
-					{
-						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
-					}
-					break; // 한 번만 적용
+					TTPlayer->Multicast_ApplyTicketImage(TicketImgUrl);
 				}
 			}
+			break;
 		}
 	}
-	else
+}
+
+void AHM_Tree::Server_RequestInitializeTicketTabs_Implementation(int32 TicketTreeId, const FString& TicketImg)
+{
+	if (TicketTreeId < 0 || TicketTreeId >= Ticats.Num())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to download image or invalid response."));
+		UE_LOG(LogTemp, Warning, TEXT("Invalid TicketTreeId: %d"), TicketTreeId);
+		return;
 	}
+	
+	for (APlayerController* PC : TActorRange<APlayerController>(GetWorld()))
+	{
+		if (ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn()))
+		{
+			TTPlayer->Multicast_InitializeTicketTabs(TicketTreeId, TicketImg);
+			UE_LOG(LogTemp , Log , TEXT("Player->Multicast_InitializeTicketTabs"));
+		}
+	}
+}
+
+// void AHM_Tree::ApplyTicketImageFromUrl(const FString& TicketImgUrl)
+// {
+// 	FHttpModule* Http = &FHttpModule::Get();
+// 	if (!Http) return;
+//
+// 	TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
+// 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &AHM_Tree::OnTicketImageDownloaded);
+// 	HttpRequest->SetURL(TicketImgUrl);
+// 	HttpRequest->SetVerb("GET");
+// 	HttpRequest->ProcessRequest();
+// }
+//
+// void AHM_Tree::OnTicketImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+// {
+// 	if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
+// 	{
+// 		TArray<uint8> ImageData = Response->GetContent();
+// 		UTexture2D* DownloadedTexture = nullptr;
+//
+// 		// 이미지 데이터에서 텍스처 생성
+// 		DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+// 		if (DownloadedTexture)
+// 		{
+// 			for (UStaticMeshComponent* Ticat : Ticats)
+// 			{
+// 				if (Ticat && !Ticat->IsVisible())
+// 				{
+// 					Ticat->SetVisibility(true);
+//                     
+// 					UMaterialInstanceDynamic* DynamicMaterial = Ticat->CreateAndSetMaterialInstanceDynamic(0);
+// 					if (DynamicMaterial)
+// 					{
+// 						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
+// 					}
+// 					break; // 한 번만 적용
+// 				}
+// 			}
+// 		}
+// 	}
+// 	else
+// 	{
+// 		UE_LOG(LogTemp, Warning, TEXT("Failed to download image or invalid response."));
+// 	}
+// }
+
+void AHM_Tree::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// 네트워크에 동기화
+	DOREPLIFETIME(AHM_Tree, Ticats);
+	DOREPLIFETIME(AHM_Tree, TicatVisibilities);
 }
 

@@ -11,6 +11,7 @@
 #include "ImageUtils.h"
 #include "JsonObjectConverter.h"
 #include "HJ/TTPlayer.h"
+#include "LHM/HM_HttpActor3.h"
 
 // Sets default values
 AHM_HttpActor::AHM_HttpActor()
@@ -419,7 +420,14 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
                         	ATTPlayer* Player = Cast<ATTPlayer>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
                         	if (Player)
                         	{
-                        		Player->SetTitleNameAndRarity(PlayerData.titleName, PlayerData.titleRarity); // 호출하고자 하는 함수
+                        		Player->SetTitleNameAndRarity(PlayerData.titleName, PlayerData.titleRarity);
+                        	}
+
+                        	// 커뮤니티홀 트리 조회
+                        	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+                        	if (HttpActor3)
+                        	{
+                        		HttpActor3->ReqGetCommunityTree(GI->GetAccessToken());
                         	}
                         }
                         else
