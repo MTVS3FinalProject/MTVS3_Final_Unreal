@@ -10,6 +10,7 @@
 #include "Engine/Texture2D.h"
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
+#include "Components/CanvasPanel.h"
 #include "HJ/TTGameInstance.h"
 #include "JMH/MainWidget.h"
 #include "JMH/MH_Inventory.h"
@@ -18,6 +19,7 @@
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_PuzzleWidget.h"
 #include "LHM/HM_TicketCustom.h"
+#include "LHM/HM_Tree.h"
 #include "LHM/HM_TreeCustomTicketWidget.h"
 #include "LHM/PuzzleManager.h"
 
@@ -343,9 +345,6 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 							RankInfos.Add(RankInfo);
 						}
 					}
-
-					// 알림창 알림표시 이미지 SetVisible
-					if (MainUI) MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
 					
 					// // 스티커, 타이틀 정보 퍼즐 UI Update
 					// for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
@@ -356,15 +355,14 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 					// 		TTPlayer->Multicast_UpdateAllPuzzleRanks(RankInfos);
 					// 	}
 					// }
-					//
-					// // 퍼즐 결과 UI Update
-					// APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
-					// 	UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
-					// if (PuzzleManager)
-					// {
-					// 	UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 Server_HandlePuzzleResult 호출"));
-					// 	PuzzleManager->Server_HandlePuzzleResult();
-					// }
+					
+					// 우편함 알림표시 Update
+					APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+						UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+					if (PuzzleManager)
+					{
+						PuzzleManager->Server_HandlePuzzleResult();
+					}
 				}
 			}
 		}
@@ -1368,7 +1366,8 @@ void AHM_HttpActor3::ReqPostHangingTicketFromTree(int32 TicketId, FString Access
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/hall/tree/ticket/%d") , *_url, TicketId);
+	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), TicketId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/hall/tree/tickets/%d") , *_url, TicketId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1411,7 +1410,13 @@ void AHM_HttpActor3::OnResPostHangingTicketFromTree(FHttpRequestPtr Request, FHt
 					UE_LOG(LogTemp , Log , TEXT("TicketImg : %s") , *TicketImg);
 					
 					// TicketImg를 Tree의 Ticat[idx] Visible 해주고 머티리얼 텍스쳐 변경해주기
+					auto* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
+					if (Tree)
+                    {
+                        Tree->ApplyTicketImageFromUrl(TicketImg);
+                    }
 				}
+				TreeTicketUI->Can_Choose->SetVisibility(ESlateVisibility::Hidden);
 				TreeTicketUI->SetVisibility(ESlateVisibility::Hidden);
 				UE_LOG(LogTemp , Log , TEXT("나무에 티켓 달기 성공"));
 			}
