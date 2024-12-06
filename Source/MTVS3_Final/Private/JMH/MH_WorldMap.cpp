@@ -33,6 +33,9 @@ FVector2D UMH_WorldMap::ConvertWorldToMapCoordinates(FVector PlayerLocation, FVe
 	float XRatio = (PlayerLocation.X - WorldMinBounds.X) / (WorldMaxBounds.X - WorldMinBounds.X);  // X 범위를 [0, 1]로 변환
 	float YRatio = (PlayerLocation.Y - WorldMinBounds.Y) / (WorldMaxBounds.Y - WorldMinBounds.Y);  // Y 범위를 [0, 1]로 변환
 
+	// Y 축 방향 반전
+	YRatio = 1.0f - YRatio;
+	
 	float MapX = XRatio * MapSize.X;
 	float MapY = YRatio * MapSize.Y;
 	
@@ -64,8 +67,8 @@ void UMH_WorldMap::UpdateWorldMap()
 		FVector PlayerLocation = Player->GetActorLocation();
 
 		// 월드의 최소 및 최대 좌표 설정 (예시 범위, 필요 시 조정)
-		FVector2D WorldMinBounds = FVector2D(-17700.f, -17700.f);  // 월드 좌표 최소값
-		FVector2D WorldMaxBounds = FVector2D(17700.f, 17700.f);    // 월드 좌표 최대값
+		FVector2D WorldMinBounds = FVector2D(-6600.f, -6600.f);  // 월드 좌표 최소값
+		FVector2D WorldMaxBounds = FVector2D(6600.f, 6600.f);    // 월드 좌표 최대값
 		FVector2D MapSize = FVector2D(900.f, 900.f);             // 맵 크기
 
 		// 플레이어 포인터 위치 업데이트
