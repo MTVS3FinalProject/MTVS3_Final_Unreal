@@ -858,8 +858,7 @@ void AHM_HttpActor3::ReqPostponePaymentSeat(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	UE_LOG(LogTemp , Log , TEXT("GI->GetReceivedSeatId(): %d"), GI->GetReceivedSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/postpone") , *_url, HttpActor2->GetConcertId(), GI->GetReceivedSeatId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/postpone") , *_url, HttpActor2->GetConcertId(), *GI->GetLuckyDrawSeatID());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
