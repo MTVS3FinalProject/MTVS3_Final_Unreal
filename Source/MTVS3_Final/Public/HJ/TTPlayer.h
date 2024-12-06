@@ -170,13 +170,18 @@ public:
 	void ServerRPCUpdateFPSCameraRotation(const FRotator& FPSCameraNewRotation);
 
 	// 퍼즐 결과 UI
-
 	UFUNCTION(Client, Reliable)
 	void Client_UpdatePuzzleUI();
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_UpdatePuzzleRankAndVisibility(const TArray<FPlayerScoreInfo>& TopPlayers, int32 TotalPlayers);
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_UpdateAllPuzzleRanks(const TArray<FPlayerRankInfo>& PlayerRankInfos);
+	
+	// ====================트리====================
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_ApplyTicketImage(const FString& TicketImgUrl);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg);
 	
 #pragma endregion
 

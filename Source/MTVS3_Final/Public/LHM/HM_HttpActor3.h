@@ -225,9 +225,9 @@ public:
 
 	// 시연용 ticketId
 	UPROPERTY(VisibleAnywhere, Category = "Default|params")
-	int32 CheatTicketID;
-	int32 GetTicketId() const { return CheatTicketID; }
-	void SetTicketId(int32 _TicketId) { CheatTicketID = _TicketId; }
+	int32 TicketID;
+	int32 GetTicketId() const { return TicketID; }
+	void SetTicketId(int32 _TicketId) { TicketID = _TicketId; }
 	
 #pragma endregion
 	

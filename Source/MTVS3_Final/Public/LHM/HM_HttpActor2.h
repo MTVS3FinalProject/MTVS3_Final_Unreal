@@ -387,7 +387,7 @@ public:
 	void OnResDeleteCancelRegisteredSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 취소 요청2
-	void ReqDeleteCancelRegisteredSeat2(int32 SeatId , FString AccessToken); // int32 SeatId 로 변경해야함
+	void ReqDeleteCancelRegisteredSeat2(FString SeatId , FString AccessToken); // int32 SeatId 로 변경해야함
 	void OnResDeleteCancelRegisteredSeat2(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 #pragma endregion

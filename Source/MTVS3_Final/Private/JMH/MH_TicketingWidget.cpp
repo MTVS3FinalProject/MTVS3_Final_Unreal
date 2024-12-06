@@ -341,7 +341,7 @@ void UMH_TicketingWidget::OnClickedCancelButton2()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if (HttpActor2)
 		{
-			HttpActor2->ReqDeleteCancelRegisteredSeat2(gi->GetReceivedSeatId() , gi->GetAccessToken());
+			HttpActor2->ReqDeleteCancelRegisteredSeat2(gi->GetLuckyDrawSeatID() , gi->GetAccessToken());
 		}
 	}
 }

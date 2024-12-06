@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Interfaces/IHttpRequest.h"
 #include "HM_Tree.generated.h"
 
 UCLASS()
@@ -26,8 +27,27 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Tree;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(Replicated)
 	TArray<UStaticMeshComponent*> Ticats;
 	
+	UPROPERTY(ReplicatedUsing=OnRep_TicatVisibility)
+	TArray<bool> TicatVisibilities; // Ticat의 가시성을 관리하는 배열
 
+	UFUNCTION()
+	void OnRep_TicatVisibility();
+
+	UFUNCTION()
+	void InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg);
+
+	UFUNCTION(Server, Reliable)
+	void Server_RequestInitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg);
+
+	UFUNCTION(Server, Reliable)
+	void Server_ApplyTicketImage(const FString& TicketImgUrl);
+	
+	//UFUNCTION()
+	//void ApplyTicketImageFromUrl(const FString& TicketImgUrl);
+
+//private:
+	//void OnTicketImageDownloaded(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 };

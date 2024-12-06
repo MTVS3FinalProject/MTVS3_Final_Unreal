@@ -88,9 +88,7 @@ void UHM_TreeCustomTicketWidget::OnClickedYesBtn()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 	if(HttpActor3)
 	{
-		// 티켓아이디
 		HttpActor3->ReqPostHangingTicketFromTree(CurrentSelectedTicketId,GI->GetAccessToken());
-		Can_Choose->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 

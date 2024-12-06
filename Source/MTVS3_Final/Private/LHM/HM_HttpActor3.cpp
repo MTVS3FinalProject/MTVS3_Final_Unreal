@@ -10,6 +10,7 @@
 #include "Engine/Texture2D.h"
 #include "Interfaces/IHttpResponse.h"
 #include "JsonObjectConverter.h"
+#include "Components/CanvasPanel.h"
 #include "HJ/TTGameInstance.h"
 #include "JMH/MainWidget.h"
 #include "JMH/MH_Inventory.h"
@@ -18,6 +19,7 @@
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_PuzzleWidget.h"
 #include "LHM/HM_TicketCustom.h"
+#include "LHM/HM_Tree.h"
 #include "LHM/HM_TreeCustomTicketWidget.h"
 #include "LHM/PuzzleManager.h"
 
@@ -343,9 +345,6 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 							RankInfos.Add(RankInfo);
 						}
 					}
-
-					// 알림창 알림표시 이미지 SetVisible
-					if (MainUI) MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
 					
 					// // 스티커, 타이틀 정보 퍼즐 UI Update
 					// for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
@@ -356,15 +355,14 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 					// 		TTPlayer->Multicast_UpdateAllPuzzleRanks(RankInfos);
 					// 	}
 					// }
-					//
-					// // 퍼즐 결과 UI Update
-					// APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
-					// 	UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
-					// if (PuzzleManager)
-					// {
-					// 	UE_LOG(LogTemp , Log , TEXT("퍼즐 결과 성공 응답 Server_HandlePuzzleResult 호출"));
-					// 	PuzzleManager->Server_HandlePuzzleResult();
-					// }
+					
+					// 우편함 알림표시 Update
+					APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+						UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+					if (PuzzleManager)
+					{
+						PuzzleManager->Server_HandlePuzzleResult();
+					}
 				}
 			}
 		}
@@ -860,8 +858,7 @@ void AHM_HttpActor3::ReqPostponePaymentSeat(FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	UE_LOG(LogTemp , Log , TEXT("GI->GetReceivedSeatId(): %d"), GI->GetReceivedSeatId());
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/postpone") , *_url, HttpActor2->GetConcertId(), GI->GetReceivedSeatId());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/postpone") , *_url, HttpActor2->GetConcertId(), *GI->GetLuckyDrawSeatID());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1252,17 +1249,39 @@ void AHM_HttpActor3::OnResGetCommunityTree(FHttpRequestPtr Request, FHttpRespons
 				if (ResponseObject.IsValid())
 				{
 					// 메일 목록
-					TArray<TSharedPtr<FJsonValue>> TreeList = ResponseObject->GetArrayField(TEXT("ticketImageDTOList"));
+					TArray<TSharedPtr<FJsonValue>> TreeList = ResponseObject->GetArrayField(TEXT("ticketTreeDTOList"));
 					for ( const TSharedPtr<FJsonValue>& TreeValue : TreeList )
 					{
 						TSharedPtr<FJsonObject> TreeObject = TreeValue->AsObject();
 						if (TreeObject.IsValid())
 						{
 							// 받아올 정보 추출
-							int32 TicketId = TreeObject->GetIntegerField(TEXT("ticketId"));
+							int32 TicketTreeId = TreeObject->GetIntegerField(TEXT("ticketTreeId"));
 							FString TicketImg = TreeObject->GetStringField(TEXT("ticketImage"));
-							UE_LOG(LogTemp , Log , TEXT("TicketId : %d") , TicketId);
+							UE_LOG(LogTemp , Log , TEXT("ticketTreeId : %d") , TicketTreeId);
 							UE_LOG(LogTemp , Log , TEXT("TicketImg : %s") , *TicketImg);
+							
+							auto* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
+							if (Tree)
+							{
+								Tree->InitializeTicketTabs(TicketTreeId, TicketImg);
+								// if (HasAuthority())
+								// {
+								// 	Tree->Server_RequestInitializeTicketTabs(TicketTreeId, TicketImg);
+								// 	UE_LOG(LogTemp , Log , TEXT("트리 조회 : Tree->Server_RequestInitializeTicketTabs 호출"));
+								// }
+								// else
+								// {
+								// 	for (APlayerController* PC : TActorRange<APlayerController>(GetWorld()))
+								// 	{
+								// 		if (ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn()))
+								// 		{
+								// 			TTPlayer->Multicast_InitializeTicketTabs(TicketTreeId, TicketImg);
+								// 			UE_LOG(LogTemp , Log , TEXT("트리 조회 : TTPlayer->Multicast_InitializeTicketTabs 호출"));
+								// 		}
+								// 	}
+								// }
+							}
 						}
 					}
 				}
@@ -1368,7 +1387,8 @@ void AHM_HttpActor3::ReqPostHangingTicketFromTree(int32 TicketId, FString Access
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/hall/tree/ticket/%d") , *_url, TicketId);
+	UE_LOG(LogTemp , Log , TEXT("TicketId: %d"), TicketId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/hall/tree/tickets/%d") , *_url, TicketId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1411,7 +1431,30 @@ void AHM_HttpActor3::OnResPostHangingTicketFromTree(FHttpRequestPtr Request, FHt
 					UE_LOG(LogTemp , Log , TEXT("TicketImg : %s") , *TicketImg);
 					
 					// TicketImg를 Tree의 Ticat[idx] Visible 해주고 머티리얼 텍스쳐 변경해주기
+					auto* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
+					if (Tree)
+                    {
+						if (HasAuthority()) // 서버에서 호출
+						{
+							Tree->Server_ApplyTicketImage(TicketImg);
+							UE_LOG(LogTemp , Log , TEXT("서버->트리에 티켓 달기 : Tree->Server_ApplyTicketImage 호출"));
+						}
+						else // 클라이언트에서 호출
+						{
+							Tree->Server_ApplyTicketImage(TicketImg);
+							UE_LOG(LogTemp , Log , TEXT("클라이언트->트리에 티켓 달기 : Tree->Server_ApplyTicketImage 호출"));
+							// for (APlayerController* PC : TActorRange<APlayerController>(GetWorld()))
+							// {
+							// 	if (ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn()))
+							// 	{
+							// 		TTPlayer->Multicast_ApplyTicketImage(TicketImg);
+							// 		UE_LOG(LogTemp , Log , TEXT("트리에 티켓 달기 : TTPlayer->Multicast_ApplyTicketImage 호출"));
+							// 	}
+							// }
+						}
+                    }
 				}
+				TreeTicketUI->Can_Choose->SetVisibility(ESlateVisibility::Hidden);
 				TreeTicketUI->SetVisibility(ESlateVisibility::Hidden);
 				UE_LOG(LogTemp , Log , TEXT("나무에 티켓 달기 성공"));
 			}
