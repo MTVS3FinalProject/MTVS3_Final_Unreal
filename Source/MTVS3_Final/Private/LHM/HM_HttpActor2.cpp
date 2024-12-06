@@ -862,8 +862,6 @@ void AHM_HttpActor2::ReqPostNoticeGameStart(FString SeatId , FString AccessToken
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	//UE_LOG(LogTemp , Log , TEXT("GI->GetReceivedSeatId(): %d") , GI->GetReceivedSeatId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/drawing") , *_url , GetConcertId() , GI->GetReceivedSeatId());
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/drawing") , *_url, GetConcertId(), *SeatId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
@@ -956,11 +954,8 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 
 	UE_LOG(LogTemp , Log , TEXT("GetConcertId(): %d") , GetConcertId());
 	UE_LOG(LogTemp , Log , TEXT("SeatId: %s") , *SeatId);
-	UE_LOG(LogTemp , Log , TEXT("GI->GetReceivedSeatId(): %d") , GI->GetReceivedSeatId());
 
-	FString FormattedUrl = FString::Printf(
-		TEXT("%s/concerts/%d/seats/%d/result") , *_url , GetConcertId() , GI->GetReceivedSeatId());
-	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/result") , *_url, GetConcertId(), *SeatId);
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/result") , *_url, GetConcertId(), *SeatId);
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
