@@ -196,6 +196,9 @@ void ATTPlayer::BeginPlay()
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if (!HttpActor2) return;
+		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (!HttpActor3) return;
 
 		// TTHallMap에서는 ELuckyDrawState에 따라 추첨 관련 UI 표시할지 결정
 		// TTHallMap의 시작은 Plaza(광장)
@@ -207,6 +210,8 @@ void ATTPlayer::BeginPlay()
 			// InitMainUI();
 			//미니맵 생성
 			CreateMinimapActor();
+			// 커뮤니티홀 트리 조회
+			HttpActor3->ReqGetCommunityTree(GI->GetAccessToken());
 
 			switch (GI->GetLuckyDrawState())
 			{

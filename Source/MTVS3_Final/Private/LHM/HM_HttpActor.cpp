@@ -422,14 +422,6 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
                         	{
                         		Player->SetTitleNameAndRarity(PlayerData.titleName, PlayerData.titleRarity);
                         	}
-
-                        	// 커뮤니티홀 트리 조회
-                        	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-                        	if (HttpActor3)
-                        	{
-                        		HttpActor3->ReqGetCommunityTree(GI->GetAccessToken());
-		                        UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 트리 조회 요청"));
-                        	}
                         }
                         else
                         {
