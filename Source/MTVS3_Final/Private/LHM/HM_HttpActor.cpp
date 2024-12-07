@@ -428,6 +428,7 @@ void AHM_HttpActor::OnResPostLogin(FHttpRequestPtr Request , FHttpResponsePtr Re
                         	if (HttpActor3)
                         	{
                         		HttpActor3->ReqGetCommunityTree(GI->GetAccessToken());
+		                        UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 트리 조회 요청"));
                         	}
                         }
                         else

@@ -178,10 +178,10 @@ public:
 	void Multicast_UpdateAllPuzzleRanks(const TArray<FPlayerRankInfo>& PlayerRankInfos);
 	
 	// ====================트리====================
+	UFUNCTION(Server, Reliable)
+	void Server_ApplyTicketImage(int32 TicketIndex, const FString& TicketImgUrl);
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_ApplyTicketImage(const FString& TicketImgUrl);
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg);
+	void Multicast_ApplyTicketImage(int32 TicketIndex, const FString& TicketImgUrl);
 	
 #pragma endregion
 
