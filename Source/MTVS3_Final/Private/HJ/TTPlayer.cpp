@@ -196,6 +196,9 @@ void ATTPlayer::BeginPlay()
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if (!HttpActor2) return;
+		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (!HttpActor3) return;
 
 		// TTHallMap에서는 ELuckyDrawState에 따라 추첨 관련 UI 표시할지 결정
 		// TTHallMap의 시작은 Plaza(광장)
@@ -207,6 +210,8 @@ void ATTPlayer::BeginPlay()
 			// InitMainUI();
 			//미니맵 생성
 			CreateMinimapActor();
+			// 커뮤니티홀 트리 조회
+			HttpActor3->ReqGetCommunityTree(GI->GetAccessToken());
 
 			switch (GI->GetLuckyDrawState())
 			{
@@ -1059,27 +1064,58 @@ void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlay
 	UE_LOG(LogTemp , Log , TEXT("Updated all ranks for player: %s") , *GetNickname());
 }
 
-void ATTPlayer::Multicast_ApplyTicketImage_Implementation(const FString& TicketImgUrl)
+
+void ATTPlayer::Server_ApplyTicketImage_Implementation(int32 TicketIndex, const FString& TicketImgUrl)
+{
+	UE_LOG(LogTemp, Log, TEXT("Server_RequestInitializeTicketTabs Called - Authority: %s, TicketTreeId: %d"), 
+		   HasAuthority() ? TEXT("True") : TEXT("False"), TicketIndex);
+	
+	// Explicit server authority check
+	if (!HasAuthority())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Non-authority attempt to call Server_RequestInitializeTicketTabs"));
+		return;
+	}
+	
+	AHM_Tree* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
+	if (Tree)
+	{
+		if (TicketIndex < 0 || TicketIndex >= Tree->Ticats.Num())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Invalid TicketTreeId: %d"), TicketIndex);
+			return;
+		}
+
+		int32 idx = TicketIndex-1;
+		// 상태 업데이트
+		Tree->TicatVisibilities[idx] = true;
+		Tree->OnRep_TicatVisibility(); // 클라이언트 동기화
+
+		Multicast_ApplyTicketImage(idx, TicketImgUrl);
+	}
+}
+
+void ATTPlayer::Multicast_ApplyTicketImage_Implementation(int32 TicketIndex, const FString& TicketImgUrl)
 {
 	AHM_Tree* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
 	if (Tree)
 	{
-		for (int32 i = 0; i < Tree->TicatVisibilities.Num(); i++)
+		if (TicketIndex < 0 || TicketIndex >= Tree->Ticats.Num()) return;
+		
+		Tree->Ticats[TicketIndex]->SetVisibility(Tree->TicatVisibilities[TicketIndex]); // 가시성 동기화
+		
+		UStaticMeshComponent* Ticat = Tree->Ticats[TicketIndex];
+		if (Ticat)
 		{
-			if (!Tree->TicatVisibilities[i]) // 비활성화된 상태
-			{
-				// 서버에서 가시성 상태를 업데이트
-				if (HasAuthority()) // 서버에서만 Replicated 배열 변경
-				{
-					Tree->TicatVisibilities[i] = true;
-					Tree->OnRep_TicatVisibility(); // 서버에서도 즉시 적용
-				}
-				// 클라이언트에서 URL 기반으로 텍스처 다운로드
-				FHttpModule* Http = &FHttpModule::Get();
-				if (!Http) return;
+			Ticat->SetVisibility(true);
 
-				TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
-				HttpRequest->OnProcessRequestComplete().BindLambda([Tree, i](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+			// 클라이언트에서 URL 기반으로 텍스처 다운로드
+			FHttpModule* Http = &FHttpModule::Get();
+			if (!Http) return;
+
+			TSharedRef<IHttpRequest , ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
+			HttpRequest->OnProcessRequestComplete().BindLambda(
+				[Tree, TicketIndex](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 				{
 					if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
 					{
@@ -1088,68 +1124,23 @@ void ATTPlayer::Multicast_ApplyTicketImage_Implementation(const FString& TicketI
 
 						if (DownloadedTexture)
 						{
-							UMaterialInstanceDynamic* DynamicMaterial = Tree->Ticats[i]->CreateAndSetMaterialInstanceDynamic(0);
+							UMaterialInstanceDynamic* DynamicMaterial = Tree->Ticats[TicketIndex]->
+								CreateAndSetMaterialInstanceDynamic(0);
 							if (DynamicMaterial)
 							{
-								DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
+								DynamicMaterial->SetTextureParameterValue(
+									FName(TEXT("BaseTexture")) , DownloadedTexture);
+								UE_LOG(LogTemp , Log , TEXT("SetTextureParameterValue BaseTexture"));
 							}
 						}
 					}
 					else
 					{
-						UE_LOG(LogTemp, Warning, TEXT("Failed to download image from URL: %s"), *Request->GetURL());
+						UE_LOG(LogTemp , Warning , TEXT("Failed to download image from URL: %s") , *Request->GetURL());
 					}
 				});
 
-				HttpRequest->SetURL(TicketImgUrl);
-				HttpRequest->SetVerb("GET");
-				HttpRequest->ProcessRequest();
-				break; // 한 번만 적용
-			}
-		}
-	}
-}
-
-void ATTPlayer::Multicast_InitializeTicketTabs_Implementation(int32 TicketTreeId, const FString& TicketImg)
-{
-	AHM_Tree* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
-	if (Tree)
-	{
-		if (TicketTreeId < 0 || TicketTreeId >= Tree->Ticats.Num())
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Invalid TicketTreeId: %d"), TicketTreeId);
-			return;
-		}
-
-		UStaticMeshComponent* Ticat = Tree->Ticats[TicketTreeId-1];
-		if (Ticat)
-		{
-			Ticat->SetVisibility(true);
-
-			// 클라이언트에서 텍스처 다운로드
-			FHttpModule* Http = &FHttpModule::Get();
-			if (!Http) return;
-
-			TSharedRef<IHttpRequest, ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
-			HttpRequest->OnProcessRequestComplete().BindLambda([Ticat](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
-			{
-				if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
-				{
-					TArray<uint8> ImageData = Response->GetContent();
-					UTexture2D* DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-
-					if (DownloadedTexture)
-					{
-						UMaterialInstanceDynamic* DynamicMaterial = Ticat->CreateAndSetMaterialInstanceDynamic(0);
-						if (DynamicMaterial)
-						{
-							DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
-						}
-					}
-				}
-			});
-
-			HttpRequest->SetURL(TicketImg);
+			HttpRequest->SetURL(TicketImgUrl);
 			HttpRequest->SetVerb("GET");
 			HttpRequest->ProcessRequest();
 		}

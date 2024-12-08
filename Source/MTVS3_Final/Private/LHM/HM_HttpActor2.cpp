@@ -663,7 +663,7 @@ void AHM_HttpActor2::OnResGetMyRegisteredSeat(FHttpRequestPtr Request , FHttpRes
 							       NewMySeatInfo.drawingTime.day ,
 							       *NewMySeatInfo.drawingTime.time ,
 							       NewMySeatInfo.competitionRate);
-							//GI->SetReceivedSeatId(NewMySeatInfo.seatId);
+							SetReceptionSeatId(NewMySeatInfo.seatId);
 						}
 					}
 					// 우편함에 내가 접수한 좌석 정보 확인하는 UI Switcher & 정보 SetText
@@ -951,8 +951,9 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 
 	UE_LOG(LogTemp , Log , TEXT("GetConcertId(): %d") , GetConcertId());
 	UE_LOG(LogTemp , Log , TEXT("SeatId: %s") , *SeatId);
-
+	
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/result") , *_url, GetConcertId(), *SeatId);
+	
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1194,8 +1195,7 @@ void AHM_HttpActor2::ReqPostReservationinfo(FText UserName , FText UserPhoneNum 
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(
-		TEXT("%s/concerts/%d/seats/%s/reservation") , *_url , GetConcertId() , *GI->GetLuckyDrawSeatID());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/reservation") , *_url , GetConcertId() , *GI->GetLuckyDrawSeatID());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1300,8 +1300,8 @@ void AHM_HttpActor2::ReqPostPaymentSeat(int32 SeatId , FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(
-		TEXT("%s/concerts/%d/seats/%s/payment") , *_url , GetConcertId() , *GI->GetLuckyDrawSeatID());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/payment") , *_url , GetConcertId() , *GI->GetLuckyDrawSeatID());
+	
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
