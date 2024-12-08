@@ -12,6 +12,7 @@
 #include "Interfaces/IHttpResponse.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 // Sets default values
 AHM_Tree::AHM_Tree()
@@ -24,27 +25,59 @@ AHM_Tree::AHM_Tree()
 	Tree->SetupAttachment(RootComponent);
 	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatAsset(
-		TEXT("/Game/Greek_island/Assets/Fish/Ticat1"));
-	static ConstructorHelpers::FObjectFinder<UMaterialInterface> TicatMaterial(
-		TEXT("/Game/LHM/Material/M_Ticat"));
-	if (TicatAsset.Succeeded() && TicatMaterial.Succeeded())
+		TEXT("/Game/KJM/Assets/CM_Ticat"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatClipAsset(
+		TEXT("/Game/KJM/Assets/CM_Ticat_Clip"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> PhysicsParentAsset(
+			TEXT("/Game/KHJ/Assets/SM_BoxBrush"));
+	
+	if (TicatAsset.Succeeded() && TicatClipAsset.Succeeded() && PhysicsParentAsset.Succeeded())
 	{
 		Ticats.SetNum(20);
+		TicatClips.SetNum(20);
+		PhysicsConstraints.SetNum(20);
+		PhysicsParents.SetNum(20);
 		
 		for (int32 i = 0; i < 20; i++)
 		{
 			FName TicatName = *FString::Printf(TEXT("Ticat_%d"), i + 1);
+			FName TicatClipName = *FString::Printf(TEXT("TicatClip_%d"), i + 1);
+			FName PhysicsConstName = *FString::Printf(TEXT("Physics_%d"), i + 1);
+			FName PhysicsParentName = *FString::Printf(TEXT("PhysicsParent_%d"), i + 1);
 			UStaticMeshComponent* TicatComp = CreateDefaultSubobject<UStaticMeshComponent>(TicatName);
+			UStaticMeshComponent* TicatClipComp = CreateDefaultSubobject<UStaticMeshComponent>(TicatClipName);
+			UPhysicsConstraintComponent* PhysicsComp = CreateDefaultSubobject<UPhysicsConstraintComponent>(PhysicsConstName);
+			UStaticMeshComponent* PhysicsParentComp = CreateDefaultSubobject<UStaticMeshComponent>(PhysicsParentName);
+			
 			Ticats[i] = TicatComp;
 			Ticats[i]->SetVisibility(false);
 			
-			if (TicatComp)
+			TicatClips[i] = TicatClipComp;
+			TicatClips[i]->SetVisibility(false);
+			TicatClips[i]->SetSimulatePhysics(true);
+			TicatClips[i]->SetMassScale(NAME_None,300);
+			
+			PhysicsConstraints[i] = PhysicsComp;
+			
+			PhysicsParents[i] = PhysicsParentComp;
+			PhysicsParents[i]->SetVisibility(false);
+			
+			
+			if (TicatComp && TicatClipComp && PhysicsComp && PhysicsParentComp)
 			{
-				TicatComp->SetupAttachment(Tree);
-				TicatComp->SetStaticMesh(TicatAsset.Object);
-				TicatComp->SetMaterial(0, TicatMaterial.Object);
-				TicatComp->SetRelativeRotation(FRotator(90, 180, 90));
+				PhysicsComp->SetupAttachment(Tree);
+				PhysicsComp->SetConstrainedComponents(PhysicsParentComp, NAME_None, TicatClipComp, NAME_None);
 
+				PhysicsParentComp->SetupAttachment(PhysicsComp);
+				PhysicsParentComp->SetStaticMesh(PhysicsParentAsset.Object);
+				PhysicsParentComp->SetRelativeScale3D(FVector3d(0.1f));
+				
+				TicatClipComp->SetupAttachment(PhysicsComp);
+				TicatClipComp->SetStaticMesh(TicatClipAsset.Object);
+				
+				TicatComp->SetupAttachment(TicatClipComp);
+				TicatComp->SetStaticMesh(TicatAsset.Object);
+				
 				//// 2줄 배치 계산
 				//int32 Row = i / 10; // 0 또는 1
 				//int32 Column = i % 10; // 0부터 9까지
@@ -56,7 +89,8 @@ AHM_Tree::AHM_Tree()
 		}
 	}
 	
-	// TicatVisibilities 배열 초기화
+	// 배열 초기화
+	TicatClipVisibilities.SetNum(20, false);
 	TicatVisibilities.SetNum(20, false);
 	
 	bReplicates = true;
@@ -86,30 +120,34 @@ void AHM_Tree::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 
 	// 네트워크에 동기화
 	DOREPLIFETIME(AHM_Tree, Ticats);
+	DOREPLIFETIME(AHM_Tree, TicatClips);
 	DOREPLIFETIME(AHM_Tree, TicatVisibilities);
+	DOREPLIFETIME(AHM_Tree, TicatClipVisibilities);
 }
 
 void AHM_Tree::OnRep_TicatVisibility()
 {
 	for (int32 i = 0; i < Ticats.Num(); i++)
 	{
-		if (Ticats[i])
+		if (Ticats[i] && TicatClips[i])
 		{
+			TicatClips[i]->SetVisibility(TicatClipVisibilities[i]); // Replicated 상태로 동기화
 			Ticats[i]->SetVisibility(TicatVisibilities[i]); // Replicated 상태로 동기화
 		}
 	}
-	UE_LOG(LogTemp, Log, TEXT("OnRep_TicatVisibility - Visibility updated"));
 }
 
 void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg)
 {
 	if (TicketTreeId < 1 || TicketTreeId > Ticats.Num()) return;
 
+	UStaticMeshComponent* TicatClip = TicatClips[TicketTreeId-1];
 	UStaticMeshComponent* Ticat = Ticats[TicketTreeId-1];
-	if (Ticat)
+	if (Ticat && TicatClip)
 	{
 		if (HasAuthority())
 		{
+			TicatClipVisibilities[TicketTreeId-1] = true; // 서버에서만 변경
 			TicatVisibilities[TicketTreeId-1] = true; // 서버에서만 변경
 			OnRep_TicatVisibility(); // 클라이언트 동기화
 		}
@@ -149,6 +187,7 @@ void AHM_Tree::ApplyTicketImage(int32 TicketTreeId, FString TicketImgUrl)
 
 	if (HasAuthority())
 	{
+		TicatClipVisibilities[idx] = true; // 서버에서만 변경
 		TicatVisibilities[idx] = true; // 서버에서만 변경
 		OnRep_TicatVisibility(); // 클라이언트 동기화
 	}

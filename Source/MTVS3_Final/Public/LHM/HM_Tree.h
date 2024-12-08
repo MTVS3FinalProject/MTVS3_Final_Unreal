@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Interfaces/IHttpRequest.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "HM_Tree.generated.h"
 
 UCLASS()
@@ -26,11 +26,19 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Tree;
+	UPROPERTY(EditDefaultsOnly)
+	TArray <UPhysicsConstraintComponent*> PhysicsConstraints;
+	UPROPERTY(EditDefaultsOnly)
+	TArray <UStaticMeshComponent*> PhysicsParents;
+	
 	UPROPERTY(EditDefaultsOnly, Replicated)
 	TArray<UStaticMeshComponent*> Ticats;
-	
+	UPROPERTY(EditDefaultsOnly, Replicated)
+	TArray<UStaticMeshComponent*> TicatClips;
 	UPROPERTY(ReplicatedUsing=OnRep_TicatVisibility)
 	TArray<bool> TicatVisibilities;
+	UPROPERTY(ReplicatedUsing=OnRep_TicatVisibility)
+	TArray<bool> TicatClipVisibilities;
 	UFUNCTION()
 	void OnRep_TicatVisibility();
 	UFUNCTION()
