@@ -1289,7 +1289,7 @@ void AHM_HttpActor2::OnResPostReservationinfo(FHttpRequestPtr Request , FHttpRes
 }
 
 // 좌석 결제 요청
-void AHM_HttpActor2::ReqPostPaymentSeat(int32 SeatId , FString AccessToken)
+void AHM_HttpActor2::ReqPostPaymentSeat(FString SeatId , FString AccessToken)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 
@@ -1300,7 +1300,7 @@ void AHM_HttpActor2::ReqPostPaymentSeat(int32 SeatId , FString AccessToken)
 	// HTTP 요청 생성
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
-	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/payment") , *_url , GetConcertId() , *GI->GetLuckyDrawSeatID());
+	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/payment") , *_url , GetConcertId() , *SeatId);
 	
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
