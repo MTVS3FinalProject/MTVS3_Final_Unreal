@@ -119,6 +119,11 @@ void ATTHallGameState::MulticastUpdateChairStates_Implementation(const TArray<in
 	OnChairStatesUpdated.Broadcast();
 }
 
+void ATTHallGameState::Multicast_ApplyTicketImage_Implementation(int32 TicketIndex, const FString& TicketImgUrl)
+{
+	OnTicketImageUpdated.Broadcast(TicketIndex, TicketImgUrl);
+}
+
 // void ATTHallGameState::HideLuckyDrawInvitation(const TArray<FString>& NicknameList , int32 CompetitionRate)
 // {
 // 	if (!IsValid(this))
@@ -164,3 +169,4 @@ void ATTHallGameState::MulticastUpdateChairStates_Implementation(const TArray<in
 // 		}
 // 	}
 // }
+

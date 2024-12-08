@@ -12,6 +12,7 @@
 #include "JsonObjectConverter.h"
 #include "Components/CanvasPanel.h"
 #include "HJ/TTGameInstance.h"
+#include "HJ/TTHallGameState.h"
 #include "JMH/MainWidget.h"
 #include "JMH/MH_Inventory.h"
 #include "JMH/MH_NoticeWidget.h"
@@ -22,6 +23,7 @@
 #include "LHM/HM_Tree.h"
 #include "LHM/HM_TreeCustomTicketWidget.h"
 #include "LHM/PuzzleManager.h"
+#include "LHM/TTPlayerController.h"
 
 // Sets default values
 AHM_HttpActor3::AHM_HttpActor3()
@@ -1413,37 +1415,20 @@ void AHM_HttpActor3::OnResPostHangingTicketFromTree(FHttpRequestPtr Request, FHt
 					FString TicketImg = ResponseObject->GetStringField(TEXT("ticketImage"));
 					UE_LOG(LogTemp , Log , TEXT("TicketTreeId : %d") , TicketTreeId);
 					UE_LOG(LogTemp , Log , TEXT("TicketImg : %s") , *TicketImg);
-					
-					// TicketImg를 Tree의 Ticat[idx] Visible 해주고 머티리얼 텍스쳐 변경해주기
-					auto* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
-					if (Tree)
-                    {
-						if (HasAuthority()) // 서버에서 호출
+
+					ATTPlayerController* PC = Cast<ATTPlayerController>(GetWorld()->GetFirstPlayerController());
+					ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>();
+					if (PC && HallState)
+					{
+						if(HasAuthority())
 						{
-							Tree->Server_ApplyTicketImage(TicketTreeId, TicketImg);
-							UE_LOG(LogTemp , Log , TEXT("서버->트리에 티켓 달기 : Tree->Server_ApplyTicketImage 호출"));
+							HallState->Multicast_ApplyTicketImage(TicketTreeId, TicketImg);
 						}
-						else // 클라이언트에서 호출
+						else
 						{
-							Tree->Server_ApplyTicketImage(TicketTreeId, TicketImg);
-							
-							//Tree->Client_ApplyTicketImage(TicketTreeId, TicketImg);
-							//UE_LOG(LogTemp , Log , TEXT("클라이언트->트리에 티켓 달기 : Tree->Client_ApplyTicketImage 호출"));
-							
-							// APlayerController* PC = GetWorld()->GetFirstPlayerController();
-							// if (PC && PC->IsLocalController())
-							// {
-							// 	TActorIterator<ATTPlayer> It(GetWorld());
-							// 	ATTPlayer* TTPlayer = *It;
-							// 	if (TTPlayer)
-							// 	{
-							// 		int32 idx = TicketTreeId-1;
-							// 		UE_LOG(LogTemp , Log , TEXT("클라이언트->트리에 티켓 달기 : TTPlayer->Multicast_ApplyTicketImage(TicketTreeId , TicketImg);"));
-							// 		TTPlayer->Multicast_ApplyTicketImage(idx , TicketImg);
-							// 	}
-							// }
+							PC->ServerRequestApplyTicketImage(TicketTreeId, TicketImg);
 						}
-                    }
+					}
 				}
 				TreeTicketUI->Can_Choose->SetVisibility(ESlateVisibility::Hidden);
 				TreeTicketUI->SetVisibility(ESlateVisibility::Hidden);
@@ -1453,6 +1438,52 @@ void AHM_HttpActor3::OnResPostHangingTicketFromTree(FHttpRequestPtr Request, FHt
 		else
 		{
 			UE_LOG(LogTemp , Log , TEXT("나무에 티켓 달기 실패"));
+		}
+	}
+}
+
+void AHM_HttpActor3::ReqDeleteCommunityTree(FString AccessToken)
+{
+	UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무 티켓 삭제 요청"));
+	
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
+
+	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
+
+	FString FormattedUrl = FString::Printf(TEXT("%s/hall/tree") , *_url);
+	Request->SetURL(FormattedUrl);
+	Request->SetVerb(TEXT("DELETE"));
+
+	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
+	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
+
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResGetCommunityTree);
+	Request->ProcessRequest();
+}
+
+void AHM_HttpActor3::OnResDeleteCommunityTree(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			auto* Tree = Cast<AHM_Tree>(UGameplayStatics::GetActorOfClass(GetWorld() , AHM_Tree::StaticClass()));
+			if(!Tree) return;
+
+			for(int32 i = 0; i < Tree->Ticats.Num(); i++)
+			{
+				Tree->TicatVisibilities[i] = false;
+				UE_LOG(LogTemp , Log , TEXT("Tree->TicatVisibilities[%d] = false"), i);
+			}
+				UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무 티켓 삭제 성공"));
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("커뮤니티홀 나무 티켓 삭제 실패"));
 		}
 	}
 }

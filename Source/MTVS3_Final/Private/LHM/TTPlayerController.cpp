@@ -5,6 +5,7 @@
 #include "Engine/World.h"
 #include "chrono"
 #include "HJ/TTGameInstance.h"
+#include "HJ/TTHallGameState.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_TicketingWidget.h"
 #include "JMH/MainWidget.h"
@@ -270,4 +271,20 @@ void ATTPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
 	}
+}
+
+void ATTPlayerController::ServerRequestApplyTicketImage_Implementation(int32 TicketIndex, const FString& TicketImgUrl)
+{
+		UE_LOG(LogTemp , Log , TEXT("Client : ATTPlayerController::ServerRequestApplyTicketImage"));
+	if (ATTHallGameState* HallGameState = GetWorld()->GetGameState<ATTHallGameState>())
+	{
+		UE_LOG(LogTemp , Log , TEXT("Client : HallGameState->Multicast_ApplyTicketImage"));
+		HallGameState->Multicast_ApplyTicketImage(TicketIndex, TicketImgUrl);
+	}
+}
+
+bool ATTPlayerController::ServerRequestApplyTicketImage_Validate(int32 TicketIndex, const FString& TicketImgUrl)
+{
+	UE_LOG(LogTemp , Log , TEXT("Client : ATTPlayerController::ServerRequestApplyTicketImage_Validate"));
+	return true;
 }

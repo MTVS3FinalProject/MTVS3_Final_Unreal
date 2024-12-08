@@ -333,7 +333,7 @@ void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 		if (HttpActor2)
 		{
-			HttpActor2->ReqPostPaymentSeat(1, gi->GetAccessToken());
+			HttpActor2->ReqPostPaymentSeat(gi->GetLuckyDrawSeatID(), gi->GetAccessToken());
 			//HttpActor2->ReqPostCheatPaymentSeat(gi->GetAccessToken());
 			// ReqPostCheatPaymentSeat 개발자키 프로토시연용
 		}

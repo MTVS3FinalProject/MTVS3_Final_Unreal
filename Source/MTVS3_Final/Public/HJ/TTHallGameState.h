@@ -56,4 +56,15 @@ public:
 	
 private:
 	FString LuckyDrawSeatId;
+
+	
+public:
+	// 트리 티켓 동기화
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTicketImageUpdated, int32, TicketIndex, FString, TicketImgUrl);
+
+	UPROPERTY(BlueprintAssignable, Category = "Tickets")
+	FOnTicketImageUpdated OnTicketImageUpdated;
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_ApplyTicketImage(int32 TicketIndex, const FString& TicketImgUrl);
 };

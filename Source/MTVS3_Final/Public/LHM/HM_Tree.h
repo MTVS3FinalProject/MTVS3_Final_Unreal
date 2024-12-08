@@ -26,24 +26,16 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	class UStaticMeshComponent* Tree;
-
 	UPROPERTY(EditDefaultsOnly, Replicated)
 	TArray<UStaticMeshComponent*> Ticats;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_TicatVisibility)
-	TArray<bool> TicatVisibilities; // Ticat의 가시성을 관리하는 배열
-
+	TArray<bool> TicatVisibilities;
 	UFUNCTION()
 	void OnRep_TicatVisibility();
-
-	// 트리 조회 : 로그인할 때 각 클라이언트에서 실행 동기화X
 	UFUNCTION()
 	void InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg);
-
-	// 트리에 티켓 달기
-	UFUNCTION(Client, Reliable)
-	void Client_ApplyTicketImage(int32 TicketTreeId, const FString& TicketImgUrl);
-	UFUNCTION(Server, Reliable)
-	void Server_ApplyTicketImage(int32 TicketTreeId, const FString& TicketImgUrl);
+	UFUNCTION()
+	void ApplyTicketImage(int32 TicketTreeId, FString TicketImgUrl);
 	
 };
