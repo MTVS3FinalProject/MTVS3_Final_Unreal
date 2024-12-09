@@ -77,4 +77,8 @@ public:
 	FTimerHandle CountdownTimerHandle;
 
 	void EndPlay(const EEndPlayReason::Type EndPlayReason);
+
+	// LHM_Tree
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerRequestApplyTicketImage(int32 TicketIndex, const FString& TicketImgUrl);
 };

@@ -44,6 +44,12 @@ public:
 
 	UFUNCTION()
 	void OnTicketSelected(int32 ClickedTicketId);
+
+	// 트리 티켓 삭제
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Delete;
+	UFUNCTION()
+	void OnClickedDeleteBtn();
 	
 private:
 	int32 CurrentSelectedTicketId;

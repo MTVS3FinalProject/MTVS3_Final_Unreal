@@ -177,12 +177,6 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_UpdateAllPuzzleRanks(const TArray<FPlayerRankInfo>& PlayerRankInfos);
 	
-	// ====================트리====================
-	UFUNCTION(Server, Reliable)
-	void Server_ApplyTicketImage(int32 TicketIndex, const FString& TicketImgUrl);
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_ApplyTicketImage(int32 TicketIndex, const FString& TicketImgUrl);
-	
 #pragma endregion
 
 #pragma region 사운드

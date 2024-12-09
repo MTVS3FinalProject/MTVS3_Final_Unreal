@@ -6,10 +6,13 @@
 #include "EngineUtils.h"
 #include "HttpModule.h"
 #include "ImageUtils.h"
+#include "HJ/TTGameInstance.h"
 #include "HJ/TTHallGameState.h"
 #include "HJ/TTPlayer.h"
 #include "Interfaces/IHttpResponse.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 // Sets default values
 AHM_Tree::AHM_Tree()
@@ -22,28 +25,73 @@ AHM_Tree::AHM_Tree()
 	Tree->SetupAttachment(RootComponent);
 	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatAsset(
-		TEXT("/Game/Greek_island/Assets/Fish/Ticat1"));
-	if (TicatAsset.Succeeded())
+		TEXT("/Game/KJM/Assets/CM_Ticat"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatClipAsset(
+		TEXT("/Game/KJM/Assets/CM_Ticat_Clip"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> PhysicsParentAsset(
+			TEXT("/Game/KHJ/Assets/SM_BoxBrush"));
+	
+	if (TicatAsset.Succeeded() && TicatClipAsset.Succeeded() && PhysicsParentAsset.Succeeded())
 	{
-		Ticats.SetNum(15);
-		for (int32 i = 0; i < 15; i++)
+		Ticats.SetNum(20);
+		TicatClips.SetNum(20);
+		PhysicsConstraints.SetNum(20);
+		PhysicsParents.SetNum(20);
+		
+		for (int32 i = 0; i < 20; i++)
 		{
 			FName TicatName = *FString::Printf(TEXT("Ticat_%d"), i + 1);
+			FName TicatClipName = *FString::Printf(TEXT("TicatClip_%d"), i + 1);
+			FName PhysicsConstName = *FString::Printf(TEXT("Physics_%d"), i + 1);
+			FName PhysicsParentName = *FString::Printf(TEXT("PhysicsParent_%d"), i + 1);
 			UStaticMeshComponent* TicatComp = CreateDefaultSubobject<UStaticMeshComponent>(TicatName);
+			UStaticMeshComponent* TicatClipComp = CreateDefaultSubobject<UStaticMeshComponent>(TicatClipName);
+			UPhysicsConstraintComponent* PhysicsComp = CreateDefaultSubobject<UPhysicsConstraintComponent>(PhysicsConstName);
+			UStaticMeshComponent* PhysicsParentComp = CreateDefaultSubobject<UStaticMeshComponent>(PhysicsParentName);
+			
 			Ticats[i] = TicatComp;
 			Ticats[i]->SetVisibility(false);
 			
-			if (TicatComp)
+			TicatClips[i] = TicatClipComp;
+			TicatClips[i]->SetVisibility(false);
+			TicatClips[i]->SetSimulatePhysics(true);
+			TicatClips[i]->SetMassScale(NAME_None,300);
+			
+			PhysicsConstraints[i] = PhysicsComp;
+			
+			PhysicsParents[i] = PhysicsParentComp;
+			PhysicsParents[i]->SetVisibility(false);
+			
+			
+			if (TicatComp && TicatClipComp && PhysicsComp && PhysicsParentComp)
 			{
-				TicatComp->SetupAttachment(Tree);
+				PhysicsComp->SetupAttachment(Tree);
+				PhysicsComp->SetConstrainedComponents(PhysicsParentComp, NAME_None, TicatClipComp, NAME_None);
+
+				PhysicsParentComp->SetupAttachment(PhysicsComp);
+				PhysicsParentComp->SetStaticMesh(PhysicsParentAsset.Object);
+				PhysicsParentComp->SetRelativeScale3D(FVector3d(0.1f));
+				
+				TicatClipComp->SetupAttachment(PhysicsComp);
+				TicatClipComp->SetStaticMesh(TicatClipAsset.Object);
+				
+				TicatComp->SetupAttachment(TicatClipComp);
 				TicatComp->SetStaticMesh(TicatAsset.Object);
-				TicatComp->SetRelativeRotation(FRotator(90, 180, 90));
+				
+				//// 2줄 배치 계산
+				//int32 Row = i / 10; // 0 또는 1
+				//int32 Column = i % 10; // 0부터 9까지
+
+				// 위치 계산 (20 간격으로 배치)
+				//FVector RelativeLocation = FVector(0.0f, Column * 100.0f, Row * 100.0f);
+				//TicatComp->SetRelativeLocation(RelativeLocation);
 			}
 		}
 	}
 	
-	// TicatVisibilities 배열 초기화
-	TicatVisibilities.SetNum(15, false);
+	// 배열 초기화
+	TicatClipVisibilities.SetNum(20, false);
+	TicatVisibilities.SetNum(20, false);
 	
 	bReplicates = true;
 }
@@ -53,6 +101,10 @@ void AHM_Tree::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
+	{
+		HallState->OnTicketImageUpdated.AddDynamic(this, &AHM_Tree::ApplyTicketImage);
+	}
 }
 
 // Called every frame
@@ -62,12 +114,24 @@ void AHM_Tree::Tick(float DeltaTime)
 
 }
 
+void AHM_Tree::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// 네트워크에 동기화
+	DOREPLIFETIME(AHM_Tree, Ticats);
+	DOREPLIFETIME(AHM_Tree, TicatClips);
+	DOREPLIFETIME(AHM_Tree, TicatVisibilities);
+	DOREPLIFETIME(AHM_Tree, TicatClipVisibilities);
+}
+
 void AHM_Tree::OnRep_TicatVisibility()
 {
 	for (int32 i = 0; i < Ticats.Num(); i++)
 	{
-		if (Ticats[i])
+		if (Ticats[i] && TicatClips[i])
 		{
+			TicatClips[i]->SetVisibility(TicatClipVisibilities[i]); // Replicated 상태로 동기화
 			Ticats[i]->SetVisibility(TicatVisibilities[i]); // Replicated 상태로 동기화
 		}
 	}
@@ -77,11 +141,17 @@ void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg
 {
 	if (TicketTreeId < 1 || TicketTreeId > Ticats.Num()) return;
 
+	UStaticMeshComponent* TicatClip = TicatClips[TicketTreeId-1];
 	UStaticMeshComponent* Ticat = Ticats[TicketTreeId-1];
-	if (Ticat)
+	if (Ticat && TicatClip)
 	{
-		Ticat->SetVisibility(true);
-
+		if (HasAuthority())
+		{
+			TicatClipVisibilities[TicketTreeId-1] = true; // 서버에서만 변경
+			TicatVisibilities[TicketTreeId-1] = true; // 서버에서만 변경
+			OnRep_TicatVisibility(); // 클라이언트 동기화
+		}
+		
 		FHttpModule* Http = &FHttpModule::Get();
 		if (!Http) return;
 
@@ -98,7 +168,17 @@ void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg
 					UMaterialInstanceDynamic* DynamicMaterial = Ticat->CreateAndSetMaterialInstanceDynamic(0);
 					if (DynamicMaterial)
 					{
-						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")), DownloadedTexture);
+						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")) , DownloadedTexture);
+
+						FVector2D TextureSize(505.0f , 888.0f); // 크기 줄이기
+						FVector2D UVSize(TextureSize.X / TextureSize.Y, 1.0f); // 텍스처 비율 기반
+						//FVector2D UVSize(1.0f, TextureSize.Y / TextureSize.X); // 텍스처 비율 기반
+
+						//DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleX")), UVSize.X);
+						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleX")), 1);
+						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleY")), UVSize.Y);
+						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVOffsetX")) , 0.0f);
+						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVOffsetY")) , 0.0f);
 					}
 				}
 			}
@@ -110,54 +190,51 @@ void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg
 	}
 }
 
-void AHM_Tree::Client_ApplyTicketImage_Implementation(int32 TicketTreeId, const FString& TicketImgUrl)
+void AHM_Tree::ApplyTicketImage(int32 TicketTreeId, FString TicketImgUrl)
 {
-	 APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	 if (PC && PC->IsLocalController())
-	 {
-	 	TActorIterator<ATTPlayer> It(GetWorld());
-	 	ATTPlayer* TTPlayer = *It;
-	 	if (TTPlayer && TTPlayer->IsLocallyControlled())
-	 	{
-	 		TTPlayer->SetOwner(PC);
-	 		this->SetOwner(PC);
-			Server_ApplyTicketImage(TicketTreeId, TicketImgUrl);
-		}
-	}
-}
-
-void AHM_Tree::Server_ApplyTicketImage_Implementation(int32 TicketTreeId, const FString& TicketImgUrl)
-{
-	if (!HasAuthority()) return;
 	if (TicketTreeId < 1 || TicketTreeId > Ticats.Num()) return;
-
 	int32 idx = TicketTreeId - 1;
 
-	if (Ticats[idx] && !TicatVisibilities[idx]) // 비활성화된 Ticat만 처리
+	if (HasAuthority())
 	{
-		TicatVisibilities[idx] = true; // Replicated 변수 업데이트
-		OnRep_TicatVisibility(); // 서버에서도 즉시 처리
-
-		APlayerController* PC = GetWorld()->GetFirstPlayerController();
-		if (PC && PC->IsLocalController())
-		{
-			TActorIterator<ATTPlayer> It(GetWorld());
-			ATTPlayer* TTPlayer = *It;
-			if (TTPlayer)
-			{
-				UE_LOG(LogTemp , Log , TEXT("TTPlayer->Multicast_ApplyTicketImage(i, TicketImgUrl);"));
-				TTPlayer->Multicast_ApplyTicketImage(idx , TicketImgUrl);
-			}
-		}
+		TicatClipVisibilities[idx] = true; // 서버에서만 변경
+		TicatVisibilities[idx] = true; // 서버에서만 변경
+		OnRep_TicatVisibility(); // 클라이언트 동기화
 	}
-}
 
-void AHM_Tree::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	// 이미지 다운로드 및 적용
+	FHttpModule* Http = &FHttpModule::Get();
+	if (!Http) return;
 
-	// 네트워크에 동기화
-	DOREPLIFETIME(AHM_Tree, Ticats);
-	DOREPLIFETIME(AHM_Tree, TicatVisibilities);
+	TSharedRef<IHttpRequest , ESPMode::ThreadSafe> HttpRequest = Http->CreateRequest();
+	HttpRequest->OnProcessRequestComplete().BindLambda(
+		[this, idx](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+		{
+			if (bWasSuccessful && Response.IsValid() && Response->GetResponseCode() == 200)
+			{
+				TArray<uint8> ImageData = Response->GetContent();
+				UTexture2D* DownloadedTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+
+				if (DownloadedTexture)
+				{
+					UMaterialInstanceDynamic* DynamicMaterial = Ticats[idx]->CreateAndSetMaterialInstanceDynamic(0);
+					if (DynamicMaterial)
+					{
+						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")) , DownloadedTexture);
+
+						// UV 스케일 및 오프셋 조정
+						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleX")) , 1.0f);
+						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleY")) , 505.0f / 888.0f);
+						// 텍스처 비율 유지
+						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVOffsetX")) , 0.0f);
+						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVOffsetY")) , 0.0f);
+					}
+				}
+			}
+		});
+
+	HttpRequest->SetURL(TicketImgUrl);
+	HttpRequest->SetVerb("GET");
+	HttpRequest->ProcessRequest();
 }
 

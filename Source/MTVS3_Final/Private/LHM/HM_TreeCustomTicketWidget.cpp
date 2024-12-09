@@ -21,6 +21,7 @@ void UHM_TreeCustomTicketWidget::NativeConstruct()
 	Btn_Yes->OnClicked.AddDynamic(this , &UHM_TreeCustomTicketWidget::OnClickedYesBtn);
 	Btn_No->OnClicked.AddDynamic(this , &UHM_TreeCustomTicketWidget::OnClickedNoBtn);
 	Btn_Back->OnClicked.AddDynamic(this , &UHM_TreeCustomTicketWidget::OnClickedBackBtn);
+	Btn_Delete->OnClicked.AddDynamic(this , &UHM_TreeCustomTicketWidget::OnClickedDeleteBtn);
 }
 
 void UHM_TreeCustomTicketWidget::InitializeTicketTabs(const TMap<int32, FString>& TicketMap)
@@ -101,4 +102,15 @@ void UHM_TreeCustomTicketWidget::OnTicketSelected(int32 ClickedTicketId)
 {
 	Can_Choose->SetVisibility(ESlateVisibility::Visible);
 	CurrentSelectedTicketId = ClickedTicketId;
+}
+
+void UHM_TreeCustomTicketWidget::OnClickedDeleteBtn()
+{
+	auto* GI = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	auto* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	if(HttpActor3)
+	{
+		HttpActor3->ReqDeleteCommunityTree(GI->GetAccessToken());
+	}
 }

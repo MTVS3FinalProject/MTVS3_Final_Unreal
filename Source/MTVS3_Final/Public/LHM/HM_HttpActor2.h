@@ -417,7 +417,7 @@ public:
 	void OnResPostReservationinfo(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 좌석 결제 요청
-	void ReqPostPaymentSeat(int32 SeatId, FString AccessToken);
+	void ReqPostPaymentSeat(FString SeatId, FString AccessToken);
 	void OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 	
 	// 예매 정보 불러오기 요청

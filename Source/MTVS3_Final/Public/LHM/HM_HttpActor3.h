@@ -291,6 +291,10 @@ public:
 	// 커뮤니티홀 나무에 티켓 달기
 	void ReqPostHangingTicketFromTree(int32 TicketId, FString AccessToken);
 	void OnResPostHangingTicketFromTree(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
-
+	
+	// 커뮤니티홀 나무 티켓 삭제
+	void ReqDeleteCommunityTree(FString AccessToken);
+	void OnResDeleteCommunityTree(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
+	
 #pragma endregion
 };
