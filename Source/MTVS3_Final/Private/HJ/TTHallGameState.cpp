@@ -53,12 +53,6 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 			{
 				if (TTPlayer->HasAuthority()) // 서버/호스트
 				{
-					// 서버에서 실행되는 로직
-					ATTPlayerController* TTPC = Cast<ATTPlayerController>(TTPlayer->GetController());
-					if (TTPC)
-					{
-						TTPC->SetDrawStartTime();
-					}
 					TTPlayer->ClientShowLuckyDrawInvitation(true, CompetitionRate);
 					// TTPlayer->SetLuckyDrawSeatID("1");
 					TTPlayer->SetLuckyDrawSeatID(LuckyDrawSeatId);
@@ -68,12 +62,6 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 					TTPlayer->ClientShowLuckyDrawInvitation(true, CompetitionRate);
 					// TTPlayer->SetLuckyDrawSeatID("1");
 					TTPlayer->SetLuckyDrawSeatID(LuckyDrawSeatId);
-                
-					ATTPlayerController* TTPC = Cast<ATTPlayerController>(TTPlayer->GetController());
-					if (TTPC)
-					{
-						TTPC->SetDrawStartTime();
-					}
 				}
 			}
 			else // 호스트가 아닐 때는 클라이언트 RPC로 초청

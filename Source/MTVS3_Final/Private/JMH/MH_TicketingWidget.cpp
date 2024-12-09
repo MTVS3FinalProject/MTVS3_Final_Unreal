@@ -18,6 +18,7 @@
 #include "LHM/HM_HttpActor2.h"
 #include "JMH/MH_Chair.h"
 #include "JMH/MainWidget.h"
+#include "LHM/TTPlayerController.h"
 
 void UMH_TicketingWidget::NativeConstruct()
 {
@@ -144,6 +145,7 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 			bIsVisible = true;
 			WS_RegisterSwitcher->SetActiveWidgetIndex(1);
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Visible);
+			SetBattleEntryVisible(false);
 			//추첨장 입장 비지블온
 			SetHostBattleEntryVisible(true);
 
@@ -166,6 +168,7 @@ void UMH_TicketingWidget::SetVisibleSwitcher(bool bVisible , int index)
 			bIsVisible = false;
 			WS_RegisterSwitcher->SetVisibility(ESlateVisibility::Hidden);
 			//추첨장 입장 비지블오프
+			SetBattleEntryVisible(false);
 			SetHostBattleEntryVisible(false);
 
 			ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
@@ -533,10 +536,19 @@ void UMH_TicketingWidget::OnClickedHostBattleStartButton()
 					}
 				}
 				
+				ATTPlayerController* TTPC = Cast<ATTPlayerController>(TTPlayer->GetController());
+				if (TTPC)
+				{
+					TTPC->SetDrawStartTime();
+				}
 				TTPlayer->ServerNoticeLuckyDrawStart(TTPlayer->GetAccessToken(), SeatId);
 			}
 		}
 	}
+
+	// 초대 버튼 누르면 위젯 스위쳐 바꿔줌
+	SetVisibleSwitcher(true , 1);
+	SetHostBattleEntryVisible(false);
 }
 
 //좌석별 불켜진 이미지 어떻게 만들지 이것도 이미지가 아니라
