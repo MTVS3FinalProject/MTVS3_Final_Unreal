@@ -44,14 +44,21 @@ void AStyleLoungeActor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, A
 	
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI) return;
+
+	// 플레이어의 상대적 위치 판단
+	FVector DoorForward = GetActorForwardVector();
+	FVector PlayerRelativeLocation = TTPlayer->GetActorLocation() - GetActorLocation();
+	float CrossProduct = FVector::CrossProduct(DoorForward, PlayerRelativeLocation).Z;
+	
 	if (ActorHasTag("StyleLoungeDoor"))
 	{
-		if (GI->GetPlaceState() == EPlaceState::Plaza)
+		// CrossProduct > 0이면 Plaza 쪽, < 0이면 StyleLounge 쪽
+		if (CrossProduct > 0)  // Plaza 쪽에서 나갈 때
 		{
 			GI->SetPlaceState(EPlaceState::StyleLounge);
 			TTPlayer->MainUI->PlayTitleAnim(4);
 		}
-		else
+		else  // StyleLounge 쪽에서 나갈 때
 		{
 			GI->SetPlaceState(EPlaceState::Plaza);
 			TTPlayer->MainUI->PlayTitleAnim(1);
@@ -59,12 +66,13 @@ void AStyleLoungeActor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, A
 	}
 	else if (ActorHasTag("CommunityHallDoor"))
 	{
-		if (GI->GetPlaceState() == EPlaceState::Plaza)
+		// CrossProduct > 0이면 Plaza 쪽, < 0이면 CommunityHall 쪽
+		if (CrossProduct > 0)  // Plaza 쪽에서 나갈 때
 		{
 			GI->SetPlaceState(EPlaceState::CommunityHall);
 			TTPlayer->MainUI->PlayTitleAnim(3);
 		}
-		else
+		else  // CommunityHall 쪽에서 나갈 때
 		{
 			GI->SetPlaceState(EPlaceState::Plaza);
 			TTPlayer->MainUI->PlayTitleAnim(1);
