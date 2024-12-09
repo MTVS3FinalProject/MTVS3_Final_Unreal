@@ -71,6 +71,7 @@ void ACameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	{
 		input->BindAction(IA_Move , ETriggerEvent::Triggered , this , &ACameraPawn::OnMyActionMove);
 		input->BindAction(IA_Interact , ETriggerEvent::Started , this , &ACameraPawn::OnMyActionInteract);
+		input->BindAction(IA_ZoomTree , ETriggerEvent::Triggered , this , &ACameraPawn::OnMyActionZoomTree);
 	}
 }
 
@@ -127,6 +128,21 @@ void ACameraPawn::OnMyActionInteract(const FInputActionValue& Value)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("OriginalPlayer is null!"));
 	}
+}
+
+void ACameraPawn::OnMyActionZoomTree(const FInputActionValue& Value)
+{
+	if (!IsLocallyControlled()) return;
+    
+	const float ScrollValue = Value.Get<float>();
+    
+	// ScrollValue가 양수면 줌아웃(거리 증가), 음수면 줌인(거리 감소)
+	float NewArmLength = SpringArmComp->TargetArmLength - (ScrollValue * ZoomSpeed);
+    
+	// 줌 범위 제한
+	NewArmLength = FMath::Clamp(NewArmLength, ZoomMinLength, ZoomMaxLength);
+    
+	SpringArmComp->TargetArmLength = NewArmLength;
 }
 
 void ACameraPawn::OnRep_NetworkedTransform()
