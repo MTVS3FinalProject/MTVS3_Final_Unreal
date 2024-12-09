@@ -129,9 +129,9 @@ FString ATTPlayerController::GetSystemTime()
 
 void ATTPlayerController::SetDrawStartTime()
 {
-	// 로컬 컨트롤러가 아닌 경우 리턴
-	if (!IsLocalController())
-		return;
+	// // 로컬 컨트롤러가 아닌 경우 리턴
+	// if (!IsLocalController())
+	// 	return;
 	
 	if (!TicketingUI)
 	{
