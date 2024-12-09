@@ -169,16 +169,6 @@ void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg
 					if (DynamicMaterial)
 					{
 						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")) , DownloadedTexture);
-
-						FVector2D TextureSize(505.0f , 888.0f); // 크기 줄이기
-						FVector2D UVSize(TextureSize.X / TextureSize.Y, 1.0f); // 텍스처 비율 기반
-						//FVector2D UVSize(1.0f, TextureSize.Y / TextureSize.X); // 텍스처 비율 기반
-
-						//DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleX")), UVSize.X);
-						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleX")), 1);
-						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleY")), UVSize.Y);
-						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVOffsetX")) , 0.0f);
-						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVOffsetY")) , 0.0f);
 					}
 				}
 			}
