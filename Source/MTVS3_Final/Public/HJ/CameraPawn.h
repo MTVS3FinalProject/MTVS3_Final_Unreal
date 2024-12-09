@@ -44,12 +44,25 @@ public:
 	class UInputAction* IA_Interact;
 	void OnMyActionInteract(const FInputActionValue& Value);
 
-	UPROPERTY(EditAnywhere, Category = "Camera")
-	float MoveSpeed = 500.0f;
+	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
+	class UInputAction* IA_ZoomTree;
+	void OnMyActionZoomTree(const FInputActionValue& Value);
+	
+	UPROPERTY(EditAnywhere, Category = "TTSettings|Camera")
+	float MoveSpeed = 300.0f;
 
-	UPROPERTY(EditAnywhere, Category = "Camera")
+	UPROPERTY(EditAnywhere, Category = "TTSettings|Camera")
 	float OrbitRadius = 500.0f;  // 회전 반경
 
+	UPROPERTY(EditAnywhere, Category = "TTSettings|Camera")
+	float ZoomSpeed = 30.0f;
+
+	UPROPERTY(EditAnywhere, Category = "TTSettings|Camera")
+	float ZoomMinLength = 300.0f;
+
+	UPROPERTY(EditAnywhere, Category = "TTSettings|Camera")
+	float ZoomMaxLength = 700.0f;
+	
 protected:
 	UPROPERTY(ReplicatedUsing = OnRep_NetworkedTransform)
 	FTransform NetworkedTransform;
