@@ -929,7 +929,7 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 					TicketingUI->SetTextCompetitionRate(CompetitionRate);
 
 					ATTHallGameState* HallGameState = GetWorld()->GetGameState<ATTHallGameState>();
-					if (HallGameState) HallGameState->SendLuckyDrawInvitation(NicknameList , CompetitionRate);
+					if (HallGameState) HallGameState->SendLuckyDrawInvitation(NicknameList , SeatInfo, CompetitionRate);
 					UE_LOG(LogTemp , Log , TEXT("추첨 시작 알림 요청 성공"));
 				}
 			}

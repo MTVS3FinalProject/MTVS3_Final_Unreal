@@ -20,7 +20,7 @@ protected:
 	void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const;
 
 public:
-	void SendLuckyDrawInvitation(const TArray<FString>& NicknameList, int32 CompetitionRate);
+	void SendLuckyDrawInvitation(const TArray<FString>& NicknameList, const FString& SeatInfo, int32 CompetitionRate);
 
 	UPROPERTY()
 	FTimerHandle HideLDInvitationTimerHandle;
