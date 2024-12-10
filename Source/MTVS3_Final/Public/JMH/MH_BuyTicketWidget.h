@@ -247,7 +247,7 @@ public:
 	void SetTextSeatID(FString SeatID);
 
 	// KHJ
-	void SetTextWinnerSeatID(const FString& SeatID);
+	void SetTextWinnerSeatInfo(const FString& SeatID);
 	// KHJ
 
 	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))

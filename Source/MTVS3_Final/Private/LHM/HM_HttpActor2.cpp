@@ -443,7 +443,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						GI->SetIsReceived(IsReceived);
 					}
 
-					if (MainUI) MainUI->SetTextSeatNum1(SeatInfo);
+					// if (MainUI) MainUI->SetTextSeatNum1(SeatInfo);
 
 					if (MainUI->GetBuyTicketWidget())
 					{
