@@ -37,6 +37,7 @@ AHM_Tree::AHM_Tree()
 		TicatClips.SetNum(20);
 		PhysicsConstraints.SetNum(20);
 		PhysicsParents.SetNum(20);
+		NiagaraEffects.SetNum(20);
 		
 		for (int32 i = 0; i < 20; i++)
 		{
@@ -60,7 +61,6 @@ AHM_Tree::AHM_Tree()
 			PhysicsParents[i] = PhysicsParentComp;
 			PhysicsParents[i]->SetVisibility(false);
 			
-			
 			if (TicatComp && TicatClipComp && PhysicsComp && PhysicsParentComp)
 			{
 				PhysicsComp->SetupAttachment(Tree);
@@ -75,6 +75,17 @@ AHM_Tree::AHM_Tree()
 				
 				TicatComp->SetupAttachment(TicatClipComp);
 				TicatComp->SetStaticMesh(TicatAsset.Object);
+			}
+
+			// Niagara
+			FName NiagaraName = *FString::Printf(TEXT("Niagara_%d"), i + 1);
+			UNiagaraComponent* NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(NiagaraName);
+			NiagaraEffects[i] = NiagaraComp;
+			if(NiagaraComp)
+			{
+				NiagaraComp->SetupAttachment(PhysicsComp);
+				NiagaraComp->SetAsset(NiagaraTemplate);
+				NiagaraComp->SetAutoActivate(false);
 			}
 		}
 	}
@@ -191,6 +202,8 @@ void AHM_Tree::ApplyTicketImage(int32 TicketTreeId, FString TicketImgUrl)
 		OnRep_TicatVisibility(); // 클라이언트 동기화
 	}
 
+	NiagaraEffects[idx]->Activate(true);
+	
 	// 이미지 다운로드 및 적용
 	FHttpModule* Http = &FHttpModule::Get();
 	if (!Http) return;
