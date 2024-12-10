@@ -293,7 +293,7 @@ void UMH_BuyTicketWidget::SetTextSeatID(FString SeatID)
 	}*/
 }
 
-void UMH_BuyTicketWidget::SetTextWinnerSeatID(const FString& SeatID)
+void UMH_BuyTicketWidget::SetTextWinnerSeatInfo(const FString& SeatID)
 {
 	Text_SeatID01->SetText(FText::FromString(SeatID));
 }

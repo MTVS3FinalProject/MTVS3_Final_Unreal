@@ -217,8 +217,12 @@ void ATTPlayer::BeginPlay()
 			{
 			case ELuckyDrawState::Winner:
 				// 추첨 당첨 UI 표시
-				if (MainUI) MainUI->SetWidgetSwitcher(1);
-				if (MainUI->BuyTicketWidget) MainUI->BuyTicketWidget->SetTextWinnerSeatID(GI->GetLuckyDrawSeatID());
+				if (MainUI)
+				{
+					MainUI->SetTextSeatNum1(GI->GetLuckyDrawSeatInfo());
+					MainUI->SetWidgetSwitcher(1);
+				}
+				if (MainUI->BuyTicketWidget) MainUI->BuyTicketWidget->SetTextWinnerSeatInfo(GI->GetLuckyDrawSeatInfo());
 			// HTTP 요청
 				HttpActor2->ReqPostGameResult(GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
@@ -572,7 +576,8 @@ void ATTPlayer::ServerSetAvatarData_Implementation(const int32& _AvatarData)
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 {
 	LuckyDrawSeatID = _LuckyDrawSeatID;
-
+	UE_LOG(LogTemp , Warning , TEXT("좌석 번호 %s(으)로 ATTPlayer::SetLuckyDrawSeatID"), *LuckyDrawSeatID);
+	
 	// GI에도 SetLuckyDrawSeatID
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI) GI->SetLuckyDrawSeatID(LuckyDrawSeatID);
@@ -877,6 +882,7 @@ void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , c
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI || GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
+	GI->SetLuckyDrawSeatInfo(SeatInfo);
 
 	ATTPlayerController* TTPC = Cast<ATTPlayerController>(GetController());
 	if (TTPC)
@@ -897,9 +903,9 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate , const 
 		if (MainUI) MainUI->SetVisibleCanvas(false);
 		if (TicketingUI)
 		{
-			TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 			TicketingUI->SetTextLuckyDrawSeatInfo(SeatInfo);
+			TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
 		}
 	}
 	else
@@ -909,8 +915,9 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate , const 
 		if (MainUI) MainUI->SetVisibleCanvas(true);
 		if (TicketingUI)
 		{
-			TicketingUI->SetVisibleSwitcher(false , 1);
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
+			TicketingUI->SetTextLuckyDrawSeatInfo(SeatInfo);
+			TicketingUI->SetVisibleSwitcher(false , 1);
 		}
 	}
 }
@@ -1820,20 +1827,31 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 {
-	bIsMapActive = !bIsMapActive;
-	if (!IsLocallyControlled() || !WorldMapUI) return;
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI) return;
 
-	if (bIsMapActive)
+	switch (GI->GetPlaceState())
 	{
-		WorldMapUI->SetVisibleSwitcher(true);
-		GetCharacterMovement()->DisableMovement();
-		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Enable Map"));
-	}
-	else
-	{
-		WorldMapUI->SetVisibleSwitcher(false);
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // 이동 모드 복원
-		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Disable Map"));
+	case EPlaceState::ConcertHall:
+		bIsMapActive = !bIsMapActive;
+		if (!IsLocallyControlled() || !WorldMapUI) return;
+
+		if (bIsMapActive)
+		{
+			WorldMapUI->SetVisibleSwitcher(true);
+			GetCharacterMovement()->DisableMovement();
+			UE_LOG(LogTemp , Warning , TEXT("Pressed M: Enable Map"));
+		}
+		else
+		{
+			WorldMapUI->SetVisibleSwitcher(false);
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // 이동 모드 복원
+			UE_LOG(LogTemp , Warning , TEXT("Pressed M: Disable Map"));
+		}
+		break;
+	default:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed M"));
+		break;
 	}
 }
 
@@ -1959,7 +1977,6 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp , Warning , TEXT("Pressed 4: Cheat4"));
 	bShowDebug = !bShowDebug;
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -1969,6 +1986,7 @@ void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 	{
 	case EPlaceState::ConcertHall:
 		if (bShowDebug) ServerResetPuzzlePieces();
+		break;
 	default:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 4: Cheat4 Pressed"));
 		break;
