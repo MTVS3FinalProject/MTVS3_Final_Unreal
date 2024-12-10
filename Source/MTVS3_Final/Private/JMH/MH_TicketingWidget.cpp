@@ -216,7 +216,7 @@ void UMH_TicketingWidget::SetTextSeatID(int32 SeatFloor , FString SeatID)
 	Text_SeatFloor->SetText(FText::AsNumber(SeatFloor));
 	//좌석번호 세팅
 	Text_SeatID->SetText(FText::FromString(SeatID));
-	Text_SeatInfo->SetText(FText::FromString(SeatID));
+	// Text_SeatInfo->SetText(FText::FromString(SeatID));
 }
 
 
