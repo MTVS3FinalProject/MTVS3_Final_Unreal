@@ -1961,6 +1961,50 @@ void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed 4: Cheat4"));
 	bShowDebug = !bShowDebug;
+
+	if (bShowDebug)
+	{
+		ServerResetPuzzlePieces();
+	}
+}
+
+void ATTPlayer::ServerResetPuzzlePieces_Implementation()
+{
+	// 월드의 모든 퍼즐 피스를 찾음
+	TArray<AActor*> FoundPieces;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AHM_PuzzlePiece::StaticClass(), FoundPieces);
+    
+	// 드롭 위치 설정
+	FVector DropLocation(-3.0f, -2074.0f, 341.0f);
+    
+	// 각 퍼즐 피스의 위치를 변경
+	for (AActor* Actor : FoundPieces)
+	{
+		AHM_PuzzlePiece* PuzzlePiece = Cast<AHM_PuzzlePiece>(Actor);
+		if (PuzzlePiece)
+		{
+			for (UStaticMeshComponent* Piece : PuzzlePiece->PieceMeshes)
+			{
+				if (Piece)
+				{
+					// 피스들이 겹치지 않도록 랜덤 오프셋 추가
+					FVector RandomOffset(
+						FMath::RandRange(-50.f, 50.f),
+						FMath::RandRange(-50.f, 50.f),
+						0.f
+					);
+                    
+					// 위치와 회전 설정
+					Piece->SetWorldLocation(DropLocation + RandomOffset);
+					Piece->SetWorldRotation(FRotator::ZeroRotator);
+                    
+					// 물리 시뮬레이션 리셋
+					Piece->SetPhysicsLinearVelocity(FVector::ZeroVector);
+					Piece->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+				}
+			}
+		}
+	}
 }
 
 void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)

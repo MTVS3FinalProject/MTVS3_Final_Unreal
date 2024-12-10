@@ -403,6 +403,9 @@ public:
 	class UInputAction* IA_Cheat4;
 	void OnMyActionCheat4(const FInputActionValue& Value);
 
+	UFUNCTION(Server, Reliable)
+	void ServerResetPuzzlePieces();
+
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Piece;
 	void OnMyActionPickupPiece(const FInputActionValue& Value);
