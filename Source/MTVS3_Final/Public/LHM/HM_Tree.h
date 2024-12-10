@@ -34,8 +34,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UNiagaraComponent*> NiagaraEffects;
-	UPROPERTY(EditDefaultsOnly)
-	class UNiagaraSystem* NiagaraTemplate;
 	
 	UPROPERTY(EditDefaultsOnly, Replicated)
 	TArray<UStaticMeshComponent*> Ticats;

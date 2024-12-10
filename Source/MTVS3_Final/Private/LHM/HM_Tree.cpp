@@ -6,6 +6,7 @@
 #include "EngineUtils.h"
 #include "HttpModule.h"
 #include "ImageUtils.h"
+#include "NiagaraSystem.h"
 #include "HJ/TTGameInstance.h"
 #include "HJ/TTHallGameState.h"
 #include "HJ/TTPlayer.h"
@@ -29,9 +30,11 @@ AHM_Tree::AHM_Tree()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatClipAsset(
 		TEXT("/Game/KJM/Assets/CM_Ticat_Clip"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PhysicsParentAsset(
-			TEXT("/Game/KHJ/Assets/SM_BoxBrush"));
+		TEXT("/Game/KHJ/Assets/SM_BoxBrush"));
+	FSoftObjectPath NiagaraPath(TEXT("/Game/LHM/Effects/MegaMagicVFXBundle/N_LightBlastCharged"));
+	UNiagaraSystem* NiagaraSystem = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
 	
-	if (TicatAsset.Succeeded() && TicatClipAsset.Succeeded() && PhysicsParentAsset.Succeeded())
+	if (TicatAsset.Succeeded() && TicatClipAsset.Succeeded() && PhysicsParentAsset.Succeeded() && NiagaraSystem)
 	{
 		Ticats.SetNum(20);
 		TicatClips.SetNum(20);
@@ -83,8 +86,10 @@ AHM_Tree::AHM_Tree()
 			NiagaraEffects[i] = NiagaraComp;
 			if(NiagaraComp)
 			{
-				NiagaraComp->SetupAttachment(PhysicsComp);
-				NiagaraComp->SetAsset(NiagaraTemplate);
+				NiagaraComp->SetupAttachment(TicatComp);
+				NiagaraComp->SetAsset(NiagaraSystem);
+				NiagaraComp->SetRelativeLocation(FVector(0, 0, -50));
+				NiagaraComp->SetRelativeScale3D(FVector3d(0.1f));
 				NiagaraComp->SetAutoActivate(false);
 			}
 		}
