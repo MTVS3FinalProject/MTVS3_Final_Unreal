@@ -1795,11 +1795,11 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 	if (!MainUI) return;
 	UHM_MainBarWidget* MainBarUI = Cast<UHM_MainBarWidget>(MainUI->WBP_MH_MainBar);
 	if (!MainBarUI) return;
-	MainBarUI->bIsEmojiVisible = !MainBarUI->bIsEmojiVisible;
+	//MainBarUI->bIsEmojiVisible = !MainBarUI->bIsEmojiVisible;
 
 	bIsChatActive = !bIsChatActive;
-
-	if (bIsChatActive && MainBarUI->bIsEmojiVisible)
+/*
+	if (bIsChatActive)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Enable Chat"));
 
@@ -1811,7 +1811,7 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 	{
 		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
 		MainBarUI->SetVisibleSwitcher(false);
-	}
+	}*/
 
 	MainUI->ShowChatUI();
 }

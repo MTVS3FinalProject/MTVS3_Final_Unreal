@@ -129,6 +129,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UHM_MainBarWidget* WBP_MH_MainBar;
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_Chat_Emoji;
+	
 	UFUNCTION()
 	void ShowChatUI();
 
