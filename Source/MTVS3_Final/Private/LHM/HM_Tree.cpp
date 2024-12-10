@@ -54,8 +54,6 @@ AHM_Tree::AHM_Tree()
 			
 			TicatClips[i] = TicatClipComp;
 			TicatClips[i]->SetVisibility(false);
-			TicatClips[i]->SetSimulatePhysics(true);
-			TicatClips[i]->SetMassScale(NAME_None,300);
 			
 			PhysicsConstraints[i] = PhysicsComp;
 			
@@ -77,14 +75,6 @@ AHM_Tree::AHM_Tree()
 				
 				TicatComp->SetupAttachment(TicatClipComp);
 				TicatComp->SetStaticMesh(TicatAsset.Object);
-				
-				//// 2줄 배치 계산
-				//int32 Row = i / 10; // 0 또는 1
-				//int32 Column = i % 10; // 0부터 9까지
-
-				// 위치 계산 (20 간격으로 배치)
-				//FVector RelativeLocation = FVector(0.0f, Column * 100.0f, Row * 100.0f);
-				//TicatComp->SetRelativeLocation(RelativeLocation);
 			}
 		}
 	}
@@ -104,6 +94,15 @@ void AHM_Tree::BeginPlay()
 	if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
 	{
 		HallState->OnTicketImageUpdated.AddDynamic(this, &AHM_Tree::ApplyTicketImage);
+	}
+
+	for (auto* TicatClip : TicatClips)
+	{
+		if (TicatClip)
+		{
+			TicatClip->SetSimulatePhysics(true);
+			TicatClip->SetMassScale(NAME_None, 300);
+		}
 	}
 }
 
@@ -169,16 +168,6 @@ void AHM_Tree::InitializeTicketTabs(int32 TicketTreeId, const FString& TicketImg
 					if (DynamicMaterial)
 					{
 						DynamicMaterial->SetTextureParameterValue(FName(TEXT("BaseTexture")) , DownloadedTexture);
-
-						FVector2D TextureSize(505.0f , 888.0f); // 크기 줄이기
-						FVector2D UVSize(TextureSize.X / TextureSize.Y, 1.0f); // 텍스처 비율 기반
-						//FVector2D UVSize(1.0f, TextureSize.Y / TextureSize.X); // 텍스처 비율 기반
-
-						//DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleX")), UVSize.X);
-						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleX")), 1);
-						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVScaleY")), UVSize.Y);
-						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVOffsetX")) , 0.0f);
-						DynamicMaterial->SetScalarParameterValue(FName(TEXT("UVOffsetY")) , 0.0f);
 					}
 				}
 			}
