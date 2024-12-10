@@ -36,7 +36,7 @@ void ATTHallGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(ATTHallGameState, LuckyDrawSeatId);
 }
 
-void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameList , int32 CompetitionRate)
+void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameList, const FString& SeatInfo, int32 CompetitionRate)
 {
 	UE_LOG(LogTemp , Warning , TEXT("좌석 번호 %s(으)로 추첨 초대 시도"), *LuckyDrawSeatId);
 	if (!GetWorld() || NicknameList.Num() == 0)
@@ -54,13 +54,13 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 			{
 				if (TTPlayer->HasAuthority()) // 서버/호스트
 				{
-					TTPlayer->ClientShowLuckyDrawInvitation(true, CompetitionRate);
+					TTPlayer->ClientShowLuckyDrawInvitation(true, SeatInfo, CompetitionRate);
 					// TTPlayer->SetLuckyDrawSeatID("1");
 					TTPlayer->SetLuckyDrawSeatID(LuckyDrawSeatId);
 				}
 				else // 클라이언트 호스트
 				{
-					TTPlayer->ClientShowLuckyDrawInvitation(true, CompetitionRate);
+					TTPlayer->ClientShowLuckyDrawInvitation(true, SeatInfo, CompetitionRate);
 					// TTPlayer->SetLuckyDrawSeatID("1");
 					TTPlayer->SetLuckyDrawSeatID(LuckyDrawSeatId);
 				}
@@ -69,7 +69,7 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 			{
 				if (TTPlayer && !TTPlayer->bIsHost)
 				{
-					TTPlayer->ClientShowLuckyDrawInvitation(true , CompetitionRate);
+					TTPlayer->ClientShowLuckyDrawInvitation(true , SeatInfo, CompetitionRate);
 					// TTPlayer->SetLuckyDrawSeatID("1");
 					TTPlayer->SetLuckyDrawSeatID(LuckyDrawSeatId);
 				}

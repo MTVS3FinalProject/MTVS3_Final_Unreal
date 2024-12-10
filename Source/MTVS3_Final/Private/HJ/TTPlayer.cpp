@@ -218,7 +218,8 @@ void ATTPlayer::BeginPlay()
 			case ELuckyDrawState::Winner:
 				// 추첨 당첨 UI 표시
 				if (MainUI) MainUI->SetWidgetSwitcher(1);
-			// HTTP 요청
+				if (MainUI->BuyTicketWidget) MainUI->BuyTicketWidget->SetTextWinnerSeatID(GI->GetLuckyDrawSeatID());
+				// HTTP 요청
 				HttpActor2->ReqPostGameResult(GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
 			case ELuckyDrawState::Loser:
@@ -871,7 +872,7 @@ void ATTPlayer::MulticastChangeWalkSpeed_Implementation(bool bIsRunning)
 	}
 }
 
-void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , int32 CompetitionRate)
+void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , const FString& SeatInfo, int32 CompetitionRate)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI || GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
@@ -883,10 +884,10 @@ void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , i
 	}
 
 	bIsDrawSessionInviteVisible = bIsVisible; // 현재 추첨 세션 초대 UI 가시성 상태를 저장
-	UpdateDrawSessionInviteVisibility(CompetitionRate);
+	UpdateDrawSessionInviteVisibility(CompetitionRate, SeatInfo);
 }
 
-void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
+void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate, const FString& SeatInfo)
 {
 	if (!bHasPiece && bIsDrawSessionInviteVisible)
 	{
@@ -897,6 +898,7 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate)
 		{
 			TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
+			TicketingUI->SetTextLuckyDrawSeatInfo(SeatInfo);
 		}
 	}
 	else

@@ -171,6 +171,8 @@ public:
 
 	UFUNCTION()
 	void SetLoadingActive(bool bIsActive);
+
+	void SetTextLuckyDrawSeatInfo(const FString& SeatInfo);
 	// KHJ
 
 	//게임입장
