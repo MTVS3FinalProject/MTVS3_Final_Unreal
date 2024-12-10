@@ -293,6 +293,11 @@ void UMH_BuyTicketWidget::SetTextSeatID(FString SeatID)
 	}*/
 }
 
+void UMH_BuyTicketWidget::SetTextWinnerSeatID(const FString& SeatID)
+{
+	Text_SeatID01->SetText(FText::FromString(SeatID));
+}
+
 void UMH_BuyTicketWidget::SetTextTotalCoin(int32 TotalCoin)
 {
 	Text_TotalCoin->SetText(FText::AsNumber(TotalCoin));

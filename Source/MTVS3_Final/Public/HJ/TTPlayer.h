@@ -96,7 +96,7 @@ public:
 	void MulticastChangeWalkSpeed(bool bIsRunning);
 
 	UFUNCTION(Client , Reliable)
-	void ClientShowLuckyDrawInvitation(bool bIsVisible , int32 CompetitionRate);
+	void ClientShowLuckyDrawInvitation(bool bIsVisible , const FString& SeatInfo, int32 CompetitionRate);
 
 	UFUNCTION(Server , Reliable , BlueprintCallable)
 	void ServerTeleportPlayer(bool bIsToConcertHall);
@@ -482,7 +482,7 @@ public:
 	void SetTextMyNum();
 
 	bool bIsDrawSessionInviteVisible = false;
-	void UpdateDrawSessionInviteVisibility(int32 CompetitionRate);
+	void UpdateDrawSessionInviteVisibility(int32 CompetitionRate, const FString& SeatInfo);
 #pragma endregion
 	
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Camera")

@@ -389,6 +389,11 @@ void UMH_TicketingWidget::SetLoadingActive(bool bIsActive)
 	}
 }
 
+void UMH_TicketingWidget::SetTextLuckyDrawSeatInfo(const FString& SeatInfo)
+{
+	Text_SeatInfo->SetText(FText::FromString(SeatInfo));
+}
+
 void UMH_TicketingWidget::OnClickedGotoGameRoomButton()
 {
 	//게임맵으로 세션이동
