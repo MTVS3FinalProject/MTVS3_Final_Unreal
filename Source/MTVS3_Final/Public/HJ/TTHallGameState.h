@@ -53,8 +53,8 @@ public:
 	// 추첨장 좌석 ID 반환 함수
 	UFUNCTION()
 	const FString& GetLuckyDrawSeatId() const { return LuckyDrawSeatId; }
-	
-private:
+
+	UPROPERTY(Replicated)
 	FString LuckyDrawSeatId;
 
 	

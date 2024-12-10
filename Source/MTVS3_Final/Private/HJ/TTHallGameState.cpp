@@ -33,6 +33,7 @@ void ATTHallGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ATTHallGameState, ReservedSeatIds);
+	DOREPLIFETIME(ATTHallGameState, LuckyDrawSeatId);
 }
 
 void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameList , int32 CompetitionRate)
