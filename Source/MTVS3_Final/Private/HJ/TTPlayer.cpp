@@ -1820,20 +1820,31 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionMap(const FInputActionValue& Value)
 {
-	bIsMapActive = !bIsMapActive;
-	if (!IsLocallyControlled() || !WorldMapUI) return;
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI) return;
 
-	if (bIsMapActive)
+	switch (GI->GetPlaceState())
 	{
-		WorldMapUI->SetVisibleSwitcher(true);
-		GetCharacterMovement()->DisableMovement();
-		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Enable Map"));
-	}
-	else
-	{
-		WorldMapUI->SetVisibleSwitcher(false);
-		GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // 이동 모드 복원
-		UE_LOG(LogTemp , Warning , TEXT("Pressed M: Disable Map"));
+	case EPlaceState::ConcertHall:
+		bIsMapActive = !bIsMapActive;
+		if (!IsLocallyControlled() || !WorldMapUI) return;
+
+		if (bIsMapActive)
+		{
+			WorldMapUI->SetVisibleSwitcher(true);
+			GetCharacterMovement()->DisableMovement();
+			UE_LOG(LogTemp , Warning , TEXT("Pressed M: Enable Map"));
+		}
+		else
+		{
+			WorldMapUI->SetVisibleSwitcher(false);
+			GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking); // 이동 모드 복원
+			UE_LOG(LogTemp , Warning , TEXT("Pressed M: Disable Map"));
+		}
+		break;
+	default:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed M"));
+		break;
 	}
 }
 
@@ -1959,7 +1970,6 @@ void ATTPlayer::OnMyActionCheat3(const FInputActionValue& Value)
 
 void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp , Warning , TEXT("Pressed 4: Cheat4"));
 	bShowDebug = !bShowDebug;
 
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -1969,6 +1979,7 @@ void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 	{
 	case EPlaceState::ConcertHall:
 		if (bShowDebug) ServerResetPuzzlePieces();
+		break;
 	default:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 4: Cheat4 Pressed"));
 		break;
