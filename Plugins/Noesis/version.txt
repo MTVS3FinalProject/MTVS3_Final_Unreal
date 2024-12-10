@@ -1,2 +1,0 @@
-svn://svn.noesisengine.com/Noesis/NoesisSDK/trunk/Unreal
-3.2.6 (r14720)
