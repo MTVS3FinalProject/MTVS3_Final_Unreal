@@ -2132,6 +2132,7 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , AvatarData);
 	DOREPLIFETIME(ATTPlayer , bIsHost);
 	DOREPLIFETIME(ATTPlayer , AccessToken);
+	DOREPLIFETIME(ATTPlayer, CameraPawn);
 
 	// 퍼즐
 	DOREPLIFETIME(ATTPlayer , bHasPiece);
