@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "NiagaraComponent.h"
 #include "GameFramework/Actor.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "HM_Tree.generated.h"
@@ -30,6 +31,9 @@ public:
 	TArray <UPhysicsConstraintComponent*> PhysicsConstraints;
 	UPROPERTY(EditDefaultsOnly)
 	TArray <UStaticMeshComponent*> PhysicsParents;
+
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UNiagaraComponent*> NiagaraEffects;
 	
 	UPROPERTY(EditDefaultsOnly, Replicated)
 	TArray<UStaticMeshComponent*> Ticats;
