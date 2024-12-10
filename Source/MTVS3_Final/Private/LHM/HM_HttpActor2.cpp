@@ -570,6 +570,7 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 
 					if (TicketingUI)
 					{
+						//TicketingUI->SetTextSeatID()
 						TicketingUI->SetTextRemainingTicket(RemainingTicket);
 						TicketingUI->SetTextTicketPrice(SeatPrice);
 						TicketingUI->SetTextCompetitionRate(CompetitionRate);
@@ -917,10 +918,14 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 						UE_LOG(LogTemp , Log , TEXT("NicknameList: %s") , *NicknameListString);
 					}
 
-					// competitionRate 파싱
+					// seatInfo, competitionRate 파싱
+					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo"));
 					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
+					UE_LOG(LogTemp , Log , TEXT("SeatInfo: %s") , *SeatInfo);
 					UE_LOG(LogTemp , Log , TEXT("Competition Rate: %d") , CompetitionRate);
 
+					// ★ 희진 : SetTextSeatInfo(SeatInfo); ★
+					
 					TicketingUI->SetTextCompetitionRate(CompetitionRate);
 
 					ATTHallGameState* HallGameState = GetWorld()->GetGameState<ATTHallGameState>();
