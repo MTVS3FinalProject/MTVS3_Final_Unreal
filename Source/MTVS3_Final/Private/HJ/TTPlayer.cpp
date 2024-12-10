@@ -219,7 +219,7 @@ void ATTPlayer::BeginPlay()
 				// 추첨 당첨 UI 표시
 				if (MainUI) MainUI->SetWidgetSwitcher(1);
 				if (MainUI->BuyTicketWidget) MainUI->BuyTicketWidget->SetTextWinnerSeatID(GI->GetLuckyDrawSeatID());
-				// HTTP 요청
+			// HTTP 요청
 				HttpActor2->ReqPostGameResult(GI->GetLuckyDrawSeatID() , GI->GetAccessToken());
 				break;
 			case ELuckyDrawState::Loser:
@@ -872,7 +872,8 @@ void ATTPlayer::MulticastChangeWalkSpeed_Implementation(bool bIsRunning)
 	}
 }
 
-void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , const FString& SeatInfo, int32 CompetitionRate)
+void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , const FString& SeatInfo ,
+                                                             int32 CompetitionRate)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI || GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
@@ -884,10 +885,10 @@ void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , c
 	}
 
 	bIsDrawSessionInviteVisible = bIsVisible; // 현재 추첨 세션 초대 UI 가시성 상태를 저장
-	UpdateDrawSessionInviteVisibility(CompetitionRate, SeatInfo);
+	UpdateDrawSessionInviteVisibility(CompetitionRate , SeatInfo);
 }
 
-void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate, const FString& SeatInfo)
+void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate , const FString& SeatInfo)
 {
 	if (!bHasPiece && bIsDrawSessionInviteVisible)
 	{
@@ -930,9 +931,8 @@ void ATTPlayer::ServerNotifyCameraModeChange_Implementation(bool bNewCameraMode)
 	}
 }
 
-void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _AccessToken, const FString& _SeatId)
+void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _AccessToken , const FString& _SeatId)
 {
-	
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if (HttpActor2)
@@ -940,9 +940,9 @@ void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _Access
 		// HttpActor2->ReqPostNoticeGameStart(TEXT("1") ,
 		//                                    _AccessToken);
 		HttpActor2->ReqPostNoticeGameStart(_SeatId ,
-										   _AccessToken);
+		                                   _AccessToken);
 	}
-	
+
 	ATTHallGameState* HallGameState = Cast<ATTHallGameState>(GetWorld()->GetGameState());
 	if (HallGameState)
 	{
@@ -1719,12 +1719,12 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			ServerSpawnCameraPawn();
 
 			AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-			if(HttpActor3)
+				UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+			if (HttpActor3)
 			{
 				HttpActor3->ReqGetCommunityTree(GI->GetAccessToken());
 			}
-			
+
 			if (MainUI && MainUI->WBP_InteractionUI)
 			{
 				UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
@@ -1961,6 +1961,57 @@ void ATTPlayer::OnMyActionCheat4(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed 4: Cheat4"));
 	bShowDebug = !bShowDebug;
+
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (!GI) return;
+
+	switch (GI->GetPlaceState())
+	{
+	case EPlaceState::ConcertHall:
+		if (bShowDebug) ServerResetPuzzlePieces();
+	default:
+		UE_LOG(LogTemp , Warning , TEXT("Pressed 4: Cheat4 Pressed"));
+		break;
+	}
+}
+
+void ATTPlayer::ServerResetPuzzlePieces_Implementation()
+{
+	// 월드의 모든 퍼즐 피스를 찾음
+	TArray<AActor*> FoundPieces;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld() , AHM_PuzzlePiece::StaticClass() , FoundPieces);
+
+	// 드롭 위치 설정
+	FVector DropLocation(-3.0f , -2074.0f , 341.0f);
+
+	// 각 퍼즐 피스의 위치를 변경
+	for (AActor* Actor : FoundPieces)
+	{
+		AHM_PuzzlePiece* PuzzlePiece = Cast<AHM_PuzzlePiece>(Actor);
+		if (PuzzlePiece)
+		{
+			for (UStaticMeshComponent* Piece : PuzzlePiece->PieceMeshes)
+			{
+				if (Piece)
+				{
+					// 피스들이 겹치지 않도록 랜덤 오프셋 추가
+					FVector RandomOffset(
+						FMath::RandRange(-50.f , 50.f) ,
+						FMath::RandRange(-50.f , 50.f) ,
+						0.f
+					);
+
+					// 위치와 회전 설정
+					Piece->SetWorldLocation(DropLocation + RandomOffset);
+					Piece->SetWorldRotation(FRotator::ZeroRotator);
+
+					// 물리 시뮬레이션 리셋
+					Piece->SetPhysicsLinearVelocity(FVector::ZeroVector);
+					Piece->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+				}
+			}
+		}
+	}
 }
 
 void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
@@ -2134,7 +2185,7 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , AvatarData);
 	DOREPLIFETIME(ATTPlayer , bIsHost);
 	DOREPLIFETIME(ATTPlayer , AccessToken);
-	DOREPLIFETIME(ATTPlayer, CameraPawn);
+	DOREPLIFETIME(ATTPlayer , CameraPawn);
 
 	// 퍼즐
 	DOREPLIFETIME(ATTPlayer , bHasPiece);
@@ -2165,11 +2216,11 @@ void ATTPlayer::ServerSpawnCameraPawn_Implementation()
 	SpawnParams.Instigator = this;
 
 	// 원하는 위치에 스폰
-	FVector SpawnLocation = FVector(22369.0f, 1954.0f, 3220.0f);
-	
+	FVector SpawnLocation = FVector(22369.0f , 1954.0f , 3220.0f);
+
 	ACameraPawn* NewCameraPawn = GetWorld()->SpawnActor<ACameraPawn>(
 		CameraPawnFactory ,
-		SpawnLocation,
+		SpawnLocation ,
 		GetActorRotation() ,
 		SpawnParams
 	);
@@ -2206,41 +2257,41 @@ void ATTPlayer::MulticastOnCameraModeChanged_Implementation(bool bNewCameraMode)
 
 void ATTPlayer::ServerReturnFromCameraPawn_Implementation()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ServerReturnFromCameraPawn started"));
-    
+	UE_LOG(LogTemp , Warning , TEXT("ServerReturnFromCameraPawn started"));
+
 	if (!bIsInCameraMode)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Not in camera mode, returning"));
+		UE_LOG(LogTemp , Warning , TEXT("Not in camera mode, returning"));
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Checking for controller"));
+	UE_LOG(LogTemp , Warning , TEXT("Checking for controller"));
 	AController* PC = CameraPawn ? CameraPawn->GetController() : nullptr;
-    
+
 	if (PC)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Attempting to possess original player"));
-        
+		UE_LOG(LogTemp , Warning , TEXT("Attempting to possess original player"));
+
 		// 컨트롤러를 다시 플레이어에게 이전
 		PC->Possess(this);
-        
+
 		if (CameraPawn)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Destroying camera pawn"));
+			UE_LOG(LogTemp , Warning , TEXT("Destroying camera pawn"));
 			CameraPawn->Destroy();
 			CameraPawn = nullptr;
 		}
 
 		// Possess 이후에 카메라 모드 해제
 		bIsInCameraMode = false;
-        
+
 		MulticastOnReturnFromCamera();
-        
-		UE_LOG(LogTemp, Warning, TEXT("Return to player complete"));
+
+		UE_LOG(LogTemp , Warning , TEXT("Return to player complete"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to get controller from camera pawn"));
+		UE_LOG(LogTemp , Error , TEXT("Failed to get controller from camera pawn"));
 	}
 }
 
