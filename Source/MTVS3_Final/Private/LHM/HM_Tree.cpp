@@ -54,8 +54,6 @@ AHM_Tree::AHM_Tree()
 			
 			TicatClips[i] = TicatClipComp;
 			TicatClips[i]->SetVisibility(false);
-			TicatClips[i]->SetSimulatePhysics(true);
-			TicatClips[i]->SetMassScale(NAME_None,300);
 			
 			PhysicsConstraints[i] = PhysicsComp;
 			
@@ -77,14 +75,6 @@ AHM_Tree::AHM_Tree()
 				
 				TicatComp->SetupAttachment(TicatClipComp);
 				TicatComp->SetStaticMesh(TicatAsset.Object);
-				
-				//// 2줄 배치 계산
-				//int32 Row = i / 10; // 0 또는 1
-				//int32 Column = i % 10; // 0부터 9까지
-
-				// 위치 계산 (20 간격으로 배치)
-				//FVector RelativeLocation = FVector(0.0f, Column * 100.0f, Row * 100.0f);
-				//TicatComp->SetRelativeLocation(RelativeLocation);
 			}
 		}
 	}
@@ -104,6 +94,15 @@ void AHM_Tree::BeginPlay()
 	if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
 	{
 		HallState->OnTicketImageUpdated.AddDynamic(this, &AHM_Tree::ApplyTicketImage);
+	}
+
+	for (auto* TicatClip : TicatClips)
+	{
+		if (TicatClip)
+		{
+			TicatClip->SetSimulatePhysics(true);
+			TicatClip->SetMassScale(NAME_None, 300);
+		}
 	}
 }
 
