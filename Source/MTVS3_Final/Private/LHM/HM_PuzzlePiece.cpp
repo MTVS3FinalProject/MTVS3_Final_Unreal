@@ -13,47 +13,43 @@
 AHM_PuzzlePiece::AHM_PuzzlePiece()
  {
   	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-    
-	PrimaryActorTick.bCanEverTick = true;
-    
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-    
-	// 컴포넌트만 생성하고 기본 설정
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
-		TEXT("/Script/Engine.StaticMesh'/Game/KHJ/Assets/SM_BoxBrush.SM_BoxBrush'"));
-	if (MeshAsset.Succeeded())
-	{
-		PieceMeshes.SetNum(9);
-		CollisionBoxComps.SetNum(9);
-		for (int32 i = 0; i < 9; i++)
-		{
-			// 콜리전 박스 생성
-			FName CollisionBoxName = *FString::Printf(TEXT("CollisionBoxComp%d"), i + 1);
-			UBoxComponent* BoxComp = CreateDefaultSubobject<UBoxComponent>(CollisionBoxName);
-			CollisionBoxComps[i] = BoxComp;
-            
-			if (BoxComp)
-			{
-				BoxComp->SetupAttachment(RootComponent);
-				BoxComp->SetRelativeScale3D(FVector(0.4f));
-				BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-				BoxComp->SetCollisionResponseToAllChannels(ECR_Block);
-				BoxComp->SetNotifyRigidBodyCollision(true);
-				BoxComp->SetSimulatePhysics(true);
-			}
 
-			// Mesh 컴포넌트 생성
-			FName PieceName = *FString::Printf(TEXT("Piece%d"), i + 1);
-			UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
-			PieceMeshes[i] = MeshComp;
-            
-			if (MeshComp)
-			{
-				MeshComp->SetupAttachment(BoxComp);
-				MeshComp->SetStaticMesh(MeshAsset.Object);
-			}
-		}
-	}
+    PrimaryActorTick.bCanEverTick = true;
+
+    RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+
+    PieceMeshes.SetNum(9);
+    CollisionBoxComps.SetNum(9);
+    for (int32 i = 0; i < 9; i++)
+    {
+	    // // 콜리전 박스 생성
+	    // FName CollisionBoxName = *FString::Printf(TEXT("CollisionBoxComp%d") , i + 1);
+	    // UBoxComponent* BoxComp = CreateDefaultSubobject<UBoxComponent>(CollisionBoxName);
+	    // CollisionBoxComps[i] = BoxComp;
+	    //
+	    // if (BoxComp)
+	    // {
+		   //  BoxComp->SetupAttachment(RootComponent);
+		   //  BoxComp->SetRelativeScale3D(FVector(0.4f));
+		   //  BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		   //  BoxComp->SetCollisionResponseToAllChannels(ECR_Block);
+		   //  BoxComp->SetNotifyRigidBodyCollision(true);
+		   //  BoxComp->SetSimulatePhysics(true);
+	    // }
+
+    	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d") , i + 1);
+
+	    // Mesh 컴포넌트 생성
+	    FName PieceName = *FString::Printf(TEXT("Piece%d") , i + 1);
+	    UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
+	    PieceMeshes[i] = MeshComp;
+
+	    if (MeshComp)
+	    {
+		    MeshComp->SetupAttachment(RootComponent);
+		    MeshComp->SetStaticMesh(MeshAsset.Object);
+	    }
+    }
  }
  
  // Called when the game starts or when spawned
