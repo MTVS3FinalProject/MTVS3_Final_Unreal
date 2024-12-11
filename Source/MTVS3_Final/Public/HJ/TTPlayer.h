@@ -277,10 +277,20 @@ public:
 	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
 
 	// 추첨을 시작할 좌석 ID
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	UPROPERTY(ReplicatedUsing = OnRep_LuckyDrawSeatID)
 	FString LuckyDrawSeatID;
+
+	UFUNCTION()
+	void OnRep_LuckyDrawSeatID();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
+	UFUNCTION(Client, Reliable)
+	void ClientSetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
+	
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
+	
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 #pragma endregion
