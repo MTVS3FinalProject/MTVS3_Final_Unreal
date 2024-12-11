@@ -177,14 +177,19 @@ void AHM_HttpActor3::OnResGetInventoryData(FHttpRequestPtr Request, FHttpRespons
 							// 변환된 FTitles 구조체를 임시 배열에 추가
 							TempTicketItems.Add(NewTickets);
 							
-							UE_LOG(LogTemp , Log , TEXT("Tickets Info | Id: %d, Name: %s, Seat: %s, TicketImg: %s") ,
+							UE_LOG(LogTemp , Log , TEXT("Tickets Info | Id: %d, Name: %s, Seat: %s, TicketImg: %s, Date: %d-%d-%d-%s") ,
 								   NewTickets.ticketId ,
 								   *NewTickets.concertName ,
 								   *NewTickets.seatInfo ,
-								   *NewTickets.ticketImage );
+								   *NewTickets.ticketImage ,
+								   NewTickets.year ,
+								   NewTickets.month ,
+								   NewTickets.day ,
+								   *NewTickets.time );
 						}
 						SetTicketId(NewTickets.ticketId);
 					}
+					
 					SetTicketItems(TempTicketItems);
 					if (MainUI)
 					{

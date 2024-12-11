@@ -213,7 +213,7 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 				});
 			ImageRequest->ProcessRequest();
 
-			ItemBox_Ticket->SetInfoString_Ticket(ItemData.concertName,ItemData.seatInfo);
+			ItemBox_Ticket->SetInfoString_Ticket(ItemData.concertName, ItemData.seatInfo, ItemData.year, ItemData.month, ItemData.day, ItemData.time);
 			//ItemBox_Ticket->SetTicketData(ItemData); // 타이틀 데이터를 설정
 			Hori_InvenBox_01_Ticket->AddChild(ItemBox_Ticket);
 		}
@@ -541,6 +541,10 @@ void UMH_Inventory::OnHoveredTicketBtn(UMH_ItemBox_Ticket* HoveredItem_Ticket)
 	{
 		HoveredItem_Ticket->Text_TicketName->SetText(FText::FromString(HoveredItem_Ticket->GetInfoNameString_Ticket()));
 		HoveredItem_Ticket->Text_SeatInfo->SetText(FText::FromString(HoveredItem_Ticket->GetInfoString_Ticket()));
+		HoveredItem_Ticket->Txt_Year->SetText(FText::FromString(FString::FromInt(HoveredItem_Ticket->GetInfoYearInt_Ticket())));
+		HoveredItem_Ticket->Txt_Month->SetText(FText::FromString(FString::FromInt(HoveredItem_Ticket->GetInfoMonthInt_Ticket())));
+		HoveredItem_Ticket->Txt_Day->SetText(FText::FromString(FString::FromInt(HoveredItem_Ticket->GetInfoDayInt_Ticket())));
+		HoveredItem_Ticket->Txt_Time->SetText(FText::FromString(HoveredItem_Ticket->GetInfoTimeString_Ticket()));
 		HoveredItem_Ticket->ShowInfo_Ticket();
 	}
 }

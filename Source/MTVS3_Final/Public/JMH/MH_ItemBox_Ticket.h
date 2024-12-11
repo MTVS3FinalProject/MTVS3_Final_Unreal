@@ -79,17 +79,31 @@ public:
 	//티켓 좌석 정보
 	UPROPERTY()
 	FString TextNameString_Ticket;
-
 	UPROPERTY()
 	FString InfoTextString_Ticket;
+	UPROPERTY()
+	int32 TextYearInt_Ticket;
+	UPROPERTY()
+	int32 TextMonthInt_Ticket;
+	UPROPERTY()
+	int32 TextDayInt_Ticket;
+	UPROPERTY()
+	FString TextTimeInt_Ticket;
 	
 	UFUNCTION()
-	void SetInfoString_Ticket(FString NameString_Ticket,FString infoString_Ticket);
+	void SetInfoString_Ticket(FString NameString_Ticket,FString infoString_Ticket, int32 Year, int32 Month, int32 Day, FString Time);
 	
 	UFUNCTION()
-	FString GetInfoString_Ticket();
-	
+	FString GetInfoString_Ticket() { return InfoTextString_Ticket; }
 	UFUNCTION()
-	FString GetInfoNameString_Ticket();
+	FString GetInfoNameString_Ticket() { return TextNameString_Ticket; }
+	UFUNCTION()
+	int32 GetInfoYearInt_Ticket() { return TextYearInt_Ticket; }
+	UFUNCTION()
+	int32 GetInfoMonthInt_Ticket() { return TextMonthInt_Ticket; }
+	UFUNCTION()
+	int32 GetInfoDayInt_Ticket() { return TextDayInt_Ticket; }
+	UFUNCTION()
+	FString GetInfoTimeString_Ticket() { return TextTimeInt_Ticket; }
 	
 };

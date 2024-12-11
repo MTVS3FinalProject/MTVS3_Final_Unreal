@@ -101,18 +101,38 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
 	FString ticketImage;
 	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	int32 year;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	int32 month;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	int32 day;
+	
+	UPROPERTY(VisibleAnywhere, Category = "Default|Stickers")
+	FString time;
+	
 	FTickets()
 		: ticketId(1)
 		, concertName(TEXT(""))
 		, seatInfo(TEXT(""))
 		, ticketImage(TEXT(""))
+		, year(0)
+		, month(0)
+		, day(0)
+		, time(TEXT(""))
 	{}
 	// 매개 변수를 받는 생성자
-	FTickets(int32 InId, const FString& InConcertNam, const FString& InSeatInfo, const FString& InImage)
+	FTickets(int32 InId, const FString& InConcertNam, const FString& InSeatInfo, const FString& InImage, int32 InYear, int32 InMonth, int32 InDay, const FString& InTime)
 		: ticketId(InId)
 		, concertName(InConcertNam)
 		, seatInfo(InSeatInfo)
 		, ticketImage(InImage)
+		, year(InYear)
+		, month(InMonth)
+		, day(InDay)
+		, time(InTime)
 	{}
 };
 
