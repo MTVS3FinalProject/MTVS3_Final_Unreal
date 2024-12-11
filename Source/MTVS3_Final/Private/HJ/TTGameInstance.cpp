@@ -408,21 +408,19 @@ void UTTGameInstance::SetAvatarData(const int32& _AvatarData)
 
 void UTTGameInstance::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 {
-	UE_LOG(LogTemp , Warning , TEXT("좌석 번호 %s(으)로 UTTGameInstance::SetLuckyDrawSeatID"), *_LuckyDrawSeatID);
 	PlayerData.LuckyDrawSeatID = _LuckyDrawSeatID;
-	SetPlayerData(PlayerData);
-}
-
-void UTTGameInstance::SetLuckyDrawSeatInfo(const FString& _LuckyDrawSeatInfo)
-{
-	UE_LOG(LogTemp , Warning , TEXT("좌석 정보 %s(으)로 UTTGameInstance::SetLuckyDrawSeatInfo"), *_LuckyDrawSeatInfo);
-	PlayerData.LuckyDrawSeatInfo = _LuckyDrawSeatInfo;
 	SetPlayerData(PlayerData);
 }
 
 void UTTGameInstance::SetIsReceived(const bool _IsReceived)
 {
 	PlayerData.IsReceived = _IsReceived;
+	SetPlayerData(PlayerData);
+}
+
+void UTTGameInstance::SetReceivedSeatId(const int32& _ReceivedSeatId)
+{
+	PlayerData.ReceivedSeatId = _ReceivedSeatId;
 	SetPlayerData(PlayerData);
 }
 

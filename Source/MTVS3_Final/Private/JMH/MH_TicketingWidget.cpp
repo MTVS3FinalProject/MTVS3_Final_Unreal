@@ -216,7 +216,7 @@ void UMH_TicketingWidget::SetTextSeatID(int32 SeatFloor , FString SeatID)
 	Text_SeatFloor->SetText(FText::AsNumber(SeatFloor));
 	//좌석번호 세팅
 	Text_SeatID->SetText(FText::FromString(SeatID));
-	// Text_SeatInfo->SetText(FText::FromString(SeatID));
+	Text_SeatInfo->SetText(FText::FromString(SeatID));
 }
 
 
@@ -387,11 +387,6 @@ void UMH_TicketingWidget::SetLoadingActive(bool bIsActive)
 		Img_Loading->SetVisibility(ESlateVisibility::Visible);
 		PlayAnimation(LoadingAnim);
 	}
-}
-
-void UMH_TicketingWidget::SetTextLuckyDrawSeatInfo(const FString& SeatInfo)
-{
-	Text_SeatInfo->SetText(FText::FromString(SeatInfo));
 }
 
 void UMH_TicketingWidget::OnClickedGotoGameRoomButton()

@@ -443,7 +443,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						GI->SetIsReceived(IsReceived);
 					}
 
-					// if (MainUI) MainUI->SetTextSeatNum1(SeatInfo);
+					if (MainUI) MainUI->SetTextSeatNum1(SeatInfo);
 
 					if (MainUI->GetBuyTicketWidget())
 					{
@@ -570,7 +570,6 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 
 					if (TicketingUI)
 					{
-						//TicketingUI->SetTextSeatID()
 						TicketingUI->SetTextRemainingTicket(RemainingTicket);
 						TicketingUI->SetTextTicketPrice(SeatPrice);
 						TicketingUI->SetTextCompetitionRate(CompetitionRate);
@@ -918,18 +917,14 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 						UE_LOG(LogTemp , Log , TEXT("NicknameList: %s") , *NicknameListString);
 					}
 
-					// seatInfo, competitionRate 파싱
-					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo"));
+					// competitionRate 파싱
 					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
-					UE_LOG(LogTemp , Log , TEXT("SeatInfo: %s") , *SeatInfo);
 					UE_LOG(LogTemp , Log , TEXT("Competition Rate: %d") , CompetitionRate);
 
-					// ★ 희진 : SetTextSeatInfo(SeatInfo); ★
-					
 					TicketingUI->SetTextCompetitionRate(CompetitionRate);
 
 					ATTHallGameState* HallGameState = GetWorld()->GetGameState<ATTHallGameState>();
-					if (HallGameState) HallGameState->SendLuckyDrawInvitation(NicknameList , SeatInfo, CompetitionRate);
+					if (HallGameState) HallGameState->SendLuckyDrawInvitation(NicknameList , CompetitionRate);
 					UE_LOG(LogTemp , Log , TEXT("추첨 시작 알림 요청 성공"));
 				}
 			}

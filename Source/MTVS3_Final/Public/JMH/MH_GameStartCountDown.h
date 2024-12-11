@@ -39,8 +39,4 @@ public:
 	//애니메이션
 	UPROPERTY(meta = (BindWidgetAnim), Transient)
 	UWidgetAnimation* CountDownAnim;
-
-	// 사운드
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
-	USoundWave* CountdownSound;
 };

@@ -1,5 +1,0 @@
-<Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:noesis="clr-namespace:NoesisGUIExtensions;assembly=Noesis.GUI.Extensions">
-    <!-- Rive 애니메이션 로드 -->
-    <noesis:RiveControl Source="menubar_1205.riv"></noesis:RiveControl>
-</Grid>

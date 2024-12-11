@@ -41,7 +41,7 @@ void UHM_TreeCustomTicketWidget::InitializeTicketTabs(const TMap<int32, FString>
 
 			// 다운로드 완료 시 콜백 설정
 			ImageRequest->OnProcessRequestComplete().BindLambda(
-				[ItemBox_Ticket, this](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+				[ItemBox_Ticket](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 				{
 					if (bWasSuccessful && Response.IsValid())
 					{
@@ -49,25 +49,12 @@ void UHM_TreeCustomTicketWidget::InitializeTicketTabs(const TMap<int32, FString>
 						TArray<uint8> ImageData = Response->GetContent();
 
 						// 텍스처로 변환
-						UTexture2D* CustomTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-						if (CustomTexture && ItemBox_Ticket->Img_Ticket)
+						UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+						if (StickerTexture && ItemBox_Ticket->Img_Ticket)
 						{
-							UObject* ResourceObject = ItemBox_Ticket->Img_Ticket->GetBrush().GetResourceObject();
-							if (ResourceObject && ResourceObject->IsA(UMaterialInterface::StaticClass()))
-							{
-								UMaterialInterface* BaseMaterial = Cast<UMaterialInterface>(ResourceObject);
-								if (BaseMaterial)
-								{
-									// 동적 머티리얼 생성
-									UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, GetWorld());
-									if (DynamicMaterial)
-									{
-										// Custom 텍스처 설정
-										DynamicMaterial->SetTextureParameterValue(FName("CustomTexture") , CustomTexture);
-										ItemBox_Ticket->Img_Ticket->SetBrushFromMaterial(DynamicMaterial);
-									}
-								}
-							}
+							// 이미지 위젯에 텍스처 적용
+							ItemBox_Ticket->Img_Ticket->SetBrushFromTexture(StickerTexture);
+							UE_LOG(LogTemp , Log , TEXT("Ticket image set successfully"));
 						}
 						else
 						{

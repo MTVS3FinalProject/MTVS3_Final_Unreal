@@ -88,7 +88,7 @@ void UMH_BuyTicketWidget::SetTextSeatID(int32 SeatFloor, FString SeatID)
 	Text_SeatFloor->SetText(FText::AsNumber(SeatFloor));
 	Text_SeatFloor02->SetText(FText::AsNumber(SeatFloor));
 	//좌석 번호
-	// Text_SeatID01->SetText(FText::FromString(SeatID));
+	Text_SeatID01->SetText(FText::FromString(SeatID));
 	Text_SeatID02->SetText(FText::FromString(SeatID));
 	Text_SeatID03->SetText(FText::FromString(SeatID));
 
@@ -291,11 +291,6 @@ void UMH_BuyTicketWidget::SetTextSeatID(FString SeatID)
 	{
 		HttpActor2->GetMyReceptionSeats();
 	}*/
-}
-
-void UMH_BuyTicketWidget::SetTextWinnerSeatInfo(const FString& SeatID)
-{
-	Text_SeatID01->SetText(FText::FromString(SeatID));
 }
 
 void UMH_BuyTicketWidget::SetTextTotalCoin(int32 TotalCoin)

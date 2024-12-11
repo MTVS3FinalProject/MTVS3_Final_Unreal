@@ -53,12 +53,6 @@ public:
 	//좌석정보
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_SeatFloor;
-
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_SeatFloor02;
-	
-	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
-	class UTextBlock* Text_SeatID03;
 	
 	//좌석번호 셋팅
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
@@ -177,8 +171,6 @@ public:
 
 	UFUNCTION()
 	void SetLoadingActive(bool bIsActive);
-
-	void SetTextLuckyDrawSeatInfo(const FString& SeatInfo);
 	// KHJ
 
 	//게임입장

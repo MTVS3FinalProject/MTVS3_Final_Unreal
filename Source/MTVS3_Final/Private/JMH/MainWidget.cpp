@@ -218,11 +218,11 @@ void UMainWidget::ShowChatUI()
 	bIsChatVisible = !bIsChatVisible;
 	if (bIsChatVisible)
 	{
-		Can_Chat_Emoji->SetVisibility(ESlateVisibility::Visible);
+		WBP_Chatting->SetVisibility(ESlateVisibility::Visible);
 	}
 	else if (!bIsChatVisible)
 	{
-		Can_Chat_Emoji->SetVisibility(ESlateVisibility::Hidden);
+		WBP_Chatting->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 

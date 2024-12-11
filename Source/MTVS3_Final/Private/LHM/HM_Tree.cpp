@@ -6,7 +6,6 @@
 #include "EngineUtils.h"
 #include "HttpModule.h"
 #include "ImageUtils.h"
-#include "NiagaraSystem.h"
 #include "HJ/TTGameInstance.h"
 #include "HJ/TTHallGameState.h"
 #include "HJ/TTPlayer.h"
@@ -30,17 +29,14 @@ AHM_Tree::AHM_Tree()
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatClipAsset(
 		TEXT("/Game/KJM/Assets/CM_Ticat_Clip"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PhysicsParentAsset(
-		TEXT("/Game/KHJ/Assets/SM_BoxBrush"));
-	FSoftObjectPath NiagaraPath(TEXT("/Game/LHM/Effects/MegaMagicVFXBundle/N_LightBlastCharged"));
-	UNiagaraSystem* NiagaraSystem = Cast<UNiagaraSystem>(NiagaraPath.TryLoad());
+			TEXT("/Game/KHJ/Assets/SM_BoxBrush"));
 	
-	if (TicatAsset.Succeeded() && TicatClipAsset.Succeeded() && PhysicsParentAsset.Succeeded() && NiagaraSystem)
+	if (TicatAsset.Succeeded() && TicatClipAsset.Succeeded() && PhysicsParentAsset.Succeeded())
 	{
 		Ticats.SetNum(20);
 		TicatClips.SetNum(20);
 		PhysicsConstraints.SetNum(20);
 		PhysicsParents.SetNum(20);
-		NiagaraEffects.SetNum(20);
 		
 		for (int32 i = 0; i < 20; i++)
 		{
@@ -58,11 +54,14 @@ AHM_Tree::AHM_Tree()
 			
 			TicatClips[i] = TicatClipComp;
 			TicatClips[i]->SetVisibility(false);
+			TicatClips[i]->SetSimulatePhysics(true);
+			TicatClips[i]->SetMassScale(NAME_None,300);
 			
 			PhysicsConstraints[i] = PhysicsComp;
 			
 			PhysicsParents[i] = PhysicsParentComp;
 			PhysicsParents[i]->SetVisibility(false);
+			
 			
 			if (TicatComp && TicatClipComp && PhysicsComp && PhysicsParentComp)
 			{
@@ -78,19 +77,14 @@ AHM_Tree::AHM_Tree()
 				
 				TicatComp->SetupAttachment(TicatClipComp);
 				TicatComp->SetStaticMesh(TicatAsset.Object);
-			}
+				
+				//// 2줄 배치 계산
+				//int32 Row = i / 10; // 0 또는 1
+				//int32 Column = i % 10; // 0부터 9까지
 
-			// Niagara
-			FName NiagaraName = *FString::Printf(TEXT("Niagara_%d"), i + 1);
-			UNiagaraComponent* NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(NiagaraName);
-			NiagaraEffects[i] = NiagaraComp;
-			if(NiagaraComp)
-			{
-				NiagaraComp->SetupAttachment(TicatComp);
-				NiagaraComp->SetAsset(NiagaraSystem);
-				NiagaraComp->SetRelativeLocation(FVector(0, 0, -50));
-				NiagaraComp->SetRelativeScale3D(FVector3d(0.1f));
-				NiagaraComp->SetAutoActivate(false);
+				// 위치 계산 (20 간격으로 배치)
+				//FVector RelativeLocation = FVector(0.0f, Column * 100.0f, Row * 100.0f);
+				//TicatComp->SetRelativeLocation(RelativeLocation);
 			}
 		}
 	}
@@ -110,15 +104,6 @@ void AHM_Tree::BeginPlay()
 	if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
 	{
 		HallState->OnTicketImageUpdated.AddDynamic(this, &AHM_Tree::ApplyTicketImage);
-	}
-
-	for (auto* TicatClip : TicatClips)
-	{
-		if (TicatClip)
-		{
-			TicatClip->SetSimulatePhysics(true);
-			TicatClip->SetMassScale(NAME_None, 300);
-		}
 	}
 }
 
@@ -207,8 +192,6 @@ void AHM_Tree::ApplyTicketImage(int32 TicketTreeId, FString TicketImgUrl)
 		OnRep_TicatVisibility(); // 클라이언트 동기화
 	}
 
-	NiagaraEffects[idx]->Activate(true);
-	
 	// 이미지 다운로드 및 적용
 	FHttpModule* Http = &FHttpModule::Get();
 	if (!Http) return;

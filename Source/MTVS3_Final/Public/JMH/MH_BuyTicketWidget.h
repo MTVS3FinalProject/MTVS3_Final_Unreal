@@ -246,9 +246,6 @@ public:
 	//UFUNCTION()
 	void SetTextSeatID(FString SeatID);
 
-	// KHJ
-	void SetTextWinnerSeatInfo(const FString& SeatID);
-	// KHJ
 
 	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	//class UTextBlock* Text_NeedCoin;

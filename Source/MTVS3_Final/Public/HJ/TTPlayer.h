@@ -96,7 +96,7 @@ public:
 	void MulticastChangeWalkSpeed(bool bIsRunning);
 
 	UFUNCTION(Client , Reliable)
-	void ClientShowLuckyDrawInvitation(bool bIsVisible , const FString& SeatInfo, int32 CompetitionRate);
+	void ClientShowLuckyDrawInvitation(bool bIsVisible , int32 CompetitionRate);
 
 	UFUNCTION(Server , Reliable , BlueprintCallable)
 	void ServerTeleportPlayer(bool bIsToConcertHall);
@@ -413,9 +413,6 @@ public:
 	class UInputAction* IA_Cheat4;
 	void OnMyActionCheat4(const FInputActionValue& Value);
 
-	UFUNCTION(Server, Reliable)
-	void ServerResetPuzzlePieces();
-
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Piece;
 	void OnMyActionPickupPiece(const FInputActionValue& Value);
@@ -495,7 +492,7 @@ public:
 	void SetTextMyNum();
 
 	bool bIsDrawSessionInviteVisible = false;
-	void UpdateDrawSessionInviteVisibility(int32 CompetitionRate, const FString& SeatInfo);
+	void UpdateDrawSessionInviteVisibility(int32 CompetitionRate);
 #pragma endregion
 	
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Camera")

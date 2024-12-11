@@ -4,7 +4,6 @@
 #include "JMH/MH_GameStartCountDown.h"
 #include "Components/CanvasPanel.h"
 #include "Components/TextBlock.h"
-#include "Kismet/GameplayStatics.h"
 
 void UMH_GameStartCountDown::NativeConstruct()
 {
@@ -19,11 +18,6 @@ void UMH_GameStartCountDown::StartCountdown()
 {
 	//Text_CountDown->SetVisibility(ESlateVisibility::Visible);
 	GetWorld()->GetTimerManager().SetTimer(CountdownTimerHandle, this, &UMH_GameStartCountDown::UpdateCountdown, 1.0f, true);
-	
-	if (CountdownSound) // 사운드 재생
-	{
-		UGameplayStatics::PlaySound2D(this, CountdownSound, 1.0f, 2.0f);
-	}
 }
 
 void UMH_GameStartCountDown::UpdateCountdown()
@@ -35,6 +29,7 @@ void UMH_GameStartCountDown::UpdateCountdown()
 		Text_CountDown->SetText(FText::FromString(FString::FromInt(CountdownValue)));
 		PlayAnimation(CountDownAnim);
 	}
+	
 	
 	if (CountdownValue < 0)
 	{
