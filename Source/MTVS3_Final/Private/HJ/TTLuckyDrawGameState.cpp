@@ -2,7 +2,6 @@
 #include "HJ/TTGameInstance.h"
 #include <HJ/TTPlayer.h>
 #include "EngineUtils.h"
-#include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerState.h"
 #include "HJ/LDTableManager.h"
@@ -644,62 +643,58 @@ void ATTLuckyDrawGameState::EndRounds()
 
 void ATTLuckyDrawGameState::InitializeChairs()
 {
-	// 서버에서만 실행되도록 체크
-    if (!HasAuthority()) return;
+	if (!HasAuthority()) return;
+	ATTLuckyDrawGameMode* GameMode = GetWorld()->GetAuthGameMode<ATTLuckyDrawGameMode>();
+	if (!GameMode) return;
+
+	GameMode->ResetLuckyDraw();
+	
+	ALuckyDrawManager* ChairManager = Cast<ALuckyDrawManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawManager::StaticClass()));
+	ALDTableManager* TableManager = Cast<ALDTableManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), ALDTableManager::StaticClass()));
     
-    // 의자와 테이블 매니저 찾기
-    ALuckyDrawManager* ChairManager = Cast<ALuckyDrawManager>(
-        UGameplayStatics::GetActorOfClass(GetWorld(), ALuckyDrawManager::StaticClass()));
-    ALDTableManager* TableManager = Cast<ALDTableManager>(
-        UGameplayStatics::GetActorOfClass(GetWorld(), ALDTableManager::StaticClass()));
-    
-    if (!ChairManager || !TableManager)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Failed to find ChairManager or TableManager in InitializeChairs"));
-        return;
-    }
+	if (!ChairManager || !TableManager) return;
 
-    // 먼저 모든 물리 시뮬레이션을 비활성화
-    MulticastDisableAllPhysics();
+	// 1단계: 물리 시뮬레이션 비활성화
+	FTimerHandle DisablePhysicsTimer;
+	GetWorld()->GetTimerManager().SetTimer(DisablePhysicsTimer, [this]() {
+		MulticastDisableAllPhysics();
+	}, PhysicsDisableDelay, false);
 
-    // 잠시 대기 후 위치 리셋 실행
-    FTimerHandle ResetPositionsTimerHandle;
-    GetWorld()->GetTimerManager().SetTimer(
-        ResetPositionsTimerHandle,
-        [this, ChairManager, TableManager]()
-        {
-            // 의자 리셋
-            TArray<UChildActorComponent*> ChairComponents;
-            ChairManager->GetComponents(ChairComponents);
-            for (UChildActorComponent* ChairComponent : ChairComponents)
-            {
-                if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
-                {
-                    Chair->MulticastResetChair();
-                    UE_LOG(LogTemp, Log, TEXT("Reset chair position: %s"), *ChairComponent->GetName());
-                }
-            }
+	// 2단계: 위치 리셋
+	FTimerHandle ResetPositionsTimer;
+	GetWorld()->GetTimerManager().SetTimer(ResetPositionsTimer, [this, ChairManager, TableManager]() {
+		// 의자 리셋
+		TArray<UChildActorComponent*> ChairComponents;
+		ChairManager->GetComponents(ChairComponents);
+		for (UChildActorComponent* ChairComponent : ChairComponents)
+		{
+			if (ALuckyDrawChair* Chair = Cast<ALuckyDrawChair>(ChairComponent->GetChildActor()))
+			{
+				Chair->MulticastResetChair();
+			}
+		}
 
-            // 테이블 리셋
-            TArray<UChildActorComponent*> TableComponents;
-            TableManager->GetComponents(TableComponents);
-            for (UChildActorComponent* TableComponent : TableComponents)
-            {
-                if (ALuckyDrawTable* Table = Cast<ALuckyDrawTable>(TableComponent->GetChildActor()))
-                {
-                    Table->MulticastResetTable();
-                    Table->SetColorBlack();
-                    Table->MulticastSetTextRender(FText::FromString(TEXT(" ")));
-                    UE_LOG(LogTemp, Log, TEXT("Reset table position: %s"), *TableComponent->GetName());
-                }
-            }
+		// 테이블 리셋
+		TArray<UChildActorComponent*> TableComponents;
+		TableManager->GetComponents(TableComponents);
+		for (UChildActorComponent* TableComponent : TableComponents)
+		{
+			if (ALuckyDrawTable* Table = Cast<ALuckyDrawTable>(TableComponent->GetChildActor()))
+			{
+				Table->MulticastResetTable();
+				Table->SetColorBlack();
+				Table->MulticastSetTextRender(FText::FromString(TEXT(" ")));
+			}
+		}
+	}, PositionResetDelay, false);
 
-            // 게임 상태 초기화
-            bIsStartRound = false;
-        },
-        1.0f, // 물리 비활성화 후 1초 대기
-        false
-    );
+	// 3단계: 물리 상태 초기화 - 여기서 물리를 재활성화하지 않음
+	FTimerHandle InitialPhysicsTimer;
+	GetWorld()->GetTimerManager().SetTimer(InitialPhysicsTimer, [this]() {
+		bIsStartRound = false;
+	}, InitialPhysicsDelay, false);
 }
 
 void ATTLuckyDrawGameState::MulticastDisableAllPhysics_Implementation()

@@ -24,6 +24,9 @@ protected:
     
 	UPROPERTY()
 	FTransform InitialFloorMeshTransform;
+
+	UPROPERTY()
+	FTransform InitialTextRenderTransform;
     
 	virtual void OnConstruction(const FTransform& Transform) override;
 
