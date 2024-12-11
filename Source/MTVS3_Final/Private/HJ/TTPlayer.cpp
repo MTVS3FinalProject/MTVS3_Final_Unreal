@@ -575,10 +575,34 @@ void ATTPlayer::ServerSetAvatarData_Implementation(const int32& _AvatarData)
 
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 {
+	if (HasAuthority())
+	{
+		LuckyDrawSeatID = _LuckyDrawSeatID;
+		UE_LOG(LogTemp, Warning, TEXT("좌석 번호 %s(으)로 ATTPlayer::SetLuckyDrawSeatID"), *LuckyDrawSeatID);
+        
+		// 서버의 GI에도 저장
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+		if (GI) GI->SetLuckyDrawSeatID(LuckyDrawSeatID);
+        
+		// 클라이언트들에게도 알림
+		ClientSetLuckyDrawSeatID(_LuckyDrawSeatID);
+	}
+	else
+	{
+		ServerSetLuckyDrawSeatID(_LuckyDrawSeatID);
+	}
+}
+
+void ATTPlayer::ServerSetLuckyDrawSeatID_Implementation(const FString& _LuckyDrawSeatID)
+{
+	SetLuckyDrawSeatID(_LuckyDrawSeatID);
+}
+
+void ATTPlayer::ClientSetLuckyDrawSeatID_Implementation(const FString& _LuckyDrawSeatID)
+{
 	LuckyDrawSeatID = _LuckyDrawSeatID;
-	UE_LOG(LogTemp , Warning , TEXT("좌석 번호 %s(으)로 ATTPlayer::SetLuckyDrawSeatID"), *LuckyDrawSeatID);
-	
-	// GI에도 SetLuckyDrawSeatID
+	UE_LOG(LogTemp, Warning, TEXT("좌석 번호 %s(으)로 ATTPlayer::SetLuckyDrawSeatID"), *LuckyDrawSeatID);
+    
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI) GI->SetLuckyDrawSeatID(LuckyDrawSeatID);
 }
@@ -896,6 +920,9 @@ void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , c
 
 void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate , const FString& SeatInfo)
 {
+	// 디버그 로그 추가
+	UE_LOG(LogTemp, Warning, TEXT("UpdateDrawSessionInviteVisibility - SeatInfo: %s, CompetitionRate: %d"), *SeatInfo, CompetitionRate);
+	
 	if (!bHasPiece && bIsDrawSessionInviteVisible)
 	{
 		// 큐브를 들고 있지 않고 초대 UI가 보이는 상태
@@ -903,8 +930,13 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate , const 
 		if (MainUI) MainUI->SetVisibleCanvas(false);
 		if (TicketingUI)
 		{
+			// TicketingUI 유효성 체크 로그
+			UE_LOG(LogTemp, Warning, TEXT("Setting TicketingUI - IsValid: %s"), IsValid(TicketingUI) ? TEXT("True") : TEXT("False"));
+			
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 			TicketingUI->SetTextLuckyDrawSeatInfo(SeatInfo);
+			// 설정 후 확인 로그
+			UE_LOG(LogTemp, Warning, TEXT("SeatInfo set to UI"));
 			TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
 		}
 	}
@@ -1937,13 +1969,18 @@ void ATTPlayer::OnMyActionCheat2(const FInputActionValue& Value)
 			GI->SetLuckyDrawState(ELuckyDrawState::Winner);
 
 			// 추첨 당첨 UI 표시
-			MainUI->SetWidgetSwitcher(1);
+			if (MainUI)
+			{
+				MainUI->SetTextSeatNum1(GI->GetLuckyDrawSeatInfo());
+				MainUI->SetWidgetSwitcher(1);
+			}
+			if (MainUI->BuyTicketWidget) MainUI->BuyTicketWidget->SetTextWinnerSeatInfo(GI->GetLuckyDrawSeatInfo());
 
 			// HTTP 통신 요청
 			// HttpActor2->ReqPostCheatGameResult(GI->GetAccessToken());
 
 			// 치트아님 추후 추첨 종료 로직에서 호출하기
-			HttpActor2->ReqPostGameResult(GetLuckyDrawSeatID() , GetAccessToken());
+			HttpActor2->ReqPostGameResult(GI->GetLuckyDrawSeatID() , GetAccessToken());
 		}
 		break;
 	case EPlaceState::LuckyDrawRoom:

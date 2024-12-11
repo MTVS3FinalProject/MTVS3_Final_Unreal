@@ -281,6 +281,10 @@ public:
 	FString LuckyDrawSeatID;
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
+	UFUNCTION(Server, Reliable)
+	void ServerSetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
+	UFUNCTION(Client, Reliable)
+	void ClientSetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 #pragma endregion
