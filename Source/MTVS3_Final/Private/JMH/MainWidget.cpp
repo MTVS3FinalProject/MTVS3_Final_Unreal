@@ -18,7 +18,7 @@
 #include "LHM/HM_FinalTicket.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_TicketCustom.h"
-#include "NoesisRuntime.h"
+
 
 
 void UMainWidget::NativeConstruct()

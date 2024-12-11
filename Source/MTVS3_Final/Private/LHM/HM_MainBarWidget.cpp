@@ -36,6 +36,38 @@ void UHM_MainBarWidget::NativeConstruct()
 	{
 		WBP_NoticeUI->OnClickedBack_NoticeBtn.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
 	}
+/*
+// XAML 파일 로드
+    FString FullPath = FPaths::ProjectContentDir() + TEXT("Rive/menubar_xaml_1205.xaml");
+    Noesis::Ptr<Noesis::FrameworkElement> RootElement = Noesis::GUI::LoadXaml<Noesis::FrameworkElement>(TCHAR_TO_UTF8(*FullPath));
+    if (!RootElement)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to load XAML file: %s"), *FullPath);
+        return;
+    }
+
+    // RootElement의 자식 요소를 순회
+    Noesis::Visual* Child = Noesis::VisualTreeHelper::GetChild(RootElement.GetPtr(), 0);
+    if (Child)
+    {
+        Noesis::RiveControl* RiveControl = Noesis::DynamicCast<Noesis::RiveControl*>(Child);
+        if (RiveControl)
+        {
+            UE_LOG(LogTemp, Log, TEXT("RiveControl found!"));
+            // RiveControl 사용 가능
+        }
+    }*/
+}
+
+//Rive
+void UHM_MainBarWidget::ActivateRiveTrigger(const FString& TriggerName)
+{
+	
+}
+
+void UHM_MainBarWidget::SetRiveParameter(const FString& ParameterName, float Value)
+{
+	
 }
 
 void UHM_MainBarWidget::SetVisibleSwitcher(bool bVisible)
