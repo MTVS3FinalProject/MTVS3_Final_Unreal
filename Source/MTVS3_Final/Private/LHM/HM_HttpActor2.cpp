@@ -232,16 +232,17 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						       NewConcertInfo.concertTime.day ,
 						       *NewConcertInfo.concertTime.time);
 
-						if (MainUI && MainUI->GetBuyTicketWidget())
-						{
-							MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
-								NewConcertInfo.concertName ,
-								NewConcertInfo.concertTime.year ,
-								NewConcertInfo.concertTime.month ,
-								NewConcertInfo.concertTime.day ,
-								NewConcertInfo.concertTime.time);
-							MainUI->BuyTicketWidget->SetTextConcertName(NewConcertInfo.concertName);
-						}
+						// if (MainUI && MainUI->GetBuyTicketWidget())
+						// {
+						// 	MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
+						// 		NewConcertInfo.concertName ,
+						// 		NewConcertInfo.concertTime.year ,
+						// 		NewConcertInfo.concertTime.month ,
+						// 		NewConcertInfo.concertTime.day ,
+						// 		NewConcertInfo.concertTime.time);
+						// 	MainUI->BuyTicketWidget->SetTextConcertName(NewConcertInfo.concertName);
+						// }
+						
 						if (TicketingUI)
 						{
 							TicketingUI->SetConcertInfo(NewConcertInfo.concertName , NewConcertInfo.concertTime.year ,
@@ -1172,6 +1173,30 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
 						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 						UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
+					}
+					
+					FConcertInfo NewConcertInfo;
+					if (FJsonObjectConverter::JsonObjectToUStruct(ResponseObject.ToSharedRef() , &NewConcertInfo , 0 ,0))
+					{
+						SetConcertInfo(NewConcertInfo);
+						UE_LOG(LogTemp , Log , TEXT("Concert Info | Id: %d, Name: %s, Date: %d-%d-%d %s") ,
+							   NewConcertInfo.concertId ,
+							   *NewConcertInfo.concertName ,
+							   NewConcertInfo.concertTime.year ,
+							   NewConcertInfo.concertTime.month ,
+							   NewConcertInfo.concertTime.day ,
+							   *NewConcertInfo.concertTime.time);
+
+						if (MainUI && MainUI->GetBuyTicketWidget())
+						{
+							MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
+								NewConcertInfo.concertName ,
+								NewConcertInfo.concertTime.year ,
+								NewConcertInfo.concertTime.month ,
+								NewConcertInfo.concertTime.day ,
+								NewConcertInfo.concertTime.time);
+							MainUI->BuyTicketWidget->SetTextConcertName(NewConcertInfo.concertName);
+						}
 					}
 				}
 			}

@@ -22,22 +22,8 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
     CollisionBoxComps.SetNum(9);
     for (int32 i = 0; i < 9; i++)
     {
-	    // // 콜리전 박스 생성
-	    // FName CollisionBoxName = *FString::Printf(TEXT("CollisionBoxComp%d") , i + 1);
-	    // UBoxComponent* BoxComp = CreateDefaultSubobject<UBoxComponent>(CollisionBoxName);
-	    // CollisionBoxComps[i] = BoxComp;
-	    //
-	    // if (BoxComp)
-	    // {
-		   //  BoxComp->SetupAttachment(RootComponent);
-		   //  BoxComp->SetRelativeScale3D(FVector(0.4f));
-		   //  BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		   //  BoxComp->SetCollisionResponseToAllChannels(ECR_Block);
-		   //  BoxComp->SetNotifyRigidBodyCollision(true);
-		   //  BoxComp->SetSimulatePhysics(true);
-	    // }
-
-    	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d") , i + 1);
+    	FString MeshAssetPath = FString::Printf(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d"), i + 1);
+    	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(*MeshAssetPath);
 
 	    // Mesh 컴포넌트 생성
 	    FName PieceName = *FString::Printf(TEXT("Piece%d") , i + 1);
@@ -48,6 +34,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 	    {
 		    MeshComp->SetupAttachment(RootComponent);
 		    MeshComp->SetStaticMesh(MeshAsset.Object);
+	    	MeshComp->SetRelativeScale3D(FVector(0.5f));
 	    }
     }
  }

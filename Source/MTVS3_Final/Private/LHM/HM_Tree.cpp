@@ -3,15 +3,11 @@
 
 #include "LHM/HM_Tree.h"
 
-#include "EngineUtils.h"
 #include "HttpModule.h"
 #include "ImageUtils.h"
 #include "NiagaraSystem.h"
-#include "HJ/TTGameInstance.h"
 #include "HJ/TTHallGameState.h"
-#include "HJ/TTPlayer.h"
 #include "Interfaces/IHttpResponse.h"
-#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 
@@ -26,9 +22,9 @@ AHM_Tree::AHM_Tree()
 	Tree->SetupAttachment(RootComponent);
 	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatAsset(
-		TEXT("/Game/KJM/Assets/CM_Ticat"));
+		TEXT("/Game/KJM/Assets/Object/CM_Ticat"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatClipAsset(
-		TEXT("/Game/KJM/Assets/CM_Ticat_Clip"));
+		TEXT("/Game/KJM/Assets/Object/CM_Ticat_Clip"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> PhysicsParentAsset(
 		TEXT("/Game/KHJ/Assets/SM_BoxBrush"));
 	FSoftObjectPath NiagaraPath(TEXT("/Game/LHM/Effects/MegaMagicVFXBundle/N_LightBlastCharged"));

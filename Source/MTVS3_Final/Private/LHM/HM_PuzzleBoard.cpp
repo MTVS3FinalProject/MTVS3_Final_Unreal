@@ -22,7 +22,8 @@ AHM_PuzzleBoard::AHM_PuzzleBoard()
 	
 	for (int i = 0; i < 9; i++)
 	{
-		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d") , i + 1);
+		FString MeshAssetPath = FString::Printf(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d"), i + 1);
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(*MeshAssetPath);
 		
 		FString BoardAreaCompName = FString::Printf(TEXT("BoardArea%d"), i+1);
 		BoardAreas[i] = CreateDefaultSubobject<UStaticMeshComponent>(*BoardAreaCompName);
@@ -57,7 +58,7 @@ AHM_PuzzleBoard::AHM_PuzzleBoard()
 		{
 			BoardAreasGrid[i]->SetupAttachment(RootComponent);
 			BoardAreasGrid[i]->SetStaticMesh(MeshAsset.Object);
-			BoardAreasGrid[i]->SetRelativeScale3D(FVector(2));
+			BoardAreasGrid[i]->SetRelativeScale3D(FVector(1.9f));
 			
 			BoardAreasGrid[i]->SetVisibility(true);
 		}
@@ -102,66 +103,6 @@ void AHM_PuzzleBoard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-}
-
-void AHM_PuzzleBoard::InitializeBoardAreas()
-{
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
-	if(!MeshAsset.Succeeded()) return;
-	
-	BoardAreas.SetNum(9);
-	for (int i = 0; i < 9; i++)
-	{
-		FString ComponentName = FString::Printf(TEXT("BoardArea%d"), i+1);
-		BoardAreas[i] = CreateDefaultSubobject<UStaticMeshComponent>(*ComponentName);
-
-		if (BoardAreas[i])
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreas[%d]"), i);
-			BoardAreas[i]->SetupAttachment(RootComponent);
-			BoardAreas[i]->SetStaticMesh(MeshAsset.Object);
-			BoardAreas[i]->SetRelativeScale3D(FVector(2.5f));
-			
-			BoardAreas[i]->SetCollisionProfileName(TEXT("PuzzleBoard"));
-			BoardAreas[i]->SetNotifyRigidBodyCollision(true);
-			BoardAreas[i]->SetGenerateOverlapEvents(true);
-			
-			BoardAreas[i]->SetVisibility(false);
-		}
-	}
-
-	NiagaraEffects.SetNum(9);
-	for (int i = 0; i < 9; i++)
-	{
-		// 나이아가라 이펙트 추가
-		FString NiagaraName = FString::Printf(TEXT("NiagaraEffect%d") , i + 1);
-		NiagaraEffects[i] = CreateDefaultSubobject<UNiagaraComponent>(*NiagaraName);
-		if (NiagaraEffects[i] && NiagaraEffectTemplate)
-		{
-			NiagaraEffects[i]->SetupAttachment(BoardAreas[i]);
-			NiagaraEffects[i]->SetAsset(NiagaraEffectTemplate);
-			NiagaraEffects[i]->SetRelativeScale3D(FVector3d(8));
-			NiagaraEffects[i]->SetRelativeRotation(FRotator(0 , 0 , 90));
-			NiagaraEffects[i]->SetAutoActivate(false); // 초기에는 비활성화
-		}
-	}
-
-	BoardAreasGrid.SetNum(9);
-	for (int i = 0; i < 9; i++)
-	{
-		FString ComponentName = FString::Printf(TEXT("BoardAreasGrid_%d"), i+1);
-		BoardAreasGrid[i] = CreateDefaultSubobject<UStaticMeshComponent>(*ComponentName);
-
-		if (BoardAreasGrid[i])
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreasGrid[%d]"), i);
-			BoardAreasGrid[i]->SetupAttachment(RootComponent);
-			BoardAreasGrid[i]->SetStaticMesh(MeshAsset.Object);
-			BoardAreasGrid[i]->SetRelativeScale3D(FVector(2.5f));
-			
-			BoardAreasGrid[i]->SetVisibility(true);
-		}
-	}
 }
 
 void AHM_PuzzleBoard::InitializeBoardAreasLocation()
