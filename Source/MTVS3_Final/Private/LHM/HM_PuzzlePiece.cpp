@@ -19,10 +19,10 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
     
 	// 컴포넌트만 생성하고 기본 설정
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(
-		TEXT("/Script/Engine.StaticMesh'/Game/KHJ/Assets/SM_BoxBrush.SM_BoxBrush'"));
-	if (MeshAsset.Succeeded())
-	{
+	//static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshTemp(
+	//	TEXT("/Game/KJM/Assets/NewJeans__Puzzle%d"));
+	//if (MeshAsset.Succeeded())
+	//{
 		PieceMeshes.SetNum(9);
 		CollisionBoxComps.SetNum(9);
 		for (int32 i = 0; i < 9; i++)
@@ -42,6 +42,9 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 				BoxComp->SetSimulatePhysics(true);
 			}
 
+			FString MeshAssetPath = FString::Printf(TEXT("/Game/KJM/Assets/NewJeans__Puzzle%d"), i + 1);
+			static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(*MeshAssetPath);
+	
 			// Mesh 컴포넌트 생성
 			FName PieceName = *FString::Printf(TEXT("Piece%d"), i + 1);
 			UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(PieceName);
@@ -53,7 +56,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 				MeshComp->SetStaticMesh(MeshAsset.Object);
 			}
 		}
-	}
+	//}
  }
  
  // Called when the game starts or when spawned
