@@ -15,23 +15,22 @@ AHM_PuzzleBoard::AHM_PuzzleBoard()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
-	if(!MeshAsset.Succeeded()) return;
 	
 	BoardAreas.SetNum(9);
+	NiagaraEffects.SetNum(9);
+	BoardAreasGrid.SetNum(9);
+	
 	for (int i = 0; i < 9; i++)
 	{
-		FString ComponentName = FString::Printf(TEXT("BoardArea%d"), i+1);
-		BoardAreas[i] = CreateDefaultSubobject<UStaticMeshComponent>(*ComponentName);
-
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d") , i + 1);
+		
+		FString BoardAreaCompName = FString::Printf(TEXT("BoardArea%d"), i+1);
+		BoardAreas[i] = CreateDefaultSubobject<UStaticMeshComponent>(*BoardAreaCompName);
 		if (BoardAreas[i])
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreas[%d]"), i);
 			BoardAreas[i]->SetupAttachment(RootComponent);
 			BoardAreas[i]->SetStaticMesh(MeshAsset.Object);
-			BoardAreas[i]->SetRelativeScale3D(FVector(0.3f , 5.0f , 5.0f));
-			BoardAreas[i]->SetRelativeRotation(FRotator(0,90,0));
+			BoardAreas[i]->SetRelativeScale3D(FVector(2.5f));
 			
 			BoardAreas[i]->SetCollisionProfileName(TEXT("PuzzleBoard"));
 			BoardAreas[i]->SetNotifyRigidBodyCollision(true);
@@ -39,11 +38,7 @@ AHM_PuzzleBoard::AHM_PuzzleBoard()
 			
 			BoardAreas[i]->SetVisibility(false);
 		}
-	}
-
-	NiagaraEffects.SetNum(9);
-	for (int i = 0; i < 9; i++)
-	{
+	
 		// 나이아가라 이펙트 추가
 		FString NiagaraName = FString::Printf(TEXT("NiagaraEffect%d") , i + 1);
 		NiagaraEffects[i] = CreateDefaultSubobject<UNiagaraComponent>(*NiagaraName);
@@ -53,25 +48,16 @@ AHM_PuzzleBoard::AHM_PuzzleBoard()
 			NiagaraEffects[i]->SetAsset(NiagaraEffectTemplate);
 			NiagaraEffects[i]->SetRelativeScale3D(FVector3d(8));
 			NiagaraEffects[i]->SetRelativeRotation(FRotator(0 , 0 , 90));
-			//NiagaraEffects[i]->SetWorldLocation(BoardAreas[i]->GetComponentLocation());
 			NiagaraEffects[i]->SetAutoActivate(false); // 초기에는 비활성화
 		}
-	}
-
-	BoardAreasGrid.SetNum(9);
-	for (int i = 0; i < 9; i++)
-	{
-		FString ComponentName = FString::Printf(TEXT("BoardAreasGrid_%d"), i+1);
-		BoardAreasGrid[i] = CreateDefaultSubobject<UStaticMeshComponent>(*ComponentName);
-
+	
+		FString BoardAreasGridCompName = FString::Printf(TEXT("BoardAreasGrid_%d"), i+1);
+		BoardAreasGrid[i] = CreateDefaultSubobject<UStaticMeshComponent>(*BoardAreasGridCompName);
 		if (BoardAreasGrid[i])
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreasGrid[%d]"), i);
 			BoardAreasGrid[i]->SetupAttachment(RootComponent);
 			BoardAreasGrid[i]->SetStaticMesh(MeshAsset.Object);
-			//BoardAreasGrid[i]->SetRelativeLocation(FVector(0.0f, 10.f, 0.0f));
-			BoardAreasGrid[i]->SetRelativeScale3D(FVector(0.1f , 4.0f , 4.0f));
-			BoardAreasGrid[i]->SetRelativeRotation(FRotator(0,90,0));
+			BoardAreasGrid[i]->SetRelativeScale3D(FVector(2));
 			
 			BoardAreasGrid[i]->SetVisibility(true);
 		}
@@ -134,8 +120,7 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreas[%d]"), i);
 			BoardAreas[i]->SetupAttachment(RootComponent);
 			BoardAreas[i]->SetStaticMesh(MeshAsset.Object);
-			BoardAreas[i]->SetRelativeScale3D(FVector(0.3f , 5.0f , 5.0f));
-			BoardAreas[i]->SetRelativeRotation(FRotator(0,90,0));
+			BoardAreas[i]->SetRelativeScale3D(FVector(2.5f));
 			
 			BoardAreas[i]->SetCollisionProfileName(TEXT("PuzzleBoard"));
 			BoardAreas[i]->SetNotifyRigidBodyCollision(true);
@@ -156,8 +141,7 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			NiagaraEffects[i]->SetupAttachment(BoardAreas[i]);
 			NiagaraEffects[i]->SetAsset(NiagaraEffectTemplate);
 			NiagaraEffects[i]->SetRelativeScale3D(FVector3d(8));
-			NiagaraEffects[i]->SetRelativeRotation(FRotator(0 , 0 , 90)); //(Pitch=0.000000,Yaw=0.000000,Roll=90.000000)
-			//NiagaraEffects[i]->SetWorldLocation(BoardAreas[i]->GetComponentLocation());
+			NiagaraEffects[i]->SetRelativeRotation(FRotator(0 , 0 , 90));
 			NiagaraEffects[i]->SetAutoActivate(false); // 초기에는 비활성화
 		}
 	}
@@ -173,9 +157,7 @@ void AHM_PuzzleBoard::InitializeBoardAreas()
 			UE_LOG(LogTemp, Warning, TEXT("Setting scale for BoardAreasGrid[%d]"), i);
 			BoardAreasGrid[i]->SetupAttachment(RootComponent);
 			BoardAreasGrid[i]->SetStaticMesh(MeshAsset.Object);
-			//BoardAreasGrid[i]->SetRelativeLocation(FVector(0.0f, 10.f, 0.0f));
-			BoardAreasGrid[i]->SetRelativeScale3D(FVector(0.1f , 4.0f , 4.0f));
-			BoardAreasGrid[i]->SetRelativeRotation(FRotator(0,90,0));
+			BoardAreasGrid[i]->SetRelativeScale3D(FVector(2.5f));
 			
 			BoardAreasGrid[i]->SetVisibility(true);
 		}
@@ -191,14 +173,14 @@ void AHM_PuzzleBoard::InitializeBoardAreasLocation()
 	{
 		for (int32 Col = 0; Col < GridSize; ++Col)
 		{
-			int32 Idx = Row * GridSize + Col;
+			int32 Idx = Col * GridSize + Row;
 			if (BoardAreas.IsValidIndex(Idx) && BoardAreas[Idx])
 			{
-				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
+				FVector OffsetLocation = FVector(Row * CellSize , 0, -Col * CellSize);
 				FVector NewLocation = BoardLocation + OffsetLocation;
 				BoardAreas[Idx]->SetWorldLocation(NewLocation);
 
-				FVector NiagaraOffsetLocation = FVector(Col * CellSize , 100, Row * CellSize);
+				FVector NiagaraOffsetLocation = FVector(Row * CellSize , 100, -Col * CellSize);
 				FVector NewNiagaraLocation = BoardLocation + NiagaraOffsetLocation;
 				NiagaraEffects[Idx]->SetWorldLocation(NewNiagaraLocation);
 			}
@@ -215,10 +197,10 @@ void AHM_PuzzleBoard::InitializeBoardAreasGridLocation()
 	{
 		for (int32 Col = 0; Col < GridSize; ++Col)
 		{
-			int32 Idx = Row * GridSize + Col;
+			int32 Idx = Col * GridSize + Row;
 			if (BoardAreasGrid.IsValidIndex(Idx) && BoardAreasGrid[Idx])
 			{
-				FVector OffsetLocation = FVector(Col * CellSize , 0, Row * CellSize);
+				FVector OffsetLocation = FVector(Row * CellSize , 0, -Col * CellSize);
 				FVector NewLocation = BoardGridLocation + OffsetLocation;
 				BoardAreasGrid[Idx]->SetWorldLocation(NewLocation);
 			}
