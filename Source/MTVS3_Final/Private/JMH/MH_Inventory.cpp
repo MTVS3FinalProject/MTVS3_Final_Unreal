@@ -5,7 +5,6 @@
 
 #include "HttpModule.h"
 #include "ImageUtils.h"
-#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
@@ -172,7 +171,7 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 
 			// 다운로드 완료 시 콜백 설정
 			ImageRequest->OnProcessRequestComplete().BindLambda(
-				[ItemBox_Ticket](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+				[ItemBox_Ticket, this](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 				{
 					if (bWasSuccessful && Response.IsValid())
 					{
@@ -180,12 +179,25 @@ void UMH_Inventory::InitializeTicketTabs(const TArray<FTickets>& TicketItems)
 						TArray<uint8> ImageData = Response->GetContent();
 
 						// 텍스처로 변환
-						UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-						if (StickerTexture && ItemBox_Ticket->Img_Item_Ticket)
+						UTexture2D* CustomTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+						if (CustomTexture && ItemBox_Ticket->Img_Item_Ticket)
 						{
-							// 이미지 위젯에 텍스처 적용
-							ItemBox_Ticket->Img_Item_Ticket->SetBrushFromTexture(StickerTexture);
-							UE_LOG(LogTemp , Log , TEXT("Ticket image set successfully"));
+							UObject* ResourceObject = ItemBox_Ticket->Img_Item_Ticket->GetBrush().GetResourceObject();
+							if (ResourceObject && ResourceObject->IsA(UMaterialInterface::StaticClass()))
+							{
+								UMaterialInterface* BaseMaterial = Cast<UMaterialInterface>(ResourceObject);
+								if (BaseMaterial)
+								{
+									// 동적 머티리얼 생성
+									UMaterialInstanceDynamic* DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, GetWorld());
+									if (DynamicMaterial)
+									{
+										// Custom 텍스처 설정
+										DynamicMaterial->SetTextureParameterValue(FName("CustomTexture") , CustomTexture);
+										ItemBox_Ticket->Img_Item_Ticket->SetBrushFromMaterial(DynamicMaterial);
+									}
+								}
+							}
 						}
 						else
 						{

@@ -60,12 +60,12 @@ struct FPlayerData
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString LuckyDrawSeatID;
+
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
+	FString LuckyDrawSeatInfo;
 	
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	bool IsReceived;
-
-	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
-	int32 ReceivedSeatId;
 
 	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	bool bIsNewPlayer;
@@ -73,7 +73,7 @@ struct FPlayerData
 	// 기본 생성자
 	FPlayerData()
 		: bIsHost(false) , nickname(TEXT("Ticketaka")), titleName(TEXT("")), titleRarity(TEXT("Common")), accessToken(TEXT("-1")) ,
-		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), IsReceived(false), ReceivedSeatId(1), bIsNewPlayer(true)
+		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), LuckyDrawSeatInfo(TEXT("-SeatInfo")), IsReceived(false), bIsNewPlayer(true)
 	{}
 };
 
@@ -182,15 +182,15 @@ public:
 	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
 	FString GetLuckyDrawSeatID() const { return PlayerData.LuckyDrawSeatID; };
 
+	// 추첨을 시작할 좌석 ID
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetLuckyDrawSeatInfo(const FString& _LuckyDrawSeatInfo);
+	FString GetLuckyDrawSeatInfo() const { return PlayerData.LuckyDrawSeatInfo; };
+
 	// 좌석 접수 여부
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
 	void SetIsReceived(const bool _IsReceived);
 	bool GetIsReceived() const { return PlayerData.IsReceived; };
-	
-	// 접수한 좌석 ID
-	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void SetReceivedSeatId(const int32& _ReceivedSeatId);
-	int32 GetReceivedSeatId() const { return PlayerData.ReceivedSeatId; };
 
 	// 신규 플레이어 여부
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
