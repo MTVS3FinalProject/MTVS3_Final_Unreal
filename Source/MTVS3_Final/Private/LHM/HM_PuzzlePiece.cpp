@@ -22,7 +22,8 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
     CollisionBoxComps.SetNum(9);
     for (int32 i = 0; i < 9; i++)
     {
-    	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d") , i + 1);
+    	FString MeshAssetPath = FString::Printf(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d"), i + 1);
+    	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(*MeshAssetPath);
 
 	    // Mesh 컴포넌트 생성
 	    FName PieceName = *FString::Printf(TEXT("Piece%d") , i + 1);

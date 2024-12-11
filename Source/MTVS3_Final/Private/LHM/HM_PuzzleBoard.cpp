@@ -22,7 +22,8 @@ AHM_PuzzleBoard::AHM_PuzzleBoard()
 	
 	for (int i = 0; i < 9; i++)
 	{
-		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d") , i + 1);
+		FString MeshAssetPath = FString::Printf(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d"), i + 1);
+		static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(*MeshAssetPath);
 		
 		FString BoardAreaCompName = FString::Printf(TEXT("BoardArea%d"), i+1);
 		BoardAreas[i] = CreateDefaultSubobject<UStaticMeshComponent>(*BoardAreaCompName);
