@@ -5,6 +5,7 @@
 
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
+#include "Components/TextBlock.h"
 
 void UMH_ItemBox_Ticket::NativeConstruct()
 {
@@ -39,19 +40,12 @@ void UMH_ItemBox_Ticket::HideInfo_Ticket()
 	Can_Ticket->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void UMH_ItemBox_Ticket::SetInfoString_Ticket(FString NameString_Ticket, FString infoString_Ticket)
+void UMH_ItemBox_Ticket::SetInfoString_Ticket(FString NameString_Ticket,FString infoString_Ticket, int32 Year, int32 Month, int32 Day, FString Time)
 {
 	TextNameString_Ticket = NameString_Ticket;
 	InfoTextString_Ticket = infoString_Ticket;
+	TextYearInt_Ticket = Year;
+	TextMonthInt_Ticket = Month;
+	TextDayInt_Ticket = Day;
+	TextTimeInt_Ticket = Time;
 }
-
-FString UMH_ItemBox_Ticket::GetInfoString_Ticket()
-{
-	return InfoTextString_Ticket;
-}
-
-FString UMH_ItemBox_Ticket::GetInfoNameString_Ticket()
-{
-	return TextNameString_Ticket;
-}
-

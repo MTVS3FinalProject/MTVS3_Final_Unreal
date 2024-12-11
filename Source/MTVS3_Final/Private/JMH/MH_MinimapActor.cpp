@@ -4,12 +4,15 @@
 #include "JMH/MH_MinimapActor.h"
 #include "PaperSprite.h"
 #include "PaperSpriteComponent.h"
+#include "Components/CanvasPanelSlot.h"
+#include "Components/Image.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "LHM/HM_MinimapWidget.h"
 
 
 // Sets default values
@@ -32,6 +35,7 @@ AMH_MinimapActor::AMH_MinimapActor()
 	//카메라 투영타입 거리감없게
 	MinimapCapture->OrthoWidth = 2000;
 	MinimapCapture->SetupAttachment(MinimapCameraBoom);
+	MinimapCapture->bEnableClipPlane = true;
 
 	//플레이어 위치 이미지
 	MinimapSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("MinimapSprite"));
@@ -45,6 +49,16 @@ AMH_MinimapActor::AMH_MinimapActor()
 	RenderTarget = NewObject<UTextureRenderTarget2D>();
 	//RenderTarget->InitAutoFormat(1024, 1024); // 1024x1024 크기로 초기화
 	MinimapCapture->TextureTarget = RenderTarget;
+	
+	// 스타일라운지
+	StyleLoungeSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("StyleLoungeSprite"));
+	if (StyleLoungeSprite)
+	{
+		StyleLoungeSprite->SetWorldLocation(FVector(18000, 4900, 3300)); // 티켓 커스터마이징 테이블 위치
+		StyleLoungeSprite->SetVisibility(true);
+		StyleLoungeSprite->SetWorldScale3D(FVector(2));
+		StyleLoungeSprite->bVisibleInSceneCaptureOnly = true;
+	}
 }
 
 void AMH_MinimapActor::BeginPlay()
@@ -62,10 +76,11 @@ void AMH_MinimapActor::BeginPlay()
 	{
 		MinimapCapture->TextureTarget = NewObject<UTextureRenderTarget2D>(this , MinimapRenderTargetClass);
 	}
-
+	
 	if (MinimapSpriteClass)
 	{
 		MinimapSprite->SetSprite(NewObject<UPaperSprite>(this , MinimapSpriteClass));
+		StyleLoungeSprite->SetSprite(NewObject<UPaperSprite>(this, MinimapSpriteClass));
 	}
 
 	//플레이어 메쉬 숨김
@@ -96,6 +111,11 @@ void AMH_MinimapActor::BeginPlay()
 				}
 			}
 		}
+	}
+	
+	if (MiniMapUI)
+	{
+		MiniMapUI = Cast<UHM_MinimapWidget>(CreateWidget<UHM_MinimapWidget>(GetWorld(), MiniMapWidgetClass));
 	}
 }
 
@@ -148,7 +168,32 @@ void AMH_MinimapActor::ApplyMinimap()
 		FRotator MinimapSpriteRotation = FRotator(
 			FRotator::MakeFromEuler(FVector(90.f , 0.f , PlayerRotation.Yaw - 90.f)));
 		MinimapSprite->SetWorldRotation(MinimapSpriteRotation);
+
+		// StyleLoungeSprite 회전을 카메라 회전값에 적용하여 항상 똑바로 보이도록 설정
+		FRotator StyleLoungeRotation = FRotator(0, CameraRotation.Yaw - 90, 90);
+		StyleLoungeSprite->SetWorldRotation(StyleLoungeRotation);
+
+		// 거리 기반 계산
+		FVector StyleLoungeLocation = StyleLoungeSprite->GetComponentLocation();
+		float Distance = FVector::Dist2D(PlayerLocation, StyleLoungeLocation);
+
+		// 미니맵의 반경 (텍스처 경계)
+		float MinimapRadius = MinimapCapture->OrthoWidth / 2.0f;
+		
+		if (Distance > MinimapRadius) // 범위를 초과했을 경우 위치 보정
+		{
+			FVector Direction = (StyleLoungeLocation - PlayerLocation).GetSafeNormal();
+			FVector AdjustedLocation = PlayerLocation + Direction * (MinimapRadius - 50.0f);
+			StyleLoungeSprite->SetWorldLocation(FVector(AdjustedLocation.X, AdjustedLocation.Y, StyleLoungeLocation.Z));
+		}
+		else // 범위 안에 있으면 원래 위치 유지
+		{
+			StyleLoungeSprite->SetWorldLocation(FVector(18000, 4900, 3300));
+		}
 	}
+
+	// Minimap UI 업데이트
+	UpdateMinimapWidget();
 }
 
 void AMH_MinimapActor::InitializeMinimap(ACharacter* LocalPlayer)
@@ -157,4 +202,36 @@ void AMH_MinimapActor::InitializeMinimap(ACharacter* LocalPlayer)
 	
 		Player = LocalPlayer;
 	
+}
+
+void AMH_MinimapActor::UpdateMinimapWidget()
+{
+	if (!MiniMapUI || !Player || !StyleLoungeSprite) return;
+
+	// World 위치를 화면 좌표로 변환
+	FVector WorldLocation = StyleLoungeSprite->GetComponentLocation();
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	FVector2D ScreenPosition;
+	if (!UGameplayStatics::ProjectWorldToScreen(PlayerController, WorldLocation, ScreenPosition))
+		return;
+
+	// Viewport 좌표를 위젯 좌표로 변환
+	UCanvasPanelSlot* MinimapSlot = Cast<UCanvasPanelSlot>(MiniMapUI->Img_MinimapImg->Slot);
+	UCanvasPanelSlot* StyleSlot = Cast<UCanvasPanelSlot>(MiniMapUI->Img_StyleLounge->Slot);
+	
+	if (MinimapSlot && StyleSlot)
+	{
+		FVector2D MinimapPosition = MinimapSlot->GetPosition();
+		FVector2D MinimapSize = MinimapSlot->GetSize();
+
+		// 스크린 좌표를 미니맵 위젯의 상대 좌표로 변환
+		FVector2D RelativePosition = ScreenPosition - MinimapPosition;
+		RelativePosition /= MinimapSize; // Normalize to widget scale
+
+		// Img_StyleLounge 위치 업데이트
+		StyleSlot->SetPosition(FVector2D(
+			MinimapPosition.X + RelativePosition.X * MinimapSize.X,
+			MinimapPosition.Y + RelativePosition.Y * MinimapSize.Y
+		));
+	}
 }
