@@ -10,7 +10,6 @@
 #include "LHM/HM_HttpActor2.h"
 #include "Kismet/GameplayStatics.h"
 #include <HJ/TTPlayerState.h>
-
 #include "Components/Image.h"
 #include "HJ/HallSoundManager.h"
 #include "HJ/TTPlayer.h"
@@ -19,6 +18,7 @@
 #include "LHM/HM_FinalTicket.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_TicketCustom.h"
+
 
 
 void UMainWidget::NativeConstruct()

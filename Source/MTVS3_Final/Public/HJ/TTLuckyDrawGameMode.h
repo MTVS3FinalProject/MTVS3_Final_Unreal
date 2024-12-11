@@ -105,6 +105,8 @@ public:
     TArray<int32> RoundEliminatedPlayers;
 
     const FRouletteInfo& GetRouletteInfoForRound(int32 RoundIndex) const;
+
+    void ResetLuckyDraw();
     
 private:
 

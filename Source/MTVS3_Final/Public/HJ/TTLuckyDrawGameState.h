@@ -141,4 +141,17 @@ private:
 	FVector OriginalLocation;
 	FRotator OriginalRotation;
 	bool bIsThrown;
+
+	// 리셋 관련 딜레이 타이밍 조절용 변수들
+	UPROPERTY(EditAnywhere, Category = "Reset")
+	float PhysicsDisableDelay = 0.5f;
+    
+	UPROPERTY(EditAnywhere, Category = "Reset")
+	float PositionResetDelay = 1.0f;
+    
+	UPROPERTY(EditAnywhere, Category = "Reset")
+	float PhysicsEnableDelay = 1.5f;
+
+	UPROPERTY(EditAnywhere, Category = "Reset")
+	float InitialPhysicsDelay = 2.0f;
 };
