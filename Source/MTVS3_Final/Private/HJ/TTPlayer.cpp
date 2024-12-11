@@ -1830,6 +1830,10 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 void ATTPlayer::OnMyActionInventory(const FInputActionValue& Value)
 {
 	UE_LOG(LogTemp , Warning , TEXT("Pressed TAB: Inventory"));
+	if (MainUI && MainUI->WBP_MH_MainBar)
+	{
+		MainUI->WBP_MH_MainBar->OnClickedCollectionBookBtn();
+	}
 }
 
 void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
