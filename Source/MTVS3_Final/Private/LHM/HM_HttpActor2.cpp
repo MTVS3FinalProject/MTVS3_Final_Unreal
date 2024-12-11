@@ -333,8 +333,8 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							{
 								if (AMH_Chair* Chair = Cast<AMH_Chair>(Actor))
 								{
-									UE_LOG(LogTemp , Log , TEXT("Found matching chair! Name: %s, Tag: %s") ,
-									       *Chair->GetName() , *TagToFind);
+									// UE_LOG(LogTemp , Log , TEXT("Found matching chair! Name: %s, Tag: %s") ,
+									       // *Chair->GetName() , *TagToFind);
 									
 									// Chair->SetbIsAvailable(false);
 									// Chair->OnRep_bIsAvailable();

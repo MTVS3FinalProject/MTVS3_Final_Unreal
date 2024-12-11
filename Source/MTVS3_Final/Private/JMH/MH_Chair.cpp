@@ -183,16 +183,16 @@ void AMH_Chair::ServerSetbIsAvailable_Implementation(bool _bIsAvailable)
 
 void AMH_Chair::OnRep_bIsAvailable()
 {
-	if (HasAuthority())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OnRep_bIsAvailable called on Server - Chair %s, bIsAvailable: %s"), 
-			   *GetName(), bIsAvailable ? TEXT("true") : TEXT("false"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("OnRep_bIsAvailable called on Client - Chair %s, bIsAvailable: %s"), 
-			   *GetName(), bIsAvailable ? TEXT("true") : TEXT("false"));
-	}
+	// if (HasAuthority())
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OnRep_bIsAvailable called on Server - Chair %s, bIsAvailable: %s"), 
+	// 		   *GetName(), bIsAvailable ? TEXT("true") : TEXT("false"));
+	// }
+	// else
+	// {
+	// 	UE_LOG(LogTemp, Warning, TEXT("OnRep_bIsAvailable called on Client - Chair %s, bIsAvailable: %s"), 
+	// 		   *GetName(), bIsAvailable ? TEXT("true") : TEXT("false"));
+	// }
 	
 	ChangeLightColor(bIsAvailable);
 }
