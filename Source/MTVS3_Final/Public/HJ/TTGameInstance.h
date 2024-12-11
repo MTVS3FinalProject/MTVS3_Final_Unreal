@@ -73,7 +73,7 @@ struct FPlayerData
 	// 기본 생성자
 	FPlayerData()
 		: bIsHost(false) , nickname(TEXT("Ticketaka")), titleName(TEXT("")), titleRarity(TEXT("Common")), accessToken(TEXT("-1")) ,
-		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), LuckyDrawSeatInfo(TEXT("-SeatInfo")), IsReceived(false), bIsNewPlayer(true)
+		coin(-1) , avatarData(1), LuckyDrawSeatID(TEXT("-1")), LuckyDrawSeatInfo(TEXT("Sample")), IsReceived(false), bIsNewPlayer(true)
 	{}
 };
 
