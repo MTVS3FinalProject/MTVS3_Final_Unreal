@@ -1310,6 +1310,7 @@ void ATTPlayer::AttachPiece(UStaticMeshComponent* PieceComp)
 		{
 			PieceComp->AttachToComponent(HandComp , FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 			PieceComp->SetRelativeLocation(FVector(100 , 0 , -30));
+			PieceComp->SetRelativeRotation(FRotator(0.0f , 90.0f , 0.0f));
 		}
 	}
 	if (HasAuthority())
