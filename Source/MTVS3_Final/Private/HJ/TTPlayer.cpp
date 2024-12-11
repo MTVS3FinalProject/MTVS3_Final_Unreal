@@ -568,45 +568,13 @@ void ATTPlayer::ServerSetAvatarData_Implementation(const int32& _AvatarData)
 	AvatarData = _AvatarData;
 }
 
-void ATTPlayer::OnRep_LuckyDrawSeatID()
-{
-	UE_LOG(LogTemp, Warning, TEXT("좌석 번호 %s(으)로 ATTPlayer::SetLuckyDrawSeatID"), *LuckyDrawSeatID);
-    
-    // GI에도 SetLuckyDrawSeatID
-    UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-    if (GI) GI->SetLuckyDrawSeatID(LuckyDrawSeatID);
-}
-
-void ATTPlayer::ServerSetLuckyDrawSeatID_Implementation(const FString& _LuckyDrawSeatID)
-{
-	LuckyDrawSeatID = _LuckyDrawSeatID;
-	OnRep_LuckyDrawSeatID();
-    
-	// 다른 클라이언트들에게도 알림
-	ClientSetLuckyDrawSeatID(_LuckyDrawSeatID);
-}
-
-void ATTPlayer::ClientSetLuckyDrawSeatID_Implementation(const FString& _LuckyDrawSeatID)
-{
-	LuckyDrawSeatID = _LuckyDrawSeatID;
-	OnRep_LuckyDrawSeatID();
-}
-
 void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 {
-	if (HasAuthority())
-	{
-		LuckyDrawSeatID = _LuckyDrawSeatID;
-		OnRep_LuckyDrawSeatID();
-        
-		// 클라이언트들에게도 알림
-		ClientSetLuckyDrawSeatID(_LuckyDrawSeatID);
-	}
-	else
-	{
-		// 클라이언트에서 호출된 경우 서버에 요청
-		ServerSetLuckyDrawSeatID(_LuckyDrawSeatID);
-	}
+	LuckyDrawSeatID = _LuckyDrawSeatID;
+
+	// GI에도 SetLuckyDrawSeatID
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	if (GI) GI->SetLuckyDrawSeatID(LuckyDrawSeatID);
 }
 
 void ATTPlayer::SetRandomSeatNumber(const int32& _RandomSeatNumber)
@@ -684,7 +652,10 @@ void ATTPlayer::ServerTeleportPlayer_Implementation(bool bIsToConcertHall)
 	// SetActorLocation(TargetLocation, false); // bSweep = false로 콜리전 체크 무시
 	// SetActorRotation(TargetRotation);
 
-	ClientAdjustCamera(TargetRotation);
+	if (APlayerController* PC = Cast<APlayerController>(GetController()))
+	{
+		ClientAdjustCamera(TargetRotation);
+	}
 }
 
 void ATTPlayer::ClientAdjustCamera_Implementation(FRotator NewRotation)
@@ -2161,9 +2132,8 @@ void ATTPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ATTPlayer , AvatarData);
 	DOREPLIFETIME(ATTPlayer , bIsHost);
 	DOREPLIFETIME(ATTPlayer , AccessToken);
-	DOREPLIFETIME(ATTPlayer , CameraPawn);
-	DOREPLIFETIME(ATTPlayer, LuckyDrawSeatID);
-	
+	DOREPLIFETIME(ATTPlayer, CameraPawn);
+
 	// 퍼즐
 	DOREPLIFETIME(ATTPlayer , bHasPiece);
 	DOREPLIFETIME(ATTPlayer , bIsZoomingIn);
