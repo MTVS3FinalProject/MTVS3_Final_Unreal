@@ -65,9 +65,17 @@ void AHallSoundManager::PlayConcertBGM()
 	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
 	if (PC && PC->IsLocalController())
 	{
+		// 이미 존재하는 AudioComponent가 있다면 중지
+		if (ConcertBGMAudioComponent)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Stopping existing Concert BGM"));
+			ConcertBGMAudioComponent->Stop();
+			ConcertBGMAudioComponent = nullptr;
+		}
+
 		if (ConcertBGMCue)
 		{
-			// AudioComponent를 저장해둡니다
+			UE_LOG(LogTemp, Warning, TEXT("Creating new Concert BGM"));
 			ConcertBGMAudioComponent = UGameplayStatics::SpawnSoundAtLocation(
 				this, 
 				ConcertBGMCue, 
