@@ -4,11 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "NoesisRuntime.h"
+//#include "NoesisSDK.h"
+//#include "NsApp/RiveControl.h"
 #include "HM_MainBarWidget.generated.h"
+
 /**
  * 
  */
+
+USTRUCT()
+struct FMenuButtonGroup
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	class UButton* Button = nullptr;
+
+	UPROPERTY()
+	class UImage* BtnImg = nullptr;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedChatBtn);
 
 UCLASS()
@@ -19,23 +34,26 @@ class MTVS3_FINAL_API UHM_MainBarWidget : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
+	UPROPERTY()
+	TArray<FMenuButtonGroup> MenuButtonGroups;
+
 	//Rive
 	// Rive 트리거를 활성화하는 함수
-	UFUNCTION(BlueprintCallable, Category="Rive")
-	void ActivateRiveTrigger(const FString& TriggerName);
+	//UFUNCTION(BlueprintCallable, Category="Rive")
+	//void ActivateRiveTrigger(const FString& TriggerName);
 
 	// Rive 매개변수를 설정하는 함수
-	UFUNCTION(BlueprintCallable, Category = "Rive")
-	void SetRiveParameter(const FString& ParameterName, float Value);
+	//UFUNCTION(BlueprintCallable, Category = "Rive")
+	//void SetRiveParameter(const FString& ParameterName, float Value);
 
 private:
 	// XAML에서 로드된 RootElement (RiveControl이 포함됨)
-	Noesis::Ptr<Noesis::FrameworkElement>RootElement;
+	//Noesis::Ptr<Noesis::FrameworkElement>RootElement;
 	// RiveControl의 참조를 저장
-	Noesis::DependencyObject* RiveControl;
+	//NoesisApp::RiveControl* RiveControl;
 	// Unreal의 콘텐츠 경로 기준으로 XAML 파일 경로를 설정
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rive", meta = (AllowPrivateAccess = "true"))
-	FString XamlFilePath;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rive", meta = (AllowPrivateAccess = "true"))
+	//FString XamlFilePath;
 	
 public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -90,7 +108,7 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_DarkMode;
 	UFUNCTION()
-	void OnClickedDarkModeBtn();*/
+	void OnClickedDarkModeBtn();
 
 	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	// class UButton* Btn_Menu;
@@ -103,6 +121,21 @@ public:
 	//class UButton* Btn_Emoji;
 	//UFUNCTION()
 	//void OnClickedEmojiBtn();
+	*/
+
+	//메뉴바 버튼 이미지
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_NoticeBtn;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_CollecBtn;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_ChatBtn;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_SettingBtn;
+	
+	
+	UFUNCTION()
+	void OnHoveredMenuBtn(bool bIsHovere ,UButton* OnHoveredButton);
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Image_Notice;
@@ -110,21 +143,39 @@ public:
 	class UButton* Btn_Notice;
 	UFUNCTION()
 	void OnClickedNoticeBtn();
-
+	UFUNCTION()
+	void OnHoveredNoticeBtn();
+	UFUNCTION()
+	void OnUnHoveredNoticeBtn();
+	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_CollectionBook;
 	UFUNCTION()
 	void OnClickedCollectionBookBtn();
+	UFUNCTION()
+	void OnHoveredCollectionBookBtn();
+	UFUNCTION()
+	void OnUnHoveredCollectionBookBtn();
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Chat;
 	UFUNCTION()
 	void OnClickedChatBtn();
+	UFUNCTION()
+	void OnHoveredChatBtn();
+	UFUNCTION()
+	void OnUnHoveredChatBtn();
+
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Setting;
 	UFUNCTION()
 	void OnClickedSettingBtn();
+	UFUNCTION()
+	void OnHoveredSettingBtn();
+	UFUNCTION()
+	void OnUnHoveredSettingBtn();
+	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Back_Settings;
 	UFUNCTION()
