@@ -263,6 +263,7 @@ public:
 
 	// 좌석 결제 미루기
 	void ReqPostponePaymentSeat(FString AccessToken);
+	void OnResPostponePaymentSeat(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful);
 
 	// 우편함 조회
 	void ReqGetMailbox(FString AccessToken);

@@ -868,8 +868,34 @@ void AHM_HttpActor3::ReqPostponePaymentSeat(FString AccessToken)
 	Request->SetHeader(TEXT("Authorization") , FString::Printf(TEXT("Bearer %s") , *AccessToken));
 	Request->SetHeader(TEXT("Content-Type") , TEXT("application/json"));
 
+	// 응답받을 함수를 연결
+	Request->OnProcessRequestComplete().BindUObject(this , &AHM_HttpActor3::OnResPostponePaymentSeat);
+	
 	// 요청 전송
 	Request->ProcessRequest();
+}
+
+void AHM_HttpActor3::OnResPostponePaymentSeat(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if ( bWasSuccessful && Response.IsValid() )
+	{
+		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
+		UE_LOG(LogTemp , Log , TEXT("Response Body: %s") , *Response->GetContentAsString());
+
+		if ( Response->GetResponseCode() == 200 )
+		{
+			if (MainUI && MainUI->WBP_MH_MainBar && MainUI->WBP_MH_MainBar->Image_Notice)
+			{
+				UE_LOG(LogTemp , Log , TEXT("우편함 알림표시 SetVisivle"));
+				MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
+			}
+			UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 성공"));
+		}
+		else
+		{
+			UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 실패"));
+		}
+	}
 }
 
 // 우편함 조회 요청

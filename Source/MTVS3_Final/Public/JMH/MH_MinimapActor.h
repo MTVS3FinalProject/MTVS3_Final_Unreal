@@ -6,6 +6,7 @@
 #include "PaperSprite.h"
 #include "GameFramework/Actor.h"
 #include "HJ/TTPlayer.h"
+#include "LHM/HM_MinimapWidget.h"
 #include "MH_MinimapActor.generated.h"
 
 UCLASS()
@@ -42,6 +43,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minimap")
 	TSubclassOf<UPaperSprite> MinimapSpriteClass;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Minimap")
+	UPaperSpriteComponent* StyleLoungeSprite;
+
 	UPROPERTY()
 	ACharacter* Player;
 	
@@ -54,5 +58,13 @@ public:
 
 	UFUNCTION()
 	void InitializeMinimap(ACharacter* LocalPlayer);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UHM_MinimapWidget> MiniMapWidgetClass;
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	class UHM_MinimapWidget* MiniMapUI;
+
+	UFUNCTION()
+	void UpdateMinimapWidget();
 
 };

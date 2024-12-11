@@ -56,6 +56,16 @@ public:
 	UPROPERTY(meta=(BindWidget))
 	class UCanvasPanel* Can_Ticket;
 
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Txt_Year;
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Txt_Month;
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Txt_Day;
+	UPROPERTY(meta=(BindWidget))
+	class UTextBlock* Txt_Time;
+	
+
 	//UFUNCTION()
 	//void SetTicketData(const FTicketItemData& InTicketData);
 	
