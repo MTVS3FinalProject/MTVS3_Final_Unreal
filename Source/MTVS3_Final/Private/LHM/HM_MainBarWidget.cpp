@@ -4,25 +4,37 @@
 #include "LHM/HM_MainBarWidget.h"
 #include "Components/Button.h"
 #include "Components/CanvasPanel.h"
+#include "Components/Image.h"
 #include "Components/WidgetSwitcher.h"
 #include "HJ/TTGameInstance.h"
 #include "JMH/MH_Inventory.h"
 #include "JMH/MH_NoticeWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor3.h"
+//#include "NsGui/VisualTreeHelper.h"
+//#include <NsGui/FrameworkElement.h>
+//#include "NoesisRuntime.h"
 
 void UHM_MainBarWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 	//Btn_Emoji->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedEmojiBtn);
-	Btn_CollectionBook->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedCollectionBookBtn);
-	Btn_Notice->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
 	//Btn_lightMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedlightModeBtn);
 	//Btn_DarkMode->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedDarkModeBtn);
 	//Btn_Menu->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedMenuBtn);
+	Btn_Notice->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
+	Btn_Notice->OnHovered.AddDynamic(this , &UHM_MainBarWidget::OnHoveredNoticeBtn);
+	Btn_Notice->OnUnhovered.AddDynamic(this , &UHM_MainBarWidget::OnUnHoveredNoticeBtn);
+	Btn_CollectionBook->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedCollectionBookBtn);
+	Btn_CollectionBook->OnHovered.AddDynamic(this , &UHM_MainBarWidget::OnHoveredCollectionBookBtn);
+	Btn_CollectionBook->OnUnhovered.AddDynamic(this , &UHM_MainBarWidget::OnUnHoveredCollectionBookBtn);
 	Btn_Chat->OnClicked.AddDynamic(this , &UHM_MainBarWidget::CloseButtonPressed);
+	Btn_Chat->OnHovered.AddDynamic(this , &UHM_MainBarWidget::OnHoveredChatBtn);
+	Btn_Chat->OnUnhovered.AddDynamic(this , &UHM_MainBarWidget::OnUnHoveredChatBtn);
 	Btn_Setting->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBtn);
+	Btn_Setting->OnHovered.AddDynamic(this , &UHM_MainBarWidget::OnHoveredSettingBtn);
+	Btn_Setting->OnUnhovered.AddDynamic(this , &UHM_MainBarWidget::OnUnHoveredSettingBtn);
 	Btn_Back_Settings->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBackBtn);
 
 	SetVisibleSwitcher(false);
@@ -36,39 +48,70 @@ void UHM_MainBarWidget::NativeConstruct()
 	{
 		WBP_NoticeUI->OnClickedBack_NoticeBtn.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
 	}
-/*
-// XAML 파일 로드
-    FString FullPath = FPaths::ProjectContentDir() + TEXT("Rive/menubar_xaml_1205.xaml");
-    Noesis::Ptr<Noesis::FrameworkElement> RootElement = Noesis::GUI::LoadXaml<Noesis::FrameworkElement>(TCHAR_TO_UTF8(*FullPath));
-    if (!RootElement)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Failed to load XAML file: %s"), *FullPath);
-        return;
-    }
+	/*
+	// XAML 파일 경로 설정
+	FString FullPath = FPaths::ProjectContentDir() + TEXT("UI/MyWidget.xaml");
+	
+	// XAML 파일 로드
+	RootElement = Noesis::GUI::LoadXaml<Noesis::FrameworkElement>(TCHAR_TO_UTF8(*FullPath));
+	if (!RootElement)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load XAML file: %s"), *FullPath);
+		return;
+	}
+	
+	// RiveControl 가져오기 (첫 번째 자식 요소로 접근)
+	Noesis::Visual* FirstChild = Noesis::VisualTreeHelper::GetChild(RootElement.GetPtr(), 0);
+	if (FirstChild)
+	{
+		RiveControl = Noesis::DynamicCast<NoesisApp::RiveControl*>(FirstChild);
+		if (!RiveControl)
+		{
+			UE_LOG(LogTemp, Error, TEXT("RiveControl을 찾을 수 없습니다."));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("RiveControl 로드 성공."));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("RootElement의 자식을 찾을 수 없습니다."));
+	}*/
+	
+	MenuButtonGroups.Add({Btn_Notice,Img_NoticeBtn});
+	MenuButtonGroups.Add({Btn_CollectionBook,Img_CollecBtn});
+	MenuButtonGroups.Add({Btn_Chat,Img_ChatBtn});
+	MenuButtonGroups.Add({Btn_Setting,Img_SettingBtn});
 
-    // RootElement의 자식 요소를 순회
-    Noesis::Visual* Child = Noesis::VisualTreeHelper::GetChild(RootElement.GetPtr(), 0);
-    if (Child)
-    {
-        Noesis::RiveControl* RiveControl = Noesis::DynamicCast<Noesis::RiveControl*>(Child);
-        if (RiveControl)
-        {
-            UE_LOG(LogTemp, Log, TEXT("RiveControl found!"));
-            // RiveControl 사용 가능
-        }
-    }*/
 }
 
 //Rive
+	/*
 void UHM_MainBarWidget::ActivateRiveTrigger(const FString& TriggerName)
 {
-	
+	if (!RiveControl)
+	{
+		UE_LOG(LogTemp, Error, TEXT("RiveControl is not initialized."));
+		return;
+	}
 }
+	*/
 
+	/*
 void UHM_MainBarWidget::SetRiveParameter(const FString& ParameterName, float Value)
 {
+	if (RiveControl)
+	{
+		UE_LOG(LogTemp, Error, TEXT("RiveControl is not initialized."));
+		return;
+	}
 	
+	// 매개변수 값을 설정하기 위해 SetInputValue 호출
+	RiveControl->SetInputValue(TCHAR_TO_UTF8(*ParameterName), Noesis::Boxing::Box(Value));
+	UE_LOG(LogTemp, Log, TEXT("Parameter '%s' set to value %f."), *ParameterName, Value);
 }
+	*/
 
 void UHM_MainBarWidget::SetVisibleSwitcher(bool bVisible)
 {
@@ -151,6 +194,43 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 	}
 }
 
+void UHM_MainBarWidget::OnHoveredCollectionBookBtn()
+{
+	OnHoveredMenuBtn(true,Btn_CollectionBook);
+}
+
+void UHM_MainBarWidget::OnUnHoveredCollectionBookBtn()
+{
+	OnHoveredMenuBtn(false,Btn_CollectionBook);
+}
+
+void UHM_MainBarWidget::OnHoveredMenuBtn(bool bIsHovere, UButton* OnHoveredButton)
+{
+	if(bIsHovere)
+	{
+		for (const FMenuButtonGroup& Group : MenuButtonGroups)
+		{
+			if (Group.Button == OnHoveredButton)
+			{
+				//텍스트 색상 변경
+				
+					 Group.BtnImg->SetColorAndOpacity(FLinearColor::Black);
+				
+			}
+		}
+	}
+	else
+	{
+		for (const FMenuButtonGroup& Group : MenuButtonGroups)
+		{
+			if (Group.Button == OnHoveredButton)
+			{
+				Group.BtnImg->SetColorAndOpacity(FLinearColor::White);
+			}
+		}
+	}
+}
+
 void UHM_MainBarWidget::OnClickedNoticeBtn()
 {
 	bIsNoticeVisible = !bIsNoticeVisible;
@@ -182,6 +262,17 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 		SetVisibleSwitcher(false);
 	}
 }
+
+void UHM_MainBarWidget::OnHoveredNoticeBtn()
+{
+	OnHoveredMenuBtn(true,Btn_Notice);
+}
+
+void UHM_MainBarWidget::OnUnHoveredNoticeBtn()
+{
+	OnHoveredMenuBtn(false,Btn_Notice);
+}
+
 /*
 void UHM_MainBarWidget::OnClickedlightModeBtn()
 {
@@ -223,6 +314,16 @@ void UHM_MainBarWidget::OnClickedChatBtn()
 	//Main UI에 있는 채팅창 켜지게. 꺼지게. 델리게이트 연결함
 }
 
+void UHM_MainBarWidget::OnHoveredChatBtn()
+{
+	OnHoveredMenuBtn(true,Btn_Chat);
+}
+
+void UHM_MainBarWidget::OnUnHoveredChatBtn()
+{
+	OnHoveredMenuBtn(false,Btn_Chat);
+}
+
 void UHM_MainBarWidget::OnClickedSettingBtn()
 {
 	bIsSettingsVisible = !bIsSettingsVisible;
@@ -244,6 +345,16 @@ void UHM_MainBarWidget::OnClickedSettingBtn()
 	{
 		SetVisibleSwitcher(false);
 	}
+}
+
+void UHM_MainBarWidget::OnHoveredSettingBtn()
+{
+	OnHoveredMenuBtn(true,Btn_Setting);
+}
+
+void UHM_MainBarWidget::OnUnHoveredSettingBtn()
+{
+	OnHoveredMenuBtn(false,Btn_Setting);
 }
 
 void UHM_MainBarWidget::OnClickedSettingBackBtn()

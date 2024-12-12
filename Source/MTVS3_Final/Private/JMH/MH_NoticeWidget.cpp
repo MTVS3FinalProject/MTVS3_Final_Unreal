@@ -15,7 +15,6 @@
 #include "HJ/TTGameInstance.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Kismet/GameplayStatics.h"
-#include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_NoticeMessage.h"
 
@@ -54,13 +53,10 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 				if (MessageBox)
 				{
 					MessageBox->Text_Message->SetText(FText::FromString(Messageinfo.subject));
-					MessageBox->Text_Category->SetText(FText::FromString(Messageinfo.mailCategory));
 					MessageBox->SetMailId(Messageinfo.mailId);
 					MessageBox->SetMailCategory(Messageinfo.mailCategory);
 					// OnMessageClicked 이벤트 바인딩
 					MessageBox->OnMessageClicked.AddDynamic(this , &UMH_NoticeWidget::OnMessageSelected);
-					MessageBox->OnMessageClicked.AddDynamic(this , &UMH_NoticeWidget::OnPostponeMessageSelected);
-					MessageBox->OnMessageClicked.AddDynamic(this , &UMH_NoticeWidget::OnPuzzleMessageSelected);
 					Vertical_MessageBox->AddChild(MessageBox);
 				}
 
@@ -96,72 +92,34 @@ void UMH_NoticeWidget::OnMessageSelected(int32 MailId)
 				MailCategory = Mail.mailCategory;
 				break;
 			}
-			if (MailCategory == TEXT("POSTPONE")) return;
-			if (MailCategory == TEXT("PUZZLE")) return;
 		}
 		
-		HttpActor3->ReqGetSpecificMail(MailId , GI->GetAccessToken());
-	}
-}
-
-void UMH_NoticeWidget::OnPostponeMessageSelected(int32 MailId)
-{
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
-	if (GI && HttpActor3)
-	{
-		// MailCategory 값을 가져오는 추가 로직
-		FString MailCategory = TEXT(""); // 초기값 설정
-		const TArray<FMails>& Mails = HttpActor3->GetMails();
-		for (const FMails& Mail : Mails)
+		if (MailCategory == TEXT("GENERAL"))
 		{
-			if (Mail.mailId == MailId)
-			{
-				MailCategory = Mail.mailCategory;
-				break;
-			}
+			HttpActor3->ReqGetSpecificMail(MailId , GI->GetAccessToken());
 		}
-
-		if (MailCategory == TEXT("POSTPONE"))
+		else if (MailCategory == TEXT("POSTPONE"))
 		{
 			HttpActor3->ReqGetPostponePaymentSeatMail(MailId, GI->GetAccessToken());
 			Btn_Payment->SetVisibility(ESlateVisibility::Visible);
 		}
-	}
-}
-
-void UMH_NoticeWidget::OnPuzzleMessageSelected(int32 MailId)
-{
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
-	if (GI && HttpActor3)
-	{
-		// MailCategory 값을 가져오는 추가 로직
-		FString MailCategory = TEXT(""); // 초기값 설정
-		const TArray<FMails>& Mails = HttpActor3->GetMails();
-		for (const FMails& Mail : Mails)
-		{
-			if (Mail.mailId == MailId)
-			{
-				MailCategory = Mail.mailCategory;
-				break;
-			}
-		}
-
-		if (MailCategory == TEXT("PUZZLE"))
+		else if (MailCategory == TEXT("PUZZLE"))
 		{
 			HttpActor3->ReqGetPuzzleMail(MailId, GI->GetAccessToken());
+		}
+		else // RECEIPT, CANCEL, RESERVE
+		{
+			return;
 		}
 	}
 }
 
 void UMH_NoticeWidget::OnMailDetailReceived(FString Subject , FString Content)
 {
-	if (Text_Subject && Text_Content)
+	//if (Text_Subject && Text_Content)
+	if (Text_Content)
 	{
-		Text_Subject->SetText(FText::FromString(Subject));
+		//Text_Subject->SetText(FText::FromString(Subject));
 		Text_Content->SetText(FText::FromString(Content));
 		Canvas_content->SetVisibility(ESlateVisibility::Visible);
 		Vertical_MessageBox->SetVisibility(ESlateVisibility::Hidden);
@@ -170,26 +128,53 @@ void UMH_NoticeWidget::OnMailDetailReceived(FString Subject , FString Content)
 
 void UMH_NoticeWidget::OnPuzzleTitleStickerReceived(int32 Rank, const FTitles& TitleInfo, const FStickers& StickerInfo)
 {
-	if(Img_Title)
+	if(Text_Rank && Text_Nickname && Img_Title)
 	{
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+		Text_Nickname->SetText(FText::FromString(GI->GetNickname()));
+		
 		FLinearColor LinearColor1 = FLinearColor(1.0f, 0.5f, 0.0f, 1.0f);
 		FLinearColor LinearColor2 = FLinearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		FLinearColor LinearColor3 = FLinearColor(0.6f, 0.2f, 0.1f, 1.0f);
+		FLinearColor LinearColorOutline1 = FLinearColor(0.16f, 0.02f, 0.0f, 1.0f);
+		FLinearColor LinearColorOutline2 = FLinearColor(0.03f, 0.03f, 0.03f, 1.0f);
+		FLinearColor LinearColorOutline3 = FLinearColor(0.0417f, 0.013f, 0.0065f, 1.0f);
 	
 		if(Rank == 1)
 		{
 			FSlateColor SlateColor = FSlateColor(LinearColor1);
 			Img_Title->SetBrushTintColor(SlateColor);
+
+			// Text_Rank 폰트, 아웃라인 컬러 변경
+			FSlateFontInfo FontInfo = Text_Rank->GetFont();
+			FontInfo.OutlineSettings.OutlineColor = LinearColorOutline1;
+			Text_Rank->SetFont(FontInfo);
+			Text_Rank->SetColorAndOpacity(LinearColor1);
+			Text_Rank->SetText(FText::FromString(TEXT("1등")));
 		}
 		else if(Rank == 2)
 		{
 			FSlateColor SlateColor = FSlateColor(LinearColor2);
 			Img_Title->SetBrushTintColor(SlateColor);
+			
+			// Text_Rank 폰트, 아웃라인 컬러 변경
+			FSlateFontInfo FontInfo = Text_Rank->GetFont();
+			FontInfo.OutlineSettings.OutlineColor = LinearColorOutline2;
+			Text_Rank->SetFont(FontInfo);
+			Text_Rank->SetColorAndOpacity(LinearColor2);
+			Text_Rank->SetText(FText::FromString(TEXT("2등")));
 		}
 		else if(Rank == 3)
 		{
 			FSlateColor SlateColor = FSlateColor(LinearColor3);
 			Img_Title->SetBrushTintColor(SlateColor);
+			
+			// Text_Rank 폰트, 아웃라인 컬러 변경
+			FSlateFontInfo FontInfo = Text_Rank->GetFont();
+			FontInfo.OutlineSettings.OutlineColor = LinearColorOutline3;
+			Text_Rank->SetFont(FontInfo);
+			Text_Rank->SetColorAndOpacity(LinearColor3);
+			Text_Rank->SetText(FText::FromString(TEXT("3등")));
 		}
 	}
 	

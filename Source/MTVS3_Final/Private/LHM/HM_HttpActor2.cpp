@@ -288,8 +288,6 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							NewSeatsList.reservedSeats.Add(ReservedSeat);
 							UE_LOG(LogTemp , Log , TEXT("Reception Seat | ID: %d, Name: %s, DrawingTime: %s")
 							       , ReservedSeat.seatId , *ReservedSeat.seatName , *ReservedSeat.drawingTime);
-
-							// 공연장 입장할 때 접수 가능한 좌석 데이터 받아서 의자 액터에 이펙터 처리
 						}
 					}
 
@@ -308,10 +306,9 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							UE_LOG(LogTemp , Log , TEXT("My Reception Seat | ID: %d, Name: %s, DrawingTime: %s")
 							       , MySeatInfo.seatId , *MySeatInfo.seatName , *MySeatInfo.drawingTime);
 							SetReceptionSeatId(MySeatInfo.seatId);
-							//GI->SetReceivedSeatId(MySeatInfo.seatId);
 						}
 					}
-					// 우편함에 내가 접수한 좌석 정보 확인하는 UI Switcher & 정보 SetText
+					
 					SetSeatsList(NewSeatsList);
 					GEngine->AddOnScreenDebugMessage(-1 , 3.f , FColor::Green , FString::Printf(TEXT("뉴진스 콘서트 입장~~~")));
 
@@ -387,7 +384,6 @@ void AHM_HttpActor2::ReqGetSeatRegistrationInquiry(FString SeatId , FString Acce
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 	UE_LOG(LogTemp , Log , TEXT("GetConcertId: %d") , GetConcertId());
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s") , *_url , GetConcertId() , *SeatId);
-	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/1") , *_url, GetConcertId());
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("GET"));
 
@@ -426,11 +422,13 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 				if (ResponseObject.IsValid())
 				{
 					// 필요한 정보 추출
+					int32 SeatId = ResponseObject->GetIntegerField(TEXT("seatId"));
 					int32 Floor = ResponseObject->GetIntegerField(TEXT("floor"));
 					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo")); // ex: A1구역 13번
 					bool IsReceived = ResponseObject->GetBoolField(TEXT("isReceived"));
 					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
 					int32 SeatPrice = ResponseObject->GetIntegerField(TEXT("seatPrice"));
+					FString SeatStatus = ResponseObject->GetStringField(TEXT("seatStatus"));
 
 					UE_LOG(LogTemp , Log , TEXT("Floor: %d") , Floor);
 					UE_LOG(LogTemp , Log , TEXT("SeatInfo: %s") , *SeatInfo);
@@ -444,8 +442,6 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						GI->SetIsReceived(IsReceived);
 					}
 
-					// if (MainUI) MainUI->SetTextSeatNum1(SeatInfo);
-
 					if (MainUI->GetBuyTicketWidget())
 					{
 						MainUI->BuyTicketWidget->SetTextSeatID(Floor , SeatInfo);
@@ -456,6 +452,15 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						TicketingUI->SetTextSeatID(Floor , SeatInfo);
 						TicketingUI->SetTextCompetitionRate(CompetitionRate);
 						TicketingUI->SetTextTicketPrice(SeatPrice);
+
+						if(SeatStatus == TEXT("RESERVED"))
+						{
+							TicketingUI->SetTextReservedSeat(true);
+						}
+						else
+						{
+							TicketingUI->SetTextReservedSeat(false);
+						}
 					}
 
 					// "drawingTime" 객체를 얻음
@@ -472,6 +477,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						TicketingUI->SetTickettingDate(Year , Month , Day);
 						TicketingUI->SetTextGameStartTime(Time);
 					}
+
 					if (GI->GetIsReceived() == true) // 접수한 좌석일 때 접수취소 버튼
 					{
 						// MainUI 숨기기
@@ -959,6 +965,7 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 	UE_LOG(LogTemp , Log , TEXT("SeatId: %s") , *SeatId);
 	
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/result") , *_url, GetConcertId(), *SeatId);
+	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/result") , *_url, GetConcertId(), GetReceptionSeatId()); //현민테스트용
 	
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
@@ -1122,6 +1129,7 @@ void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString AccessToken)
 	Writer->WriteValue(TEXT("userCode") , UserCode);
 	Writer->WriteValue(TEXT("concertId") , GetConcertId());
 	Writer->WriteValue(TEXT("seatId") , GI->GetLuckyDrawSeatID());
+	//Writer->WriteValue(TEXT("seatId") , GetReceptionSeatId()); //현민테스트용
 	Writer->WriteObjectEnd();
 	Writer->Close();
 
@@ -1226,6 +1234,7 @@ void AHM_HttpActor2::ReqPostReservationinfo(FText UserName , FText UserPhoneNum 
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/reservation") , *_url , GetConcertId() , *GI->GetLuckyDrawSeatID());
+	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/reservation") , *_url , GetConcertId() , GetReceptionSeatId()); //현민테스트용
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));
 
@@ -1331,6 +1340,7 @@ void AHM_HttpActor2::ReqPostPaymentSeat(FString SeatId , FString AccessToken)
 	TSharedRef<IHttpRequest> Request = Http->CreateRequest();
 
 	FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%s/payment") , *_url , GetConcertId() , *SeatId);
+	//FString FormattedUrl = FString::Printf(TEXT("%s/concerts/%d/seats/%d/payment") , *_url , GetConcertId() , GetReceptionSeatId()); //현민테스트용
 	
 	Request->SetURL(FormattedUrl);
 	Request->SetVerb(TEXT("POST"));

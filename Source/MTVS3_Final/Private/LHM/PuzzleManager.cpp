@@ -167,14 +167,13 @@ void APuzzleManager::SortAndUpdateRanking()
 			{
 				if (TTPlayer->GetNickname() == TopPlayers[idx].Player)
 				{
-					//Client_ReceiveRank(static_cast<EPlayerRank>(idx + 1) , TTPlayer->GetNickname());
 					Client_ReceiveRank(static_cast<EPlayerRank>(idx) , TTPlayer->GetNickname());
 					//break;
 				}
 			}
 
 			// UI 업데이트
-			TTPlayer->Multicast_UpdatePuzzleRankAndVisibility(TopPlayers , TotalPlayers);
+			//TTPlayer->Multicast_UpdatePuzzleRankAndVisibility(TopPlayers , TotalPlayers);
 		}
 	}
 	
@@ -237,7 +236,6 @@ void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const F
 						UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 					if (!HttpActor3) return;
 
-					//HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) ,static_cast<FString>(Nickname), AccessToken);
 					HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) ,static_cast<FString>(Nickname), AccessToken);
 				
 					break;

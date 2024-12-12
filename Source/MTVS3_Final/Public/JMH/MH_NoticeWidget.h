@@ -53,17 +53,17 @@ public:
 	void InitializeMessageTabs();
 	UFUNCTION()
 	void OnMessageSelected(int32 MailId);
-	UFUNCTION()
-	void OnPostponeMessageSelected(int32 MailId);
-	UFUNCTION()
-	void OnPuzzleMessageSelected(int32 MailId);
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Canvas_content;
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Subject;
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UTextBlock* Text_Subject;
 
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_Rank;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_Nickname;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Content;
 

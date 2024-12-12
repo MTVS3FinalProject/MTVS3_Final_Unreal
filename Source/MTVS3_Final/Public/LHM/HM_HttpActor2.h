@@ -253,23 +253,11 @@ public:
 		SetConcertDate(NewConcertInfo.concertTime);
 	};
 	
-	//void SetConcertId(const int32 _ConcertId) { ConcertInfo.concertId = _ConcertId; SetConcertInfo(ConcertInfo); };
     int32 GetConcertId() const { return ConcertInfo.concertId; }
-	//void SetConcertName(const FString& ConcertName) { ConcertInfo.concertName = ConcertName; SetConcertInfo(ConcertInfo);};
-    //const FString& GetConcertName() const { return ConcertInfo.concertName; }
 
 	FConcertTime ConcertTime;
-	//FConcertTime GetConcertDate() const { return ConcertTime; };
 	void SetConcertDate(const FConcertTime& NewConcertTime) { ConcertTime = NewConcertTime; };
 	
-	//void SetConcertYear(int32 Year) { ConcertTime.year = Year; SetConcertDate(ConcertTime);}
-    //int32 GetConcertYear() const { return ConcertTime.year; }
-	//void SetConcertMonth(int32 Month) { ConcertTime.month = Month; SetConcertDate(ConcertTime);}
-    //int32 GetConcertMonth() const { return ConcertTime.month; }
-	//void SetConcertDay(int32 Day) { ConcertTime.day = Day; SetConcertDate(ConcertTime);}
-    //int32 GetConcertDay() const { return ConcertTime.day; }
-	//void SetConcertTime(const FString& Time) { ConcertTime.time = Time; SetConcertDate(ConcertTime);}
-    //const FString& GetConcertTime() const { return ConcertTime.time; }
 #pragma endregion
 
 #pragma region FSeatsList Getter & Setter Methods
@@ -294,7 +282,6 @@ public:
 
 #pragma region FReceptionSeatInfo Getter & Setter Methods
 	FReceptionSeats ReceptionSeats; // 내가 접수한 좌석 정보를 저장할 변수
-	//FReceptionSeats GetReceptionSeats() const { return ReceptionSeats; };
 	void SetReceptionSeats(const FReceptionSeats& NewReceptionSeatInfo)
 	{
 		ReceptionSeats = NewReceptionSeatInfo;
@@ -303,25 +290,10 @@ public:
 	
 	void SetReceptionSeatId(int32 _SeatId) { ReceptionSeats.seatId = _SeatId; }
 	int32 GetReceptionSeatId() const { return ReceptionSeats.seatId; }
-	//void SetReceptionSeatName(const FString& _SeatName) { ReceptionSeats.seatName = _SeatName; SetReceptionSeats(ReceptionSeats); }
-	//const FString& GetReceptionSeatName() const { return ReceptionSeats.seatName; }
-	//void SetReceptionSeatInfo(const FString& _SeatInfo) { ReceptionSeats.seatInfo = _SeatInfo; SetReceptionSeats(ReceptionSeats); }
-	//const FString& GetReceptionSeatInfo() const { return ReceptionSeats.seatInfo; }
-	//void SetReceptionCompetitionRate(int32 _CompetitionRate) { ReceptionSeats.competitionRate = _CompetitionRate; SetReceptionSeats(ReceptionSeats); }
-	//int32 GetReceptionCompetitionRate() const { return ReceptionSeats.competitionRate; }
 
 	FReceptionTime ReceptionTime;
-	//FReceptionTime GetReceptionDate() const { return ReceptionTime; };
 	void SetReceptionDate(const FReceptionTime& NewReceptionTime) { ReceptionTime = NewReceptionTime; };
-	
-	//void SetReceptionYear(int32 _Year) { ReceptionTime.year = _Year; SetReceptionDate(ReceptionTime); }
-	//int32 GetReceptionYear() const { return ReceptionTime.year; }
-	//void SetReceptionMonth(int32 _Month) { ReceptionTime.month = _Month; SetReceptionDate(ReceptionTime); }
-	//int32 GetReceptionMonth() const { return ReceptionTime.month; }
-	//void SetReceptionDay(int32 _Day) { ReceptionTime.day = _Day; SeReceptionDate(ReceptionTime); }
-	//int32 GetReceptionDay() const { return ReceptionTime.day; }
-	//void SetReceptionTime(const FString& _time) { ReceptionTime.time = _time; SetReceptionDate(ReceptionTime); }
-	//const FString& GetReceptionTime() const { return ReceptionTime.time; }
+
 #pragma endregion
 	
 	UPROPERTY(VisibleAnywhere, Category = "Default|params")
