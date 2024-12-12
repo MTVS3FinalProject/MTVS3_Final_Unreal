@@ -265,7 +265,7 @@ void APuzzleManager::Server_HandlePuzzleResult_Implementation()
 							   *PlayerNickname, RankInfo.Rank);
                     
 						// UI 업데이트 호출
-						// Player->Client_UpdatePuzzleUI();
+						Player->Client_UpdatePuzzleUI();
 					}
 					break;
 				}
