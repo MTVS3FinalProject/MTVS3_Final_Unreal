@@ -59,12 +59,4 @@ public:
 	UFUNCTION()
 	void InitializeMinimap(ACharacter* LocalPlayer);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UHM_MinimapWidget> MiniMapWidgetClass;
-	UPROPERTY(BlueprintReadWrite, Category = "UI")
-	class UHM_MinimapWidget* MiniMapUI;
-
-	UFUNCTION()
-	void UpdateMinimapWidget();
-
 };

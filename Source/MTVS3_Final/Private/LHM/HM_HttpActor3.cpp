@@ -394,7 +394,6 @@ void AHM_HttpActor3::ReqPostSaveCustomTicketMultipart(const TArray<uint8>& Image
     // HTTP 요청 생성
     TSharedRef<IHttpRequest> Request = Http->CreateRequest();
     FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/%d/custom"), *_url, GetTicketId());
-    //FString FormattedUrl = FString::Printf(TEXT("%s/member/tickets/1/custom"), *_url); // 임의의 티켓아이디
     Request->SetURL(FormattedUrl);
     Request->SetVerb(TEXT("POST"));
 
