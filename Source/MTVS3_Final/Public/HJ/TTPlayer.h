@@ -172,10 +172,10 @@ public:
 	// 퍼즐 결과 UI
 	UFUNCTION(Client, Reliable)
 	void Client_UpdatePuzzleUI();
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_UpdatePuzzleRankAndVisibility(const TArray<FPlayerScoreInfo>& TopPlayers, int32 TotalPlayers);
-	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_UpdateAllPuzzleRanks(const TArray<FPlayerRankInfo>& PlayerRankInfos);
+	// UFUNCTION(NetMulticast, Reliable)
+	// void Multicast_UpdatePuzzleRankAndVisibility(const TArray<FPlayerScoreInfo>& TopPlayers, int32 TotalPlayers);
+	// UFUNCTION(NetMulticast, Reliable)
+	// void Multicast_UpdateAllPuzzleRanks(const TArray<FPlayerRankInfo>& PlayerRankInfos);
 	
 #pragma endregion
 
@@ -475,10 +475,10 @@ public:
 	UPROPERTY()
 	class UHM_AimingWidget* AimingUI;
 
-	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
-	TSubclassOf<class UHM_PuzzleWidget> PuzzleUIFactory;
-	UPROPERTY()
-	class UHM_PuzzleWidget* PuzzleUI;
+	// UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
+	// TSubclassOf<class UHM_PuzzleWidget> PuzzleUIFactory;
+	// UPROPERTY()
+	// class UHM_PuzzleWidget* PuzzleUI;
 
 	UPROPERTY(EditAnywhere , Category = "TTSettings|UI")
 	TSubclassOf<class UHM_TreeCustomTicketWidget> TreeTicketUIFactory;

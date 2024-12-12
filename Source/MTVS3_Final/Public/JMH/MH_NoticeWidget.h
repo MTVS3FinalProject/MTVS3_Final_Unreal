@@ -57,9 +57,13 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Canvas_content;
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Subject;
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UTextBlock* Text_Subject;
 
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_Rank;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_Nickname;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Content;
 

@@ -137,7 +137,11 @@ public:
 	UFUNCTION()
 	void OnClickedConfirmButton();
 
-
+	// 예매 완료된 좌석일 경우 접수버튼 텍스트 변경
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UTextBlock* Text_Confirm_Ticketting;
+	UFUNCTION()
+	void SetTextReservedSeat(bool bIsReserved);
 	
 	//추첨 입장전 게임 카운트다운
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
