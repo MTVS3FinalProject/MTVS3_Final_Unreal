@@ -173,7 +173,7 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
 				 FTransform NewTransform = FTransform(
 					FRotator::ZeroRotator, 
 					NewLocation,
-					FVector(0.75f, 0.75f, 0.75f)  // 스케일 설정
+					FVector(0.5f)  // 스케일 설정
 				);
                 
                 // 현재 피스의 인덱스 찾기
