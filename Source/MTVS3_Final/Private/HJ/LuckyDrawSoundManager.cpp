@@ -2,7 +2,7 @@
 
 
 #include "HJ/LuckyDrawSoundManager.h"
-
+#include "HJ/TTGameInstance.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
@@ -26,6 +26,18 @@ ALuckyDrawSoundManager::ALuckyDrawSoundManager()
 void ALuckyDrawSoundManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	float SavedVolume = 0.75f;
+	if (UTTGameInstance* GI = GetGameInstance<UTTGameInstance>())
+	{
+		SavedVolume = GI->GetMasterVolume();
+	}
+
+	if (BGMAudioComponent)
+	{
+		BGMAudioComponent->SetVolumeMultiplier(SavedVolume);
+	}
+
 	PlayLuckyDrawBGM();
 }
 
@@ -38,6 +50,12 @@ void ALuckyDrawSoundManager::Tick(float DeltaTime)
 
 void ALuckyDrawSoundManager::PlayLuckyDrawBGM()
 {
+	float SavedVolume = 0.75f;
+	if (UTTGameInstance* GI = GetGameInstance<UTTGameInstance>())
+	{
+		SavedVolume = GI->GetMasterVolume();
+	}
+
 	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
 	if (PC && PC->IsLocalController())
 	{
@@ -54,7 +72,7 @@ void ALuckyDrawSoundManager::PlayLuckyDrawBGM()
 			BGMAudioComponent = UGameplayStatics::SpawnSound2D(
 				this,           // WorldContextObject
 				LuckyDrawBGMCue,    // Sound
-				0.75f,         // Volume Multiplier
+				SavedVolume,         // Volume Multiplier
 				1.0f,          // Pitch Multiplier
 				0.0f,          // Start Time
 				nullptr,       // Concurrency Settings
