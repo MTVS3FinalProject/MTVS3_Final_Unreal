@@ -671,5 +671,6 @@ void UMainWidget::PlayTitleAnim(int32 TitleNum)
 
 void UMainWidget::ShowTutorialUI()
 {
+	WS_Tutorial->SetActiveWidgetIndex(0);
 	SetWidgetSwitcher(9);
 }

@@ -2294,12 +2294,9 @@ void ATTPlayer::ServerSpawnCameraPawn_Implementation()
 	SpawnParams.Owner = this;
 	SpawnParams.Instigator = this;
 
-	// 원하는 위치에 스폰
-	FVector SpawnLocation = FVector(22369.0f , 1954.0f , 3220.0f);
-
 	ACameraPawn* NewCameraPawn = GetWorld()->SpawnActor<ACameraPawn>(
 		CameraPawnFactory ,
-		SpawnLocation ,
+		CameraSpawnLocation ,
 		GetActorRotation() ,
 		SpawnParams
 	);

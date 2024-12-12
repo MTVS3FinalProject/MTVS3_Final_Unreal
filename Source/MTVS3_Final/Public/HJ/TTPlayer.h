@@ -496,6 +496,9 @@ public:
 	TSubclassOf<class ACameraPawn> CameraPawnFactory;
 	UPROPERTY(BlueprintReadWrite, Replicated, Category = "TTSettings|Camera")
 	class ACameraPawn* CameraPawn;
+
+	UPROPERTY(EditAnywhere , BlueprintReadWrite, Category = "TTSettings|Camera")
+	FVector CameraSpawnLocation = FVector(22369.0f , 1954.0f , 3220.0f);
 	
 	bool bIsInCameraMode;
 
@@ -520,7 +523,7 @@ public:
 	
 private:
 	FTimerHandle StandUpTimerHandle; // 타이머 핸들
-
+	
 	void ForceStandUp();
 
 	//MH
