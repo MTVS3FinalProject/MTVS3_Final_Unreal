@@ -1128,7 +1128,7 @@ void AHM_HttpActor2::ReqGetPostConfirmMemberPhoto(FString AccessToken)
 	Writer->WriteObjectStart();
 	Writer->WriteValue(TEXT("userCode") , UserCode);
 	Writer->WriteValue(TEXT("concertId") , GetConcertId());
-	Writer->WriteValue(TEXT("seatId") , GI->GetLuckyDrawSeatID())
+	Writer->WriteValue(TEXT("seatId") , GI->GetLuckyDrawSeatID());
 	//Writer->WriteValue(TEXT("seatId") , GetReceptionSeatId()); //현민테스트용
 	Writer->WriteObjectEnd();
 	Writer->Close();
