@@ -96,7 +96,7 @@ public:
 	void MulticastChangeWalkSpeed(bool bIsRunning);
 
 	UFUNCTION(Client , Reliable)
-	void ClientShowLuckyDrawInvitation(bool bIsVisible , int32 CompetitionRate);
+	void ClientShowLuckyDrawInvitation(bool bIsVisible , const FString& SeatInfo, int32 CompetitionRate);
 
 	UFUNCTION(Server , Reliable , BlueprintCallable)
 	void ServerTeleportPlayer(bool bIsToConcertHall);
@@ -277,20 +277,14 @@ public:
 	void ServerSetRandomSeatNumber(const int32& _RandomSeatNumber);
 
 	// 추첨을 시작할 좌석 ID
-	UPROPERTY(ReplicatedUsing = OnRep_LuckyDrawSeatID)
+	UPROPERTY(BlueprintReadWrite , VisibleAnywhere , Category = "TTSettings|UserInfo")
 	FString LuckyDrawSeatID;
-
-	UFUNCTION()
-	void OnRep_LuckyDrawSeatID();
-
+	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
+	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
 	UFUNCTION(Server, Reliable)
 	void ServerSetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
 	UFUNCTION(Client, Reliable)
 	void ClientSetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
-	
-	UFUNCTION(BlueprintCallable , Category = "TTSettings|UserInfo")
-	void SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID);
-	
 	FString GetLuckyDrawSeatID() const { return LuckyDrawSeatID; };
 
 #pragma endregion
@@ -413,6 +407,9 @@ public:
 	class UInputAction* IA_Cheat4;
 	void OnMyActionCheat4(const FInputActionValue& Value);
 
+	UFUNCTION(Server, Reliable)
+	void ServerResetPuzzlePieces();
+
 	UPROPERTY(EditDefaultsOnly , Category = "TTSettings|Input")
 	class UInputAction* IA_Piece;
 	void OnMyActionPickupPiece(const FInputActionValue& Value);
@@ -492,7 +489,7 @@ public:
 	void SetTextMyNum();
 
 	bool bIsDrawSessionInviteVisible = false;
-	void UpdateDrawSessionInviteVisibility(int32 CompetitionRate);
+	void UpdateDrawSessionInviteVisibility(int32 CompetitionRate, const FString& SeatInfo);
 #pragma endregion
 	
 	UPROPERTY(EditAnywhere , Category = "TTSettings|Camera")

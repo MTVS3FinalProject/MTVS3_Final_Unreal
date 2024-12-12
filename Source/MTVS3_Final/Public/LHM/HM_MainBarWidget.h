@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "NoesisRuntime.h"
 #include "HM_MainBarWidget.generated.h"
-
 /**
  * 
  */
@@ -19,6 +19,25 @@ class MTVS3_FINAL_API UHM_MainBarWidget : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
+	//Rive
+	// Rive 트리거를 활성화하는 함수
+	UFUNCTION(BlueprintCallable, Category="Rive")
+	void ActivateRiveTrigger(const FString& TriggerName);
+
+	// Rive 매개변수를 설정하는 함수
+	UFUNCTION(BlueprintCallable, Category = "Rive")
+	void SetRiveParameter(const FString& ParameterName, float Value);
+
+private:
+	// XAML에서 로드된 RootElement (RiveControl이 포함됨)
+	Noesis::Ptr<Noesis::FrameworkElement>RootElement;
+	// RiveControl의 참조를 저장
+	Noesis::DependencyObject* RiveControl;
+	// Unreal의 콘텐츠 경로 기준으로 XAML 파일 경로를 설정
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rive", meta = (AllowPrivateAccess = "true"))
+	FString XamlFilePath;
+	
+public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UWidgetSwitcher* WS_Bar;
 

@@ -129,6 +129,10 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UHM_MainBarWidget* WBP_MH_MainBar;
+	
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_Chat_Emoji;
+	
 	UFUNCTION()
 	void ShowChatUI();
 
@@ -375,6 +379,15 @@ public:
 	class UButton* Btn_Left5;
 	UFUNCTION()
 	void OnClickedLeft5();
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
+	class UButton* Btn_Right5;
+	UFUNCTION()
+	void OnClickedRight5();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left6;
+	UFUNCTION()
+	void OnClickedLeft6();
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_TutorialEnd;
 	UFUNCTION()

@@ -232,16 +232,17 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 						       NewConcertInfo.concertTime.day ,
 						       *NewConcertInfo.concertTime.time);
 
-						if (MainUI && MainUI->GetBuyTicketWidget())
-						{
-							MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
-								NewConcertInfo.concertName ,
-								NewConcertInfo.concertTime.year ,
-								NewConcertInfo.concertTime.month ,
-								NewConcertInfo.concertTime.day ,
-								NewConcertInfo.concertTime.time);
-							MainUI->BuyTicketWidget->SetTextConcertName(NewConcertInfo.concertName);
-						}
+						// if (MainUI && MainUI->GetBuyTicketWidget())
+						// {
+						// 	MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
+						// 		NewConcertInfo.concertName ,
+						// 		NewConcertInfo.concertTime.year ,
+						// 		NewConcertInfo.concertTime.month ,
+						// 		NewConcertInfo.concertTime.day ,
+						// 		NewConcertInfo.concertTime.time);
+						// 	MainUI->BuyTicketWidget->SetTextConcertName(NewConcertInfo.concertName);
+						// }
+						
 						if (TicketingUI)
 						{
 							TicketingUI->SetConcertInfo(NewConcertInfo.concertName , NewConcertInfo.concertTime.year ,
@@ -333,8 +334,8 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							{
 								if (AMH_Chair* Chair = Cast<AMH_Chair>(Actor))
 								{
-									UE_LOG(LogTemp , Log , TEXT("Found matching chair! Name: %s, Tag: %s") ,
-									       *Chair->GetName() , *TagToFind);
+									// UE_LOG(LogTemp , Log , TEXT("Found matching chair! Name: %s, Tag: %s") ,
+									       // *Chair->GetName() , *TagToFind);
 									
 									// Chair->SetbIsAvailable(false);
 									// Chair->OnRep_bIsAvailable();
@@ -443,7 +444,7 @@ void AHM_HttpActor2::OnResGetSeatRegistrationInquiry(FHttpRequestPtr Request , F
 						GI->SetIsReceived(IsReceived);
 					}
 
-					if (MainUI) MainUI->SetTextSeatNum1(SeatInfo);
+					// if (MainUI) MainUI->SetTextSeatNum1(SeatInfo);
 
 					if (MainUI->GetBuyTicketWidget())
 					{
@@ -570,6 +571,7 @@ void AHM_HttpActor2::OnResGetRegisterSeat(FHttpRequestPtr Request , FHttpRespons
 
 					if (TicketingUI)
 					{
+						//TicketingUI->SetTextSeatID()
 						TicketingUI->SetTextRemainingTicket(RemainingTicket);
 						TicketingUI->SetTextTicketPrice(SeatPrice);
 						TicketingUI->SetTextCompetitionRate(CompetitionRate);
@@ -917,14 +919,18 @@ void AHM_HttpActor2::OnResPostNoticeGameStart(FHttpRequestPtr Request , FHttpRes
 						UE_LOG(LogTemp , Log , TEXT("NicknameList: %s") , *NicknameListString);
 					}
 
-					// competitionRate 파싱
+					// seatInfo, competitionRate 파싱
+					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo"));
 					int32 CompetitionRate = ResponseObject->GetIntegerField(TEXT("competitionRate"));
+					UE_LOG(LogTemp , Log , TEXT("SeatInfo: %s") , *SeatInfo);
 					UE_LOG(LogTemp , Log , TEXT("Competition Rate: %d") , CompetitionRate);
 
+					// ★ 희진 : SetTextSeatInfo(SeatInfo); ★
+					
 					TicketingUI->SetTextCompetitionRate(CompetitionRate);
 
 					ATTHallGameState* HallGameState = GetWorld()->GetGameState<ATTHallGameState>();
-					if (HallGameState) HallGameState->SendLuckyDrawInvitation(NicknameList , CompetitionRate);
+					if (HallGameState) HallGameState->SendLuckyDrawInvitation(NicknameList , SeatInfo, CompetitionRate);
 					UE_LOG(LogTemp , Log , TEXT("추첨 시작 알림 요청 성공"));
 				}
 			}
@@ -1167,6 +1173,30 @@ void AHM_HttpActor2::OnResGetPostConfirmMemberPhoto(FHttpRequestPtr Request , FH
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(1);
 						MainUI->BuyTicketWidget->SetTextTicketPrice(SeatPrice);
 						UE_LOG(LogTemp , Log , TEXT("Member authentication was successful!"));
+					}
+					
+					FConcertInfo NewConcertInfo;
+					if (FJsonObjectConverter::JsonObjectToUStruct(ResponseObject.ToSharedRef() , &NewConcertInfo , 0 ,0))
+					{
+						SetConcertInfo(NewConcertInfo);
+						UE_LOG(LogTemp , Log , TEXT("Concert Info | Id: %d, Name: %s, Date: %d-%d-%d %s") ,
+							   NewConcertInfo.concertId ,
+							   *NewConcertInfo.concertName ,
+							   NewConcertInfo.concertTime.year ,
+							   NewConcertInfo.concertTime.month ,
+							   NewConcertInfo.concertTime.day ,
+							   *NewConcertInfo.concertTime.time);
+
+						if (MainUI && MainUI->GetBuyTicketWidget())
+						{
+							MainUI->BuyTicketWidget->SetConcertInfo_BuyTicket(
+								NewConcertInfo.concertName ,
+								NewConcertInfo.concertTime.year ,
+								NewConcertInfo.concertTime.month ,
+								NewConcertInfo.concertTime.day ,
+								NewConcertInfo.concertTime.time);
+							MainUI->BuyTicketWidget->SetTextConcertName(NewConcertInfo.concertName);
+						}
 					}
 				}
 			}

@@ -93,29 +93,23 @@ void ALuckyDrawChair::MulticastResetChair_Implementation()
 {
 	if (!BoxComp) return;
     
-	// 1. 모든 물리 시뮬레이션 완전히 정지
+	// 1. 물리/충돌 비활성화
 	BoxComp->SetSimulatePhysics(false);
-	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     
-	// 2. 속도 초기화
+	// 2. 모든 속도 초기화
 	BoxComp->SetPhysicsLinearVelocity(FVector::ZeroVector);
 	BoxComp->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+	BoxComp->SetAllPhysicsPosition(OriginalLocation);
+	BoxComp->SetAllPhysicsRotation(OriginalRotation);
     
-	// 3. 위치 리셋
-	SetActorLocationAndRotation(
-		OriginalLocation,
-		OriginalRotation,
-		false,
-		nullptr,
-		ETeleportType::TeleportPhysics  // ResetPhysics 대신 TeleportPhysics 사용
-	);
-    
-	// 4. Mesh 위치 리셋
+	// 3. Actor와 컴포넌트 Transform 리셋
+	SetActorLocationAndRotation(OriginalLocation, OriginalRotation, false, nullptr, ETeleportType::TeleportPhysics);
 	if (MeshComp)
 	{
 		MeshComp->SetRelativeTransform(InitialMeshTransform);
 	}
     
-	// 5. 물리 상태 복원
-	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	// 4. 충돌 재활성화
+	BoxComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }

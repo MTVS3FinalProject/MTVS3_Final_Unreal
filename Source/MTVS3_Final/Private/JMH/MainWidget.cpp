@@ -10,7 +10,6 @@
 #include "LHM/HM_HttpActor2.h"
 #include "Kismet/GameplayStatics.h"
 #include <HJ/TTPlayerState.h>
-
 #include "Components/Image.h"
 #include "HJ/HallSoundManager.h"
 #include "HJ/TTPlayer.h"
@@ -19,6 +18,7 @@
 #include "LHM/HM_FinalTicket.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_TicketCustom.h"
+
 
 
 void UMainWidget::NativeConstruct()
@@ -55,6 +55,8 @@ void UMainWidget::NativeConstruct()
 	Btn_Left4->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft4);
 	Btn_Right4->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight4);
 	Btn_Left5->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft5);
+	Btn_Right5->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight5);
+	Btn_Left6->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft6);
 	Btn_TutorialEnd->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialEnd);
 	Btn_Confirm_Concert->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConfirm_Concert);
 
@@ -218,11 +220,11 @@ void UMainWidget::ShowChatUI()
 	bIsChatVisible = !bIsChatVisible;
 	if (bIsChatVisible)
 	{
-		WBP_Chatting->SetVisibility(ESlateVisibility::Visible);
+		Can_Chat_Emoji->SetVisibility(ESlateVisibility::Visible);
 	}
 	else if (!bIsChatVisible)
 	{
-		WBP_Chatting->SetVisibility(ESlateVisibility::Hidden);
+		Can_Chat_Emoji->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -592,6 +594,16 @@ void UMainWidget::OnClickedRight4()
 void UMainWidget::OnClickedLeft5()
 {
 	WS_Tutorial->SetActiveWidgetIndex(4);
+}
+
+void UMainWidget::OnClickedRight5()
+{
+	WS_Tutorial->SetActiveWidgetIndex(6);
+}
+
+void UMainWidget::OnClickedLeft6()
+{
+	WS_Tutorial->SetActiveWidgetIndex(5);
 }
 
 void UMainWidget::OnClickedTutorialEnd()

@@ -733,3 +733,14 @@ void ATTLuckyDrawGameMode::GetPlayerPosition(int32 Player , int32& OutRow , int3
 		}
 	}
 }
+
+void ATTLuckyDrawGameMode::ResetLuckyDraw()
+{
+	Round = 0;
+	RemainingPlayers.Empty();
+	RoundEliminatedPlayers.Empty();
+	EliminatedPlayersPerRound.Empty();
+	RouletteInfosPerRound.Empty();
+	Seats.Empty();
+	SavedSeats.Empty();
+}

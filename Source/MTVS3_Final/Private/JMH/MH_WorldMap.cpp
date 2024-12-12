@@ -35,6 +35,7 @@ FVector2D UMH_WorldMap::ConvertWorldToMapCoordinates(FVector PlayerLocation, FVe
 
 	// Y 축 방향 반전
 	YRatio = 1.0f - YRatio;
+	XRatio = 1.0f - XRatio;
 	
 	float MapX = XRatio * MapSize.X;
 	float MapY = YRatio * MapSize.Y;
