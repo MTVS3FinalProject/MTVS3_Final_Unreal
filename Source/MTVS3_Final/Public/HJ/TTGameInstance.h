@@ -144,6 +144,14 @@ public:
 	void SetLuckyDrawState(ELuckyDrawState NextLuckyDrawState);
 	UFUNCTION(BlueprintCallable , Category = "TTSettings|State")
 	ELuckyDrawState GetLuckyDrawState() const { return LuckyDrawState; }
+
+	float MasterVolume = 0.75f;
+	
+	UFUNCTION()
+	void SetMasterVolume(float Volume) { MasterVolume = Volume; }
+    
+	UFUNCTION()
+	float GetMasterVolume() const { return MasterVolume; }
 	
 #pragma region Getter 및 Setter 함수
 	FPlayerData GetPlayerData() const { return PlayerData; };

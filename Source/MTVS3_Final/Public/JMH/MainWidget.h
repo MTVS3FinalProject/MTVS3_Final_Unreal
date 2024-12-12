@@ -418,4 +418,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void PlayTitleAnim(int32 TitleNum);
+
+	UFUNCTION()
+	void ShowTutorialUI();
 };

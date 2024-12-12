@@ -28,6 +28,7 @@ struct FMenuButtonGroup
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedChatBtn);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedGoToTutorialBtn);
 
 UCLASS()
 class MTVS3_FINAL_API UHM_MainBarWidget : public UUserWidget
@@ -200,4 +201,29 @@ public:
 	UFUNCTION()
 	void CloseAllCategory();
 
+	// KHJ
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class USlider* Slider_BG;
+	UFUNCTION()
+	void OnVolumeChanged(float Value);
+	UPROPERTY()
+	float CurrentVolume = 0.75f;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnClickedGoToTutorialBtn OnClickedShowTutorialBtn;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_GoToTutorial;
+	UFUNCTION()
+	void OnClickedGoToTutorialBtn();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Credit;
+	UFUNCTION()
+	void OnClickedCreditBtn();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Back_Credit;
+	UFUNCTION()
+	void OnClickedCreditBackBtn();
 };
