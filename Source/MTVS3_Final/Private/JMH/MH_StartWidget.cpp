@@ -144,6 +144,7 @@ void UMH_StartWidget::OnClickedExitButton()
 void UMH_StartWidget::OnClickedForgotPasswordButton()
 {
 	//비번찾기
+	ShowLoginErrorMessage(TEXT("서비스 준비중입니다."));
 }
 
 //QR 확인 
@@ -241,8 +242,23 @@ void UMH_StartWidget::OnClickedFANButton()
 	bIsHost_Signup = false;
 	if (!bIsHost_Signup)
 	{
-		Btn_FAN->SetColorAndOpacity(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
-		Btn_MANAGER->SetColorAndOpacity(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
+		FButtonStyle ButtonStyleFAN = Btn_FAN->GetStyle();
+		FSlateBrush NormalBrushFAN = ButtonStyleFAN.Normal;
+
+		FButtonStyle ButtonStyleMANAGER = Btn_MANAGER->GetStyle();
+		FSlateBrush NormalBrushMANAGER = ButtonStyleMANAGER.Normal;
+		// 노멀 이미지 알파값 업데이트
+		NormalBrushMANAGER.TintColor = FSlateColor(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f));
+		NormalBrushFAN.TintColor = FSlateColor(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f));
+		//Btn_FAN->SetColorAndOpacity(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
+		//Btn_MANAGER->SetColorAndOpacity(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
+		// 변경된 브러쉬를 다시 스타일에 설정
+		ButtonStyleMANAGER.Normal = NormalBrushMANAGER;
+		ButtonStyleFAN.Normal = NormalBrushFAN;
+
+		// 스타일을 버튼에 다시 적용
+		Btn_MANAGER->SetStyle(ButtonStyleMANAGER);
+		Btn_FAN->SetStyle(ButtonStyleFAN);
 	}
 }
 
@@ -252,8 +268,23 @@ void UMH_StartWidget::OnClickedMANAGERButton()
 	bIsHost_Signup = true;
 	if (bIsHost_Signup)
 	{
-		Btn_MANAGER->SetColorAndOpacity(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
-		Btn_FAN->SetColorAndOpacity(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
+		FButtonStyle ButtonStyleFAN = Btn_FAN->GetStyle();
+		FSlateBrush NormalBrushFAN = ButtonStyleFAN.Normal;
+
+		FButtonStyle ButtonStyleMANAGER = Btn_MANAGER->GetStyle();
+		FSlateBrush NormalBrushMANAGER = ButtonStyleMANAGER.Normal;
+		// 노멀 이미지 알파값 업데이트
+		NormalBrushFAN.TintColor = FSlateColor(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f));
+		NormalBrushMANAGER.TintColor = FSlateColor(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f));
+		//Btn_MANAGER->SetColorAndOpacity(FLinearColor(1.0f , 1.0f , 1.0f , 1.0f)); //밝게
+		//Btn_FAN->SetColorAndOpacity(FLinearColor(0.0f , 0.0f , 0.0f , 1.0f)); //어둡게
+		// 변경된 브러쉬를 다시 스타일에 설정
+		ButtonStyleMANAGER.Normal = NormalBrushMANAGER;
+		ButtonStyleFAN.Normal = NormalBrushFAN;
+
+		// 스타일을 버튼에 다시 적용
+		Btn_MANAGER->SetStyle(ButtonStyleMANAGER);
+		Btn_FAN->SetStyle(ButtonStyleFAN);
 	}
 }
 

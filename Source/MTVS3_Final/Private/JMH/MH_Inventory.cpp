@@ -49,6 +49,8 @@ void UMH_Inventory::NativeConstruct()
 	Buttons.Add(Btn_01_Ticket);
 	Buttons.Add(Btn_02_Sticker);
 	Buttons.Add(Btn_00_PlayerTitle);
+
+	UpdateButtonAlphas(2);
 	
 }
 

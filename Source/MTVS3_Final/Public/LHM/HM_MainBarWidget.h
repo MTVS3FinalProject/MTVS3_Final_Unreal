@@ -22,6 +22,9 @@ struct FMenuButtonGroup
 
 	UPROPERTY()
 	class UImage* BtnImg = nullptr;
+
+	UPROPERTY()
+	class UImage* BtnImg2 = nullptr;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedChatBtn);
@@ -132,10 +135,23 @@ public:
 	class UImage* Img_ChatBtn;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_SettingBtn;
+
+	//메뉴바 버튼 이미지2
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_NoticeBG;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_CollecBG;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_ChatBG;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* Img_SettingBG;
 	
 	
 	UFUNCTION()
 	void OnHoveredMenuBtn(bool bIsHovere ,UButton* OnHoveredButton);
+		
+	UFUNCTION()
+	void OnClickedMenuBtn(bool bIsClick ,UButton* OnClickedButton);
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Image_Notice;

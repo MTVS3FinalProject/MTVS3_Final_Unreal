@@ -231,6 +231,11 @@ void UHM_MainBarWidget::OnHoveredMenuBtn(bool bIsHovere, UButton* OnHoveredButto
 	}
 }
 
+void UHM_MainBarWidget::OnClickedMenuBtn(bool bIsClick, UButton* OnClickedButton)
+{
+	
+}
+
 void UHM_MainBarWidget::OnClickedNoticeBtn()
 {
 	bIsNoticeVisible = !bIsNoticeVisible;
