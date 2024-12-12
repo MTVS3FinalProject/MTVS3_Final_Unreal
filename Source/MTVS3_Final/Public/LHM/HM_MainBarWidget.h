@@ -195,7 +195,6 @@ public:
 	UFUNCTION()
 	void OnUnHoveredChatBtn();
 
-
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Setting;
 	UFUNCTION()
