@@ -989,121 +989,121 @@ void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _Access
 	}
 }
 
-void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
-{
-	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
-	//if (PuzzleUI && PuzzleManager)
-	if (PuzzleManager && MainUI && MainUI->WBP_MH_MainBar && MainUI->WBP_MH_MainBar->Image_Notice)
-	{
-		//PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-		//PuzzleUI->SetWidgetSwitcher(1);
-		MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
-		PuzzleManager->PlayPuzzleEnding();
-	}
-}
+// void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
+// {
+// 	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+// 		UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+// 	//if (PuzzleUI && PuzzleManager)
+// 	if (PuzzleManager && MainUI && MainUI->WBP_MH_MainBar && MainUI->WBP_MH_MainBar->Image_Notice)
+// 	{
+// 		//PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+// 		//PuzzleUI->SetWidgetSwitcher(1);
+// 		MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
+// 		PuzzleManager->PlayPuzzleEnding();
+// 	}
+// }
 
-void ATTPlayer::Multicast_UpdatePuzzleRankAndVisibility_Implementation(const TArray<FPlayerScoreInfo>& TopPlayers ,
-                                                                       int32 TotalPlayers)
-{
-	if (!PuzzleUI) return;
-
-	// 상위 3명의 닉네임을 UI에 업데이트
-	for (int32 i = 0; i < TopPlayers.Num(); i++)
-	{
-		const FPlayerScoreInfo& PlayerInfo = TopPlayers[i];
-		PuzzleUI->SetTextPuzzleRankNickname(i + 1 , PlayerInfo.Player);
-
-		UE_LOG(LogTemp , Log , TEXT("Updated rank %d for nickname %s, total players: %d") ,
-		       i + 1 , *PlayerInfo.Player , TotalPlayers);
-	}
-
-	// 가시성 설정 (4위 이하 숨김)
-	for (int32 HiddenRank = TopPlayers.Num() + 1; HiddenRank <= 3; HiddenRank++)
-	{
-		PuzzleUI->SetTextVisibility(HiddenRank , ESlateVisibility::Hidden);
-	}
-}
-
-void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlayerRankInfo>& PlayerRankInfos)
-{
-	if (!PuzzleUI) return;
-
-	// 모든 랭크 정보를 순회하며 UI 업데이트
-	for (const FPlayerRankInfo& RankInfo : PlayerRankInfos)
-	{
-		if (RankInfo.StickerImageUrl.IsEmpty())
-		{
-			UE_LOG(LogTemp , Warning , TEXT("StickerImageUrl is empty for rank %d") , RankInfo.Rank);
-			continue;
-		}
-
-		// HTTP 요청 생성
-		TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
-		ImageRequest->SetURL(RankInfo.StickerImageUrl);
-		ImageRequest->SetVerb(TEXT("GET"));
-
-		ImageRequest->OnProcessRequestComplete().BindLambda(
-			[this, RankInfo](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
-			{
-				if (bWasSuccessful && Response.IsValid())
-				{
-					TArray<uint8> ImageData = Response->GetContent();
-					UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
-
-					if (StickerTexture)
-					{
-						switch (RankInfo.Rank)
-						{
-						case 0:
-							PuzzleUI->SetTextPuzzleRank1(
-								StickerTexture ,
-								RankInfo.StickerRarity ,
-								RankInfo.StickerName ,
-								RankInfo.StickerScript ,
-								RankInfo.TitleRarity ,
-								RankInfo.TitleName ,
-								RankInfo.TitleScript
-							);
-							break;
-						case 1:
-							PuzzleUI->SetTextPuzzleRank2(
-								StickerTexture ,
-								RankInfo.StickerRarity ,
-								RankInfo.StickerName ,
-								RankInfo.StickerScript ,
-								RankInfo.TitleRarity ,
-								RankInfo.TitleName ,
-								RankInfo.TitleScript
-							);
-							break;
-						case 2:
-							PuzzleUI->SetTextPuzzleRank3(
-								StickerTexture ,
-								RankInfo.StickerRarity ,
-								RankInfo.StickerName ,
-								RankInfo.StickerScript ,
-								RankInfo.TitleRarity ,
-								RankInfo.TitleName ,
-								RankInfo.TitleScript
-							);
-							break;
-						default:
-							UE_LOG(LogTemp , Warning , TEXT("Invalid rank %d") , RankInfo.Rank);
-							break;
-						}
-					}
-				}
-				else
-				{
-					UE_LOG(LogTemp , Warning , TEXT("Failed to load image from URL: %s") , *RankInfo.StickerImageUrl);
-				}
-			});
-		// HTTP 요청 시작
-		ImageRequest->ProcessRequest();
-	}
-	UE_LOG(LogTemp , Log , TEXT("Updated all ranks for player: %s") , *GetNickname());
-}
+// void ATTPlayer::Multicast_UpdatePuzzleRankAndVisibility_Implementation(const TArray<FPlayerScoreInfo>& TopPlayers ,
+//                                                                        int32 TotalPlayers)
+// {
+// 	if (!PuzzleUI) return;
+//
+// 	// 상위 3명의 닉네임을 UI에 업데이트
+// 	for (int32 i = 0; i < TopPlayers.Num(); i++)
+// 	{
+// 		const FPlayerScoreInfo& PlayerInfo = TopPlayers[i];
+// 		PuzzleUI->SetTextPuzzleRankNickname(i + 1 , PlayerInfo.Player);
+//
+// 		UE_LOG(LogTemp , Log , TEXT("Updated rank %d for nickname %s, total players: %d") ,
+// 		       i + 1 , *PlayerInfo.Player , TotalPlayers);
+// 	}
+//
+// 	// 가시성 설정 (4위 이하 숨김)
+// 	for (int32 HiddenRank = TopPlayers.Num() + 1; HiddenRank <= 3; HiddenRank++)
+// 	{
+// 		PuzzleUI->SetTextVisibility(HiddenRank , ESlateVisibility::Hidden);
+// 	}
+// }
+//
+// void ATTPlayer::Multicast_UpdateAllPuzzleRanks_Implementation(const TArray<FPlayerRankInfo>& PlayerRankInfos)
+// {
+// 	if (!PuzzleUI) return;
+//
+// 	// 모든 랭크 정보를 순회하며 UI 업데이트
+// 	for (const FPlayerRankInfo& RankInfo : PlayerRankInfos)
+// 	{
+// 		if (RankInfo.StickerImageUrl.IsEmpty())
+// 		{
+// 			UE_LOG(LogTemp , Warning , TEXT("StickerImageUrl is empty for rank %d") , RankInfo.Rank);
+// 			continue;
+// 		}
+//
+// 		// HTTP 요청 생성
+// 		TSharedRef<IHttpRequest> ImageRequest = FHttpModule::Get().CreateRequest();
+// 		ImageRequest->SetURL(RankInfo.StickerImageUrl);
+// 		ImageRequest->SetVerb(TEXT("GET"));
+//
+// 		ImageRequest->OnProcessRequestComplete().BindLambda(
+// 			[this, RankInfo](FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
+// 			{
+// 				if (bWasSuccessful && Response.IsValid())
+// 				{
+// 					TArray<uint8> ImageData = Response->GetContent();
+// 					UTexture2D* StickerTexture = FImageUtils::ImportBufferAsTexture2D(ImageData);
+//
+// 					if (StickerTexture)
+// 					{
+// 						switch (RankInfo.Rank)
+// 						{
+// 						case 0:
+// 							PuzzleUI->SetTextPuzzleRank1(
+// 								StickerTexture ,
+// 								RankInfo.StickerRarity ,
+// 								RankInfo.StickerName ,
+// 								RankInfo.StickerScript ,
+// 								RankInfo.TitleRarity ,
+// 								RankInfo.TitleName ,
+// 								RankInfo.TitleScript
+// 							);
+// 							break;
+// 						case 1:
+// 							PuzzleUI->SetTextPuzzleRank2(
+// 								StickerTexture ,
+// 								RankInfo.StickerRarity ,
+// 								RankInfo.StickerName ,
+// 								RankInfo.StickerScript ,
+// 								RankInfo.TitleRarity ,
+// 								RankInfo.TitleName ,
+// 								RankInfo.TitleScript
+// 							);
+// 							break;
+// 						case 2:
+// 							PuzzleUI->SetTextPuzzleRank3(
+// 								StickerTexture ,
+// 								RankInfo.StickerRarity ,
+// 								RankInfo.StickerName ,
+// 								RankInfo.StickerScript ,
+// 								RankInfo.TitleRarity ,
+// 								RankInfo.TitleName ,
+// 								RankInfo.TitleScript
+// 							);
+// 							break;
+// 						default:
+// 							UE_LOG(LogTemp , Warning , TEXT("Invalid rank %d") , RankInfo.Rank);
+// 							break;
+// 						}
+// 					}
+// 				}
+// 				else
+// 				{
+// 					UE_LOG(LogTemp , Warning , TEXT("Failed to load image from URL: %s") , *RankInfo.StickerImageUrl);
+// 				}
+// 			});
+// 		// HTTP 요청 시작
+// 		ImageRequest->ProcessRequest();
+// 	}
+// 	UE_LOG(LogTemp , Log , TEXT("Updated all ranks for player: %s") , *GetNickname());
+// }
 
 void ATTPlayer::PlayConcertBGM()
 {
@@ -1207,10 +1207,19 @@ void ATTPlayer::MyTakePiece()
 							}
 						}
 					}
-					if (PuzzleUI)
+					// if (PuzzleUI)
+					// {
+					// 	PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+					// 	PuzzleUI->SetWidgetSwitcher(0);
+					// }
+					if (MainUI && MainUI->WBP_InteractionUI)
 					{
-						PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-						PuzzleUI->SetWidgetSwitcher(0);
+						UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+						if (InteractionUI)
+						{
+							InteractionUI->SetActiveWidgetIndex(6);
+							InteractionUI->TextOnAnimPlay();
+						}
 					}
 				}
 			}
@@ -2083,12 +2092,28 @@ void ATTPlayer::OnMyActionPickupPiece(const FInputActionValue& Value)
 	{
 		MyLaunchPiece();
 		if (AimingUI) AimingUI->SetVisibility(ESlateVisibility::Hidden);
-		if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
+		// if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
+		if (MainUI && MainUI->WBP_InteractionUI)
+		{
+			UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+			if (InteractionUI)
+			{
+				InteractionUI->TextOffAnimPlay();
+			}
+		}
 	}
 	else if (bHasPiece)
 	{
 		MyReleasePiece();
-		if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
+		// if (PuzzleUI) PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
+		if (MainUI && MainUI->WBP_InteractionUI)
+		{
+			UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
+			if (InteractionUI)
+			{
+				InteractionUI->TextOffAnimPlay();
+			}
+		}
 	}
 	//else if(!bIsZoomingIn && !bHasPiece)
 	else if (!bHasPiece)
@@ -2160,12 +2185,12 @@ void ATTPlayer::InitMainUI()
 		AimingUI->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	PuzzleUI = Cast<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
-	if (PuzzleUI)
-	{
-		PuzzleUI->AddToViewport();
-		PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
-	}
+	// PuzzleUI = Cast<UHM_PuzzleWidget>(CreateWidget(GetWorld() , PuzzleUIFactory));
+	// if (PuzzleUI)
+	// {
+	// 	PuzzleUI->AddToViewport();
+	// 	PuzzleUI->SetVisibility(ESlateVisibility::Hidden);
+	// }
 
 	TreeTicketUI = Cast<UHM_TreeCustomTicketWidget>(CreateWidget(GetWorld() , TreeTicketUIFactory));
 	if (TreeTicketUI)
@@ -2195,16 +2220,16 @@ void ATTPlayer::InitMainUI()
 	{
 		HttpActor3->SetMainUI(MainUI);
 		HttpActor3->SetTicketingUI(TicketingUI);
-		HttpActor3->SetPuzzleUI(PuzzleUI);
+		// HttpActor3->SetPuzzleUI(PuzzleUI);
 		HttpActor3->SetTreeTicketUI(TreeTicketUI);
 	}
 
-	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
-	if (PuzzleManager)
-	{
-		PuzzleManager->SetPuzzleUI(PuzzleUI);
-	}
+	// APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+	// 	UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+	// if (PuzzleManager)
+	// {
+	// 	PuzzleManager->SetPuzzleUI(PuzzleUI);
+	// }
 }
 
 void ATTPlayer::InitGameUI()
