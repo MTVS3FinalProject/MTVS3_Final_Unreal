@@ -989,19 +989,19 @@ void ATTPlayer::ServerNoticeLuckyDrawStart_Implementation(const FString& _Access
 	}
 }
 
-// void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
-// {
-// 	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
-// 		UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
-// 	//if (PuzzleUI && PuzzleManager)
-// 	if (PuzzleManager && MainUI && MainUI->WBP_MH_MainBar && MainUI->WBP_MH_MainBar->Image_Notice)
-// 	{
-// 		//PuzzleUI->SetVisibility(ESlateVisibility::Visible);
-// 		//PuzzleUI->SetWidgetSwitcher(1);
-// 		MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
-// 		PuzzleManager->PlayPuzzleEnding();
-// 	}
-// }
+void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
+{
+	APuzzleManager* PuzzleManager = Cast<APuzzleManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld() , APuzzleManager::StaticClass()));
+	//if (PuzzleUI && PuzzleManager)
+	if (PuzzleManager && MainUI && MainUI->WBP_MH_MainBar && MainUI->WBP_MH_MainBar->Image_Notice)
+	{
+		//PuzzleUI->SetVisibility(ESlateVisibility::Visible);
+		//PuzzleUI->SetWidgetSwitcher(1);
+		MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
+		PuzzleManager->PlayPuzzleEnding();
+	}
+}
 
 // void ATTPlayer::Multicast_UpdatePuzzleRankAndVisibility_Implementation(const TArray<FPlayerScoreInfo>& TopPlayers ,
 //                                                                        int32 TotalPlayers)
