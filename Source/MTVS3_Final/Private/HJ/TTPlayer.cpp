@@ -23,9 +23,6 @@
 #include "HJ/TTGameInstance.h"
 #include <HJ/TTPlayerState.h>
 #include <HJ/HJ_Actor.h>
-
-#include "HttpModule.h"
-#include "ImageUtils.h"
 #include "LevelSequenceActor.h"
 #include "LevelSequencePlayer.h"
 #include "Components/CapsuleComponent.h"
@@ -36,7 +33,6 @@
 #include "HJ/PlayerTitleWidget.h"
 #include "HJ/TTHallGameState.h"
 #include "HJ/TTLuckyDrawGameState.h"
-#include "Interfaces/IHttpResponse.h"
 #include "JMH/MH_EmojiImg.h"
 #include "JMH/MH_GameWidget.h"
 #include "JMH/MH_MinimapActor.h"
@@ -44,8 +40,6 @@
 #include "LHM/HM_AimingWidget.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_PuzzlePiece.h"
-#include "LHM/HM_PuzzleWidget.h"
-#include "LHM/HM_Tree.h"
 #include "LHM/HM_TreeCustomTicketWidget.h"
 #include "LHM/PuzzleManager.h"
 // #include "Components/TextRenderComponent.h"
@@ -2163,7 +2157,7 @@ void ATTPlayer::InitMainUI()
 	{
 		MainUI->AddToViewport();
 		MainUI->PlayAnimation(MainUI->FadeOutAnim);
-		if (GI->GetbIsNewPlayer() == true) MainUI->SetWidgetSwitcher(9);
+		if (GI->GetbIsNewPlayer() == true) MainUI->ShowTutorialUI();
 	}
 
 	TicketingUI = Cast<UMH_TicketingWidget>(CreateWidget(GetWorld() , TicketingUIFactory));
@@ -2300,12 +2294,9 @@ void ATTPlayer::ServerSpawnCameraPawn_Implementation()
 	SpawnParams.Owner = this;
 	SpawnParams.Instigator = this;
 
-	// 원하는 위치에 스폰
-	FVector SpawnLocation = FVector(22369.0f , 1954.0f , 3220.0f);
-
 	ACameraPawn* NewCameraPawn = GetWorld()->SpawnActor<ACameraPawn>(
 		CameraPawnFactory ,
-		SpawnLocation ,
+		CameraSpawnLocation ,
 		GetActorRotation() ,
 		SpawnParams
 	);

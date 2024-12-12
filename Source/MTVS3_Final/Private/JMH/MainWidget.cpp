@@ -74,6 +74,7 @@ void UMainWidget::NativeConstruct()
 	if (WBP_MH_MainBar && WBP_MH_MainBar->WBP_NoticeUI)
 	{
 		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this , &UMainWidget::ShowChatUI);
+		WBP_MH_MainBar->OnClickedShowTutorialBtn.AddDynamic(this , &UMainWidget::ShowTutorialUI);
 		WBP_MH_MainBar->WBP_NoticeUI->OnClickedPaymentPostpone.AddDynamic(this , &UMainWidget::HandlePaymentPostpone);
 	}
 
@@ -666,4 +667,10 @@ void UMainWidget::PlayTitleAnim(int32 TitleNum)
 	default:
 		break;
 	}
+}
+
+void UMainWidget::ShowTutorialUI()
+{
+	WS_Tutorial->SetActiveWidgetIndex(0);
+	SetWidgetSwitcher(9);
 }

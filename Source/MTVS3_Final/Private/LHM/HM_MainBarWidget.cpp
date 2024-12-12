@@ -2,10 +2,12 @@
 
 
 #include "LHM/HM_MainBarWidget.h"
+#include "AudioDevice.h"
 #include "Components/Button.h"
-#include "Components/CanvasPanel.h"
 #include "Components/Image.h"
+#include "Components/Slider.h"
 #include "Components/WidgetSwitcher.h"
+#include "HJ/HallSoundManager.h"
 #include "HJ/TTGameInstance.h"
 #include "JMH/MH_Inventory.h"
 #include "JMH/MH_NoticeWidget.h"
@@ -37,6 +39,12 @@ void UHM_MainBarWidget::NativeConstruct()
 	Btn_Setting->OnUnhovered.AddDynamic(this , &UHM_MainBarWidget::OnUnHoveredSettingBtn);
 	Btn_Back_Settings->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedSettingBackBtn);
 
+	//KHJ
+	Btn_GoToTutorial->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedGoToTutorialBtn);
+	Btn_Credit->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedCreditBtn);
+	Btn_Back_Credit->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedCreditBackBtn);
+	Slider_BG->OnValueChanged.AddDynamic(this, &UHM_MainBarWidget::OnVolumeChanged);
+	
 	SetVisibleSwitcher(false);
 
 	if (WBP_inventoryUI)
@@ -129,6 +137,15 @@ void UHM_MainBarWidget::SetVisibleSwitcher(bool bVisible)
 void UHM_MainBarWidget::SetWidgetSwitcher(int32 num)
 {
 	WS_Bar->SetActiveWidgetIndex(num);
+
+	if (num==3)
+	{
+		if (UTTGameInstance* GI = GetGameInstance<UTTGameInstance>())
+		{
+			CurrentVolume = GI->GetMasterVolume();  // CurrentVolume도 업데이트
+			Slider_BG->SetValue(CurrentVolume);
+		}
+	}
 }
 
 void UHM_MainBarWidget::SetVisibilityState()
@@ -393,5 +410,49 @@ void UHM_MainBarWidget::CloseAllCategory()
 	{
 		CloseButtonPressed();
 	}
+}
+
+void UHM_MainBarWidget::OnVolumeChanged(float Value)
+{
+	CurrentVolume = Value;
+
+	if (UTTGameInstance* GI = GetGameInstance<UTTGameInstance>())
+	{
+		GI->SetMasterVolume(Value);
+	}
+    
+	// 모든 BGM AudioComponent 찾기
+	AHallSoundManager* SoundManager = Cast<AHallSoundManager>(
+		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
+        
+	if (SoundManager)
+	{
+		if (SoundManager->PlazaBGMAudioComponent)
+		{
+			SoundManager->PlazaBGMAudioComponent->SetVolumeMultiplier(Value);
+		}
+		if (SoundManager->ConcertBGMAudioComponent)
+		{
+			SoundManager->ConcertBGMAudioComponent->SetVolumeMultiplier(Value);
+		}
+	}
+}
+
+void UHM_MainBarWidget::OnClickedGoToTutorialBtn()
+{
+	SetVisibleSwitcher(false);
+	OnClickedShowTutorialBtn.Broadcast();
+}
+
+void UHM_MainBarWidget::OnClickedCreditBtn()
+{
+	// 크레딧 페이지 보여주기
+	SetWidgetSwitcher(4);
+}
+
+void UHM_MainBarWidget::OnClickedCreditBackBtn()
+{
+	// 환경설정으로 돌아가기
+	SetWidgetSwitcher(3);
 }
 

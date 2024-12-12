@@ -3,6 +3,7 @@
 
 #include "HJ/HallSoundManager.h"
 #include "Components/AudioComponent.h"
+#include "HJ/TTGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundAttenuation.h"
 #include "Sound/SoundCue.h"
@@ -42,9 +43,25 @@ AHallSoundManager::AHallSoundManager()
 void AHallSoundManager::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	// PlayConcertBGM();
+
+	float SavedVolume = 0.75f;
+	if (UTTGameInstance* GI = GetGameInstance<UTTGameInstance>())
+	{
+		SavedVolume = GI->GetMasterVolume();
+	}
+
+	if (PlazaBGMAudioComponent)
+	{
+		PlazaBGMAudioComponent->SetVolumeMultiplier(SavedVolume);
+	}
+	if (ConcertBGMAudioComponent)
+	{
+		ConcertBGMAudioComponent->SetVolumeMultiplier(SavedVolume);
+	}
 
 	PlayPlazaBGM();
-	// PlayConcertBGM();
 }
 
 // Called every frame
@@ -62,6 +79,12 @@ void AHallSoundManager::SetbPlayConcertBGM(bool _bPlayConcertBGM)
 
 void AHallSoundManager::PlayConcertBGM()
 {
+	float SavedVolume = 0.75f;
+	if (UTTGameInstance* GI = GetGameInstance<UTTGameInstance>())
+	{
+		SavedVolume = GI->GetMasterVolume();
+	}
+	
 	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
 	if (PC && PC->IsLocalController())
 	{
@@ -81,7 +104,7 @@ void AHallSoundManager::PlayConcertBGM()
 				ConcertBGMCue, 
 				ConcertBGMLocation, 
 				FRotator::ZeroRotator,
-				bPlayConcertBGM ? 0.75f : 0.0f, // 초기 볼륨 설정
+				bPlayConcertBGM ? SavedVolume : 0.0f, // 초기 볼륨 설정
 				1.0f,
 				0.0f,
 				ConcertAttenuation
@@ -125,6 +148,12 @@ void AHallSoundManager::UpdateConcertBGMVolume(bool _bPlayConcertBGM)
 
 void AHallSoundManager::PlayPlazaBGM()
 {
+	float SavedVolume = 0.75f;
+	if (UTTGameInstance* GI = GetGameInstance<UTTGameInstance>())
+	{
+		SavedVolume = GI->GetMasterVolume();
+	}
+	
 	APlayerController* PC = GEngine->GetFirstLocalPlayerController(GetWorld());
 	if (PC && PC->IsLocalController())
 	{
@@ -144,7 +173,7 @@ void AHallSoundManager::PlayPlazaBGM()
 				PlazaBGMCue,
 				PlazaBGMLocation,
 				FRotator::ZeroRotator,
-				0.75f,
+				SavedVolume,
 				1.0f,
 				0.0f,
 				PlazaAttenuation
