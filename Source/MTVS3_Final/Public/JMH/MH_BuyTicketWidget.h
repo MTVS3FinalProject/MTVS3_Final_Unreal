@@ -36,10 +36,8 @@ public:
 	class UWidgetSwitcher* WS_BuyTicketSwitcher;
 
 	//위젯추가
-	UPROPERTY()
-	TSubclassOf<class UMH_BuyCoinsWidget> BuyCoinWidgetFac;
-	UPROPERTY()
-	class UMH_BuyCoinsWidget* BuyCoinUI;
+	UPROPERTY(meta=(BindWidget))
+	class UMH_BuyCoinsWidget* WBP_BuyCoins;
 
 	//위젯스위처설정
 	UFUNCTION()
@@ -322,4 +320,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_BuyTickerBack;
+	
+	UFUNCTION()
+	void OnClickedBuyTicketBack();
+
+	
 };

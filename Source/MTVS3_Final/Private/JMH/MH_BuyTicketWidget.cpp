@@ -52,6 +52,11 @@ void UMH_BuyTicketWidget::NativeConstruct()
 	{
 		Text_CurrentCoin->SetText(FText::FromString(FString::FromInt(gi->GetCoin())));
 	}
+	if (WBP_BuyCoins)
+	{
+		WBP_BuyCoins->OnClickedBuyCoinBack.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBuyTicketBack);
+		WBP_BuyCoins->OnClickedBuyCoinWinExit.AddDynamic(this , &UMH_BuyTicketWidget::OnClickedBuyTicketBack);
+	}
 }
 
 void UMH_BuyTicketWidget::SetWidgetSwitcher(int32 num) //수정 후 위젯 스위처 1029 // 0: QR 인증 . 1:인증성공  . 2:인증실패 . 3:좌석확인 . 4:가격확인 . 5: 예매자정보입력 . 6: 배송지입력 . 7:결제수단선택, 8: 결제완료. 9: 코인충전
@@ -374,4 +379,10 @@ void UMH_BuyTicketWidget::OnClickedSaveTicketButton()
 	//9: 예매 완료 
 	//매희 : 메인에서 델리게이트 바인드, 메인 UI 위젯스위처 0번으로
 	SetWidgetSwitcher(0);
+}
+
+void UMH_BuyTicketWidget::OnClickedBuyTicketBack()
+{
+	//7번으로 : 결제수단
+	SetWidgetSwitcher(7);
 }

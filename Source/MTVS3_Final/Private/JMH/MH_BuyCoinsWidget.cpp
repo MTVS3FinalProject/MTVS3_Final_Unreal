@@ -32,6 +32,9 @@ void UMH_BuyCoinsWidget::NativeConstruct()
 
 	//Main 닫기버튼 바인드
 	Btn_Back06_2->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::CloseButtonPressed);
+	//결제완료 닫기버튼 바인드
+	Btn_BuyCoinWinExit->OnClicked.AddDynamic(this , &UMH_BuyCoinsWidget::CloseBtnBuyCoinWin);
+	//현민 근데 결제 완료를 하면 넘어가는 7번 스위처 부분에서 코인 업데이트를 해주나? 아니면 gi에서 델리게이트로 업데이트 뿌려줘야 할듯.
 	
 	GetTextCurCoin();
 
@@ -41,6 +44,8 @@ void UMH_BuyCoinsWidget::NativeConstruct()
 	ButtonTextGroups.Add({Btn_Coin_50000 , {Text_50000_01 , Text_50000_02}});
 	ButtonTextGroups.Add({Btn_Coin_100000 , {Text_100000_01 , Text_100000_02}});
 	ButtonTextGroups.Add({Btn_CustomCoin , {Text_Custom_01 , Text_Custom_02}});
+
+	Can_BuyCoinWin->SetVisibility(ESlateVisibility::Hidden);
 	
 }
 
@@ -80,6 +85,11 @@ void UMH_BuyCoinsWidget::SetgiCoin(int32 AddCoin)
 	{
 		//gi->AddCoin(AddCoin);
 	}
+}
+
+void UMH_BuyCoinsWidget::HiddenBuyCoinWin()
+{
+	Can_BuyCoinWin->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UMH_BuyCoinsWidget::SetVisibleCanvas(bool bVisible)
@@ -232,8 +242,11 @@ void UMH_BuyCoinsWidget::OnClickedBuyCoinButton()
 	if (gi)
 	{
 		gi->SetCoin(TotalCoin); //코인 충전
-		
 	}
+
+	//결제완료되었습니다 창 표시
+	Can_BuyCoinWin->SetVisibility(ESlateVisibility::Visible);
+	
 }
 
 void UMH_BuyCoinsWidget::OnButtonClicked(UButton* ClickedButton)
@@ -323,11 +336,6 @@ void UMH_BuyCoinsWidget::OnButtonOnHovered(bool bIsHovere ,UButton* OnHoveredBut
 			}
 		}
 	}
-}
-
-void UMH_BuyCoinsWidget::OnClickedBackButton()
-{
-	//매희 Main 델리게이트 적용
 }
 
 //void UMH_BuyCoinsWidget::OnClickedBackButton()
