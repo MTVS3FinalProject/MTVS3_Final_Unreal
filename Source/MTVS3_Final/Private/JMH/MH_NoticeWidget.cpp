@@ -15,7 +15,6 @@
 #include "HJ/TTGameInstance.h"
 #include "Interfaces/IHttpResponse.h"
 #include "Kismet/GameplayStatics.h"
-#include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_HttpActor3.h"
 #include "LHM/HM_NoticeMessage.h"
 

@@ -53,10 +53,6 @@ public:
 	void InitializeMessageTabs();
 	UFUNCTION()
 	void OnMessageSelected(int32 MailId);
-	UFUNCTION()
-	void OnPostponeMessageSelected(int32 MailId);
-	UFUNCTION()
-	void OnPuzzleMessageSelected(int32 MailId);
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Canvas_content;
