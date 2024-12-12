@@ -28,6 +28,7 @@ struct FMenuButtonGroup
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedChatBtn);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedGoToTutorialBtn);
 
 UCLASS()
@@ -58,7 +59,7 @@ private:
 	// Unreal의 콘텐츠 경로 기준으로 XAML 파일 경로를 설정
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rive", meta = (AllowPrivateAccess = "true"))
 	//FString XamlFilePath;
-	
+
 public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UWidgetSwitcher* WS_Bar;
@@ -100,32 +101,37 @@ public:
 		bIsChatVisible = !bIsChatVisible;
 		// 델리게이트 호출. 채팅 켜기
 		OnClickedShowChatBtn.Broadcast();
+		if (bIsChatVisible)
+		{
+			//기본 배경 보이게
+			OnClickedMenuBtn(Btn_Chat);
+		}
 	}
-	
+
 
 	//MH
-/*	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_lightMode;
-	UFUNCTION()
-	void OnClickedlightModeBtn();
-
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_DarkMode;
-	UFUNCTION()
-	void OnClickedDarkModeBtn();
-
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UButton* Btn_Menu;
-	// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	// class UCanvasPanel* Can_0_Menu;
-	// UFUNCTION()
-	// void OnClickedMenuBtn();
-
-	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	//class UButton* Btn_Emoji;
-	//UFUNCTION()
-	//void OnClickedEmojiBtn();
-	*/
+	/*	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+		class UButton* Btn_lightMode;
+		UFUNCTION()
+		void OnClickedlightModeBtn();
+	
+		UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+		class UButton* Btn_DarkMode;
+		UFUNCTION()
+		void OnClickedDarkModeBtn();
+	
+		// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+		// class UButton* Btn_Menu;
+		// UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+		// class UCanvasPanel* Can_0_Menu;
+		// UFUNCTION()
+		// void OnClickedMenuBtn();
+	
+		//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+		//class UButton* Btn_Emoji;
+		//UFUNCTION()
+		//void OnClickedEmojiBtn();
+		*/
 
 	//메뉴바 버튼 이미지
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -139,6 +145,8 @@ public:
 
 	//메뉴바 버튼 이미지2
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UImage* img_BaseBar;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_NoticeBG;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_CollecBG;
@@ -146,13 +154,17 @@ public:
 	class UImage* Img_ChatBG;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_SettingBG;
-	
-	
+
 	UFUNCTION()
-	void OnHoveredMenuBtn(bool bIsHovere ,UButton* OnHoveredButton);
-		
+	void SetVisibleMenuBG(bool Visible , UImage* ImgBG);
+
 	UFUNCTION()
-	void OnClickedMenuBtn(bool bIsClick ,UButton* OnClickedButton);
+	void OnHoveredMenuBtn(bool bIsHovere , UButton* OnHoveredButton);
+
+	UFUNCTION()
+	void OnClickedMenuBtn(UButton* OnClickedButton);
+	UFUNCTION()
+	void InitMenuBtn();
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Image_Notice;
@@ -164,7 +176,7 @@ public:
 	void OnHoveredNoticeBtn();
 	UFUNCTION()
 	void OnUnHoveredNoticeBtn();
-	
+
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_CollectionBook;
 	UFUNCTION()
@@ -192,7 +204,7 @@ public:
 	void OnHoveredSettingBtn();
 	UFUNCTION()
 	void OnUnHoveredSettingBtn();
-	
+
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_Back_Settings;
 	UFUNCTION()
@@ -209,7 +221,7 @@ public:
 	UPROPERTY()
 	float CurrentVolume = 0.75f;
 
-	UPROPERTY(BlueprintAssignable, Category = "Events")
+	UPROPERTY(BlueprintAssignable , Category = "Events")
 	FOnClickedGoToTutorialBtn OnClickedShowTutorialBtn;
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))

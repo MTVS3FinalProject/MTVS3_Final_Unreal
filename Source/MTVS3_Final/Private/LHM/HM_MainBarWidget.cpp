@@ -43,8 +43,8 @@ void UHM_MainBarWidget::NativeConstruct()
 	Btn_GoToTutorial->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedGoToTutorialBtn);
 	Btn_Credit->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedCreditBtn);
 	Btn_Back_Credit->OnClicked.AddDynamic(this , &UHM_MainBarWidget::OnClickedCreditBackBtn);
-	Slider_BG->OnValueChanged.AddDynamic(this, &UHM_MainBarWidget::OnVolumeChanged);
-	
+	Slider_BG->OnValueChanged.AddDynamic(this , &UHM_MainBarWidget::OnVolumeChanged);
+
 	SetVisibleSwitcher(false);
 
 	if (WBP_inventoryUI)
@@ -52,74 +52,18 @@ void UHM_MainBarWidget::NativeConstruct()
 		WBP_inventoryUI->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::CloseAllCategory);
 	}
 
-	if(WBP_NoticeUI)
+	if (WBP_NoticeUI)
 	{
 		WBP_NoticeUI->OnClickedBack_NoticeBtn.AddDynamic(this , &UHM_MainBarWidget::OnClickedNoticeBtn);
 	}
-	/*
-	// XAML 파일 경로 설정
-	FString FullPath = FPaths::ProjectContentDir() + TEXT("UI/MyWidget.xaml");
-	
-	// XAML 파일 로드
-	RootElement = Noesis::GUI::LoadXaml<Noesis::FrameworkElement>(TCHAR_TO_UTF8(*FullPath));
-	if (!RootElement)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load XAML file: %s"), *FullPath);
-		return;
-	}
-	
-	// RiveControl 가져오기 (첫 번째 자식 요소로 접근)
-	Noesis::Visual* FirstChild = Noesis::VisualTreeHelper::GetChild(RootElement.GetPtr(), 0);
-	if (FirstChild)
-	{
-		RiveControl = Noesis::DynamicCast<NoesisApp::RiveControl*>(FirstChild);
-		if (!RiveControl)
-		{
-			UE_LOG(LogTemp, Error, TEXT("RiveControl을 찾을 수 없습니다."));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Log, TEXT("RiveControl 로드 성공."));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("RootElement의 자식을 찾을 수 없습니다."));
-	}*/
-	
-	MenuButtonGroups.Add({Btn_Notice,Img_NoticeBtn});
-	MenuButtonGroups.Add({Btn_CollectionBook,Img_CollecBtn});
-	MenuButtonGroups.Add({Btn_Chat,Img_ChatBtn});
-	MenuButtonGroups.Add({Btn_Setting,Img_SettingBtn});
 
-}
+	MenuButtonGroups.Add({Btn_Notice , Img_NoticeBtn , Img_NoticeBG});
+	MenuButtonGroups.Add({Btn_CollectionBook , Img_CollecBtn , Img_CollecBG});
+	MenuButtonGroups.Add({Btn_Chat , Img_ChatBtn , Img_ChatBG});
+	MenuButtonGroups.Add({Btn_Setting , Img_SettingBtn , Img_SettingBG});
 
-//Rive
-	/*
-void UHM_MainBarWidget::ActivateRiveTrigger(const FString& TriggerName)
-{
-	if (!RiveControl)
-	{
-		UE_LOG(LogTemp, Error, TEXT("RiveControl is not initialized."));
-		return;
-	}
+	InitMenuBtn();
 }
-	*/
-
-	/*
-void UHM_MainBarWidget::SetRiveParameter(const FString& ParameterName, float Value)
-{
-	if (RiveControl)
-	{
-		UE_LOG(LogTemp, Error, TEXT("RiveControl is not initialized."));
-		return;
-	}
-	
-	// 매개변수 값을 설정하기 위해 SetInputValue 호출
-	RiveControl->SetInputValue(TCHAR_TO_UTF8(*ParameterName), Noesis::Boxing::Box(Value));
-	UE_LOG(LogTemp, Log, TEXT("Parameter '%s' set to value %f."), *ParameterName, Value);
-}
-	*/
 
 void UHM_MainBarWidget::SetVisibleSwitcher(bool bVisible)
 {
@@ -130,6 +74,7 @@ void UHM_MainBarWidget::SetVisibleSwitcher(bool bVisible)
 
 	else if (!bVisible)
 	{
+		InitMenuBtn();
 		WS_Bar->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
@@ -138,11 +83,11 @@ void UHM_MainBarWidget::SetWidgetSwitcher(int32 num)
 {
 	WS_Bar->SetActiveWidgetIndex(num);
 
-	if (num==3)
+	if (num == 3)
 	{
 		if (UTTGameInstance* GI = GetGameInstance<UTTGameInstance>())
 		{
-			CurrentVolume = GI->GetMasterVolume();  // CurrentVolume도 업데이트
+			CurrentVolume = GI->GetMasterVolume(); // CurrentVolume도 업데이트
 			Slider_BG->SetValue(CurrentVolume);
 		}
 	}
@@ -151,42 +96,11 @@ void UHM_MainBarWidget::SetWidgetSwitcher(int32 num)
 void UHM_MainBarWidget::SetVisibilityState()
 {
 	SetVisibleSwitcher(true);
-	if (bIsMenuVisible)
-	{
-		//OnClickedMenuBtn();
-	}
 	if (bIsChatVisible)
 	{
 		CloseButtonPressed();
 	}
 }
-
-// void UHM_MainBarWidget::OnClickedEmojiBtn()
-// {
-// 	//이모티콘 버튼 누르면
-// 	bIsEmojiVisible = !bIsEmojiVisible;
-//
-// 	if (bIsEmojiVisible)
-// 	{
-// 		//스위처 0번 이모지 띄우기
-// 		SetWidgetSwitcher(0);
-// 		SetVisibleSwitcher(true);
-// 		//메뉴바 켜져있으면 끄기
-// 		if (bIsMenuVisible)
-// 		{
-// 			//OnClickedMenuBtn();
-// 		}
-// 		//채팅창 켜져있으면 끄기
-// 		if (bIsChatVisible)
-// 		{
-// 			CloseButtonPressed();
-// 		}
-// 	}
-// 	else
-// 	{
-// 		SetVisibleSwitcher(false);
-// 	}
-// }
 
 void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 {
@@ -194,6 +108,7 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 
 	if (bIsCollectionBookVisible)
 	{
+		OnClickedMenuBtn(Btn_CollectionBook);
 		//인벤 열기
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
@@ -213,26 +128,39 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 
 void UHM_MainBarWidget::OnHoveredCollectionBookBtn()
 {
-	OnHoveredMenuBtn(true,Btn_CollectionBook);
+	OnHoveredMenuBtn(true , Btn_CollectionBook);
 }
 
 void UHM_MainBarWidget::OnUnHoveredCollectionBookBtn()
 {
-	OnHoveredMenuBtn(false,Btn_CollectionBook);
+	OnHoveredMenuBtn(false , Btn_CollectionBook);
 }
 
-void UHM_MainBarWidget::OnHoveredMenuBtn(bool bIsHovere, UButton* OnHoveredButton)
+
+void UHM_MainBarWidget::SetVisibleMenuBG(bool Visible , UImage* ImgBG)
 {
-	if(bIsHovere)
+	if (Visible)
+	{
+		ImgBG->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	else
+	{
+		ImgBG->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UHM_MainBarWidget::OnHoveredMenuBtn(bool bIsHovere , UButton* OnHoveredButton)
+{
+	if (bIsHovere)
 	{
 		for (const FMenuButtonGroup& Group : MenuButtonGroups)
 		{
 			if (Group.Button == OnHoveredButton)
 			{
 				//텍스트 색상 변경
-				
-					 Group.BtnImg->SetColorAndOpacity(FLinearColor::Black);
-				
+
+				Group.BtnImg->SetColorAndOpacity(FLinearColor::Black);
 			}
 		}
 	}
@@ -248,32 +176,63 @@ void UHM_MainBarWidget::OnHoveredMenuBtn(bool bIsHovere, UButton* OnHoveredButto
 	}
 }
 
-void UHM_MainBarWidget::OnClickedMenuBtn(bool bIsClick, UButton* OnClickedButton)
+void UHM_MainBarWidget::OnClickedMenuBtn(UButton* OnClickedButton)
 {
-	
+	for (const FMenuButtonGroup& Group : MenuButtonGroups)
+	{
+		if (Group.Button == OnClickedButton)
+		{
+			//기본 배경 안보이게
+			SetVisibleMenuBG(false , img_BaseBar);
+			//클릭된 버튼 이미지 안보이게,
+			SetVisibleMenuBG(false , Group.BtnImg);
+			//클릭된 버튼 배경 보이게
+			SetVisibleMenuBG(true , Group.BtnImg2);
+		}
+		else
+		{
+			// 나머지 버튼 이미지 보이게,
+			SetVisibleMenuBG(true , Group.BtnImg);
+			//나머지 버튼 배경 안보이게,
+			SetVisibleMenuBG(false , Group.BtnImg2);
+		}
+	}
+}
+
+void UHM_MainBarWidget::InitMenuBtn()
+{
+	for (const FMenuButtonGroup& Group : MenuButtonGroups)
+	{
+		//버튼 이미지 모두 보이게,
+		SetVisibleMenuBG(true , Group.BtnImg);
+		//모든 버튼 배경 안보이게
+		SetVisibleMenuBG(false , Group.BtnImg2);
+
+		//기본 배경 보이게
+		SetVisibleMenuBG(true , img_BaseBar);
+	}
 }
 
 void UHM_MainBarWidget::OnClickedNoticeBtn()
 {
 	bIsNoticeVisible = !bIsNoticeVisible;
-	
+
 	if (bIsNoticeVisible)
 	{
+		OnClickedMenuBtn(Btn_Notice);
 		SetVisibleSwitcher(true);
 		SetWidgetSwitcher(1);
-		//if (bIsMenuVisible)
-		//{
-			//OnClickedMenuBtn();
-			// 우편함 열기
-			UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
-			AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-						UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-			if (HttpActor3)
-			{
-				// 우편함 조회 요청
-				HttpActor3->ReqGetMailbox(GI->GetAccessToken());
-			}
-		//}
+
+		// 우편함 열기
+		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+		if (HttpActor3)
+		{
+			// 우편함 조회 요청
+			HttpActor3->ReqGetMailbox(GI->GetAccessToken());
+		}
+
 		if (bIsChatVisible)
 		{
 			CloseButtonPressed();
@@ -287,26 +246,13 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 
 void UHM_MainBarWidget::OnHoveredNoticeBtn()
 {
-	OnHoveredMenuBtn(true,Btn_Notice);
+	OnHoveredMenuBtn(true , Btn_Notice);
 }
 
 void UHM_MainBarWidget::OnUnHoveredNoticeBtn()
 {
-	OnHoveredMenuBtn(false,Btn_Notice);
+	OnHoveredMenuBtn(false , Btn_Notice);
 }
-
-/*
-void UHM_MainBarWidget::OnClickedlightModeBtn()
-{
-	//나중
-	//UI 라이트 모드로 변환 (기본모드)
-}
-
-void UHM_MainBarWidget::OnClickedDarkModeBtn()
-{
-	//나중
-	//UI 다크모드로 변환
-}*/
 
 // void UHM_MainBarWidget::OnClickedMenuBtn()
 // {
@@ -338,12 +284,12 @@ void UHM_MainBarWidget::OnClickedChatBtn()
 
 void UHM_MainBarWidget::OnHoveredChatBtn()
 {
-	OnHoveredMenuBtn(true,Btn_Chat);
+	OnHoveredMenuBtn(true , Btn_Chat);
 }
 
 void UHM_MainBarWidget::OnUnHoveredChatBtn()
 {
-	OnHoveredMenuBtn(false,Btn_Chat);
+	OnHoveredMenuBtn(false , Btn_Chat);
 }
 
 void UHM_MainBarWidget::OnClickedSettingBtn()
@@ -352,6 +298,7 @@ void UHM_MainBarWidget::OnClickedSettingBtn()
 	//세팅창 켜지게
 	if (bIsSettingsVisible)
 	{
+		OnClickedMenuBtn(Btn_Setting);
 		SetWidgetSwitcher(3);
 		SetVisibleSwitcher(true);
 		if (bIsMenuVisible)
@@ -371,12 +318,12 @@ void UHM_MainBarWidget::OnClickedSettingBtn()
 
 void UHM_MainBarWidget::OnHoveredSettingBtn()
 {
-	OnHoveredMenuBtn(true,Btn_Setting);
+	OnHoveredMenuBtn(true , Btn_Setting);
 }
 
 void UHM_MainBarWidget::OnUnHoveredSettingBtn()
 {
-	OnHoveredMenuBtn(false,Btn_Setting);
+	OnHoveredMenuBtn(false , Btn_Setting);
 }
 
 void UHM_MainBarWidget::OnClickedSettingBackBtn()
@@ -394,6 +341,7 @@ void UHM_MainBarWidget::CloseAllCategory()
 	// {
 	// 	OnClickedEmojiBtn();
 	// }
+	InitMenuBtn();
 	if (bIsCollectionBookVisible)
 	{
 		OnClickedCollectionBookBtn();
@@ -420,11 +368,11 @@ void UHM_MainBarWidget::OnVolumeChanged(float Value)
 	{
 		GI->SetMasterVolume(Value);
 	}
-    
+
 	// 모든 BGM AudioComponent 찾기
 	AHallSoundManager* SoundManager = Cast<AHallSoundManager>(
-		UGameplayStatics::GetActorOfClass(GetWorld(), AHallSoundManager::StaticClass()));
-        
+		UGameplayStatics::GetActorOfClass(GetWorld() , AHallSoundManager::StaticClass()));
+
 	if (SoundManager)
 	{
 		if (SoundManager->PlazaBGMAudioComponent)
@@ -442,6 +390,7 @@ void UHM_MainBarWidget::OnClickedGoToTutorialBtn()
 {
 	SetVisibleSwitcher(false);
 	OnClickedShowTutorialBtn.Broadcast();
+	InitMenuBtn();
 }
 
 void UHM_MainBarWidget::OnClickedCreditBtn()
@@ -455,4 +404,3 @@ void UHM_MainBarWidget::OnClickedCreditBackBtn()
 	// 환경설정으로 돌아가기
 	SetWidgetSwitcher(3);
 }
-
