@@ -196,9 +196,9 @@ public:
 	class UMH_TicketingWidget* TicketingUI;
 	void SetTicketingUI(UMH_TicketingWidget* InTicketingUI);
 
-	UPROPERTY()
-	class UHM_PuzzleWidget* PuzzleUI;
-	void SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI);
+	// UPROPERTY()
+	// class UHM_PuzzleWidget* PuzzleUI;
+	// void SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI);
 	
 	UPROPERTY()
 	class UHM_TreeCustomTicketWidget* TreeTicketUI;

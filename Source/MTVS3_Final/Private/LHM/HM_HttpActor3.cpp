@@ -58,10 +58,10 @@ void AHM_HttpActor3::SetTicketingUI(UMH_TicketingWidget* InTicketingUI)
 	TicketingUI = InTicketingUI;
 }
 
-void AHM_HttpActor3::SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI)
-{
-	PuzzleUI = InPuzzleUI;
-}
+// void AHM_HttpActor3::SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI)
+// {
+// 	PuzzleUI = InPuzzleUI;
+// }
 
 void AHM_HttpActor3::SetTreeTicketUI(UHM_TreeCustomTicketWidget* InTreeTicketUI)
 {
@@ -266,11 +266,11 @@ void AHM_HttpActor3::OnResPostPuzzleResultAndGetSticker(FHttpRequestPtr Request 
 	RequestRankMap.Remove(Request);
 	RequestPlayerNicknameMap.Remove(Request);
 	
-	if (!PuzzleUI || Rank < 0 || Rank > 2)
-	{
-		UE_LOG(LogTemp , Warning , TEXT("Invalid rank or PuzzleUI is null"));
-		return;
-	}
+	// if (!PuzzleUI || Rank < 0 || Rank > 2)
+	// {
+	// 	UE_LOG(LogTemp , Warning , TEXT("Invalid rank or PuzzleUI is null"));
+	// 	return;
+	// }
 
 	if (bWasSuccessful && Response.IsValid())
 	{

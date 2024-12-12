@@ -102,9 +102,9 @@ public:
 	
 
 #pragma region UI
-	UPROPERTY()
-	class UHM_PuzzleWidget* PuzzleUI;
-	void SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI);
+	// UPROPERTY()
+	// class UHM_PuzzleWidget* PuzzleUI;
+	// void SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI);
 #pragma endregion
 	
 	// 점수 관리

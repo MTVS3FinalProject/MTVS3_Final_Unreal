@@ -57,10 +57,10 @@ void APuzzleManager::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void APuzzleManager::SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI)
-{
-	PuzzleUI = InPuzzleUI;
-}
+// void APuzzleManager::SetPuzzleUI(UHM_PuzzleWidget* InPuzzleUI)
+// {
+// 	PuzzleUI = InPuzzleUI;
+// }
 
 void APuzzleManager::AddPiece(UStaticMeshComponent* Piece, int32 InitialScore)
 {
@@ -265,7 +265,7 @@ void APuzzleManager::Server_HandlePuzzleResult_Implementation()
 							   *PlayerNickname, RankInfo.Rank);
                     
 						// UI 업데이트 호출
-						Player->Client_UpdatePuzzleUI();
+						// Player->Client_UpdatePuzzleUI();
 					}
 					break;
 				}
