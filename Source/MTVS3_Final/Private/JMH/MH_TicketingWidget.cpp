@@ -301,6 +301,18 @@ void UMH_TicketingWidget::OnClickedConfirmButton()
 	//경고창 띄우기
 }
 
+void UMH_TicketingWidget::SetTextReservedSeat(bool bIsReserved)
+{
+	if(bIsReserved)
+	{
+		Text_Confirm_Ticketting->SetText(FText::FromString(TEXT("예매 완료 좌석")));
+	}
+	else
+	{
+		Text_Confirm_Ticketting->SetText(FText::FromString(TEXT("접수하기")));
+	}
+}
+
 void UMH_TicketingWidget::OnClickedCancelButton()
 {
 	//서버-> 접수취소
