@@ -34,7 +34,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 	    {
 		    MeshComp->SetupAttachment(RootComponent);
 		    MeshComp->SetStaticMesh(MeshAsset.Object);
-	    	MeshComp->SetRelativeScale3D(FVector(0.5f, 1, 0.5f));
+	    	MeshComp->SetRelativeScale3D(FVector(0.5f, 1.5f, 0.5f));
 	    }
     }
  }
@@ -117,7 +117,7 @@ void AHM_PuzzlePiece::PostInitializeComponents()
 	{
 		if (PieceMeshes[i])
 		{
-			PieceMeshes[i]->SetRelativeScale3D(FVector(0.5f, 1, 0.5f));
+			PieceMeshes[i]->SetRelativeScale3D(FVector(0.5f, 1.5f, 0.5f));
 			
 			// 물리 및 충돌 설정
 			PieceMeshes[i]->SetSimulatePhysics(true);

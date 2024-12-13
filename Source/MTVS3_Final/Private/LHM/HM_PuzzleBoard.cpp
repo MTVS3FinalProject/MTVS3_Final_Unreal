@@ -184,19 +184,21 @@ void AHM_PuzzleBoard::MulticastSetBoardAreaVisibility_Implementation(int32 Board
 	// 모든 클라이언트와 서버에서 실행
 	if (BoardIndex >= 0 && BoardIndex < BoardAreas.Num())
 	{
-		// 가시성 직접 설정
+		BoardAreas[BoardIndex]->SetVisibility(bVisible);
 
 		if (NiagaraEffects.IsValidIndex(BoardIndex) && NiagaraEffects[BoardIndex])
 		{   
 			if (bVisible)
 			{
-				BoardAreas[BoardIndex]->SetVisibility(bVisible);
 				NiagaraEffects[BoardIndex]->Activate(true);
-				UE_LOG(LogTemp, Log, TEXT("Niagara Effect for BoardArea[%d] %s"), BoardIndex, bVisible ? TEXT("Activated") : TEXT("Deactivated"));
 			}
+			else
+			{
+				NiagaraEffects[BoardIndex]->Deactivate();
+			}
+			UE_LOG(LogTemp, Log, TEXT("Niagara Effect for BoardArea[%d] %s"), BoardIndex, bVisible ? TEXT("Activated") : TEXT("Deactivated"));
 		}
-		
-		// 서버에서만 BoardAreaVisibility 업데이트
+        
 		if (HasAuthority())
 		{
 			BoardAreaVisibility[BoardIndex] = bVisible;
