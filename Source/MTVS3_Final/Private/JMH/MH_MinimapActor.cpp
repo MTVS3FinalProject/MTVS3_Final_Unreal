@@ -11,6 +11,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "JMH/MainWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_MinimapWidget.h"
 
@@ -112,11 +113,6 @@ void AMH_MinimapActor::BeginPlay()
 			}
 		}
 	}
-	
-	if (MiniMapUI)
-	{
-		MiniMapUI = Cast<UHM_MinimapWidget>(CreateWidget<UHM_MinimapWidget>(GetWorld(), MiniMapWidgetClass));
-	}
 }
 
 void AMH_MinimapActor::Tick(float DeltaTime)
@@ -183,7 +179,7 @@ void AMH_MinimapActor::ApplyMinimap()
 		if (Distance > MinimapRadius) // 범위를 초과했을 경우 위치 보정
 		{
 			FVector Direction = (StyleLoungeLocation - PlayerLocation).GetSafeNormal();
-			FVector AdjustedLocation = PlayerLocation + Direction * (MinimapRadius - 50.0f);
+			FVector AdjustedLocation = PlayerLocation + Direction * (MinimapRadius - 100.0f);
 			StyleLoungeSprite->SetWorldLocation(FVector(AdjustedLocation.X, AdjustedLocation.Y, StyleLoungeLocation.Z));
 		}
 		else // 범위 안에 있으면 원래 위치 유지
@@ -191,47 +187,10 @@ void AMH_MinimapActor::ApplyMinimap()
 			StyleLoungeSprite->SetWorldLocation(FVector(18000, 4900, 3300));
 		}
 	}
-
-	// Minimap UI 업데이트
-	UpdateMinimapWidget();
 }
 
 void AMH_MinimapActor::InitializeMinimap(ACharacter* LocalPlayer)
 {
 	//비긴플레이에서 플레이어 지정
-	
-		Player = LocalPlayer;
-	
-}
-
-void AMH_MinimapActor::UpdateMinimapWidget()
-{
-	if (!MiniMapUI || !Player || !StyleLoungeSprite) return;
-
-	// World 위치를 화면 좌표로 변환
-	FVector WorldLocation = StyleLoungeSprite->GetComponentLocation();
-	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	FVector2D ScreenPosition;
-	if (!UGameplayStatics::ProjectWorldToScreen(PlayerController, WorldLocation, ScreenPosition))
-		return;
-
-	// Viewport 좌표를 위젯 좌표로 변환
-	UCanvasPanelSlot* MinimapSlot = Cast<UCanvasPanelSlot>(MiniMapUI->Img_MinimapImg->Slot);
-	UCanvasPanelSlot* StyleSlot = Cast<UCanvasPanelSlot>(MiniMapUI->Img_StyleLounge->Slot);
-	
-	if (MinimapSlot && StyleSlot)
-	{
-		FVector2D MinimapPosition = MinimapSlot->GetPosition();
-		FVector2D MinimapSize = MinimapSlot->GetSize();
-
-		// 스크린 좌표를 미니맵 위젯의 상대 좌표로 변환
-		FVector2D RelativePosition = ScreenPosition - MinimapPosition;
-		RelativePosition /= MinimapSize; // Normalize to widget scale
-
-		// Img_StyleLounge 위치 업데이트
-		StyleSlot->SetPosition(FVector2D(
-			MinimapPosition.X + RelativePosition.X * MinimapSize.X,
-			MinimapPosition.Y + RelativePosition.Y * MinimapSize.Y
-		));
-	}
+	Player = LocalPlayer;
 }

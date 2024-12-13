@@ -16,10 +16,13 @@ class MTVS3_FINAL_API UHM_MinimapWidget : public UUserWidget
 	
 public:
     virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_MinimapImg;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_StyleLounge;
-	
+
+	UFUNCTION()
+	void UpdateMinimapWidget();
 };

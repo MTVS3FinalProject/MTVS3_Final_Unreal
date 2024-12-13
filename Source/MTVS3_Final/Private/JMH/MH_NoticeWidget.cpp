@@ -100,6 +100,7 @@ void UMH_NoticeWidget::OnMessageSelected(int32 MailId)
 		}
 		else if (MailCategory == TEXT("POSTPONE"))
 		{
+			HttpActor3->ReqGetSpecificMail(MailId , GI->GetAccessToken());
 			HttpActor3->ReqGetPostponePaymentSeatMail(MailId, GI->GetAccessToken());
 			Btn_Payment->SetVisibility(ESlateVisibility::Visible);
 		}
@@ -114,16 +115,23 @@ void UMH_NoticeWidget::OnMessageSelected(int32 MailId)
 	}
 }
 
-void UMH_NoticeWidget::OnMailDetailReceived(FString Subject , FString Content)
+void UMH_NoticeWidget::OnMailDetailReceived(bool bIsPuzzle, FString Subject , FString Content)
 {
-	//if (Text_Subject && Text_Content)
-	if (Text_Content)
+	if (!Text_Subject || !Text_Content) return;
+	if (bIsPuzzle)
 	{
-		//Text_Subject->SetText(FText::FromString(Subject));
-		Text_Content->SetText(FText::FromString(Content));
-		Canvas_content->SetVisibility(ESlateVisibility::Visible);
-		Vertical_MessageBox->SetVisibility(ESlateVisibility::Hidden);
+		Text_Subject->SetText(FText::FromString(TEXT("퍼즐 이벤트 종료")));
+		Text_Content_Puzzle->SetText(FText::FromString(Content));
 	}
+	else
+	{
+		Text_Subject->SetText(FText::FromString(Subject));
+		Text_Content->SetText(FText::FromString(Content));
+		Canvas_General->SetVisibility(ESlateVisibility::Visible);
+	}
+	
+	Canvas_content->SetVisibility(ESlateVisibility::Visible);
+	Vertical_MessageBox->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UMH_NoticeWidget::OnPuzzleTitleStickerReceived(int32 Rank, const FTitles& TitleInfo, const FStickers& StickerInfo)
@@ -222,6 +230,7 @@ void UMH_NoticeWidget::OnPuzzleTitleStickerReceived(int32 Rank, const FTitles& T
 void UMH_NoticeWidget::CloseBtn_Content()
 {
 	Canvas_content->SetVisibility(ESlateVisibility::Hidden);
+	Canvas_General->SetVisibility(ESlateVisibility::Hidden);
 	Canvas_puzzle->SetVisibility(ESlateVisibility::Hidden);
 	Btn_Payment->SetVisibility(ESlateVisibility::Hidden);
 	Vertical_MessageBox->SetVisibility(ESlateVisibility::Visible);
