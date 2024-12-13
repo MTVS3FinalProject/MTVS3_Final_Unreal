@@ -20,9 +20,11 @@ public:
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_MinimapImg;
+	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_StyleLounge;
-
+	FVector StyleLounge = FVector(18000.0f, 4900.0f, 3300.0f);
+	
 	UFUNCTION()
-	void UpdateMinimapWidget();
+	void UpdateTargetPosition(FVector TargetLocation, UImage* Img_Target);
 };
