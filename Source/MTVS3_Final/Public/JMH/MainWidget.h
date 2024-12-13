@@ -388,6 +388,15 @@ public:
 	class UButton* Btn_Left6;
 	UFUNCTION()
 	void OnClickedLeft6();
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget))
+	class UButton* Btn_Right6;
+	UFUNCTION()
+	void OnClickedRight6();
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_Left7;
+	UFUNCTION()
+	void OnClickedLeft7();
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UButton* Btn_TutorialEnd;
 	UFUNCTION()
