@@ -57,18 +57,22 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Canvas_content;
 
-	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	//class UTextBlock* Text_Subject;
-
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_Subject;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_Content;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Rank;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UTextBlock* Text_Nickname;
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UTextBlock* Text_Content;
+	class UTextBlock* Text_Content_Puzzle;
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Canvas_puzzle;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Canvas_General;
 
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_Title;
@@ -89,7 +93,7 @@ public:
 	class UTextBlock* Txt_StickerName;
 	
 	UFUNCTION()
-	void OnMailDetailReceived(FString Subject, FString Content);
+	void OnMailDetailReceived(bool bIsPuzzle, FString Subject, FString Content);
 	UFUNCTION()
 	void OnPuzzleTitleStickerReceived(int32 Rank, const FTitles& TitleInfo, const FStickers& StickerInfo);
 	
