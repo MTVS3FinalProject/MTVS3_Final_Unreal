@@ -237,7 +237,8 @@ void UMH_BuyCoinsWidget::OnClickedCoin_Custom()
 //충전하기
 void UMH_BuyCoinsWidget::OnClickedBuyCoinButton()
 {
-	//
+	//결제연동...
+	//충전
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
@@ -246,7 +247,6 @@ void UMH_BuyCoinsWidget::OnClickedBuyCoinButton()
 
 	//결제완료되었습니다 창 표시
 	Can_BuyCoinWin->SetVisibility(ESlateVisibility::Visible);
-	
 }
 
 void UMH_BuyCoinsWidget::OnButtonClicked(UButton* ClickedButton)
