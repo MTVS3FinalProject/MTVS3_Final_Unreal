@@ -56,6 +56,7 @@ AHM_Tree::AHM_Tree()
 			TicatClips[i]->SetVisibility(false);
 			
 			PhysicsConstraints[i] = PhysicsComp;
+			PhysicsConstraints[i]->SetVisibility(true);
 			
 			PhysicsParents[i] = PhysicsParentComp;
 			PhysicsParents[i]->SetVisibility(false);
@@ -204,7 +205,7 @@ void AHM_Tree::ApplyTicketImage(int32 TicketTreeId, FString TicketImgUrl)
 	}
 
 	NiagaraEffects[idx]->Activate(true);
-	
+
 	// 이미지 다운로드 및 적용
 	FHttpModule* Http = &FHttpModule::Get();
 	if (!Http) return;
