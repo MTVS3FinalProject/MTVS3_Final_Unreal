@@ -28,54 +28,49 @@ void UHM_MinimapWidget::UpdateMinimapWidget()
 {
 	// 플레이어 위치 가져오기
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	
 	if (!PlayerController) return;
 	APawn* PlayerPawn = PlayerController->GetPawn();
 	if (!PlayerPawn) return;
 
-	// 플레이어 위치와 카메라 방향 가져오기
 	FVector PlayerLocation = PlayerPawn->GetActorLocation();
 	FRotator PlayerRotation = PlayerPawn->GetController()->GetControlRotation();
 
-	// Img_StyleLounge의 월드 좌표
+	// Img_StyleLounge 월드 좌표
 	FVector StyleLoungeWorldLocation(18000.0f, 4900.0f, 3300.0f);
-
-	// WBP_MiniMap의 오프셋 및 스케일 계산
-	FVector2D MinimapOffset(-170.0f, -170.0f); // 부모 위젯의 설정된 오프셋
-	FVector2D MinimapSize(280.0f, 280.0f); // 미니맵 크기
-	FVector2D MinimapCenter(MinimapSize * 0.5f); // 미니맵 중심
-	//float WorldToMinimapScale = 0.1f; // 월드 -> 미니맵 스케일
-	float WorldToMinimapScale = MinimapSize.X / 1505;
-
-	// 월드 좌표를 플레이어 로컬 좌표로 변환
 	FVector DeltaLocation = StyleLoungeWorldLocation - PlayerLocation;
 
-	// 플레이어의 Yaw 회전 적용 (월드 좌표를 로컬 미니맵 좌표로 변환)
+	// 플레이어 방향(Yaw) 적용하여 로컬 좌표 계산
 	float SinYaw, CosYaw;
-	FMath::SinCos(&SinYaw, &CosYaw, FMath::DegreesToRadians(PlayerRotation.Yaw));
-
-	FVector2D RotatedLocation(
-		DeltaLocation.X * CosYaw - DeltaLocation.Y * SinYaw,
-		DeltaLocation.X * SinYaw + DeltaLocation.Y * CosYaw
-	);
-
-	// 로컬 좌표를 미니맵 좌표로 변환
-	FVector2D StyleLoungeMinimapLocation = RotatedLocation * WorldToMinimapScale;
-
-	// 미니맵 위젯 내 최종 좌표 계산
-	FVector2D FinalWidgetPosition = MinimapCenter + StyleLoungeMinimapLocation + MinimapOffset;
-
-	// 좌표를 정수로 반올림하여 UI 움직임 최소화
-        FVector2D RoundedPosition(
-            FMath::RoundToFloat(FinalWidgetPosition.X),
-            FMath::RoundToFloat(FinalWidgetPosition.Y));
+	FMath::SinCos(&SinYaw, &CosYaw, FMath::DegreesToRadians(PlayerRotation.Yaw+90));
 	
-	// Img_StyleLounge 위치를 업데이트
+	FVector2D RotatedLocation(
+		DeltaLocation.X * CosYaw + DeltaLocation.Y * SinYaw, // X와 Y축의 변환 보정
+		DeltaLocation.X * -SinYaw + DeltaLocation.Y * CosYaw // 뒤집기 보정
+	);
+	
+	// 미니맵 크기 및 스케일 정의
+	FVector2D MinimapOffset(-130.0f); // 부모 위젯의 설정된 오프셋
+	FVector2D MapSize(256.0f, 256.0f);
+	float WorldToMapScale = MapSize.X / 1500; // 미니맵 월드 변환 스케일
+	
+	FVector2D MinimapPosition = RotatedLocation * WorldToMapScale;
+
+	// 미니맵 중심 오프셋 추가
+	FVector2D MinimapCenter(MapSize * 0.5f);
+	FVector2D FinalWidgetPosition = MinimapCenter + MinimapPosition + MinimapOffset;
+
+	// UI 위젯 좌표 설정
 	if (Img_StyleLounge)
 	{
 		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Img_StyleLounge->Slot);
 		if (CanvasSlot)
 		{
-			CanvasSlot->SetPosition(RoundedPosition);
+			// 위치를 정수 좌표로 반올림하여 업데이트
+			CanvasSlot->SetPosition(FVector2D(
+				FMath::RoundToFloat(FinalWidgetPosition.X),
+				FMath::RoundToFloat(FinalWidgetPosition.Y)
+			));
 		}
 	}
 }

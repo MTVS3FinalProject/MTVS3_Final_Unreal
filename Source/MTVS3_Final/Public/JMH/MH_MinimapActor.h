@@ -58,5 +58,4 @@ public:
 
 	UFUNCTION()
 	void InitializeMinimap(ACharacter* LocalPlayer);
-
 };

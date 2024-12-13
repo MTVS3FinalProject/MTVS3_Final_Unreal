@@ -179,7 +179,7 @@ void AMH_MinimapActor::ApplyMinimap()
 		if (Distance > MinimapRadius) // 범위를 초과했을 경우 위치 보정
 		{
 			FVector Direction = (StyleLoungeLocation - PlayerLocation).GetSafeNormal();
-			FVector AdjustedLocation = PlayerLocation + Direction * (MinimapRadius - 100.0f);
+			FVector AdjustedLocation = PlayerLocation + Direction * (MinimapRadius - 50.0f);
 			StyleLoungeSprite->SetWorldLocation(FVector(AdjustedLocation.X, AdjustedLocation.Y, StyleLoungeLocation.Z));
 		}
 		else // 범위 안에 있으면 원래 위치 유지
