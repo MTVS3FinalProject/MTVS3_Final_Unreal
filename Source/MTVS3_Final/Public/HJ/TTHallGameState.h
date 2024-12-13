@@ -30,6 +30,9 @@ public:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastUpdateChairStates(const TArray<int32>& ReservedSeats);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastAddReservedSeats(const TArray<int32>& NewReservedSeats);
+
 	// 의자 상태가 변경될 때마다 호출될 이벤트
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChairStatesUpdated);
     

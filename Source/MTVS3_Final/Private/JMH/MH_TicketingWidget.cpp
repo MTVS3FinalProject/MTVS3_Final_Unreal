@@ -667,6 +667,27 @@ void UMH_TicketingWidget::UpdateReservedSeatsUI(const TArray<int32> ReservedSeat
 	}
 }
 
+void UMH_TicketingWidget::AddReservedSeatsUI(const TArray<int32>& NewReservedSeats)
+{
+	// 새로운 예약 좌석만 업데이트
+	for (int32 SeatIndex : NewReservedSeats)
+	{
+		if (SeatOverlays.IsValidIndex(SeatIndex))
+		{
+			UOverlay* Overlay = SeatOverlays[SeatIndex];
+			if (Overlay && Overlay->GetChildrenCount() > 0)
+			{
+				// 해당 좌석의 예약 완료 이미지만 Visible로 설정
+				UImage* ReservedImage = Cast<UImage>(Overlay->GetChildAt(0));
+				if (ReservedImage)
+				{
+					ReservedImage->SetVisibility(ESlateVisibility::Visible);
+				}
+			}
+		}
+	}
+}
+
 
 /*
 void UMH_TicketingWidget::OnClickedCancelRegisteredSeat()
