@@ -9,6 +9,7 @@
 #include "Blueprint/UserWidget.h"
 #include "LHM/HM_MainBarWidget.h"
 #include "MH_ErrorMessage.h"
+#include "MH_UserCoinWidget.h"
 #include "MainWidget.generated.h"
 
 /**
@@ -130,6 +131,9 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UHM_MainBarWidget* WBP_MH_MainBar;
 	
+	UPROPERTY(meta = (BindWidget))
+	UMH_UserCoinWidget* WBP_PointUI;
+	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UCanvasPanel* Can_Chat_Emoji;
 	
@@ -177,8 +181,8 @@ public:
 	//UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	//class UButton* Btn_BuyCoinsBack2;
 
-	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
-	class UButton* Btn_BuyCoins;
+	//UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	//class UButton* Btn_BuyCoins;
 	UFUNCTION()
 	void OnClickedBuyCoinsButton();
 
@@ -430,4 +434,16 @@ public:
 
 	UFUNCTION()
 	void ShowTutorialUI();
+
+	//채팅 알림기능.
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UCanvasPanel* Can_ChatNotiWin;
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UTextBlock* Text_ChatNoti;
+	UPROPERTY(meta = (BindWidgetAnim) , Transient)
+	UWidgetAnimation* ChatNotiWinAinm;
+
+	UFUNCTION()
+	void SetChatNotiText();
+	
 };

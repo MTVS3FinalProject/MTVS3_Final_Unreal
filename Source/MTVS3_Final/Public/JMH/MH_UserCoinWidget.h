@@ -9,13 +9,23 @@
 /**
  * 
  */
+//코인충전 버튼
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedBuyCoins);
 UCLASS()
 class MTVS3_FINAL_API UMH_UserCoinWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-
+	FOnClickedBuyCoins OnClickedBuyCoins;
+	
+	UFUNCTION()
+	void OnClickedBuyCoinsBtn()
+	{
+		// 델리게이트 호출
+		OnClickedBuyCoins.Broadcast();
+	}
+	
 	virtual void NativeConstruct() override;
 
 	//내 현재 코인 
@@ -32,4 +42,7 @@ public:
 
 	UPROPERTY()
 	class UTTGameInstance* gi;
+
+	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
+	class UButton* Btn_BuyCoins;
 };

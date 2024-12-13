@@ -20,7 +20,6 @@
 #include "LHM/HM_TicketCustom.h"
 
 
-
 void UMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -31,7 +30,6 @@ void UMainWidget::NativeConstruct()
 	Btn_BuyTicket->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyTicket);
 	Btn_BuyLater->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_FailBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
-	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
 	Btn_SelectConcertBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_Concert01->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert01);
 	Btn_Concert02->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert02);
@@ -44,6 +42,7 @@ void UMainWidget::NativeConstruct()
 	Btn_ConcertR->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertR);
 	Btn_ConcertL->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertL);
 	//Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
+
 
 	Btn_TutorialStart->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialStart);
 	Btn_TutorialSkip->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialSkip);
@@ -73,6 +72,12 @@ void UMainWidget::NativeConstruct()
 		BuyCoinsWidget->OnClickedBuyCoinBack.AddDynamic(this , &UMainWidget::OnClickedBuyTicketBack);
 	}
 
+	if (WBP_PointUI)
+	{
+		//코인충전 버튼 델리게이트 연결
+		WBP_PointUI->OnClickedBuyCoins.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
+	}
+
 	if (WBP_MH_MainBar && WBP_MH_MainBar->WBP_NoticeUI)
 	{
 		WBP_MH_MainBar->OnClickedShowChatBtn.AddDynamic(this , &UMainWidget::ShowChatUI);
@@ -95,7 +100,7 @@ void UMainWidget::NativeConstruct()
 	InfoCanvasPanels = {
 		Can_ConcertInfo01 , Can_ConcertInfo02 , Can_ConcertInfo03 , Can_ConcertInfo04 , Can_ConcertInfo05
 	};
-	
+
 	//Error 델리게이트에 바인딩
 	if (WBP_MH_ErrorMessage02)
 	{
@@ -661,7 +666,7 @@ void UMainWidget::PlayTitleAnim(int32 TitleNum)
 	StopAnimation(TitleConcertHallAnim);
 	StopAnimation(TitleCommunityHallAnim);
 	StopAnimation(TitleStyleLoungeAnim);
-	
+
 	switch (TitleNum)
 	{
 	case 1:
