@@ -697,6 +697,16 @@ void UMainWidget::SetChatNotiText(const FString& ChatNotiMessage)
 	PlayAnimation(ChatNotiWinAinm);
 	if(Text_ChatNoti)
 	{
-		Text_ChatNoti->SetText(FText::FromString(ChatNotiMessage));
+		FString TruncatedMessage = ChatNotiMessage;
+
+		// 글자 수가 15자를 초과하면 자르고 "..." 추가
+		const int32 MaxCharacters = 27;
+		if (ChatNotiMessage.Len() > MaxCharacters)
+		{
+			TruncatedMessage = ChatNotiMessage.Left(MaxCharacters) + TEXT("...");
+		}
+
+		// 텍스트 설정
+		Text_ChatNoti->SetText(FText::FromString(TruncatedMessage));
 	}
 }
