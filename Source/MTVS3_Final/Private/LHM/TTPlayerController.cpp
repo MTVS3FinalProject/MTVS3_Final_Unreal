@@ -132,16 +132,17 @@ void ATTPlayerController::SetDrawStartTime()
 	// // 로컬 컨트롤러가 아닌 경우 리턴
 	// if (!IsLocalController())
 	// 	return;
-	
+
 	if (!TicketingUI)
 	{
 		FString PCName = GetName();
 		FString NetMode = HasAuthority() ? TEXT("Server") : TEXT("Client");
-		UE_LOG(LogTemp, Warning, TEXT("[SetDrawStartTime] TicketingUI is NULL for PlayerController: %s (NetMode: %s)"), 
-			*PCName, *NetMode);
-		return;  // null일 때 early return
+		UE_LOG(LogTemp , Warning ,
+		       TEXT("[SetDrawStartTime] TicketingUI is NULL for PlayerController: %s (NetMode: %s)") ,
+		       *PCName , *NetMode);
+		return; // null일 때 early return
 	}
-	
+
 	UE_LOG(LogTemp , Log , TEXT("ServerSetDrawStartTime"));
 	// 현재 시스템 시간 가져오기
 	FDateTime Now = FDateTime::Now();
@@ -158,17 +159,17 @@ void ATTPlayerController::SetDrawStartTime()
 
 	// 포맷된 시간 문자열 생성
 	FString FormattedTime = FString::Printf(TEXT("%02d:%02d") , Hours , Minutes);
-	
+
 	TicketingUI->SetTextTicketingDeadline(FormattedTime);
 	TicketingUI->SetTextGameStartTime(FormattedTime);
-	
+
 	// 타이머가 이미 실행 중이라면 초기화
 	GetWorld()->GetTimerManager().ClearTimer(CountdownTimerHandle);
-    
+
 	// 카운트다운 타이머 시작
 	TWeakObjectPtr<ATTPlayerController> WeakThis(this);
 	GetWorld()->GetTimerManager().SetTimer(
-		CountdownTimerHandle,
+		CountdownTimerHandle ,
 		[WeakThis]()
 		{
 			if (ATTPlayerController* StrongThis = WeakThis.Get())
@@ -178,8 +179,8 @@ void ATTPlayerController::SetDrawStartTime()
 					StrongThis->UpdateCountdown(StrongThis->GetWorld()->GetDeltaSeconds());
 				}
 			}
-		},
-		0.1f,
+		} ,
+		0.1f ,
 		true
 	);
 }
@@ -188,20 +189,21 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 {
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (!GI || GI->GetPlaceState() == EPlaceState::LuckyDrawRoom) return;
-	
+
 	// 로컬 컨트롤러가 아닌 경우 리턴
 	if (!IsLocalController())
 		return;
-	
+
 	if (!TicketingUI)
 	{
 		FString PCName = GetName();
 		FString NetMode = HasAuthority() ? TEXT("Server") : TEXT("Client");
-		UE_LOG(LogTemp, Warning, TEXT("[SetDrawStartTime] TicketingUI is NULL for UpdateCountdown: %s (NetMode: %s)"), 
-			*PCName, *NetMode);
-		return;  // null일 때 early return
+		UE_LOG(LogTemp , Warning ,
+		       TEXT("[SetDrawStartTime] TicketingUI is NULL for UpdateCountdown: %s (NetMode: %s)") ,
+		       *PCName , *NetMode);
+		return; // null일 때 early return
 	}
-	
+
 	// 현재 시스템 시간 가져오기
 	FDateTime Now = FDateTime::Now();
 
@@ -213,7 +215,7 @@ void ATTPlayerController::UpdateCountdown(float DeltaTime)
 		int32 Minutes = RemainingTime.GetMinutes();
 		int32 Seconds = RemainingTime.GetSeconds() % 60;
 
-		FString CountdownText = FString::Printf(TEXT("%02d:%02d"), Minutes, Seconds);
+		FString CountdownText = FString::Printf(TEXT("%02d:%02d") , Minutes , Seconds);
 		TicketingUI->SetTextGameCountDown(CountdownText);
 	}
 	else
@@ -254,12 +256,21 @@ void ATTPlayerController::SendChatMessage(const FString& Message)
 void ATTPlayerController::OnChatMessageReceived(const FString& Message)
 {
 	ATTPlayer* player = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	ATTPlayer* TargetPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 	if (player)
 	{
 		if (MainUI)
 		{
 			player->MainUI->WBP_Chatting->AddChatMessage(Message);
-			player->MainUI->SetChatNotiText(Message);
+
+			// 로컬 플레이어가 아닌 경우에만 알림 텍스트 업데이트
+			if (TargetPlayer != player)
+			{
+				if (!(TargetPlayer->MainUI->bIsChatVisible))
+				{
+					TargetPlayer->MainUI->SetChatNotiText(Message);
+				}
+			}
 		}
 	}
 }
@@ -274,17 +285,17 @@ void ATTPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 }
 
-void ATTPlayerController::ServerRequestApplyTicketImage_Implementation(int32 TicketIndex, const FString& TicketImgUrl)
+void ATTPlayerController::ServerRequestApplyTicketImage_Implementation(int32 TicketIndex , const FString& TicketImgUrl)
 {
-		UE_LOG(LogTemp , Log , TEXT("Client : ATTPlayerController::ServerRequestApplyTicketImage"));
+	UE_LOG(LogTemp , Log , TEXT("Client : ATTPlayerController::ServerRequestApplyTicketImage"));
 	if (ATTHallGameState* HallGameState = GetWorld()->GetGameState<ATTHallGameState>())
 	{
 		UE_LOG(LogTemp , Log , TEXT("Client : HallGameState->Multicast_ApplyTicketImage"));
-		HallGameState->Multicast_ApplyTicketImage(TicketIndex, TicketImgUrl);
+		HallGameState->Multicast_ApplyTicketImage(TicketIndex , TicketImgUrl);
 	}
 }
 
-bool ATTPlayerController::ServerRequestApplyTicketImage_Validate(int32 TicketIndex, const FString& TicketImgUrl)
+bool ATTPlayerController::ServerRequestApplyTicketImage_Validate(int32 TicketIndex , const FString& TicketImgUrl)
 {
 	UE_LOG(LogTemp , Log , TEXT("Client : ATTPlayerController::ServerRequestApplyTicketImage_Validate"));
 	return true;
