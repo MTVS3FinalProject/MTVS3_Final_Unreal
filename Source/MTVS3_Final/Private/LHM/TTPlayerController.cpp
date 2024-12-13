@@ -266,7 +266,7 @@ void ATTPlayerController::OnChatMessageReceived(const FString& Message)
 			// 로컬 플레이어가 아닌 경우에만 알림 텍스트 업데이트
 			if (TargetPlayer != player)
 			{
-				if (!(TargetPlayer->MainUI->bIsChatVisible))
+				if (!(TargetPlayer->MainUI->WBP_MH_MainBar->bIsChatVisible))
 				{
 					TargetPlayer->MainUI->SetChatNotiText(Message);
 				}

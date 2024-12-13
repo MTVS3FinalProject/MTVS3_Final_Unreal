@@ -74,8 +74,11 @@ void UHM_MainBarWidget::SetVisibleSwitcher(bool bVisible)
 
 	else if (!bVisible)
 	{
-		InitMenuBtn();
 		WS_Bar->SetVisibility(ESlateVisibility::Hidden);
+		bIsCollectionBookVisible = false;
+		bIsNoticeVisible = false;
+		bIsMenuVisible = false;
+		bIsSettingsVisible = false;
 	}
 }
 
@@ -95,11 +98,21 @@ void UHM_MainBarWidget::SetWidgetSwitcher(int32 num)
 
 void UHM_MainBarWidget::SetVisibilityState()
 {
+	//if (bIsChatVisible)
+	//{
+	//	CloseButtonPressed();
+	//}
 	SetVisibleSwitcher(true);
-	if (bIsChatVisible)
-	{
-		CloseButtonPressed();
-	}
+}
+
+void UHM_MainBarWidget::OnclickedMenuBtn_chat()
+{
+	OnClickedMenuBtn(Btn_Chat);
+}
+
+void UHM_MainBarWidget::SetIsvisible_chat()
+{
+	bIsChatVisible = !bIsChatVisible;
 }
 
 void UHM_MainBarWidget::OnClickedCollectionBookBtn()
@@ -108,6 +121,10 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 
 	if (bIsCollectionBookVisible)
 	{
+		if (bIsChatVisible)
+		{
+			CloseButtonPressed();
+		}
 		OnClickedMenuBtn(Btn_CollectionBook);
 		//인벤 열기
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -122,6 +139,7 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 	}
 	else
 	{
+		InitMenuBtn();
 		SetVisibleSwitcher(false);
 	}
 }
@@ -215,13 +233,24 @@ void UHM_MainBarWidget::InitMenuBtn()
 
 void UHM_MainBarWidget::OnClickedNoticeBtn()
 {
+	SetVisibleSwitcher(false);
+	UE_LOG(LogTemp , Warning , TEXT("ClickedNoticeBtn"));
 	bIsNoticeVisible = !bIsNoticeVisible;
 
+	//우편함 열기
 	if (bIsNoticeVisible)
 	{
-		OnClickedMenuBtn(Btn_Notice);
+		UE_LOG(LogTemp , Warning , TEXT("ClickedNoticeBtn111"));
+		//채팅창 열려있으면 닫기
+		if (bIsChatVisible)
+		{
+			CloseButtonPressed();
+		}
+		//bar 우편함 보이게
 		SetVisibleSwitcher(true);
 		SetWidgetSwitcher(1);
+		//채팅 버튼이미지 안보이게, 배경 보이게
+		OnClickedMenuBtn(Btn_Notice);
 
 		// 우편함 열기
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
@@ -232,14 +261,14 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 			// 우편함 조회 요청
 			HttpActor3->ReqGetMailbox(GI->GetAccessToken());
 		}
-
-		if (bIsChatVisible)
-		{
-			CloseButtonPressed();
-		}
 	}
+	//우편함 닫기
 	else
 	{
+		UE_LOG(LogTemp , Warning , TEXT("ClickedNoticeBtn222"));
+		//버튼 기본으로
+		InitMenuBtn();
+		//우편함 닫기
 		SetVisibleSwitcher(false);
 	}
 }
@@ -294,24 +323,32 @@ void UHM_MainBarWidget::OnUnHoveredChatBtn()
 
 void UHM_MainBarWidget::OnClickedSettingBtn()
 {
+	SetVisibleSwitcher(false);
 	bIsSettingsVisible = !bIsSettingsVisible;
+	UE_LOG(LogTemp , Warning , TEXT("ClickedSettingBtn"));
 	//세팅창 켜지게
 	if (bIsSettingsVisible)
 	{
-		OnClickedMenuBtn(Btn_Setting);
-		SetWidgetSwitcher(3);
-		SetVisibleSwitcher(true);
-		if (bIsMenuVisible)
-		{
-			//OnClickedMenuBtn();
-		}
+		UE_LOG(LogTemp , Warning , TEXT("ClickedSettingBtn111"));
+		//채팅창 켜져있으면 끄기
 		if (bIsChatVisible)
 		{
 			CloseButtonPressed();
 		}
+
+		//세팅창 열기
+		SetVisibleSwitcher(true);
+		SetWidgetSwitcher(3);
+
+		//메뉴버튼이미지 안보이게, bar 배경 활성화
+		OnClickedMenuBtn(Btn_Setting);
 	}
 	else if (!bIsSettingsVisible)
 	{
+		UE_LOG(LogTemp , Warning , TEXT("ClickedSettingBtn222"));
+		//버튼 기본으로
+		InitMenuBtn();
+		//세팅창 닫기
 		SetVisibleSwitcher(false);
 	}
 }
@@ -333,15 +370,6 @@ void UHM_MainBarWidget::OnClickedSettingBackBtn()
 
 void UHM_MainBarWidget::CloseAllCategory()
 {
-	// if (bIsMenuVisible)
-	// {
-	// 	OnClickedMenuBtn();
-	// }
-	// if (bIsEmojiVisible)
-	// {
-	// 	OnClickedEmojiBtn();
-	// }
-	InitMenuBtn();
 	if (bIsCollectionBookVisible)
 	{
 		OnClickedCollectionBookBtn();
@@ -357,6 +385,22 @@ void UHM_MainBarWidget::CloseAllCategory()
 	if (bIsChatVisible)
 	{
 		CloseButtonPressed();
+	}
+}
+
+void UHM_MainBarWidget::CloseAllCategory_Chat()
+{
+	if (bIsCollectionBookVisible)
+	{
+		OnClickedCollectionBookBtn();
+	}
+	if (bIsNoticeVisible)
+	{
+		OnClickedNoticeBtn();
+	}
+	if (bIsSettingsVisible)
+	{
+		OnClickedSettingBtn();
 	}
 }
 
@@ -390,7 +434,6 @@ void UHM_MainBarWidget::OnClickedGoToTutorialBtn()
 {
 	SetVisibleSwitcher(false);
 	OnClickedShowTutorialBtn.Broadcast();
-	InitMenuBtn();
 }
 
 void UHM_MainBarWidget::OnClickedCreditBtn()

@@ -225,13 +225,16 @@ void UMainWidget::OnClickedExit()
 
 void UMainWidget::ShowChatUI()
 {
-	bIsChatVisible = !bIsChatVisible;
-	if (bIsChatVisible)
+	WBP_MH_MainBar->SetVisibleSwitcher(false);
+	WBP_MH_MainBar->SetIsvisible_chat();
+	if (WBP_MH_MainBar->bIsChatVisible)
 	{
 		Can_Chat_Emoji->SetVisibility(ESlateVisibility::Visible);
+		WBP_MH_MainBar->OnclickedMenuBtn_chat();
 	}
-	else if (!bIsChatVisible)
+	else
 	{
+		WBP_MH_MainBar->InitMenuBtn();
 		Can_Chat_Emoji->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
@@ -695,7 +698,7 @@ void UMainWidget::ShowTutorialUI()
 void UMainWidget::SetChatNotiText(const FString& ChatNotiMessage)
 {
 	PlayAnimation(ChatNotiWinAinm);
-	if(Text_ChatNoti)
+	if (Text_ChatNoti)
 	{
 		FString TruncatedMessage = ChatNotiMessage;
 

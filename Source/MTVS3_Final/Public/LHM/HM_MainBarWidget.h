@@ -42,23 +42,7 @@ public:
 	UPROPERTY()
 	TArray<FMenuButtonGroup> MenuButtonGroups;
 
-	//Rive
-	// Rive 트리거를 활성화하는 함수
-	//UFUNCTION(BlueprintCallable, Category="Rive")
-	//void ActivateRiveTrigger(const FString& TriggerName);
-
-	// Rive 매개변수를 설정하는 함수
-	//UFUNCTION(BlueprintCallable, Category = "Rive")
-	//void SetRiveParameter(const FString& ParameterName, float Value);
-
 private:
-	// XAML에서 로드된 RootElement (RiveControl이 포함됨)
-	//Noesis::Ptr<Noesis::FrameworkElement>RootElement;
-	// RiveControl의 참조를 저장
-	//NoesisApp::RiveControl* RiveControl;
-	// Unreal의 콘텐츠 경로 기준으로 XAML 파일 경로를 설정
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Rive", meta = (AllowPrivateAccess = "true"))
-	//FString XamlFilePath;
 
 public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -91,23 +75,14 @@ public:
 	UFUNCTION()
 	void CloseButtonPressed()
 	{
-		//채팅이 켜져있지 않으면
-		if (!bIsChatVisible)
-		{
-			//모든 카테고리를 끄고
-			CloseAllCategory();
-		}
-		//상태 바꿔주고
-		bIsChatVisible = !bIsChatVisible;
-		// 델리게이트 호출. 채팅 켜기
+		// 델리게이트 호출. 채팅
 		OnClickedShowChatBtn.Broadcast();
-		if (bIsChatVisible)
-		{
-			//기본 배경 보이게
-			OnClickedMenuBtn(Btn_Chat);
-		}
 	}
 
+	UFUNCTION()
+	void OnclickedMenuBtn_chat();
+	UFUNCTION()
+	void SetIsvisible_chat();
 
 	//MH
 	/*	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
@@ -211,6 +186,8 @@ public:
 
 	UFUNCTION()
 	void CloseAllCategory();
+	UFUNCTION()
+	void CloseAllCategory_Chat();
 
 	// KHJ
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
