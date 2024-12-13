@@ -51,15 +51,15 @@ AMH_MinimapActor::AMH_MinimapActor()
 	//RenderTarget->InitAutoFormat(1024, 1024); // 1024x1024 크기로 초기화
 	MinimapCapture->TextureTarget = RenderTarget;
 	
-	// 스타일라운지
-	StyleLoungeSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("StyleLoungeSprite"));
-	if (StyleLoungeSprite)
-	{
-		StyleLoungeSprite->SetWorldLocation(FVector(18000, 4900, 3300)); // 티켓 커스터마이징 테이블 위치
-		StyleLoungeSprite->SetVisibility(true);
-		StyleLoungeSprite->SetWorldScale3D(FVector(2));
-		StyleLoungeSprite->bVisibleInSceneCaptureOnly = true;
-	}
+	// // 스타일라운지
+	// StyleLoungeSprite = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("StyleLoungeSprite"));
+	// if (StyleLoungeSprite)
+	// {
+	// 	StyleLoungeSprite->SetWorldLocation(FVector(18000, 4900, 3300)); // 티켓 커스터마이징 테이블 위치
+	// 	StyleLoungeSprite->SetVisibility(true);
+	// 	StyleLoungeSprite->SetWorldScale3D(FVector(2));
+	// 	StyleLoungeSprite->bVisibleInSceneCaptureOnly = true;
+	// }
 }
 
 void AMH_MinimapActor::BeginPlay()
@@ -165,27 +165,27 @@ void AMH_MinimapActor::ApplyMinimap()
 			FRotator::MakeFromEuler(FVector(90.f , 0.f , PlayerRotation.Yaw - 90.f)));
 		MinimapSprite->SetWorldRotation(MinimapSpriteRotation);
 
-		// StyleLoungeSprite 회전을 카메라 회전값에 적용하여 항상 똑바로 보이도록 설정
-		FRotator StyleLoungeRotation = FRotator(0, CameraRotation.Yaw - 90, 90);
-		StyleLoungeSprite->SetWorldRotation(StyleLoungeRotation);
-
-		// 거리 기반 계산
-		FVector StyleLoungeLocation = StyleLoungeSprite->GetComponentLocation();
-		float Distance = FVector::Dist2D(PlayerLocation, StyleLoungeLocation);
-
-		// 미니맵의 반경 (텍스처 경계)
-		float MinimapRadius = MinimapCapture->OrthoWidth / 2.0f;
-		
-		if (Distance > MinimapRadius) // 범위를 초과했을 경우 위치 보정
-		{
-			FVector Direction = (StyleLoungeLocation - PlayerLocation).GetSafeNormal();
-			FVector AdjustedLocation = PlayerLocation + Direction * (MinimapRadius - 50.0f);
-			StyleLoungeSprite->SetWorldLocation(FVector(AdjustedLocation.X, AdjustedLocation.Y, StyleLoungeLocation.Z));
-		}
-		else // 범위 안에 있으면 원래 위치 유지
-		{
-			StyleLoungeSprite->SetWorldLocation(FVector(18000, 4900, 3300));
-		}
+		// // StyleLoungeSprite 회전을 카메라 회전값에 적용하여 항상 똑바로 보이도록 설정
+		// FRotator StyleLoungeRotation = FRotator(0, CameraRotation.Yaw - 90, 90);
+		// StyleLoungeSprite->SetWorldRotation(StyleLoungeRotation);
+		//
+		// // 거리 기반 계산
+		// FVector StyleLoungeLocation = StyleLoungeSprite->GetComponentLocation();
+		// float Distance = FVector::Dist2D(PlayerLocation, StyleLoungeLocation);
+		//
+		// // 미니맵의 반경 (텍스처 경계)
+		// float MinimapRadius = MinimapCapture->OrthoWidth / 2.0f;
+		//
+		// if (Distance > MinimapRadius) // 범위를 초과했을 경우 위치 보정
+		// {
+		// 	FVector Direction = (StyleLoungeLocation - PlayerLocation).GetSafeNormal();
+		// 	FVector AdjustedLocation = PlayerLocation + Direction * (MinimapRadius - 50.0f);
+		// 	StyleLoungeSprite->SetWorldLocation(FVector(AdjustedLocation.X, AdjustedLocation.Y, StyleLoungeLocation.Z));
+		// }
+		// else // 범위 안에 있으면 원래 위치 유지
+		// {
+		// 	StyleLoungeSprite->SetWorldLocation(FVector(18000, 4900, 3300));
+		// }
 	}
 }
 

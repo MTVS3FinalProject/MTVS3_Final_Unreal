@@ -21,14 +21,13 @@ void UHM_MinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 {
 	Super::NativeTick(MyGeometry , InDeltaTime);
 	
-	UpdateMinimapWidget();
+	UpdateTargetPosition(StyleLounge, Img_StyleLounge);
 }
 
-void UHM_MinimapWidget::UpdateMinimapWidget()
+void UHM_MinimapWidget::UpdateTargetPosition(FVector TargetLocation, UImage* Img_Target)
 {
 	// 플레이어 위치 가져오기
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	
 	if (!PlayerController) return;
 	APawn* PlayerPawn = PlayerController->GetPawn();
 	if (!PlayerPawn) return;
@@ -36,9 +35,7 @@ void UHM_MinimapWidget::UpdateMinimapWidget()
 	FVector PlayerLocation = PlayerPawn->GetActorLocation();
 	FRotator PlayerRotation = PlayerPawn->GetController()->GetControlRotation();
 
-	// Img_StyleLounge 월드 좌표
-	FVector StyleLoungeWorldLocation(18000.0f, 4900.0f, 3300.0f);
-	FVector DeltaLocation = StyleLoungeWorldLocation - PlayerLocation;
+	FVector DeltaLocation = TargetLocation - PlayerLocation;
 
 	// 플레이어 방향(Yaw) 적용하여 로컬 좌표 계산
 	float SinYaw, CosYaw;
@@ -59,6 +56,19 @@ void UHM_MinimapWidget::UpdateMinimapWidget()
 	// 미니맵 중심 오프셋 추가
 	FVector2D MinimapCenter(MapSize * 0.5f);
 	FVector2D FinalWidgetPosition = MinimapCenter + MinimapPosition + MinimapOffset;
+
+	// 미니맵 원형 반경 계산
+	float MinimapRadius = MapSize.X * 0.5f; // 원의 반경
+	FVector2D CircleCenter = MinimapCenter + MinimapOffset; // 원의 중심
+
+	// 원의 반경을 초과하는지 확인
+	float DistanceFromCenter = (FinalWidgetPosition - CircleCenter).Size();
+	if (DistanceFromCenter > MinimapRadius)
+	{
+		// 원 경계로 위치 제한
+		FVector2D Direction = (FinalWidgetPosition - CircleCenter).GetSafeNormal();
+		FinalWidgetPosition = CircleCenter + Direction * MinimapRadius;
+	}
 
 	// UI 위젯 좌표 설정
 	if (Img_StyleLounge)
