@@ -82,6 +82,20 @@ void ATTHallGameState::SendLuckyDrawInvitation(const TArray<FString>& NicknameLi
 	// 	}, 90.0f, false);
 }
 
+void ATTHallGameState::MulticastAddReservedSeats_Implementation(const TArray<int32>& NewReservedSeats)
+{
+	// 새로운 좌석들만 기존 배열에 추가
+	ReservedSeatIds.Append(NewReservedSeats);
+    
+	// Set도 업데이트
+	for (const int32& SeatId : NewReservedSeats)
+	{
+		ReservedSeatIdsSet.Add(SeatId);
+	}
+    
+	OnChairStatesUpdated.Broadcast();
+}
+
 void ATTHallGameState::SetLuckyDrawSeatId(const FString& NewSeatId)
 {
 	LuckyDrawSeatId = NewSeatId;

@@ -16,6 +16,7 @@
 #include "JMH/MainWidget.h"
 #include "JMH/MH_Inventory.h"
 #include "JMH/MH_NoticeWidget.h"
+#include "JMH/MH_TicketingWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor2.h"
 #include "LHM/HM_PuzzleWidget.h"
@@ -888,12 +889,39 @@ void AHM_HttpActor3::OnResPostponePaymentSeat(FHttpRequestPtr Request, FHttpResp
 
 		if ( Response->GetResponseCode() == 200 )
 		{
+			// GameInstance에서 SeatID 가져오기
+			UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+			if (!GI) return;
+
+			FString SeatId = GI->GetLuckyDrawSeatID();
+            
+			// 결제 미룬 좌석 처리
+			TArray<int32> NewReservedIndices;    // 새로 추가될 예약 좌석만 담는 배열
+            
+			// 미룬 좌석의 ID만 추가
+			NewReservedIndices.Add(FCString::Atoi(*SeatId));
+
+			// GameState를 통해 새로운 예약 좌석만 추가
+			if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
+			{
+				HallState->MulticastAddReservedSeats(NewReservedIndices);
+			}
+
+			// UI 업데이트
+			if (TicketingUI)
+			{
+				TArray<int32> UIReservedIndices;
+				UIReservedIndices.Add(FCString::Atoi(*SeatId) - 1);  // UI는 0-based 인덱스 사용
+				TicketingUI->AddReservedSeatsUI(UIReservedIndices);
+			}
+
+			// 우편함 알림 표시
 			if (MainUI && MainUI->WBP_MH_MainBar && MainUI->WBP_MH_MainBar->Image_Notice)
 			{
-				UE_LOG(LogTemp , Log , TEXT("우편함 알림표시 SetVisivle"));
+				UE_LOG(LogTemp, Log, TEXT("우편함 알림표시 SetVisivle"));
 				MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
 			}
-			UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 성공"));
+			UE_LOG(LogTemp, Log, TEXT("좌석 결제 미루기 성공"));
 		}
 		else
 		{
