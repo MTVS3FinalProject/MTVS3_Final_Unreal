@@ -6,6 +6,7 @@
 #include "Components/EditableText.h"
 #include "Components/ScrollBox.h"
 #include "HJ/TTGameInstance.h"
+#include "HJ/TTPlayer.h"
 #include "JMH/MainWidget.h"
 #include "JMH/MH_Message.h"
 #include "LHM/TTPlayerController.h"

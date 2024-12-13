@@ -20,7 +20,6 @@
 #include "LHM/HM_TicketCustom.h"
 
 
-
 void UMainWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -31,7 +30,6 @@ void UMainWidget::NativeConstruct()
 	Btn_BuyTicket->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyTicket);
 	Btn_BuyLater->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_FailBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
-	Btn_BuyCoins->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
 	Btn_SelectConcertBack->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 	Btn_Concert01->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert01);
 	Btn_Concert02->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcert02);
@@ -45,6 +43,7 @@ void UMainWidget::NativeConstruct()
 	Btn_ConcertL->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConcertL);
 	//Btn_BuyCoinsBack2->OnClicked.AddDynamic(this , &UMainWidget::OnClickedBack_Map);
 
+
 	Btn_TutorialStart->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialStart);
 	Btn_TutorialSkip->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialSkip);
 	Btn_Right1->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight1);
@@ -57,6 +56,8 @@ void UMainWidget::NativeConstruct()
 	Btn_Left5->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft5);
 	Btn_Right5->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight5);
 	Btn_Left6->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft6);
+	Btn_Right6->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight6);
+	Btn_Left7->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft7);
 	Btn_TutorialEnd->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialEnd);
 	Btn_Confirm_Concert->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConfirm_Concert);
 
@@ -69,6 +70,12 @@ void UMainWidget::NativeConstruct()
 	if (BuyCoinsWidget)
 	{
 		BuyCoinsWidget->OnClickedBuyCoinBack.AddDynamic(this , &UMainWidget::OnClickedBuyTicketBack);
+	}
+
+	if (WBP_PointUI)
+	{
+		//코인충전 버튼 델리게이트 연결
+		WBP_PointUI->OnClickedBuyCoins.AddDynamic(this , &UMainWidget::OnClickedBuyCoinsButton);
 	}
 
 	if (WBP_MH_MainBar && WBP_MH_MainBar->WBP_NoticeUI)
@@ -93,7 +100,7 @@ void UMainWidget::NativeConstruct()
 	InfoCanvasPanels = {
 		Can_ConcertInfo01 , Can_ConcertInfo02 , Can_ConcertInfo03 , Can_ConcertInfo04 , Can_ConcertInfo05
 	};
-	
+
 	//Error 델리게이트에 바인딩
 	if (WBP_MH_ErrorMessage02)
 	{
@@ -607,6 +614,16 @@ void UMainWidget::OnClickedLeft6()
 	WS_Tutorial->SetActiveWidgetIndex(5);
 }
 
+void UMainWidget::OnClickedRight6()
+{
+	WS_Tutorial->SetActiveWidgetIndex(7);
+}
+
+void UMainWidget::OnClickedLeft7()
+{
+	WS_Tutorial->SetActiveWidgetIndex(6);
+}
+
 void UMainWidget::OnClickedTutorialEnd()
 {
 	SetWidgetSwitcher(0);
@@ -649,7 +666,7 @@ void UMainWidget::PlayTitleAnim(int32 TitleNum)
 	StopAnimation(TitleConcertHallAnim);
 	StopAnimation(TitleCommunityHallAnim);
 	StopAnimation(TitleStyleLoungeAnim);
-	
+
 	switch (TitleNum)
 	{
 	case 1:
@@ -673,4 +690,13 @@ void UMainWidget::ShowTutorialUI()
 {
 	WS_Tutorial->SetActiveWidgetIndex(0);
 	SetWidgetSwitcher(9);
+}
+
+void UMainWidget::SetChatNotiText(const FString& ChatNotiMessage)
+{
+	PlayAnimation(ChatNotiWinAinm);
+	if(Text_ChatNoti)
+	{
+		Text_ChatNoti->SetText(FText::FromString(ChatNotiMessage));
+	}
 }

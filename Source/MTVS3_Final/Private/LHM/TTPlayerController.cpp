@@ -259,6 +259,7 @@ void ATTPlayerController::OnChatMessageReceived(const FString& Message)
 		if (MainUI)
 		{
 			player->MainUI->WBP_Chatting->AddChatMessage(Message);
+			player->MainUI->SetChatNotiText(Message);
 		}
 	}
 }

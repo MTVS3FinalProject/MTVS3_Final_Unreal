@@ -19,6 +19,7 @@ void UMH_UserCoinWidget::NativeConstruct()
 		// 델리게이트 구독
 		gi->OnCoinChanged.AddDynamic(this, &UMH_UserCoinWidget::OnCoinValueChanged);
 	}
+	Btn_BuyCoins->OnClicked.AddDynamic(this,&UMH_UserCoinWidget::OnClickedBuyCoinsBtn);
 }
 
 void UMH_UserCoinWidget::SetUserCoin(int32 UserCoin)
