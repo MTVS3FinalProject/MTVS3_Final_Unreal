@@ -57,6 +57,8 @@ void UMainWidget::NativeConstruct()
 	Btn_Left5->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft5);
 	Btn_Right5->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight5);
 	Btn_Left6->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft6);
+	Btn_Right6->OnClicked.AddDynamic(this , &UMainWidget::OnClickedRight6);
+	Btn_Left7->OnClicked.AddDynamic(this , &UMainWidget::OnClickedLeft7);
 	Btn_TutorialEnd->OnClicked.AddDynamic(this , &UMainWidget::OnClickedTutorialEnd);
 	Btn_Confirm_Concert->OnClicked.AddDynamic(this , &UMainWidget::OnClickedConfirm_Concert);
 
@@ -605,6 +607,16 @@ void UMainWidget::OnClickedRight5()
 void UMainWidget::OnClickedLeft6()
 {
 	WS_Tutorial->SetActiveWidgetIndex(5);
+}
+
+void UMainWidget::OnClickedRight6()
+{
+	WS_Tutorial->SetActiveWidgetIndex(7);
+}
+
+void UMainWidget::OnClickedLeft7()
+{
+	WS_Tutorial->SetActiveWidgetIndex(6);
 }
 
 void UMainWidget::OnClickedTutorialEnd()
