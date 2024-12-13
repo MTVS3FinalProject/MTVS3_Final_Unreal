@@ -691,3 +691,12 @@ void UMainWidget::ShowTutorialUI()
 	WS_Tutorial->SetActiveWidgetIndex(0);
 	SetWidgetSwitcher(9);
 }
+
+void UMainWidget::SetChatNotiText(const FString& ChatNotiMessage)
+{
+	PlayAnimation(ChatNotiWinAinm);
+	if(Text_ChatNoti)
+	{
+		Text_ChatNoti->SetText(FText::FromString(ChatNotiMessage));
+	}
+}

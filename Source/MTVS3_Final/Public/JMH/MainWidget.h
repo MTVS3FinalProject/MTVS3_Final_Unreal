@@ -444,6 +444,6 @@ public:
 	UWidgetAnimation* ChatNotiWinAinm;
 
 	UFUNCTION()
-	void SetChatNotiText();
+	void SetChatNotiText(const FString& ChatNotiMessage);
 	
 };
