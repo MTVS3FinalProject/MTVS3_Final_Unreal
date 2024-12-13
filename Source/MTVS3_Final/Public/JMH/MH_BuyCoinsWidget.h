@@ -22,7 +22,7 @@ struct FButtonTextGroup
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedBuyCoinBack);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnClickedBuyCoinWinExit);
 UCLASS()
 class MTVS3_FINAL_API UMH_BuyCoinsWidget : public UUserWidget
 {
@@ -30,6 +30,7 @@ class MTVS3_FINAL_API UMH_BuyCoinsWidget : public UUserWidget
 
 public:
 	FOnClickedBuyCoinBack OnClickedBuyCoinBack;
+	FOnClickedBuyCoinWinExit OnClickedBuyCoinWinExit;
 	
 	// 닫기 버튼 클릭 이벤트 설정
 	UFUNCTION()
@@ -38,7 +39,14 @@ public:
 		// 델리게이트 호출
 		OnClickedBuyCoinBack.Broadcast();
 	}
-	
+
+	UFUNCTION()
+	void CloseBtnBuyCoinWin()
+	{
+		// 델리게이트 호출
+		OnClickedBuyCoinWinExit.Broadcast();
+		HiddenBuyCoinWin();
+	}
 	virtual void NativeConstruct() override;
 	//충전 결정 변수
 	//UPROPERTY()
@@ -73,6 +81,12 @@ public:
 
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UCanvasPanel* Can_Main;
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UCanvasPanel* Can_BuyCoinWin;
+	
+	UFUNCTION()
+	void HiddenBuyCoinWin();
 	
 	UFUNCTION()
 	void SetVisibleCanvas(bool bVisible);
@@ -174,6 +188,8 @@ public:
 	//뒤로가기
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UButton*  Btn_Back06_2;
-	UFUNCTION()
-	void OnClickedBackButton();
+	
+	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
+	class UButton*  Btn_BuyCoinWinExit;
+
 };
