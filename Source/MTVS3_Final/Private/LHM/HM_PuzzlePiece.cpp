@@ -34,7 +34,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 	    {
 		    MeshComp->SetupAttachment(RootComponent);
 		    MeshComp->SetStaticMesh(MeshAsset.Object);
-	    	MeshComp->SetRelativeScale3D(FVector(0.5f, 1, 0.5f));
+	    	MeshComp->SetRelativeScale3D(FVector(0.5f, 1.5f, 0.5f));
 	    }
     }
  }
@@ -117,7 +117,7 @@ void AHM_PuzzlePiece::PostInitializeComponents()
 	{
 		if (PieceMeshes[i])
 		{
-			PieceMeshes[i]->SetRelativeScale3D(FVector(0.5f, 1, 0.5f));
+			PieceMeshes[i]->SetRelativeScale3D(FVector(0.5f, 1.5f, 0.5f));
 			
 			// 물리 및 충돌 설정
 			PieceMeshes[i]->SetSimulatePhysics(true);
@@ -162,7 +162,7 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
             {
                 // 랜덤 위치 계산
                 FVector RandomOffset = FVector(
-                    FMath::RandRange(-100.f, 100.f), // 기본값 1500
+                    FMath::RandRange(-200.f, 200.f), // 기본값 1500
                     FMath::RandRange(-100.f, 100.f),
                     FMath::RandRange(0.f, 0.f)
                 );

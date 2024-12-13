@@ -157,7 +157,15 @@ public:
 	TArray<FPlayerRankInfo> ReplicatedRankInfo;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
+	// KHJ
+	// 퍼즐 게임 초기화 함수
+	UFUNCTION()
+	void ResetPuzzleGame();
+
+	// 퍼즐 피스 클래스 참조
+	UPROPERTY(EditDefaultsOnly, Category = "TTSettings|Puzzle")
+	TSubclassOf<class AHM_PuzzlePiece> PuzzlePieceFactory;
 #pragma endregion
 
 private:

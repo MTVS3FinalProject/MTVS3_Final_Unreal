@@ -4,10 +4,13 @@
 #include "LHM/PuzzleManager.h"
 
 #include "EngineUtils.h"
+#include "NiagaraComponent.h"
 #include "Components/AudioComponent.h"
 #include "HJ/TTPlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "LHM/HM_HttpActor3.h"
+#include "LHM/HM_PuzzleBoard.h"
+#include "LHM/HM_PuzzlePiece.h"
 #include "LHM/HM_PuzzleWidget.h"
 #include "Net/UnrealNetwork.h"
 
@@ -177,6 +180,15 @@ void APuzzleManager::SortAndUpdateRanking()
 		}
 	}
 	
+	// 5초 후에 퍼즐 게임 초기화
+	FTimerHandle ResetTimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(
+		ResetTimerHandle,
+		this,
+		&APuzzleManager::ResetPuzzleGame,
+		5.0f,
+		false
+	);
 }
 
 void APuzzleManager::UpdatePlayerRankInfo()
@@ -279,4 +291,94 @@ void APuzzleManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(APuzzleManager, ReplicatedRankInfo);
+}
+
+void APuzzleManager::ResetPuzzleGame()
+{
+    if (!HasAuthority()) return;
+
+    // 1. 점수 초기화
+    PlayerScores.Empty();
+    PlayerScoresInfo.Empty();
+    ReplicatedRankInfo.Empty();
+	Pieces.Empty();
+
+	// 2. 퍼즐 보드 초기화
+	AHM_PuzzleBoard* PuzzleBoard = Cast<AHM_PuzzleBoard>(UGameplayStatics::GetActorOfClass(GetWorld(), AHM_PuzzleBoard::StaticClass()));
+	if (PuzzleBoard)
+	{
+		// 보드 상태 배열 초기화
+		PuzzleBoard->BoardAreaVisibility.Init(false, 9);
+		PuzzleBoard->DestroyedPieceTags.Empty();
+
+		// 보드 영역 가시성 초기화
+		for (int32 i = 0; i < PuzzleBoard->BoardAreas.Num(); i++)
+		{
+			PuzzleBoard->ServerSetBoardAreaVisibility(i, false);
+            
+			// 나이아가라 이펙트 비활성화
+			if (PuzzleBoard->NiagaraEffects.IsValidIndex(i) && PuzzleBoard->NiagaraEffects[i])
+			{
+				PuzzleBoard->NiagaraEffects[i]->Deactivate();
+			}
+		}
+	}
+
+    // 3. 사운드 컴포넌트 초기화
+    if (HitAudioComp)
+    {
+        HitAudioComp->Stop();
+    }
+    if (PuzzleEndingAudioComp)
+    {
+        PuzzleEndingAudioComp->Stop();
+    }
+
+    // 4. 퍼즐 피스 재생성
+    if (!PuzzlePieceFactory)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("PuzzlePieceFactory is not set in PuzzleManager"));
+        return;
+    }
+
+    // 기존 피스 제거
+    TArray<AActor*> ExistingPieces;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AHM_PuzzlePiece::StaticClass(), ExistingPieces);
+    
+    for (AActor* Actor : ExistingPieces)
+    {
+        if (AHM_PuzzlePiece* ExistingPiece = Cast<AHM_PuzzlePiece>(Actor))
+        {
+            // Transform 업데이트 타이머 제거
+            GetWorld()->GetTimerManager().ClearTimer(ExistingPiece->TransformUpdateTimer);
+            
+            // 소유권 관련 맵 초기화
+            ExistingPiece->ComponentOwners.Empty();
+            ExistingPiece->LastOwners.Empty();
+        }
+        Actor->Destroy();
+    }
+
+    // 새로운 피스 스폰
+    FActorSpawnParameters SpawnParams;
+    SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+    // 퍼즐 피스 스폰 위치 설정
+    FVector SpawnLocation(-3.0f, -2074.0f, 341.0f);
+    
+    AHM_PuzzlePiece* NewPiece = GetWorld()->SpawnActor<AHM_PuzzlePiece>(
+        PuzzlePieceFactory,
+        SpawnLocation,
+        FRotator::ZeroRotator,
+        SpawnParams
+    );
+
+    if (NewPiece)
+    {
+        NewPiece->InitializeRandomSetting();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Error, TEXT("Failed to spawn new puzzle piece"));
+    }
 }
