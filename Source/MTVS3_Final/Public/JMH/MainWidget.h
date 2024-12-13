@@ -145,6 +145,9 @@ public:
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_MinimapImg;
 
+	UPROPERTY(meta = (BindWidget))
+	class UHM_MinimapWidget* WBP_MiniMap;
+	
 	UFUNCTION()
 	void SetMinimapImage(UTexture2D* img);
 	//1: Win

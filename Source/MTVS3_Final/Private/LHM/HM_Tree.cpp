@@ -32,13 +32,13 @@ AHM_Tree::AHM_Tree()
 	
 	if (TicatAsset.Succeeded() && TicatClipAsset.Succeeded() && PhysicsParentAsset.Succeeded() && NiagaraSystem)
 	{
-		Ticats.SetNum(20);
-		TicatClips.SetNum(20);
-		PhysicsConstraints.SetNum(20);
-		PhysicsParents.SetNum(20);
-		NiagaraEffects.SetNum(20);
+		Ticats.SetNum(40);
+		TicatClips.SetNum(40);
+		PhysicsConstraints.SetNum(40);
+		PhysicsParents.SetNum(40);
+		NiagaraEffects.SetNum(40);
 		
-		for (int32 i = 0; i < 20; i++)
+		for (int32 i = 0; i < 40; i++)
 		{
 			FName TicatName = *FString::Printf(TEXT("Ticat_%d"), i + 1);
 			FName TicatClipName = *FString::Printf(TEXT("TicatClip_%d"), i + 1);
@@ -93,8 +93,8 @@ AHM_Tree::AHM_Tree()
 	}
 	
 	// 배열 초기화
-	TicatClipVisibilities.SetNum(20, false);
-	TicatVisibilities.SetNum(20, false);
+	TicatClipVisibilities.SetNum(40, false);
+	TicatVisibilities.SetNum(40, false);
 	
 	bReplicates = true;
 }
