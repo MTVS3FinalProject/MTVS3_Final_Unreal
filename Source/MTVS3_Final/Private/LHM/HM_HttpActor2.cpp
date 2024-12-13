@@ -316,14 +316,19 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 					// 월드의 모든 MH_Chair 찾기
 					TArray<AActor*> FoundChairs;
 					UGameplayStatics::GetAllActorsOfClass(GetWorld() , AMH_Chair::StaticClass() , FoundChairs);
-					///MH
-					TArray<int32> ReservedSeatIndices;
+					// Reserved Seats 처리
+					TArray<int32> UIReservedIndices;    // UI용 인덱스 (0-based)
+					TArray<int32> ChairReservedIndices;  // 실제 의자용 인덱스 (1-based)
 
 					// Reserved Seats 처리 (예약된 좌석은 false로 설정)
 					for (const FReservedSeats& ReservedSeat : NewSeatsList.reservedSeats)
 					{
-						ReservedSeatIndices.Add(ReservedSeat.seatId - 1);
-						
+						// UI용 인덱스는 0-based로 처리
+						UIReservedIndices.Add(ReservedSeat.seatId - 1);
+    
+						// 의자용 인덱스는 1-based 유지
+						ChairReservedIndices.Add(ReservedSeat.seatId);
+    
 						FString TagToFind = FString::FromInt(ReservedSeat.seatId);
 						for (AActor* Actor : FoundChairs)
 						{
@@ -331,35 +336,23 @@ void AHM_HttpActor2::OnResGetConcertEntry(FHttpRequestPtr Request , FHttpRespons
 							{
 								if (AMH_Chair* Chair = Cast<AMH_Chair>(Actor))
 								{
-									UE_LOG(LogTemp , Log , TEXT("Found matching chair! Name: %s, Tag: %s") ,
-									       *Chair->GetName() , *TagToFind);
-									
-									// Chair->SetbIsAvailable(false);
-									// Chair->OnRep_bIsAvailable();
-									// Chair->ChangeLightColor(false);
-									
-									///MH
-									// int32 SeatIndex = FCString::Atoi(*TagToFind) - 1; // 태그를 배열 인덱스와 맞추기 위해 1을 뺌
-									// if (SeatIndex >= 0)
-									// {
-									// 	ReservedSeatIndices.Add(SeatIndex);
-									// }
-									//break;
+									UE_LOG(LogTemp, Log, TEXT("Found matching chair! Name: %s, Tag: %s"),
+										   *Chair->GetName(), *TagToFind);
 								}
 							}
 						}
 					}
 
-					// GameState를 통해 한 번에 모든 의자 상태 업데이트
+					// GameState를 통해 의자 상태 업데이트 (1-based 인덱스 사용)
 					if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
 					{
-						HallState->MulticastUpdateChairStates(ReservedSeatIndices);
+						HallState->MulticastUpdateChairStates(ChairReservedIndices);
 					}
-					
-					///MH
+
+					// UI 업데이트 (0-based 인덱스 사용)
 					if (TicketingUI)
 					{
-						TicketingUI->UpdateReservedSeatsUI(ReservedSeatIndices);
+						TicketingUI->UpdateReservedSeatsUI(UIReservedIndices);
 					}
 				}
 			}
@@ -1424,43 +1417,24 @@ void AHM_HttpActor2::OnResPostPaymentSeat(FHttpRequestPtr Request , FHttpRespons
 					}
 
 					// KHJ: 결제 완료된 좌석 처리
-					TArray<int32> ReservedSeatIndices;
-        
-					// 결제된 좌석 찾기
-					TArray<AActor*> FoundChairs;
-					UGameplayStatics::GetAllActorsOfClass(GetWorld(), AMH_Chair::StaticClass(), FoundChairs);
+					// 결제 완료된 좌석 처리
+					TArray<int32> UIReservedIndices;    // UI용 인덱스 (0-based)
+					TArray<int32> NewReservedIndices;    // 새로 추가될 예약 좌석만 담는 배열
+                
+					// 결제된 좌석의 ID만 추가
+					NewReservedIndices.Add(FCString::Atoi(*SeatId));
 
-					FString TagToFind = SeatId;
-					UE_LOG(LogTemp, Log, TEXT("Payment completed - Looking for Chair with ID: %s"), *TagToFind);
-					
-					for (AActor* Actor : FoundChairs)
-					{
-						if (Actor->ActorHasTag(*TagToFind))
-						{
-							if (AMH_Chair* Chair = Cast<AMH_Chair>(Actor))
-							{
-								UE_LOG(LogTemp, Log, TEXT("Found matching chair for payment! Name: %s, Tag: %s"),
-									   *Chair->GetName(), *TagToFind);
-                    
-								int32 SeatIndex = FCString::Atoi(*TagToFind) - 1; // 태그를 배열 인덱스와 맞추기 위해 1을 뺌
-								if (SeatIndex >= 0)
-								{
-									ReservedSeatIndices.Add(SeatIndex);
-								}
-							}
-						}
-					}
-					
-					// GameState를 통해 한 번에 모든 의자 상태 업데이트
+					// GameState를 통해 새로운 예약 좌석만 추가
 					if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
 					{
-						HallState->MulticastUpdateChairStates(ReservedSeatIndices);
+						HallState->MulticastAddReservedSeats(NewReservedIndices);
 					}
-					
-					///MH
+
+					// UI 업데이트 
 					if (TicketingUI)
 					{
-						TicketingUI->UpdateReservedSeatsUI(ReservedSeatIndices);
+						UIReservedIndices.Add(FCString::Atoi(*SeatId) - 1);  // UI는 0-based 인덱스 사용
+						TicketingUI->AddReservedSeatsUI(UIReservedIndices);
 					}
 				}
 			}

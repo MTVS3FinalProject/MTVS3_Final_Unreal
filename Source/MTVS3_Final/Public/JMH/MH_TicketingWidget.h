@@ -87,6 +87,8 @@ public:
 	UFUNCTION()
 	void UpdateReservedSeatsUI(TArray<int32> ReservedSeats);
 
+	void AddReservedSeatsUI(const TArray<int32>& NewReservedSeats);
+	
 	//좌석 추첨시간
 	UPROPERTY(VisibleAnywhere,meta=(BindWidget))
 	class UTextBlock* Text_TickettingDateY;
