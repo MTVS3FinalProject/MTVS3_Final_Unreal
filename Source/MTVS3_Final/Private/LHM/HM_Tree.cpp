@@ -48,7 +48,7 @@ AHM_Tree::AHM_Tree()
 			UStaticMeshComponent* TicatClipComp = CreateDefaultSubobject<UStaticMeshComponent>(TicatClipName);
 			UPhysicsConstraintComponent* PhysicsComp = CreateDefaultSubobject<UPhysicsConstraintComponent>(PhysicsConstName);
 			UStaticMeshComponent* PhysicsParentComp = CreateDefaultSubobject<UStaticMeshComponent>(PhysicsParentName);
-			
+
 			Ticats[i] = TicatComp;
 			Ticats[i]->SetVisibility(false);
 			
@@ -65,6 +65,7 @@ AHM_Tree::AHM_Tree()
 			{
 				PhysicsComp->SetupAttachment(Tree);
 				PhysicsComp->SetConstrainedComponents(PhysicsParentComp, NAME_None, TicatClipComp, NAME_None);
+				PhysicsComp->SetRelativeScale3D(FVector3d(4));
 
 				PhysicsParentComp->SetupAttachment(PhysicsComp);
 				PhysicsParentComp->SetStaticMesh(PhysicsParentAsset.Object);
