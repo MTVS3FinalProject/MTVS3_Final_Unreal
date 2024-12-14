@@ -20,6 +20,9 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 
     PieceMeshes.SetNum(9);
     CollisionBoxComps.SetNum(9);
+
+	const FVector PieceScale(0.5f, 1.8f, 0.5f);
+	
     for (int32 i = 0; i < 9; i++)
     {
     	FString MeshAssetPath = FString::Printf(TEXT("/Game/KJM/Assets/Object/NJ__Puzzle%d"), i + 1);
@@ -34,7 +37,7 @@ AHM_PuzzlePiece::AHM_PuzzlePiece()
 	    {
 		    MeshComp->SetupAttachment(RootComponent);
 		    MeshComp->SetStaticMesh(MeshAsset.Object);
-	    	MeshComp->SetRelativeScale3D(FVector(0.5f, 1.5f, 0.5f));
+	    	MeshComp->SetRelativeScale3D(PieceScale);
 	    }
     }
  }
@@ -116,9 +119,7 @@ void AHM_PuzzlePiece::PostInitializeComponents()
 	for (int32 i = 0; i < PieceMeshes.Num(); i++)
 	{
 		if (PieceMeshes[i])
-		{
-			PieceMeshes[i]->SetRelativeScale3D(FVector(0.5f, 1.5f, 0.5f));
-			
+		{			
 			// 물리 및 충돌 설정
 			PieceMeshes[i]->SetSimulatePhysics(true);
 			PieceMeshes[i]->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -146,6 +147,8 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
         // 매니저 찾기
         APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
         
+		const FVector PieceScale(0.5f, 1.8f, 0.5f);
+		
         // Pieces 맵의 각 요소에 대해 초기화
         for(auto& Piece : Pieces)
         {
@@ -160,20 +163,22 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
             
             if(PieceComp)
             {
+            	// 물리 시뮬레이션 일시 중지
+            	PieceComp->SetSimulatePhysics(false);
+            	
                 // 랜덤 위치 계산
                 FVector RandomOffset = FVector(
-                    FMath::RandRange(-200.f, 200.f), // 기본값 1500
-                    FMath::RandRange(-100.f, 100.f),
+                    FMath::RandRange(-1000.f, 1000.f), // 기본값 1500
+                    FMath::RandRange(-200.f, 200.f),
                     FMath::RandRange(0.f, 0.f)
                 );
                 
             	FVector NewLocation = PiecesLocation + RandomOffset;
-            	// FTransform NewTransform = FTransform(FRotator::ZeroRotator, NewLocation);
-            	
-				 FTransform NewTransform = FTransform(
+
+            	FTransform NewTransform = FTransform(
 					FRotator::ZeroRotator, 
 					NewLocation,
-					FVector(0.5f)  // 스케일 설정
+					PieceScale
 				);
                 
                 // 현재 피스의 인덱스 찾기
@@ -183,8 +188,10 @@ void AHM_PuzzlePiece::InitializeRandomSetting()
                     ServerTransforms[Index] = NewTransform;
                 }
                 
-                // 월드 위치 설정
-                PieceComp->SetWorldTransform(NewTransform);
+            	PieceComp->SetWorldTransform(NewTransform);
+            	PieceComp->SetSimulatePhysics(true);
+            	PieceComp->SetPhysicsLinearVelocity(FVector::ZeroVector);
+            	PieceComp->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
             }
         }
     }
