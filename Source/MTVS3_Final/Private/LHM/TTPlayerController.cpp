@@ -70,6 +70,22 @@ void ATTPlayerController::RequestServerTime()
 	ServerGetCurrentTime();
 }
 
+void ATTPlayerController::ServerUpdateNewSeats_Implementation(const FString& SeatId)
+{
+	if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
+	{
+		// 새로운 좌석 ID를 int32로 변환
+		int32 NewSeatId = FCString::Atoi(*SeatId);
+        
+		// 새로운 좌석만 포함하는 배열 생성
+		TArray<int32> SingleSeat;
+		SingleSeat.Add(NewSeatId);
+        
+		// 좌석 추가
+		HallState->MulticastAddReservedSeats(SingleSeat);
+	}
+}
+
 
 void ATTPlayerController::ServerGetCurrentTime_Implementation()
 {
