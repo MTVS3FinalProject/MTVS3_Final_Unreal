@@ -65,7 +65,7 @@ AHM_Tree::AHM_Tree()
 			{
 				PhysicsComp->SetupAttachment(Tree);
 				PhysicsComp->SetConstrainedComponents(PhysicsParentComp, NAME_None, TicatClipComp, NAME_None);
-				PhysicsComp->SetRelativeScale3D(FVector3d(4));
+				PhysicsComp->SetRelativeScale3D(FVector3d(2));
 
 				PhysicsParentComp->SetupAttachment(PhysicsComp);
 				PhysicsParentComp->SetStaticMesh(PhysicsParentAsset.Object);
