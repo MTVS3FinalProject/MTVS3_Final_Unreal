@@ -5,7 +5,6 @@
 #include "EngineUtils.h"
 #include "HJ/TTGameInstance.h"
 #include "HJ/TTPlayer.h"
-#include "LHM/TTPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
 void ATTHallGameState::BeginPlay()

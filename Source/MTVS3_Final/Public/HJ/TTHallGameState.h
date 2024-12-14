@@ -43,6 +43,8 @@ public:
 	UPROPERTY(Replicated)
 	TArray<int32> ReservedSeatIds;
 
+	const TArray<int32>& GetReservedSeatIds() const {return ReservedSeatIds; }
+
 	UPROPERTY()
 	TSet<int32> ReservedSeatIdsSet;
 

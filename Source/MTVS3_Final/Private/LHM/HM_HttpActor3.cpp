@@ -895,16 +895,10 @@ void AHM_HttpActor3::OnResPostponePaymentSeat(FHttpRequestPtr Request, FHttpResp
 
 			FString SeatId = GI->GetLuckyDrawSeatID();
             
-			// 결제 미룬 좌석 처리
-			TArray<int32> NewReservedIndices;    // 새로 추가될 예약 좌석만 담는 배열
-            
-			// 미룬 좌석의 ID만 추가
-			NewReservedIndices.Add(FCString::Atoi(*SeatId));
-
-			// GameState를 통해 새로운 예약 좌석만 추가
-			if (ATTHallGameState* HallState = GetWorld()->GetGameState<ATTHallGameState>())
+			// 서버에 RPC로 요청
+			if (ATTPlayerController* PC = Cast<ATTPlayerController>(GetWorld()->GetFirstPlayerController()))
 			{
-				HallState->MulticastAddReservedSeats(NewReservedIndices);
+				PC->ServerUpdateNewSeats(SeatId);
 			}
 
 			// UI 업데이트

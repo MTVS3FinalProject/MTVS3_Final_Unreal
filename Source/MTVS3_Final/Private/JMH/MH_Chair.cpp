@@ -3,7 +3,6 @@
 
 #include "JMH/MH_Chair.h"
 #include "Components/BoxComponent.h"
-#include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"
 #include "HJ/TTHallGameState.h"
 #include "Net/UnrealNetwork.h"
@@ -197,7 +196,10 @@ void AMH_Chair::OnRep_bIsAvailable()
 	// 		   *GetName(), bIsAvailable ? TEXT("true") : TEXT("false"));
 	// }
 	
-	ChangeLightColor(bIsAvailable);
+	if (bIsAvailable == false)
+	{
+		ChangeLightColor(bIsAvailable);
+	}
 }
 
 void AMH_Chair::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -233,7 +235,8 @@ void AMH_Chair::UpdateChairState()
             
 			if (HasAuthority())
 			{
-				SetbIsAvailable(bShouldBeAvailable);
+				bIsAvailable = bShouldBeAvailable;
+				OnRep_bIsAvailable();
 			}
 		}
 	}
