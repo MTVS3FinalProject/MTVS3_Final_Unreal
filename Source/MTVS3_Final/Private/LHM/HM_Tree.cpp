@@ -20,6 +20,7 @@ AHM_Tree::AHM_Tree()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	Tree = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Tree"));
 	Tree->SetupAttachment(RootComponent);
+	Tree->SetRelativeScale3D(FVector3d(0.8f));
 	
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> TicatAsset(
 		TEXT("/Game/KJM/Assets/Object/CM_Ticat"));
@@ -115,6 +116,7 @@ void AHM_Tree::BeginPlay()
 		if (TicatClip)
 		{
 			TicatClip->SetSimulatePhysics(true);
+			TicatClip->SetEnableGravity(true);
 			TicatClip->SetMassScale(NAME_None, 300);
 		}
 	}
