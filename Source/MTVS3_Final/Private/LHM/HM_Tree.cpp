@@ -62,34 +62,34 @@ AHM_Tree::AHM_Tree()
 			PhysicsParents[i] = PhysicsParentComp;
 			PhysicsParents[i]->SetVisibility(false);
 			
-			if (TicatComp && TicatClipComp && PhysicsComp && PhysicsParentComp)
+			if (Ticats[i] && TicatClips[i] && PhysicsConstraints[i] && PhysicsParents[i])
 			{
-				PhysicsComp->SetupAttachment(Tree);
-				PhysicsComp->SetConstrainedComponents(PhysicsParentComp, NAME_None, TicatClipComp, NAME_None);
-				PhysicsComp->SetRelativeScale3D(FVector3d(3));
-
-				PhysicsParentComp->SetupAttachment(PhysicsComp);
-				PhysicsParentComp->SetStaticMesh(PhysicsParentAsset.Object);
-				PhysicsParentComp->SetRelativeScale3D(FVector3d(0.1f));
+				PhysicsConstraints[i]->SetupAttachment(Tree);
+				PhysicsConstraints[i]->SetConstrainedComponents(PhysicsParentComp, NAME_None, TicatClipComp, NAME_None);
+				PhysicsConstraints[i]->SetRelativeScale3D(FVector3d(2.5f));
+			
+				PhysicsParents[i]->SetupAttachment(PhysicsComp);
+				PhysicsParents[i]->SetStaticMesh(PhysicsParentAsset.Object);
+				PhysicsParents[i]->SetRelativeScale3D(FVector3d(0.1f));
 				
-				TicatClipComp->SetupAttachment(PhysicsComp);
-				TicatClipComp->SetStaticMesh(TicatClipAsset.Object);
+				TicatClips[i]->SetupAttachment(PhysicsComp);
+				TicatClips[i]->SetStaticMesh(TicatClipAsset.Object);
 				
-				TicatComp->SetupAttachment(TicatClipComp);
-				TicatComp->SetStaticMesh(TicatAsset.Object);
+				Ticats[i]->SetupAttachment(TicatClipComp);
+				Ticats[i]->SetStaticMesh(TicatAsset.Object);
 			}
 
 			// Niagara
 			FName NiagaraName = *FString::Printf(TEXT("Niagara_%d"), i + 1);
 			UNiagaraComponent* NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(NiagaraName);
 			NiagaraEffects[i] = NiagaraComp;
-			if(NiagaraComp)
+			if(NiagaraEffects[i])
 			{
-				NiagaraComp->SetupAttachment(TicatComp);
-				NiagaraComp->SetAsset(NiagaraSystem);
-				NiagaraComp->SetRelativeLocation(FVector(0, 0, -50));
-				NiagaraComp->SetRelativeScale3D(FVector3d(0.1f));
-				NiagaraComp->SetAutoActivate(false);
+				NiagaraEffects[i]->SetupAttachment(TicatComp);
+				NiagaraEffects[i]->SetAsset(NiagaraSystem);
+				NiagaraEffects[i]->SetRelativeLocation(FVector(0, 0, -50));
+				NiagaraEffects[i]->SetRelativeScale3D(FVector3d(0.1f));
+				NiagaraEffects[i]->SetAutoActivate(false);
 			}
 		}
 	}
@@ -116,8 +116,8 @@ void AHM_Tree::BeginPlay()
 		if (TicatClip)
 		{
 			TicatClip->SetSimulatePhysics(true);
-			TicatClip->SetEnableGravity(false);
-			TicatClip->SetMassScale(NAME_None, 300);
+			TicatClip->SetEnableGravity(true);
+			TicatClip->SetMassScale(NAME_None, 800);
 		}
 	}
 }
