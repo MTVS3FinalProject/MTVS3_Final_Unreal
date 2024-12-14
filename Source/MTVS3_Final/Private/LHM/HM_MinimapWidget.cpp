@@ -7,6 +7,7 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
 #include "Components/SceneCaptureComponent2D.h"
+#include "HJ/TTGameInstance.h"
 #include "JMH/MH_MinimapActor.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -20,8 +21,52 @@ void UHM_MinimapWidget::NativeConstruct()
 void UHM_MinimapWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry , InDeltaTime);
+
+	UpdateTargetPosition(StyleLounge , Img_StyleLounge);
+	UpdateTargetPosition(Community , Img_Community);
+	UpdateTargetPosition(Kiosk_1 , Img_Kiosk_1);
+	UpdateTargetPosition(Kiosk_2 , Img_Kiosk_2);
+	UpdateTargetPosition(Kiosk_3 , Img_Kiosk_3);
+	UpdateTargetPosition(Kiosk_4 , Img_Kiosk_4);
 	
-	UpdateTargetPosition(StyleLounge, Img_StyleLounge);
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	switch (GI->GetPlaceState())
+	{
+	case EPlaceState::Plaza:
+		SetImgsVisible(true);
+		break;
+	case EPlaceState::StyleLounge:
+		SetImgsVisible(true);
+		break;
+	case EPlaceState::CommunityHall:
+		SetImgsVisible(true);
+		break;
+	case EPlaceState::ConcertHall:
+		SetImgsVisible(false);
+		break;
+	}
+}
+
+void UHM_MinimapWidget::SetImgsVisible(bool visible)
+{
+	if(visible)
+	{
+		Img_StyleLounge->SetVisibility(ESlateVisibility::Visible);
+		Img_Community->SetVisibility(ESlateVisibility::Visible);
+		Img_Kiosk_1->SetVisibility(ESlateVisibility::Visible);
+		Img_Kiosk_2->SetVisibility(ESlateVisibility::Visible);
+		Img_Kiosk_3->SetVisibility(ESlateVisibility::Visible);
+		Img_Kiosk_4->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		Img_StyleLounge->SetVisibility(ESlateVisibility::Hidden);
+		Img_Community->SetVisibility(ESlateVisibility::Hidden);
+		Img_Kiosk_1->SetVisibility(ESlateVisibility::Hidden);
+		Img_Kiosk_2->SetVisibility(ESlateVisibility::Hidden);
+		Img_Kiosk_3->SetVisibility(ESlateVisibility::Hidden);
+		Img_Kiosk_4->SetVisibility(ESlateVisibility::Hidden);	
+	}
 }
 
 void UHM_MinimapWidget::UpdateTargetPosition(FVector TargetLocation, UImage* Img_Target)
@@ -71,9 +116,9 @@ void UHM_MinimapWidget::UpdateTargetPosition(FVector TargetLocation, UImage* Img
 	}
 
 	// UI 위젯 좌표 설정
-	if (Img_StyleLounge)
+	if (Img_Target)
 	{
-		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Img_StyleLounge->Slot);
+		UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Img_Target->Slot);
 		if (CanvasSlot)
 		{
 			// 위치를 정수 좌표로 반올림하여 업데이트
