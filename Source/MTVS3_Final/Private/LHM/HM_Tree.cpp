@@ -116,7 +116,7 @@ void AHM_Tree::BeginPlay()
 		if (TicatClip)
 		{
 			TicatClip->SetSimulatePhysics(true);
-			TicatClip->SetEnableGravity(true);
+			TicatClip->SetEnableGravity(false);
 			TicatClip->SetMassScale(NAME_None, 300);
 		}
 	}
