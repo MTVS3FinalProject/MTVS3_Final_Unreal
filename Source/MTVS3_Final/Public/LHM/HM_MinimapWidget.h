@@ -27,7 +27,7 @@ public:
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_Community;
-	FVector Community = FVector(22220.0f, 1990.0f, 3300.0f);
+	FVector Community = FVector(23560.0f, 2029.0f, 3300.0f);
 	
 	UPROPERTY(VisibleAnywhere , meta=(BindWidget))
 	class UImage* Img_Kiosk_1;
