@@ -75,6 +75,8 @@ void UHM_MainBarWidget::SetVisibleSwitcher(bool bVisible)
 	else if (!bVisible)
 	{
 		WS_Bar->SetVisibility(ESlateVisibility::Hidden);
+		InitMenuBtn();
+		UE_LOG(LogTemp , Warning , TEXT("ClickedNoticeBtn333"));
 		bIsCollectionBookVisible = false;
 		bIsNoticeVisible = false;
 		bIsMenuVisible = false;
@@ -98,10 +100,6 @@ void UHM_MainBarWidget::SetWidgetSwitcher(int32 num)
 
 void UHM_MainBarWidget::SetVisibilityState()
 {
-	//if (bIsChatVisible)
-	//{
-	//	CloseButtonPressed();
-	//}
 	SetVisibleSwitcher(true);
 }
 
@@ -233,7 +231,6 @@ void UHM_MainBarWidget::InitMenuBtn()
 
 void UHM_MainBarWidget::OnClickedNoticeBtn()
 {
-	SetVisibleSwitcher(false);
 	UE_LOG(LogTemp , Warning , TEXT("ClickedNoticeBtn"));
 	bIsNoticeVisible = !bIsNoticeVisible;
 
@@ -265,11 +262,11 @@ void UHM_MainBarWidget::OnClickedNoticeBtn()
 	//우편함 닫기
 	else
 	{
+		//우편함 닫기
+		SetVisibleSwitcher(false);
 		UE_LOG(LogTemp , Warning , TEXT("ClickedNoticeBtn222"));
 		//버튼 기본으로
 		InitMenuBtn();
-		//우편함 닫기
-		SetVisibleSwitcher(false);
 	}
 }
 
@@ -323,7 +320,7 @@ void UHM_MainBarWidget::OnUnHoveredChatBtn()
 
 void UHM_MainBarWidget::OnClickedSettingBtn()
 {
-	SetVisibleSwitcher(false);
+	//SetVisibleSwitcher(false);
 	bIsSettingsVisible = !bIsSettingsVisible;
 	UE_LOG(LogTemp , Warning , TEXT("ClickedSettingBtn"));
 	//세팅창 켜지게
