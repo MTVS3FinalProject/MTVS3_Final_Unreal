@@ -66,7 +66,7 @@ AHM_Tree::AHM_Tree()
 			{
 				PhysicsConstraints[i]->SetupAttachment(Tree);
 				PhysicsConstraints[i]->SetConstrainedComponents(PhysicsParentComp, NAME_None, TicatClipComp, NAME_None);
-				PhysicsConstraints[i]->SetRelativeScale3D(FVector3d(2.5f));
+				PhysicsConstraints[i]->SetRelativeScale3D(FVector3d(3.f));
 			
 				PhysicsParents[i]->SetupAttachment(PhysicsComp);
 				PhysicsParents[i]->SetStaticMesh(PhysicsParentAsset.Object);
@@ -117,7 +117,7 @@ void AHM_Tree::BeginPlay()
 		{
 			TicatClip->SetSimulatePhysics(true);
 			TicatClip->SetEnableGravity(true);
-			TicatClip->SetMassScale(NAME_None, 800);
+			TicatClip->SetMassScale(NAME_None, 100);
 		}
 	}
 }
