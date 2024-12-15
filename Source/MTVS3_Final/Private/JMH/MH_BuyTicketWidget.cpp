@@ -309,6 +309,7 @@ void UMH_BuyTicketWidget::SetTextTotalCoin(int32 TotalCoin)
 {
 	Text_TotalCoin->SetText(FText::AsNumber(TotalCoin));
 	Text_TotalCoin_1->SetText(FText::AsNumber(TotalCoin));
+	Text_ServiceCharge->SetText(FText::AsNumber(TotalCoin));
 }
 
 //현민 필요없어진듯

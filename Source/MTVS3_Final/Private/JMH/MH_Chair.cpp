@@ -3,7 +3,6 @@
 
 #include "JMH/MH_Chair.h"
 #include "Components/BoxComponent.h"
-#include "Components/WidgetComponent.h"
 #include "GameFramework/Character.h"
 #include "HJ/TTHallGameState.h"
 #include "Net/UnrealNetwork.h"
@@ -85,7 +84,14 @@ void AMH_Chair::ShowText()
 	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
 	if (InteractionUI)
 	{
-		InteractionUI->SetActiveWidgetIndex(0);
+		if (ActorHasTag("ChairBox"))
+		{
+			InteractionUI->SetActiveWidgetIndex(7);
+		}
+		else
+		{
+			InteractionUI->SetActiveWidgetIndex(0);
+		}
 		// 애니메이션 적용
 		InteractionUI->TextOnAnimPlay();
 	}
@@ -197,7 +203,10 @@ void AMH_Chair::OnRep_bIsAvailable()
 	// 		   *GetName(), bIsAvailable ? TEXT("true") : TEXT("false"));
 	// }
 	
-	ChangeLightColor(bIsAvailable);
+	if (bIsAvailable == false)
+	{
+		ChangeLightColor(bIsAvailable);
+	}
 }
 
 void AMH_Chair::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -233,7 +242,8 @@ void AMH_Chair::UpdateChairState()
             
 			if (HasAuthority())
 			{
-				SetbIsAvailable(bShouldBeAvailable);
+				bIsAvailable = bShouldBeAvailable;
+				OnRep_bIsAvailable();
 			}
 		}
 	}

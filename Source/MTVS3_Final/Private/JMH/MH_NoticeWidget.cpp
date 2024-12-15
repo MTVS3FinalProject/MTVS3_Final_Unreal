@@ -46,8 +46,12 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 		{
 			Vertical_MessageBox->ClearChildren();
 
-			for (const FMails& Messageinfo : Mails)
+			// 메일 리스트를 역순으로 순회
+			for (int32 Index = Mails.Num() - 1; Index >= 0; --Index)
 			{
+				const FMails& Messageinfo = Mails[Index];
+				//for (const FMails& Messageinfo : Mails)
+				//{
 				// 1. 메세지 위젯 생성
 				UHM_NoticeMessage* MessageBox = CreateWidget<UHM_NoticeMessage>(this , NoticeMessageFac);
 				if (MessageBox)
@@ -67,6 +71,7 @@ void UMH_NoticeWidget::InitializeMessageTabs()
 					Spacer->SetSize(FVector2D(0.0f , 15.0f)); // 세로 방향으로 15px 간격 추가
 					Vertical_MessageBox->AddChild(Spacer);
 				}
+				//}
 			}
 		}
 	}

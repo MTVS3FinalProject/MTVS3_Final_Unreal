@@ -1691,9 +1691,12 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		if (!Chair->bIsOccupied)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
-			HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
-			//MH
-			TicketingUI->SetCurrentSelectedSeatUI(ChairTag);
+			if(!ChairTag.IsEmpty())
+			{
+				HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
+				//MH
+				TicketingUI->SetCurrentSelectedSeatUI(ChairTag);
+			}
 
 			ServerSetSitting(true);
 

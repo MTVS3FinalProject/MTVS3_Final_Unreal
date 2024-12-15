@@ -55,6 +55,8 @@ public:
     // 서버 시간 요청
     void RequestServerTime();
 
+	UFUNCTION(Server, Reliable)
+	void ServerUpdateNewSeats(const FString& SeatId);
 
 	//MH
 	
