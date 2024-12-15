@@ -84,7 +84,14 @@ void AMH_Chair::ShowText()
 	UMH_Interaction* InteractionUI = Cast<UMH_Interaction>(MainUI->WBP_InteractionUI);
 	if (InteractionUI)
 	{
-		InteractionUI->SetActiveWidgetIndex(0);
+		if (ActorHasTag("ChairBox"))
+		{
+			InteractionUI->SetActiveWidgetIndex(7);
+		}
+		else
+		{
+			InteractionUI->SetActiveWidgetIndex(0);
+		}
 		// 애니메이션 적용
 		InteractionUI->TextOnAnimPlay();
 	}
