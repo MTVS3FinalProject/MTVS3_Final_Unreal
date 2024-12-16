@@ -70,7 +70,9 @@ AHM_Tree::AHM_Tree()
 			
 				PhysicsParents[i]->SetupAttachment(PhysicsComp);
 				PhysicsParents[i]->SetStaticMesh(PhysicsParentAsset.Object);
-				PhysicsParents[i]->SetRelativeScale3D(FVector3d(0.1f));
+				PhysicsParents[i]->SetRelativeScale3D(FVector3d(0.01f));
+				PhysicsParents[i]->SetRelativeLocation(FVector3d(0,0,1));
+				
 				
 				TicatClips[i]->SetupAttachment(PhysicsComp);
 				TicatClips[i]->SetStaticMesh(TicatClipAsset.Object);
