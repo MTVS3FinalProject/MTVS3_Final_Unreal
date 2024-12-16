@@ -1921,7 +1921,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 	case EPlaceState::StyleLounge:
 	case EPlaceState::CommunityHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTHallMap"));
-		if (GetbIsHost() || HasAuthority())
+		if (GetbIsHost())
 		{
 			bIsCheat1Active = !bIsCheat1Active;
 			if (bIsCheat1Active)
