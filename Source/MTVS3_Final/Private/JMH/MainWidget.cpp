@@ -14,6 +14,7 @@
 #include "HJ/HallSoundManager.h"
 #include "HJ/TTPlayer.h"
 #include "JMH/MH_Chatting.h"
+#include "JMH/MH_Inventory.h"
 #include "JMH/MH_NoticeWidget.h"
 #include "LHM/HM_FinalTicket.h"
 #include "LHM/HM_HttpActor3.h"

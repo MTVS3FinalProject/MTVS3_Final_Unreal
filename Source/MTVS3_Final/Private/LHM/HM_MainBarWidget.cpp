@@ -49,7 +49,8 @@ void UHM_MainBarWidget::NativeConstruct()
 
 	if (WBP_inventoryUI)
 	{
-		WBP_inventoryUI->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::CloseAllCategory);
+		//WBP_inventoryUI->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::CloseAllCategory);
+		WBP_inventoryUI->OnClickedBack_InvenBtn.AddDynamic(this , &UHM_MainBarWidget::OnClickedCollectionBookBtn);
 	}
 
 	if (WBP_NoticeUI)
@@ -115,31 +116,72 @@ void UHM_MainBarWidget::SetIsvisible_chat()
 
 void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 {
-	bIsCollectionBookVisible = !bIsCollectionBookVisible;
-
+	bIsNoticeVisible = false;
+	bIsSettingsVisible = false;
+	
+	// 명시적으로 상태를 확인하고 처리
 	if (bIsCollectionBookVisible)
 	{
+		// 현재 열려있는 경우 닫기
+		InitMenuBtn();
+		SetVisibleSwitcher(false);
+		bIsCollectionBookVisible = false; // 상태 초기화
+	}
+	else
+	{
+		// 상태를 true로 설정
+		bIsCollectionBookVisible = true;
+
+		// 채팅창 켜져있으면 끄기
 		if (bIsChatVisible)
 		{
 			CloseButtonPressed();
 		}
+
 		OnClickedMenuBtn(Btn_CollectionBook);
-		//인벤 열기
+
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+			UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
 		if (HttpActor3)
 		{
-			// 인벤토리 정보 요청
 			HttpActor3->ReqGetInventoryData(GI->GetAccessToken());
 		}
+		SetVisibleSwitcher(true);
 		SetWidgetSwitcher(2);
 	}
-	else
-	{
-		InitMenuBtn();
-		SetVisibleSwitcher(false);
-	}
+	
+	// // 다른 상태를 초기화
+	// bIsNoticeVisible = false;
+	// bIsSettingsVisible = false;
+	//
+	// bIsCollectionBookVisible = !bIsCollectionBookVisible;
+	//
+	// if (bIsCollectionBookVisible)
+	// {
+	// 	//채팅창 켜져있으면 끄기
+	// 	if (bIsChatVisible)
+	// 	{
+	// 		CloseButtonPressed();
+	// 	}
+	// 	
+	// 	OnClickedMenuBtn(Btn_CollectionBook);
+	//
+	// 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	// 	AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+	// 		UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
+	// 	if (HttpActor3)
+	// 	{
+	// 		HttpActor3->ReqGetInventoryData(GI->GetAccessToken());
+	// 	}
+	// 	SetVisibleSwitcher(true);
+	// 	SetWidgetSwitcher(2);
+	// }
+	// else
+	// {
+	// 	InitMenuBtn();
+	// 	SetVisibleSwitcher(false);
+	// }
 }
 
 void UHM_MainBarWidget::OnHoveredCollectionBookBtn()
@@ -231,42 +273,36 @@ void UHM_MainBarWidget::InitMenuBtn()
 
 void UHM_MainBarWidget::OnClickedNoticeBtn()
 {
-	UE_LOG(LogTemp , Warning , TEXT("ClickedNoticeBtn"));
+	// 다른 상태를 초기화
+	bIsCollectionBookVisible = false;
+	bIsSettingsVisible = false;
+
 	bIsNoticeVisible = !bIsNoticeVisible;
 
-	//우편함 열기
 	if (bIsNoticeVisible)
 	{
-		UE_LOG(LogTemp , Warning , TEXT("ClickedNoticeBtn111"));
-		//채팅창 열려있으면 닫기
+		//채팅창 켜져있으면 끄기
 		if (bIsChatVisible)
 		{
 			CloseButtonPressed();
 		}
-		//bar 우편함 보이게
-		SetVisibleSwitcher(true);
-		SetWidgetSwitcher(1);
-		//채팅 버튼이미지 안보이게, 배경 보이게
+
 		OnClickedMenuBtn(Btn_Notice);
 
-		// 우편함 열기
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+			UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
 		if (HttpActor3)
 		{
-			// 우편함 조회 요청
 			HttpActor3->ReqGetMailbox(GI->GetAccessToken());
 		}
+		SetVisibleSwitcher(true);
+		SetWidgetSwitcher(1);
 	}
-	//우편함 닫기
 	else
 	{
-		//우편함 닫기
-		SetVisibleSwitcher(false);
-		UE_LOG(LogTemp , Warning , TEXT("ClickedNoticeBtn222"));
-		//버튼 기본으로
 		InitMenuBtn();
+		SetVisibleSwitcher(false);
 	}
 }
 
@@ -320,7 +356,9 @@ void UHM_MainBarWidget::OnUnHoveredChatBtn()
 
 void UHM_MainBarWidget::OnClickedSettingBtn()
 {
-	//SetVisibleSwitcher(false);
+	bIsCollectionBookVisible = false;
+	bIsNoticeVisible = false;
+
 	bIsSettingsVisible = !bIsSettingsVisible;
 	UE_LOG(LogTemp , Warning , TEXT("ClickedSettingBtn"));
 	//세팅창 켜지게
