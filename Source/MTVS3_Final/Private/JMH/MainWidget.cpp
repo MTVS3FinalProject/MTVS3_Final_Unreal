@@ -260,7 +260,7 @@ void UMainWidget::OnClickedBuyTicket()
 
 void UMainWidget::OnClickedBuyTicketBack()
 {
-	SetWidgetSwitcher(3);
+	SetWidgetSwitcher(0);
 }
 
 void UMainWidget::SetTextSeatNum1(FString SeatNum1)
