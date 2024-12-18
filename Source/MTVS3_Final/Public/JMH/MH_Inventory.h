@@ -27,7 +27,11 @@ public:
 	void CloseBtn_Inven()
 	{
 		//상태 바꿔주고
-		bIsInvenVisible = !bIsInvenVisible;
+		//bIsInvenVisible = !bIsInvenVisible;
+
+		// 상태를 false로 명시적으로 설정
+		bIsInvenVisible = false;
+		
 		//끄기
 		OnClickedBack_InvenBtn.Broadcast();
 	}

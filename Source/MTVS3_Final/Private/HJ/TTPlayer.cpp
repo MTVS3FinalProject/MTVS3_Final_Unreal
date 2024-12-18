@@ -572,12 +572,12 @@ void ATTPlayer::SetLuckyDrawSeatID(const FString& _LuckyDrawSeatID)
 	if (HasAuthority())
 	{
 		LuckyDrawSeatID = _LuckyDrawSeatID;
-		UE_LOG(LogTemp, Warning, TEXT("좌석 번호 %s(으)로 ATTPlayer::SetLuckyDrawSeatID"), *LuckyDrawSeatID);
-        
+		UE_LOG(LogTemp , Warning , TEXT("좌석 번호 %s(으)로 ATTPlayer::SetLuckyDrawSeatID") , *LuckyDrawSeatID);
+
 		// 서버의 GI에도 저장
 		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 		if (GI) GI->SetLuckyDrawSeatID(LuckyDrawSeatID);
-        
+
 		// 클라이언트들에게도 알림
 		ClientSetLuckyDrawSeatID(_LuckyDrawSeatID);
 	}
@@ -595,8 +595,8 @@ void ATTPlayer::ServerSetLuckyDrawSeatID_Implementation(const FString& _LuckyDra
 void ATTPlayer::ClientSetLuckyDrawSeatID_Implementation(const FString& _LuckyDrawSeatID)
 {
 	LuckyDrawSeatID = _LuckyDrawSeatID;
-	UE_LOG(LogTemp, Warning, TEXT("좌석 번호 %s(으)로 ATTPlayer::SetLuckyDrawSeatID"), *LuckyDrawSeatID);
-    
+	UE_LOG(LogTemp , Warning , TEXT("좌석 번호 %s(으)로 ATTPlayer::SetLuckyDrawSeatID") , *LuckyDrawSeatID);
+
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	if (GI) GI->SetLuckyDrawSeatID(LuckyDrawSeatID);
 }
@@ -915,8 +915,9 @@ void ATTPlayer::ClientShowLuckyDrawInvitation_Implementation(bool bIsVisible , c
 void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate , const FString& SeatInfo)
 {
 	// 디버그 로그 추가
-	UE_LOG(LogTemp, Warning, TEXT("UpdateDrawSessionInviteVisibility - SeatInfo: %s, CompetitionRate: %d"), *SeatInfo, CompetitionRate);
-	
+	UE_LOG(LogTemp , Warning , TEXT("UpdateDrawSessionInviteVisibility - SeatInfo: %s, CompetitionRate: %d") ,
+	       *SeatInfo , CompetitionRate);
+
 	if (!bHasPiece && bIsDrawSessionInviteVisible)
 	{
 		// 큐브를 들고 있지 않고 초대 UI가 보이는 상태
@@ -925,12 +926,13 @@ void ATTPlayer::UpdateDrawSessionInviteVisibility(int32 CompetitionRate , const 
 		if (TicketingUI)
 		{
 			// TicketingUI 유효성 체크 로그
-			UE_LOG(LogTemp, Warning, TEXT("Setting TicketingUI - IsValid: %s"), IsValid(TicketingUI) ? TEXT("True") : TEXT("False"));
-			
+			UE_LOG(LogTemp , Warning , TEXT("Setting TicketingUI - IsValid: %s") ,
+			       IsValid(TicketingUI) ? TEXT("True") : TEXT("False"));
+
 			TicketingUI->SetTextCompetitionRate(CompetitionRate);
 			TicketingUI->SetTextLuckyDrawSeatInfo(SeatInfo);
 			// 설정 후 확인 로그
-			UE_LOG(LogTemp, Warning, TEXT("SeatInfo set to UI"));
+			UE_LOG(LogTemp , Warning , TEXT("SeatInfo set to UI"));
 			TicketingUI->SetVisibleSwitcher(true , 1); //이부분 수정해야함 매희
 		}
 	}
@@ -1691,7 +1693,7 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 		if (!Chair->bIsOccupied)
 		{
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
-			if(!ChairTag.IsEmpty())
+			if (!ChairTag.IsEmpty())
 			{
 				HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
 				//MH
@@ -1702,10 +1704,20 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 
 			SwitchCamera(!bIsThirdPerson);
 
-			// 서버에서 클라이언트로 카메라 회전을 전파
-			FRotator TargetRotation = FRotator(0.0f , 90.0f , 0.0f);
-			if (Controller)
+			// // 서버에서 클라이언트로 카메라 회전을 전파
+			// FRotator TargetRotation = FRotator(0.0f , 90.0f , 0.0f);
+			// if (Controller)
+			// {
+			// 	ClientAdjustCamera(TargetRotation);
+			if (Chair && Controller)
 			{
+				// 의자의 Forward Vector 가져오기
+				FVector ChairForward = Chair->GetActorForwardVector();
+
+				// Forward Vector를 회전값으로 변환
+				FRotator TargetRotation = ChairForward.Rotation();
+
+				// 카메라를 의자 방향으로 회전
 				ClientAdjustCamera(TargetRotation);
 			}
 
@@ -1850,20 +1862,20 @@ void ATTPlayer::OnMyActionChat(const FInputActionValue& Value)
 	//MainBarUI->bIsEmojiVisible = !MainBarUI->bIsEmojiVisible;
 
 	bIsChatActive = !bIsChatActive;
-/*
-	if (bIsChatActive)
-	{
-		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Enable Chat"));
-
-		//스위처 0번 이모지 띄우기
-		MainBarUI->SetWidgetSwitcher(0);
-		MainBarUI->SetVisibleSwitcher(true);
-	}
-	else
-	{
-		UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
-		MainBarUI->SetVisibleSwitcher(false);
-	}*/
+	/*
+		if (bIsChatActive)
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Enable Chat"));
+	
+			//스위처 0번 이모지 띄우기
+			MainBarUI->SetWidgetSwitcher(0);
+			MainBarUI->SetVisibleSwitcher(true);
+		}
+		else
+		{
+			UE_LOG(LogTemp , Warning , TEXT("Pressed Enter: Disable Chat"));
+			MainBarUI->SetVisibleSwitcher(false);
+		}*/
 
 	MainUI->ShowChatUI();
 }
@@ -1909,7 +1921,7 @@ void ATTPlayer::OnMyActionCheat1(const FInputActionValue& Value)
 	case EPlaceState::StyleLounge:
 	case EPlaceState::CommunityHall:
 		UE_LOG(LogTemp , Warning , TEXT("Pressed 1: Enable Cheat1 in TTHallMap"));
-		if (GetbIsHost() || HasAuthority())
+		if (GetbIsHost())
 		{
 			bIsCheat1Active = !bIsCheat1Active;
 			if (bIsCheat1Active)

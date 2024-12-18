@@ -272,20 +272,15 @@ void ATTPlayerController::SendChatMessage(const FString& Message)
 void ATTPlayerController::OnChatMessageReceived(const FString& Message)
 {
 	ATTPlayer* player = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
-	ATTPlayer* TargetPlayer = Cast<ATTPlayer>(GetWorld()->GetFirstPlayerController()->GetPawn());
 	if (player)
 	{
 		if (MainUI)
 		{
 			player->MainUI->WBP_Chatting->AddChatMessage(Message);
 
-			// 로컬 플레이어가 아닌 경우에만 알림 텍스트 업데이트
-			if (TargetPlayer != player)
+			if (!player->MainUI->WBP_MH_MainBar->bIsChatVisible)
 			{
-				if (!(TargetPlayer->MainUI->WBP_MH_MainBar->bIsChatVisible))
-				{
-					TargetPlayer->MainUI->SetChatNotiText(Message);
-				}
+				player->MainUI->SetChatNotiText(Message);
 			}
 		}
 	}
