@@ -1107,6 +1107,8 @@ void AHM_HttpActor3::ReqGetPostponePaymentSeatMail(int32 MailId, FString AccessT
 void AHM_HttpActor3::OnResGetPostponePaymentSeatMail(FHttpRequestPtr Request, FHttpResponsePtr Response,
 	bool bWasSuccessful)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	
 	if ( bWasSuccessful && Response.IsValid() )
 	{
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
@@ -1135,6 +1137,8 @@ void AHM_HttpActor3::OnResGetPostponePaymentSeatMail(FHttpRequestPtr Request, FH
 					if(HttpActor2)
 					{
 						HttpActor2->SetPostponeSeatId(SeatId);
+						FString PostponeSeatId = FString::FromInt(SeatId);
+						GI->SetLuckyDrawSeatID(PostponeSeatId);
 					}
 				}
 				UE_LOG(LogTemp , Log , TEXT("좌석 결제 미루기 우편 조회 성공"));

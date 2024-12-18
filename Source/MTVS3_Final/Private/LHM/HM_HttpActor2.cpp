@@ -978,6 +978,8 @@ void AHM_HttpActor2::ReqPostGameResult(FString SeatId , FString AccessToken)
 // 좌석 추첨 결과 요청에 대한 응답인데 일단 당첨자, 탈락자 클라이언트에서 처리해줘서 필요없을지도
 void AHM_HttpActor2::OnResPostGameResult(FHttpRequestPtr Request , FHttpResponsePtr Response , bool bWasSuccessful)
 {
+	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	
 	if (bWasSuccessful && Response.IsValid())
 	{
 		UE_LOG(LogTemp , Log , TEXT("Response Code: %d") , Response->GetResponseCode());
@@ -998,10 +1000,14 @@ void AHM_HttpActor2::OnResPostGameResult(FHttpRequestPtr Request , FHttpResponse
 				if (ResponseObject.IsValid())
 				{
 					UE_LOG(LogTemp , Log , TEXT("Request Post Game Result successful!"));
+					
+					FString SeatInfo = ResponseObject->GetStringField(TEXT("seatInfo"));
+					
 					// 추첨이 끝났을 때 당첨자에게만 예매창 UI 띄우는 함수에 연결
 					if (MainUI->GetBuyTicketWidget())
 					{
 						MainUI->BuyTicketWidget->SetWidgetSwitcher(0);
+						MainUI->BuyTicketWidget->SetTextWinnerSeatInfo(SeatInfo);
 					}
 				}
 			}

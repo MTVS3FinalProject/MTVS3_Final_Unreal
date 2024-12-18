@@ -533,6 +533,7 @@ void UMainWidget::HandlePaymentPostpone()
 		FString PostponeSeatId = FString::FromInt(HttpActor2->GetPostponeSeatId());
 		HttpActor2->ReqPostGameResult(PostponeSeatId , GI->GetAccessToken());
 	}
+	SetTextSeatNum1(GI->GetLuckyDrawSeatInfo());
 	SetWidgetSwitcher(1);
 }
 
