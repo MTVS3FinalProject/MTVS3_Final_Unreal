@@ -716,7 +716,7 @@ void AHM_HttpActor3::OnResGetEnterTicketCustomization(FHttpRequestPtr Request, F
 							ImageRequest->ProcessRequest();
 						}
 					}
-						if(MainUI->GetTicketCustomWidget()) MainUI->SetWidgetSwitcher(7);
+					if(MainUI->GetTicketCustomWidget()) MainUI->SetWidgetSwitcher(7);
 				}
 			}
 		}

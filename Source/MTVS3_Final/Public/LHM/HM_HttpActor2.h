@@ -35,7 +35,6 @@ public:
 		, day(0)
 		, time(TEXT(""))
 	{}
-	// 매개 변수를 받는 생성자
 	FConcertTime(int32 InYear, int32 InMonth, int32 InDay, const FString& InTime)
 		: year(InYear)
 		, month(InMonth)

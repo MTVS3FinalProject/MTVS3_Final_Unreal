@@ -994,8 +994,10 @@ void ATTPlayer::Client_UpdatePuzzleUI_Implementation()
 	{
 		//PuzzleUI->SetVisibility(ESlateVisibility::Visible);
 		//PuzzleUI->SetWidgetSwitcher(1);
-		MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
+#pragma region LHM_Fix_Http
+		//MainUI->WBP_MH_MainBar->Image_Notice->SetVisibility(ESlateVisibility::Visible);
 		PuzzleManager->PlayPuzzleEnding();
+#pragma endregion
 	}
 }
 
@@ -1695,7 +1697,16 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 			UE_LOG(LogTemp , Warning , TEXT("Chair->bIsOccupied = true"));
 			if (!ChairTag.IsEmpty())
 			{
-				HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
+				#pragma region LHM_Fix_Http
+				//HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
+				
+				// MainUI 숨기기
+				MainUI->SetVisibleCanvas(false);
+				// 좌석 경쟁 UI 표시
+				TicketingUI->SetVisibleSwitcher(true , 0);
+				TicketingUI->SetCompletedVisible(false);
+				#pragma endregion
+				
 				//MH
 				TicketingUI->SetCurrentSelectedSeatUI(ChairTag);
 			}
@@ -1743,18 +1754,26 @@ void ATTPlayer::OnMyActionInteract(const FInputActionValue& Value)
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("SelectConcert")))
 	{
-		if (HttpActor2) HttpActor2->ReqGetConcertInfo(GetAccessToken() , this);
+#pragma region LHM_Fix_Http
+		//if (HttpActor2) HttpActor2->ReqGetConcertInfo(GetAccessToken() , this);
+
+		MainUI->SetWidgetSwitcher(5);
+#pragma endregion
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Customizing")))
 	{
+#pragma region LHM_Fix_Http
 		// 티켓 커스터마이징 액터 상호작용 시 UI 표시
 		//QR을 서버가 전달 성공했다면
-		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+		/*AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
 			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
 		if (HttpActor3)
 		{
 			HttpActor3->ReqGetEnterTicketCustomization(GetAccessToken());
-		}
+		}*/
+
+		MainUI->ShowMainErrorMessage(TEXT("커스텀 할 수 있는 티켓을 소유하고 있지 않습니다."));
+#pragma endregion
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("PlazaTeleport")))
 	{
@@ -1830,14 +1849,26 @@ void ATTPlayer::OnMyActionPurchase(const FInputActionValue& Value)
 
 	if (Chair && HttpActor2)
 	{
+#pragma region LHM_Fix_Http
 		// Chair의 태그를 가져와서 매개변수로 넘김
-		FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
-		HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
+		//FString ChairTag = Chair->Tags.Num() > 0 ? Chair->Tags[0].ToString() : FString();
+		//HttpActor2->ReqGetSeatRegistrationInquiry(ChairTag , GetAccessToken());
+
+		// MainUI 숨기기
+		MainUI->SetVisibleCanvas(false);
+		// 좌석 경쟁 UI 표시
+		TicketingUI->SetVisibleSwitcher(true , 0);
+		TicketingUI->SetCompletedVisible(false);
+#pragma endregion
+
 	}
 	else if (InteractiveActor && InteractiveActor->ActorHasTag(TEXT("Tree")))
 	{
-		if (HttpActor3) HttpActor3->ReqGetCustomTicketHangOnTree(GetAccessToken());
-	}
+#pragma region LHM_Fix_Http
+		//if (HttpActor3) HttpActor3->ReqGetCustomTicketHangOnTree(GetAccessToken());
+		TreeTicketUI->SetVisibility(ESlateVisibility::Visible);
+#pragma endregion
+		}
 	else
 	{
 		UE_LOG(LogTemp , Warning , TEXT("오버랩된 의자 또는 나무가 없습니다."));

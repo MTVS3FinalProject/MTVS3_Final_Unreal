@@ -123,8 +123,9 @@ void UMH_BuyTicketWidget::OnClickedConfirm01_1Button()
 //6: 배송지 입력
 void UMH_BuyTicketWidget::OnClickedConfirm02_1Button()
 {
+#pragma region LHM_Fix_Http
 	//현민 : 주소 서버에 전달(예매자 정보랑 같이 한번에 넘길지? 따로 넘길지?)
-	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+	/*auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
@@ -135,9 +136,10 @@ void UMH_BuyTicketWidget::OnClickedConfirm02_1Button()
 											   EText_Address1->GetText() , EText_Address2->GetText() ,
 											   gi->GetAccessToken());
 		}
-	}
+	}*/
 	//7 : 결제수단 선택 창
-	//SetWidgetSwitcher(7); 통신 성공시 호출
+	SetWidgetSwitcher(7); // 통신 성공시 호출
+#pragma endregion
 }
 
 void UMH_BuyTicketWidget::OnClickedRecentAddress()
@@ -207,7 +209,8 @@ void UMH_BuyTicketWidget::OnClickedConfirm02Button()
 // HTTP : 결제시 회원 인증 사진 업로드 확인
 void UMH_BuyTicketWidget::OnClickedConfirm_QRUi1Button()
 {
-	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
+#pragma region LHM_Fix_Http
+	/*auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
 		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
@@ -216,8 +219,10 @@ void UMH_BuyTicketWidget::OnClickedConfirm_QRUi1Button()
 		{
 			HttpActor2->ReqGetPostConfirmMemberPhoto(gi->GetAccessToken());
 		}
-	}
+	}*/
 	//현민 : 인증 완료버튼 -> 성공 : SetWidgetSwitcher(1); /실패 : SetWidgetSwitcher(2);이동
+	SetWidgetSwitcher(1);
+#pragma endregion
 }
 
 /*
@@ -337,23 +342,26 @@ void UMH_BuyTicketWidget::OnClickedAddCoinButton()
 // HTTP : 좌석 결제 요청
 void UMH_BuyTicketWidget::OnClickedBuyTicketCoinButton()
 {
+#pragma region LHM_Fix_Http
 	//코인 결제
 	//유저 코인이 결제 가능한 정도라면 결제완료창으로 //현민
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
-		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if (HttpActor2)
-		{
-			HttpActor2->ReqPostPaymentSeat(gi->GetLuckyDrawSeatID(), gi->GetAccessToken());
-			//HttpActor2->ReqPostCheatPaymentSeat(gi->GetAccessToken());
-			// ReqPostCheatPaymentSeat 개발자키 프로토시연용
-		}
-		//현민 결제 성공하면 SetWidgetSwitcher(8);로 /
+		//AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+		//	UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+		//if (HttpActor2)
+		//{
+		//	HttpActor2->ReqPostPaymentSeat(gi->GetLuckyDrawSeatID(), gi->GetAccessToken());
+		//	//HttpActor2->ReqPostCheatPaymentSeat(gi->GetAccessToken());
+		//	// ReqPostCheatPaymentSeat 개발자키 프로토시연용
+		//}
+		gi->SetLuckyDrawState(ELuckyDrawState::Neutral);
+		SetWidgetSwitcher(8);
 	}
 	//아니라면
 	//충전해야한다고 경고창
+#pragma endregion
 }
 
 void UMH_BuyTicketWidget::SetTextUserName(FString UserName)

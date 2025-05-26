@@ -140,13 +140,16 @@ void UHM_MainBarWidget::OnClickedCollectionBookBtn()
 
 		OnClickedMenuBtn(Btn_CollectionBook);
 
-		UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+#pragma region LHM_Fix_Http
+		/*UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 		AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
 			UGameplayStatics::GetActorOfClass(GetWorld(), AHM_HttpActor3::StaticClass()));
 		if (HttpActor3)
 		{
 			HttpActor3->ReqGetInventoryData(GI->GetAccessToken());
-		}
+		}*/
+		SetVisibilityState();
+#pragma endregion
 		SetVisibleSwitcher(true);
 		SetWidgetSwitcher(2);
 	}

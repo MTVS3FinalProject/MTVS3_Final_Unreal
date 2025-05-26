@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "LHM/PuzzleManager.h"
@@ -223,38 +223,41 @@ void APuzzleManager::UpdatePlayerRankInfo()
 void APuzzleManager::Client_ReceiveRank_Implementation(EPlayerRank Rank, const FString& Nickname)
 {
 	if (Rank == EPlayerRank::None || static_cast<int32>(Rank) > 3) return;
+#pragma region LHM_Fix_Http
 	// 현재 클라이언트가 로컬 컨트롤러인지 확인
 	//APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	if (PC && PC->IsLocalController())
-	{
-		// 월드에 있는 모든 ATTPlayer 순회
-		for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
-		{
-			ATTPlayer* TTPlayer = *It;
-			if (TTPlayer)
-			{
-				UE_LOG(LogTemp, Log, TEXT("Iterating Player: %s"), *TTPlayer->GetNickname());
+	//APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	//if (PC && PC->IsLocalController())
+	//{
+	//	// 월드에 있는 모든 ATTPlayer 순회
+	//	for (TActorIterator<ATTPlayer> It(GetWorld()); It; ++It)
+	//	{
+	//		ATTPlayer* TTPlayer = *It;
+	//		if (TTPlayer)
+	//		{
+	//			UE_LOG(LogTemp, Log, TEXT("Iterating Player: %s"), *TTPlayer->GetNickname());
 
-				if (TTPlayer && TTPlayer->GetNickname() == Nickname)
-				{
-					FString AccessToken = TTPlayer->GetAccessToken();
-					FString NickName = TTPlayer->GetNickname();
+	//			if (TTPlayer && TTPlayer->GetNickname() == Nickname)
+	//			{
+	//				FString AccessToken = TTPlayer->GetAccessToken();
+	//				FString NickName = TTPlayer->GetNickname();
 
-					UE_LOG(LogTemp , Log , TEXT("Client AccessToken: %s, Nickname: %s") , *AccessToken , *NickName);
+	//				UE_LOG(LogTemp , Log , TEXT("Client AccessToken: %s, Nickname: %s") , *AccessToken , *NickName);
 
-					// 자신의 순위와 AccessToken으로 HTTP 요청 처리
-					AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
-						UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
-					if (!HttpActor3) return;
+	//				// 자신의 순위와 AccessToken으로 HTTP 요청 처리
+	//				AHM_HttpActor3* HttpActor3 = Cast<AHM_HttpActor3>(
+	//					UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor3::StaticClass()));
+	//				if (!HttpActor3) return;
 
-					HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) ,static_cast<FString>(Nickname), AccessToken);
-				
-					break;
-				}
-			}
-		}
-	}
+	//				HttpActor3->ReqPostPuzzleResultAndGetSticker(static_cast<int32>(Rank) ,static_cast<FString>(Nickname), AccessToken);
+	//			
+	//				break;
+	//			}
+	//		}
+	//	}
+	//}
+	Server_HandlePuzzleResult();
+#pragma endregion
 }
 
 void APuzzleManager::Server_HandlePuzzleResult_Implementation()

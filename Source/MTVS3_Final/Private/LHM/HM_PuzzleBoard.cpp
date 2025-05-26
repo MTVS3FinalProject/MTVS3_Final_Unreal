@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "LHM/HM_PuzzleBoard.h"
@@ -164,6 +164,7 @@ void AHM_PuzzleBoard::ServerSetBoardAreaVisibility_Implementation(int32 BoardInd
 			// 모든 보드 영역이 가시화되었는지 확인
 			if (AreAllBoardAreasVisible())
 			{
+#pragma region LHM_Fix_Http
 				UE_LOG(LogTemp, Log, TEXT("All board areas are visible. Ending puzzle."));
 				// 퍼즐 완료 처리
 				APuzzleManager* Manager = Cast<APuzzleManager>(UGameplayStatics::GetActorOfClass(GetWorld(), APuzzleManager::StaticClass()));
@@ -171,6 +172,7 @@ void AHM_PuzzleBoard::ServerSetBoardAreaVisibility_Implementation(int32 BoardInd
 				{
 					Manager->SortAndUpdateRanking(); // 퍼즐 종료 로직 호출
 				}
+#pragma endregion
 			}
 		}
         

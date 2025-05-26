@@ -292,9 +292,12 @@ void UMH_TicketingWidget::OnClickedConfirmButton()
 
 					UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
-					HttpActor2->ReqGetRegisterSeat(ChairTag , gi->GetAccessToken());
+					#pragma region LHM_Fix_Http
+					//HttpActor2->ReqGetRegisterSeat(ChairTag , gi->GetAccessToken());
+
 					//접수신청버튼 안보이게, 접수완료 text,접수취소 버튼 보이게
-					//SetCompletedVisible(true); 응답 완료했을 때 호출하게 해줬음
+					SetCompletedVisible(true); // 응답 완료했을 때 호출하게 해줬음
+					#pragma endregion
 				}
 			}
 		}
@@ -339,9 +342,11 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 
 					UE_LOG(LogTemp , Log , TEXT("ChairTag : %s") , *ChairTag);
 
+#pragma region LHM_Fix_Http
 					HttpActor2->ReqDeleteCancelRegisteredSeat(ChairTag , gi->GetAccessToken());
 					//접수신청버튼 보여지게 접수완료 text,접수취소 버튼 안보이게
-					//SetCompletedVisible(false);
+					SetCompletedVisible(false);
+#pragma endregion
 				}
 			}
 		}
@@ -350,7 +355,8 @@ void UMH_TicketingWidget::OnClickedCancelButton()
 
 void UMH_TicketingWidget::OnClickedCancelButton2()
 {
-	//서버-> 접수취소
+#pragma region LHM_Fix_Http
+	/*//서버-> 접수취소
 	auto* gi = Cast<UTTGameInstance>(GetWorld()->GetGameInstance());
 	if (gi)
 	{
@@ -360,7 +366,12 @@ void UMH_TicketingWidget::OnClickedCancelButton2()
 		{
 			HttpActor2->ReqDeleteCancelRegisteredSeat2(gi->GetLuckyDrawSeatID() , gi->GetAccessToken());
 		}
-	}
+	}*/
+
+	SetVisibleSwitcher(false , 1);
+	
+	//MainUI->SetVisibleCanvas(true);
+#pragma endregion
 }
 
 //void UMH_TicketingWidget::OnClickedBack1_1()

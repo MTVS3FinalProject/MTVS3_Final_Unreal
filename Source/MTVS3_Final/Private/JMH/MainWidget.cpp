@@ -150,18 +150,28 @@ void UMainWidget::GoToConcertHall()
 	// KHJ: EPlaceState::ConcertHall로 변경
 	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	ULocalPlayer* Local = GetWorld()->GetFirstLocalPlayerFromController();
-	if (!GI || !Local) return;
 
-	//GI->SetPlaceState(EPlaceState::ConcertHall);
+	//if (GI)
+	//{
+	//	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
+	//		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
+	//	if (HttpActor2)
+	//	{
+	//		HttpActor2->ReqGetConcertEntry(GI->GetAccessToken());
+	//		//HttpActor2->TESTReqPostConcertEntry( GI->GetAccessToken());
+	//	}
+	//}
 
-	if (GI)
+	APlayerController* PC = Local->GetPlayerController(GetWorld());
+	if ( PC )
 	{
-		AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
-			UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
-		if (HttpActor2)
+		ATTPlayer* TTPlayer = Cast<ATTPlayer>(PC->GetPawn());
+		if ( TTPlayer )
 		{
-			HttpActor2->ReqGetConcertEntry(GI->GetAccessToken());
-			//HttpActor2->TESTReqPostConcertEntry( GI->GetAccessToken());
+			TTPlayer->ServerTeleportPlayer(true);
+			TTPlayer->PlayConcertBGM();
+			TTPlayer->MainUI->PlayTitleAnim(2);
+			GI->SetPlaceState(EPlaceState::ConcertHall);
 		}
 	}
 }
@@ -247,15 +257,17 @@ void UMainWidget::SetMinimapImage(UTexture2D* img)
 
 void UMainWidget::OnClickedBuyTicket()
 {
+#pragma region LHM_Fix_Http
 	//예매진행 버튼-> ButTicket으로
-	UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
+	/*UTTGameInstance* GI = GetWorld()->GetGameInstance<UTTGameInstance>();
 	AHM_HttpActor2* HttpActor2 = Cast<AHM_HttpActor2>(
 		UGameplayStatics::GetActorOfClass(GetWorld() , AHM_HttpActor2::StaticClass()));
 	if (GI && HttpActor2)
 	{
 		HttpActor2->ReqGetMemberAuthQR(GI->GetAccessToken());
-	}
-	//SetWidgetSwitcher(3); 통신 성공시 호출
+	}*/
+	SetWidgetSwitcher(3); // 통신 성공시 호출
+#pragma endregion
 }
 
 void UMainWidget::OnClickedBuyTicketBack()
